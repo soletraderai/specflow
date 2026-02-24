@@ -83,6 +83,7 @@ Break the PRD into tracer bullet issues. Each issue is a thin vertical slice tha
 - Each slice must document the **current state** (what exists now) and **expected state** (what should exist after) in plain, behavior-focused language -- describe what the user sees and experiences, not code internals. A senior developer will oversee implementation, so these sections orient them on the "what" and "why", not the "how". Save file paths, interface names, and code-level details for the **Technical Implementation** and **Files to Modify/Create** sections.
 - The **technical implementation** section is advisory guidance only -- a senior developer may choose a different approach
 - Each slice must list **files to modify** and **files to create** so the developer can immediately orient themselves in the codebase
+- Each slice must include **QA Verification** criteria -- Given/When/Then scenarios derived from the PRD's verification scenarios that a human QA tester can execute to verify the slice is complete
 </vertical-slice-rules>
 
 **Estimating each slice:**
@@ -172,6 +173,19 @@ status: Pending Review
 - [ ] Criterion 2
 - [ ] Criterion 3
 
+**QA Verification:**
+- [ ] Given [precondition], When [action], Then [expected outcome]
+- [ ] Given [precondition], When [action], Then [expected outcome]
+
+[Behavioral Given/When/Then scenarios derived from the PRD's verification scenarios. These are what a human QA tester will execute to verify this slice is complete. Each scenario must be independently testable.]
+
+**Definition of Done:**
+- [ ] Code implements all acceptance criteria
+- [ ] Code reviewed
+- [ ] QA verification scenarios manually tested and passed
+- [ ] Issues found during QA resolved
+- [ ] Task is demo-ready
+
 ---
 
 ### [PRE]-002: [Title]
@@ -215,6 +229,7 @@ Apply each lens systematically:
 - Do all tasks trace back to specific PRD user stories?
 - Are there PRD requirements with no corresponding tasks?
 - Are edge cases and error handling represented?
+- Does every task have QA Verification criteria derived from the PRD's verification scenarios?
 
 **Dependency graph:**
 - Any circular dependencies?
@@ -373,6 +388,20 @@ For each approved task from the review document, use `mcp__plugin_linear_linear_
 - [ ] Criterion 1
 - [ ] Criterion 2
 - [ ] Criterion 3
+
+## QA Verification
+
+[From the review document:]
+- [ ] Given [precondition], When [action], Then [expected outcome]
+- [ ] Given [precondition], When [action], Then [expected outcome]
+
+## Definition of Done
+
+- [ ] Code implements all acceptance criteria
+- [ ] Code reviewed
+- [ ] QA verification scenarios manually tested and passed
+- [ ] Issues found during QA resolved
+- [ ] Task is demo-ready
 
 ## Estimate
 

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-02-25
+
+### Added
+
+- Human QA verification pipeline threaded through the entire PRD → Task → Linear workflow
+  - PRD user stories now require 2-4 Given/When/Then verification scenarios each
+  - PRD Testing Decisions section includes human QA strategy guidance
+  - Task vertical slices include QA Verification (GWT checkboxes) and Definition of Done sections
+  - Task critical review checks for QA Verification coverage on every task
+  - Linear issue template exports QA Verification and Definition of Done verbatim from the task review
+  - Linear export summary recommends adding a "QA Review" status to the team workflow
+
 ## [1.3.0] - 2026-02-24
 
 ### Added
@@ -56,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.4.0]: https://github.com/soletraderai/specflow/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/soletraderai/specflow/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/soletraderai/specflow/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/soletraderai/specflow/compare/v1.0.1...v1.1.0

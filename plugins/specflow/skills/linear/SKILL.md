@@ -56,6 +56,8 @@ For each task, extract:
 - Current State, Expected State, Technical Implementation
 - Files to Modify, Files to Create
 - Acceptance criteria
+- QA Verification criteria
+- Definition of Done
 
 **Cross-validate:** Every ID in the Quick Reference table must have a matching Task Details section, and vice versa. If there's a mismatch, report it and halt.
 
@@ -183,6 +185,14 @@ Keep a running export map: `{ reviewId -> { linearId, linearUrl } }`
 
 [Acceptance criteria from the task review, verbatim]
 
+## QA Verification
+
+[QA Verification from the task review, verbatim]
+
+## Definition of Done
+
+[Definition of Done from the task review, verbatim]
+
 ## Estimate
 
 **[X] hours** of development effort
@@ -231,6 +241,10 @@ Critical path: CXP-42 -> CXP-44 -> CXP-45 ([X] hours)
 Parallel work available after CXP-42: CXP-43 and CXP-44 can run simultaneously
 
 Review document updated: docs/specflow/task/[filename].md
+
+Note: Each issue includes QA Verification scenarios and a Definition of Done checklist.
+Consider adding a "QA Review" status to your Linear workflow (between "In Review" and "Done")
+to enforce QA sign-off before tasks are marked complete.
 ```
 
 Note which issues can be worked on in parallel and identify the critical path (longest dependency chain in hours).
@@ -247,3 +261,4 @@ Note which issues can be worked on in parallel and identify the critical path (l
 - The issue template content is taken verbatim from the review document -- do not rewrite or summarize it during export
 - Do **NOT** modify the parent PRD document
 - If any issue creation fails, report which issues succeeded and which failed, and offer to retry the failures
+- Consider adding a **"QA Review"** status to your Linear team's workflow (between "In Review" and "Done") so that issues move through a dedicated QA gate before being marked complete. This is optional but recommended for teams that want to enforce QA sign-off in Linear itself.
