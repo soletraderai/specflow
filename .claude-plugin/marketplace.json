@@ -13,7 +13,7 @@
       "name": "specflow",
       "source": "./plugins/specflow",
       "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Plumb Digital",
         "url": "https://github.com/soletraderai"
