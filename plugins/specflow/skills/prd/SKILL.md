@@ -202,8 +202,19 @@ created: YYYY-MM-DD
 
 1. As a <actor>, I want <feature>, so that <benefit>
 
+   **Verification Scenarios:**
+   - Given <precondition>, When <action>, Then <expected outcome>
+   - Given <precondition>, When <action>, Then <expected outcome>
+
+[Each story must include 2-4 verification scenarios in Given/When/Then format. These are the scenarios a human QA tester will execute to verify the story is complete. Cover the happy path first, then key error/edge paths.]
+
 [Example:]
 1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+
+   **Verification Scenarios:**
+   - Given I am logged in and have 2 accounts, When I navigate to the accounts page, Then I see the current balance for each account displayed in my local currency
+   - Given I am logged in and the balance service is unavailable, When I navigate to the accounts page, Then I see a "Balance temporarily unavailable" message instead of stale data
+   - Given I am logged in and have 0 accounts, When I navigate to the accounts page, Then I see a prompt to open my first account
 
 [Keep this list tight and high-impact. Aim for 6-10 stories that cover the core happy paths, key error states, and the most important actor perspectives. Avoid redundant stories — combine related behaviors into a single story where possible. Quality over quantity.]
 
@@ -229,6 +240,7 @@ created: YYYY-MM-DD
 - Which modules will have tests and what those tests verify
 - Prior art -- similar tests in the codebase that can serve as patterns
 - Any special testing considerations (mocking, fixtures, integration tests)
+- Human QA strategy: which verification scenarios require manual testing by a QA tester, and what environment setup or test data they need to execute those scenarios
 
 ## Out of Scope
 
