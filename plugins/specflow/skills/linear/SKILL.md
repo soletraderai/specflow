@@ -1,5 +1,5 @@
 ---
-name: linear
+name: "specflow:linear"
 description: >
   Export an approved task review document to Linear as a project with actionable
   issues. Use this skill whenever the user says "export to Linear", "push to

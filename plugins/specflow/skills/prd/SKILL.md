@@ -1,5 +1,5 @@
 ---
-name: prd
+name: "specflow:prd"
 description: >
   Create a structured Product Requirements Document (PRD) through guided discovery.
   Use this skill whenever the user wants to create a PRD, write product requirements,
