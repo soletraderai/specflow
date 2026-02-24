@@ -1,0 +1,5 @@
+{
+  "name": "specflow",
+  "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
+  "version": "1.0.0"
+}
