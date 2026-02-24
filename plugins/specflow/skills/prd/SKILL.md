@@ -37,6 +37,17 @@ Before diving deeper into discussion, explore the repository to ground the conve
 
 Share what you found with the user -- they may not be aware of all the implications.
 
+#### Agent-Assisted Analysis (if available)
+
+After the initial exploration above, check for specialist agents:
+
+1. Read `docs/specflow/config.json` (if it exists)
+2. If agents are configured (`agents.roles` exists), spawn relevant agents via the Task tool in parallel (max 3):
+   - Use the `roles.architectureReview` agent to analyze codebase architecture relevant to the PRD — pass it the problem domain from Phase 1 and the key modules/files found during exploration
+   - Use the appropriate tech-stack agent (from `agents.techStack`) to analyze framework-specific patterns relevant to the feature
+3. Collect subagent findings and integrate them into the exploration summary you share with the user
+4. If `docs/specflow/config.json` doesn't exist or has no agents configured, note "Run `/specflow:setup` for enhanced specialist analysis" and continue normally — this is purely additive
+
 ### Phase 3: Deep Interview
 
 This is where the real work happens. Interview the user relentlessly about every aspect of the plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one by one.
@@ -107,31 +118,62 @@ Save the PRD to the `docs/specflow/prd/` directory:
 
 ### Phase 7: Self-Review (Devil's Advocate)
 
-Before presenting the PRD to the user, re-read the saved file and verify everything against this checklist:
+Re-read the saved PRD file and apply a structured review before presenting to the user. This phase has three layers: the built-in review framework (primary), optional agent review (supplementary), and a final format checklist.
 
-**Format & naming:**
+#### Layer 1: Built-in PRD Review Framework
+
+This is specflow's own devil's advocate logic. Apply each lens systematically:
+
+**Completeness:**
+- Is every template section substantive (not placeholder text)?
+- Are user stories specific, actionable, and testable?
+- Do implementation decisions include rationale, not just choices?
+- Is out of scope explicit about what was discussed but deferred?
+- No GitHub references anywhere in the document
+
+**Consistency:**
+- Any contradictions between sections (e.g., something listed as out of scope but described in implementation)?
+- Are technical terms and module names used consistently throughout?
+- Do module interfaces match the behavior described in user stories?
+
+**Feasibility:**
+- Are the proposed modules realistic given the existing codebase?
+- Any hidden dependencies not captured?
+- Are non-functional requirements achievable with the chosen approach?
+
+**Assumptions:**
+- Where did the author assume instead of asking the user?
+- Any ambiguities that could cause different interpretations by different developers?
+- Could a developer implement this without needing to ask clarifying questions?
+
+Produce structured findings:
+- **Critical Issues** — must fix before presenting (gaps, contradictions, missing requirements)
+- **Warnings** — should fix or explicitly flag to the user
+- **Observations** — worth noting but not blocking
+
+Address all critical issues immediately by editing the saved PRD file.
+
+#### Layer 2: Agent-Assisted Review (if available)
+
+1. Read `docs/specflow/config.json` (if it exists)
+2. If agents are configured, spawn review agents via the Task tool for supplementary perspectives:
+   - Use `roles.architectureReview` agent to review architectural decisions in the PRD
+   - Pass the full PRD content and ask for architecture-focused feedback
+3. Integrate any agent findings into the review — these supplement the built-in framework but do not replace it
+4. If no agents are available, skip this layer entirely
+
+#### Layer 3: Format & Naming Checklist
+
+Final verification pass:
 - Filename follows `prd-{kebab-case-feature-name}.md` convention
 - File is saved in `docs/specflow/prd/`
 - YAML frontmatter is present with `title`, `status: Draft`, and `created: YYYY-MM-DD`
 
-**Content completeness:**
-- Every section in the template is present and substantive (not placeholder text)
-- User stories are specific and actionable (no vague "as a user, I want it to work" stories)
-- Implementation decisions capture rationale, not just choices
-- Out of scope explicitly lists things that were discussed but deferred
-- No GitHub references anywhere in the document
+#### Present Results
 
-**Consistency:**
-- Decisions made during the interview are accurately reflected in the PRD
-- No contradictions between sections (e.g., something listed as out of scope but described in implementation)
-- Technical terms and module names are used consistently throughout
+If assumptions were found that should have been questions, go back to the user for clarification before finalizing.
 
-**Devil's advocate -- challenge your own work:**
-- Are there gaps where you made assumptions instead of asking the user?
-- Is anything ambiguous enough that two developers could interpret it differently?
-- Would a developer be able to implement this without coming back to ask clarifying questions?
-
-If any issues are found, fix them before presenting the PRD to the user. If you made assumptions that should have been questions, flag them to the user for confirmation.
+Present the review summary to the user with any warnings or observations, then confirm the PRD is ready.
 
 End with: "Run `/specflow:task` to break this PRD into actionable tasks."
 

@@ -58,6 +58,17 @@ Read the key modules and integration layers referenced in the PRD. Identify:
 
 This grounds the breakdown in reality rather than abstract planning. Having concrete file paths lets the developer jump straight into the relevant code.
 
+#### Agent-Assisted Analysis (if available)
+
+After the initial exploration above, check for specialist agents:
+
+1. Read `docs/specflow/config.json` (if it exists)
+2. If agents are configured (`agents.roles` exists), spawn relevant agents via the Task tool in parallel (max 3):
+   - Use the `roles.architectureReview` agent to identify integration points and architectural patterns that inform slice boundaries
+   - Use the appropriate tech-stack agent (from `agents.techStack`) for framework-specific implementation insights
+3. Agent findings may reveal: additional integration points not obvious from manual exploration, technical risks warranting spike issues, better approaches based on framework-specific knowledge
+4. If `docs/specflow/config.json` doesn't exist or has no agents configured, continue normally — this is purely additive
+
 ### 4. Draft Vertical Slices
 
 Break the PRD into tracer bullet issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end.
@@ -183,7 +194,57 @@ status: Pending Review
 
 **The Quick Reference table is the most important part.** It gives the user a scannable overview where they can quickly spot tasks that don't belong. Every task in the document must appear in this table, and every row in the table must have a corresponding detail section below.
 
-### 6. Present the Review Document
+### 6. Critical Review (Before Presenting)
+
+Before presenting to the user, re-read the saved review document and apply a structured review. This catches issues before the user sees the document.
+
+#### Built-in Task Review Framework
+
+Apply each lens systematically:
+
+**Slice quality:**
+- Is each slice truly vertical (all layers end-to-end)? Any horizontal slices hiding (e.g., "set up database schema" without corresponding API/UI)?
+- Is each slice independently demo-able or verifiable?
+
+**Estimate accuracy:**
+- Do estimates align with the complexity described?
+- Are any tasks over 8 hours? (must split)
+- Are dependencies captured correctly in the `Blocked by` column?
+
+**Coverage:**
+- Do all tasks trace back to specific PRD user stories?
+- Are there PRD requirements with no corresponding tasks?
+- Are edge cases and error handling represented?
+
+**Dependency graph:**
+- Any circular dependencies?
+- Is the critical path realistic?
+- Any unnecessary blocking relationships that reduce parallelism?
+
+Produce structured findings:
+- **Critical Issues** — must fix (horizontal slices, >8h tasks, missing PRD coverage, circular deps)
+- **Warnings** — should fix (loose estimates, unnecessary blocking)
+- **Observations** — worth noting
+
+#### Agent-Assisted Review (if available)
+
+1. Read `docs/specflow/config.json` (if it exists)
+2. If review agents are configured, spawn for supplementary perspectives via the Task tool:
+   - Use `roles.architectureReview` agent to review the task breakdown from an architecture perspective
+3. Integrate findings — these supplement the built-in framework but do not replace it
+
+#### Apply Corrections
+
+Address all critical issues found:
+- Fix horizontal slices by restructuring into vertical ones
+- Split any tasks over 8 hours
+- Add missing tasks for uncovered PRD requirements
+- Correct dependency issues
+- Update the saved review document with all corrections (rewrite the file)
+
+Then proceed to present the corrected document.
+
+### 7. Present the Review Document
 
 After saving the file, tell the user:
 
@@ -215,11 +276,11 @@ The user may respond in several ways:
 
 - **"Add a task for X"** -- Add it with the next available ID, place it in the correct dependency position, save and show.
 
-- **"Approved"** or **"Looks good"** -- Proceed to step 7.
+- **"Approved"** or **"Looks good"** -- Proceed to step 8.
 
 **Keep iterating** until the user explicitly approves. Each revision updates the saved document so it always reflects the current state.
 
-### 7. Create the Linear Project
+### 8. Create the Linear Project
 
 Only proceed here after the user has approved the review document.
 
@@ -237,18 +298,18 @@ If the project already exists (user set it up manually), ask for the project nam
 
 After creation, confirm the project URL with the user.
 
-### 8. Create Milestones (Optional)
+### 9. Create Milestones (Optional)
 
 If the project naturally breaks into phases (e.g., "Foundation", "Core Features", "Polish"), create milestones:
 
 Use `mcp__plugin_linear_linear__create_milestone` for each phase with:
-- **project**: The project name/ID from step 7
+- **project**: The project name/ID from step 8
 - **name**: Phase name
 - **targetDate**: Calculated based on the phase's proportion of total hours
 
 Only create milestones if there are clear phases. Don't force phases where they don't exist naturally.
 
-### 9. Create Linear Issues
+### 10. Create Linear Issues
 
 Create issues in dependency order (blockers first) so you can reference real issue identifiers in the `blockedBy` field.
 
@@ -256,7 +317,7 @@ For each approved task from the review document, use `mcp__plugin_linear_linear_
 
 - **title**: The task title from the review document
 - **team**: The team specified during setup
-- **project**: The project name from step 7
+- **project**: The project name from step 8
 - **description**: Use the issue template below, populated from the review document's detail section
 - **priority**: The priority level for this specific issue (1=Urgent, 2=High, 3=Normal, 4=Low)
 - **labels**: The label from the review document -- typically ["Feature"] for new work
@@ -324,7 +385,7 @@ For each approved task from the review document, use `mcp__plugin_linear_linear_
 - User story 7
 </issue-template>
 
-### 10. Update Review Document
+### 11. Update Review Document
 
 After all issues are created, update the review document:
 
@@ -342,7 +403,7 @@ After all issues are created, update the review document:
 
 This preserves traceability between the review and what actually got created.
 
-### 11. Summary
+### 12. Summary
 
 After creating all issues, print a summary table:
 
