@@ -22,15 +22,18 @@ This skill is the export half of the task planning pipeline. The `specflow:task`
 
 ### 1. Locate the Task Review
 
-Look for task review files in `docs/specflow/task/` matching the `task-review-*.md` pattern.
+Look for task review files in `docs/specflow/task/` matching the `*-tasks-*.md` pattern.
 
 - If the user provides a filename or path directly, use that
-- If multiple review files exist, list them and ask which one to export
+- If multiple review files exist, list them with their PRD IDs and ask which one to export
 - If only one exists, confirm it with the user
 
 Read the full file content. Check the `status` field in the YAML frontmatter:
 - `Pending Review` or `Approved` -- proceed normally
-- `Exported` -- warn the user: "This review was already exported on [exported_at date]. Re-exporting will create duplicate issues in Linear. Continue?" Only proceed if they confirm.
+- `Exported` -- check whether an Export Map section exists in the document:
+  - **Export map exists:** "Found N existing issues. Re-exporting will UPDATE existing and CREATE new tasks. Continue?"
+  - **No export map but status is Exported:** "No export map found. Re-exporting will create NEW issues (duplicates may result). Continue?"
+  - Only proceed if the user confirms.
 
 ### 2. Parse and Validate
 
@@ -38,6 +41,7 @@ Extract everything needed for the export:
 
 **From YAML frontmatter:**
 - `prd` -- PRD title (used in issue descriptions)
+- `prd_id` -- PRD identifier (e.g., `PRD-001`), included in issue descriptions
 - `prd_file` -- path to the parent PRD (linked in issues)
 - `project` -- Linear project name
 - `task_prefix` -- the 3-letter prefix (e.g., PIU)
@@ -46,6 +50,10 @@ Extract everything needed for the export:
 - `team` -- Linear team name (from frontmatter; prompt user if missing)
 - `priority` -- project-level priority
 - `target_date` -- project target date
+
+**From Export Map (if re-exporting):**
+- If the document contains an `## Export Map` section, parse the table into a lookup: `{ reviewId → { linearId, linearUrl } }`
+- This map determines which tasks get updated vs created during re-export
 
 **From Quick Reference table:**
 - Ordered list of task IDs, titles, hours, blocked-by references, priorities, labels
@@ -111,9 +119,9 @@ After creation, confirm the project with the user.
 | Medium      | 3           |
 | Low         | 4           |
 
-### 5. Create Issues in Dependency Order
+### 5. Create or Update Issues in Dependency Order
 
-This is the core of the export. Issues must be created in dependency order so that blocker issues exist before the issues they block -- otherwise the `blockedBy` field can't reference real Linear identifiers.
+This is the core of the export. Issues must be processed in dependency order so that blocker issues exist before the issues they block -- otherwise the `blockedBy` field can't reference real Linear identifiers.
 
 **Dependency ordering algorithm:**
 
@@ -121,15 +129,15 @@ This is the core of the export. Issues must be created in dependency order so th
 2. Build a map of each task's unresolved blocker count (in-degree).
 3. Start with all tasks that have zero blockers (in-degree 0).
 4. Process one task at a time:
-   a. Create it in Linear.
+   a. Create or update it in Linear (see below).
    b. Store its Linear identifier in the export map.
    c. For every task that lists it as a blocker, decrement that task's in-degree.
    d. If any task's in-degree reaches 0, it becomes ready to process.
 5. If tasks remain unprocessed after the queue empties, there's a circular dependency -- report it and halt.
 
-**For each task, create a Linear issue:**
+**First export (no existing export map):**
 
-Use `mcp__plugin_linear_linear__create_issue` with:
+For each task, use `mcp__plugin_linear_linear__create_issue` with:
 
 - **title**: Task title from the review document
 - **team**: From frontmatter `team` field
@@ -141,10 +149,28 @@ Use `mcp__plugin_linear_linear__create_issue` with:
 - **state**: "Todo" if the task has no blockers; "Backlog" if it has any blockers
 - **blockedBy**: Array of Linear issue identifiers, mapped from review IDs using the export map built so far
 
-Wait for each issue to be created before creating the next one. After each creation, report progress:
+**Re-export (export map exists):**
+
+For each task in the review, check the export map:
+- **Found in map** → use `mcp__plugin_linear_linear__update_issue` with: `id` (Linear ID from map), `title`, `description`, `priority`, `estimate`, `state`, `blockedBy`, `labels`, `project`
+- **Not in map** → use `mcp__plugin_linear_linear__create_issue` (same params as first export)
+
+After processing all tasks, check for **orphaned tasks** -- entries in the export map whose review IDs no longer appear in the review document. Warn the user about these but do NOT auto-delete them from Linear:
 
 ```
-Created [LinearID]: [Title] ([Xh], [status])
+Warning: [N] tasks were removed from the review but still exist in Linear:
+- [LinearID]: [Title]
+Consider manually closing or cancelling these issues.
+```
+
+**Partial failure recovery:** After EACH successful create or update, immediately save the current export map to the review document. This makes the export idempotent -- if the process fails partway through, re-running it will update already-created issues and create only the remaining ones.
+
+**Progress reporting:**
+
+After each issue, report:
+
+```
+[Created|Updated] [LinearID]: [Title] ([Xh], [status])
 ```
 
 Keep a running export map: `{ reviewId -> { linearId, linearUrl } }`
@@ -152,7 +178,7 @@ Keep a running export map: `{ reviewId -> { linearId, linearUrl } }`
 <issue-template>
 ## Parent PRD
 
-[PRD title] -- see `[prd_file]`
+[PRD title] (PRD-NNN) -- see `[prd_file]`
 
 ## Current State
 
@@ -207,6 +233,8 @@ Keep a running export map: `{ reviewId -> { linearId, linearUrl } }`
 
 ### 6. Update the Review Document
 
+**First export:**
+
 After all issues are created successfully:
 
 1. Change `status: Pending Review` to `status: Exported` in the YAML frontmatter
@@ -224,9 +252,23 @@ After all issues are created successfully:
 
 This preserves full traceability between the review document and the Linear issues.
 
+**Re-export:**
+
+The export map was already saved incrementally during Step 5 (partial failure recovery). Do a final verification pass:
+
+1. Update `exported_at` to today's date
+2. Ensure the export map is complete and matches all tasks in the review
+3. Keep removed tasks in the export map annotated as `(removed from review)` for traceability:
+
+```markdown
+| PIU-003   | CXP-44    | [link] (removed from review) |
+```
+
 ### 7. Print Summary
 
-After everything is complete, print a summary:
+After everything is complete, print a summary.
+
+**First export:**
 
 ```
 Project: [name]
@@ -245,6 +287,24 @@ Review document updated: docs/specflow/task/[filename].md
 Note: Each issue includes QA Verification scenarios and a Definition of Done checklist.
 Consider adding a "QA Review" status to your Linear workflow (between "In Review" and "Done")
 to enforce QA sign-off before tasks are marked complete.
+```
+
+**Re-export:**
+
+```
+Re-export complete: [N] updated | [M] created | [K] orphaned (removed from review)
+
+| Linear ID | Title | Action | Estimate | Status |
+|-----------|-------|--------|----------|--------|
+| CXP-42 | [title] | Updated | 12h | Todo |
+| CXP-45 | [title] | Created | 4h | Backlog |
+
+Orphaned issues (removed from review — clean up manually):
+- CXP-44: [title]
+
+Note: Re-export overwrites any manual changes made to issues in Linear since the last export.
+
+Review document updated: docs/specflow/task/[filename].md
 ```
 
 Note which issues can be worked on in parallel and identify the critical path (longest dependency chain in hours).

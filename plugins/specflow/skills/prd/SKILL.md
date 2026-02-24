@@ -144,11 +144,16 @@ After writing, review the PRD with the user. Make revisions until they're satisf
 
 Save the PRD to the `docs/specflow/prd/` directory:
 
-1. Derive a kebab-case filename from the PRD title (e.g., "User Authentication Flow" -> `prd-user-authentication-flow.md`)
-2. Create the `docs/specflow/prd/` directory if it doesn't exist
-3. Fill in the YAML frontmatter with the actual title and today's date
-4. Write the file to `docs/specflow/prd/prd-{feature-name}.md`
-5. Confirm the saved file path with the user
+1. Derive a kebab-case slug from the PRD title (e.g., "User Authentication Flow" → `user-authentication-flow`)
+2. Auto-detect the next PRD number:
+   a. Glob for `docs/specflow/prd/*.md`
+   b. Extract 3-digit numbers from filenames matching pattern `^(\d{3})-`
+   c. Next number = max found + 1 (zero-padded to 3 digits)
+   d. If no numbered PRDs exist, start at `001`
+3. Create the `docs/specflow/prd/` directory if it doesn't exist
+4. Fill in the YAML frontmatter with the title, `prd_id: PRD-{NNN}`, type, status, and today's date
+5. Write the file to `docs/specflow/prd/{NNN}-{slug}.md` (e.g., `001-user-authentication-flow.md`)
+6. Confirm the saved file path and PRD ID with the user
 
 ### Phase 7: Self-Review (Devil's Advocate)
 
@@ -207,9 +212,9 @@ Address all critical issues immediately by editing the saved PRD file.
 #### Layer 3: Format & Naming Checklist
 
 Final verification pass:
-- Filename follows `prd-{kebab-case-feature-name}.md` convention
+- Filename follows `{NNN}-{kebab-case-feature-name}.md` convention
 - File is saved in `docs/specflow/prd/`
-- YAML frontmatter is present with `title`, `status: Draft`, and `created: YYYY-MM-DD`
+- YAML frontmatter includes `prd_id: PRD-{NNN}` matching the filename number
 
 #### Present Results
 
@@ -226,6 +231,7 @@ Use this exact structure for every PRD:
 ```markdown
 ---
 title: "<PRD Title>"
+prd_id: PRD-NNN
 type: greenfield | brownfield
 status: Draft
 created: YYYY-MM-DD
