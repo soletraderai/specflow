@@ -34,10 +34,10 @@ Steps:
 Check what feature work is in flight by reading frontmatter only from recent specflow artifacts.
 
 Steps:
-1. Glob for `docs/specflow/prd/prd-*.md` — find the most recently modified file
-2. If found, read only the first 15 lines (frontmatter) to get the title, status, and date
-3. Glob for `docs/specflow/task/task-review-*.md` — find the most recently modified file
-4. If found, read only the first 15 lines (frontmatter)
+1. Glob for `docs/specflow/prd/*.md` — find the most recently modified file
+2. If found, read only the first 15 lines (frontmatter) to get the title, `prd_id`, status, and date
+3. Glob for `docs/specflow/task/*-tasks-*.md` — find the most recently modified file
+4. If found, read only the first 15 lines (frontmatter) to get the title, `prd_id`, and status
 5. If no specflow artifacts exist, note: "No specflow PRDs or task reviews found."
 
 ### Phase 3: Codebase Configuration
@@ -106,7 +106,7 @@ Project: {languages} / {frameworks}
 Branch: {branch} | {n} uncommitted changes
 Recent: {latest commit hash + message}
 Constitution: {n} coding, {n} architecture, {n} quality principles
-Specflow: {prd name} ({status}) | {task review name} ({status})
+Specflow: {prd_id}: {prd name} ({status}) | {task review name} ({status})
 Files loaded: {n} config, {n} repo-specific
 ```
 

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-02-25
+
+### Added
+
+- Sequential PRD numbering — PRDs named `{NNN}-{name}.md` (e.g., `001-user-auth.md`), task reviews named `{NNN}-tasks-{name}.md`, `prd_id: PRD-NNN` in frontmatter, prime displays IDs
+- Linear re-export with update-instead-of-duplicate — export map drives update vs create, orphan warnings, incremental saves for partial failure recovery
+
+### Removed
+
+- Empty placeholder skill directories (`orchestrator/`, `reviewer/`)
+
 ## [1.5.0] - 2026-02-25
 
 ### Added
@@ -85,6 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.6.0]: https://github.com/soletraderai/specflow/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/soletraderai/specflow/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/soletraderai/specflow/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/soletraderai/specflow/compare/v1.2.0...v1.3.0

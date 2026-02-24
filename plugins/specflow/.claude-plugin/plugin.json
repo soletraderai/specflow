@@ -1,6 +1,6 @@
 {
   "name": "specflow",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
   "author": {
     "name": "Sole Trader AI Pty Ltd",

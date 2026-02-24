@@ -22,7 +22,7 @@ The philosophy here is tracer bullets -- thin vertical slices that cut through e
 
 ### 1. Locate the PRD
 
-Look for PRDs in `docs/specflow/prd/`. If multiple PRDs exist, ask the user which one to use. If only one exists, confirm it. Read the full PRD content and internalize every section -- the user stories, implementation decisions, and scope boundaries all inform how to slice the work.
+Look for PRDs in `docs/specflow/prd/` by globbing for `*.md`. If multiple PRDs exist, list them with their PRD IDs (from `prd_id` frontmatter or filename prefix) and ask the user which one to use. If only one exists, confirm it. Accept a PRD ID as input (e.g., "PRD-001"), matching by the 3-digit filename prefix. Read the full PRD content and internalize every section -- the user stories, implementation decisions, and scope boundaries all inform how to slice the work.
 
 If the user provides a PRD filename or path directly, use that.
 
@@ -106,7 +106,7 @@ The sum of all estimates determines the project duration. After estimating all s
 
 Before discussing anything with the user, save a structured review document to `docs/specflow/task/`. This document is the single source of truth for the proposed breakdown. The user will review it, call out task IDs to remove or adjust, and only approved tasks get exported to Linear.
 
-**Filename:** `task-review-[prd-kebab-name].md` (e.g., `task-review-contact-form-profile-collection.md`)
+**Filename:** `{NNN}-tasks-{prd-kebab-name}.md` (e.g., `001-tasks-contact-form-profile-collection.md`) — the `{NNN}` prefix inherits the parent PRD's number.
 
 **Create the `docs/specflow/task/` directory** if it doesn't exist.
 
@@ -115,7 +115,8 @@ The document must follow this exact format:
 ```markdown
 ---
 prd: "[PRD Title]"
-prd_file: "docs/specflow/prd/[filename]"
+prd_id: PRD-NNN
+prd_file: "docs/specflow/prd/{NNN}-{slug}.md"
 project: "[Project Name]"
 task_prefix: "[ABC]"
 total_hours: [sum]
