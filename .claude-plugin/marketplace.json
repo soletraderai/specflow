@@ -1,0 +1,22 @@
+{
+  "name": "specflow",
+  "metadata": {
+    "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "specflow",
+      "source": ".",
+      "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Plumb Digital",
+        "url": "https://github.com/soletraderai"
+      },
+      "homepage": "https://github.com/soletraderai/specflow",
+      "license": "MIT",
+      "category": "workflows"
+    }
+  ]
+}
