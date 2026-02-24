@@ -166,7 +166,27 @@ Populate each field based on what was detected and installed in the previous pha
 - `agents.installed`: combined list of all successfully installed plugins (base + tech-stack)
 - `agents.roles`: mapping of role names to `plugin:subagent` pairs — this tells PRD and task skills which agent to invoke for each purpose via the Task tool's `subagent_type` parameter
 
-This file is the single reference for what setup detected and installed. Other skills (`prd`, `task`, `linear`) can read it to skip redundant questions (e.g., Linear team name). Users can delete this file and re-run `/specflow:setup` to reconfigure.
+This file is the single reference for what setup detected and installed. Other skills (`prd`, `task`, `linear`, `prime`) can read it to skip redundant questions (e.g., Linear team name). Users can delete this file and re-run `/specflow:setup` to reconfigure.
+
+### Phase 5b: Prime Configuration (Optional)
+
+After saving the base config, ask the user if they want to configure session priming for `/specflow:prime`.
+
+Steps:
+1. Ask: "Would you like to configure `/specflow:prime`? It loads project context at the start of each session — config files, recent specflow state, and git status."
+2. If yes, ask: "Are there any repo-specific files you want always loaded at the start of a session? (e.g., `src/lib/db.ts`, `src/shared/utils.ts`) — up to 5 files, or skip if none."
+3. If the user provides files, add a `prime` section to the saved `docs/specflow/config.json`:
+
+```json
+{
+  "...existing fields...",
+  "prime": {
+    "files": ["src/lib/db.ts", "src/shared/utils.ts"]
+  }
+}
+```
+
+4. If the user skips or says no to either question, don't add the `prime` section — `/specflow:prime` will still work using auto-detection from `techStack`
 
 ### Phase 6: Summary
 
@@ -177,12 +197,13 @@ Print a setup summary covering everything that was done:
 - **Tech stack**: list of detected technologies
 - **Agents installed**: list of installed plugins (with note on how to remove)
 - **Config saved**: `docs/specflow/config.json`
+- **Prime**: configured with {n} custom files / not configured (auto-detection only)
 
 Include these tips:
 - To remove an agent: `claude plugin uninstall {name}@wshobson-agents`
 - To reconfigure: delete `docs/specflow/config.json` and re-run `/specflow:setup`
 
-End with: "Run `/specflow:prd` to start creating a PRD."
+End with: "Run `/specflow:prime` to load project context, or `/specflow:prd` to start creating a PRD."
 
 ## Guidance
 
