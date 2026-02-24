@@ -65,10 +65,15 @@ Read framework and tooling configs. Use "first found" logic — only read the fi
 | TypeScript / JavaScript | `biome.json`, or `.eslintrc*`, or `eslint.config.*` |
 | Next.js | `next.config.*` (glob to find exact filename) |
 | Tailwind CSS | `tailwind.config.*` (glob to find exact filename) |
-| Prisma | `prisma/schema.prisma` (first 80 lines only) |
-| Docker | `docker-compose.yml` or `Dockerfile` (first 40 lines only) |
+| Prisma | `prisma/schema.prisma` (first 80 lines — enough to capture models without pulling in migrations or seed data) |
+| Docker | `docker-compose.yml` or `Dockerfile` (first 40 lines — captures service definitions / base image + key stages without verbose COPY/RUN blocks) |
 
-For auto-detection (no config.json): glob for each Tier 2 and Tier 3 file. Read whatever is found.
+For auto-detection (no config.json): check files in this exact order to ensure consistent results across sessions:
+
+1. **Tier 2 first**, top to bottom: `package.json` → `tsconfig.json` → `pyproject.toml` → `requirements.txt` → `Cargo.toml` → `go.mod` → `Gemfile`
+2. **Then Tier 3**, top to bottom: `biome.json` → `.eslintrc*` → `eslint.config.*` → `next.config.*` → `tailwind.config.*` → `prisma/schema.prisma` → `docker-compose.yml` → `Dockerfile`
+
+Read whatever is found. Infer the tech stack from whichever Tier 2 files exist (e.g., `package.json` present → TypeScript/JavaScript).
 
 ### Phase 4: Repo-Specific Files
 
@@ -76,7 +81,7 @@ Load custom files specified in the prime config section.
 
 Steps:
 1. Check if `config.json` has a `prime.files` array
-2. If present, read each file listed (up to 5 files, up to 80 lines each)
+2. If present, read each file listed (up to 5 files, up to 80 lines each — these limits keep repo-specific files within ~1,500 tokens, leaving headroom for the other phases)
 3. Skip any file that doesn't exist — note which files were skipped but don't error
 4. If no `prime` section exists, skip this phase entirely
 
@@ -121,3 +126,10 @@ End with: "Context loaded. Ready to work."
 - If a file doesn't exist, skip it silently. Don't ask the user about missing files.
 - Speed matters — this runs at the start of every session. Don't over-explain or ask unnecessary questions. Just load and summarize.
 - If config.json is missing, auto-detection should still produce useful output. The skill should always complete, even in an empty repo.
+
+## Error Handling
+
+- **config.json corrupted / unparseable JSON**: Skip it entirely and fall back to auto-detection. Note in the summary: "config.json could not be parsed — using auto-detection."
+- **Git commands fail** (e.g., not a git repo, git not installed): Skip Phase 5 entirely. In the summary, replace the Branch/Recent lines with "Git: unavailable". Do not ask the user to fix anything.
+- **File read fails** (permissions, encoding, binary): Skip that file and continue. Never let a single unreadable file abort the skill.
+- **General principle**: The skill must always run to completion and produce a summary. Degrade gracefully — load what you can, skip what you can't, and note omissions in the summary rather than erroring out.
