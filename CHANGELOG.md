@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-02-24
+
+### Added
+
+- New `/specflow:prime` skill for session bootstrapping
+  - Loads project context (config, specflow state, codebase configs, git status) at conversation start
+  - Uses tech stack detection from config.json to dynamically determine which files to read
+  - Supports optional `prime.files` in config.json for repo-specific files
+  - Read-only — no side effects, stays within ~2,000-5,000 token context budget
+  - Graceful degradation: works without config.json via auto-detection
+- Setup skill now offers optional prime configuration (Phase 5b) for custom session files
+
 ## [1.2.0] - 2026-02-24
 
 ### Added
@@ -44,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.3.0]: https://github.com/soletraderai/specflow/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/soletraderai/specflow/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/soletraderai/specflow/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/soletraderai/specflow/compare/v1.0.0...v1.0.1
