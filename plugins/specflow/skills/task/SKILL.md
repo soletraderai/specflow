@@ -55,6 +55,7 @@ Read the key modules and integration layers referenced in the PRD. Identify:
 - Technical risks or unknowns that might need spike issues
 - **Specific file paths** that will need modification for each piece of work
 - **New files** that will need to be created, following existing naming and directory conventions
+- **Constitution constraints** — if `docs/specflow/config.json` has a `constitution` key, load it and note which architectural boundaries and coding principles constrain how vertical slices should be structured. For example, if "all external API calls go through a service layer" is a boundary, every slice that adds an API call must include the service layer — you can't defer it to a later slice.
 
 This grounds the breakdown in reality rather than abstract planning. Having concrete file paths lets the developer jump straight into the relevant code.
 
@@ -84,6 +85,8 @@ Break the PRD into tracer bullet issues. Each issue is a thin vertical slice tha
 - The **technical implementation** section is advisory guidance only -- a senior developer may choose a different approach
 - Each slice must list **files to modify** and **files to create** so the developer can immediately orient themselves in the codebase
 - Each slice must include **QA Verification** criteria -- Given/When/Then scenarios derived from the PRD's verification scenarios that a human QA tester can execute to verify the slice is complete
+- If a project constitution exists, every slice's Technical Implementation must respect stated architectural boundaries and coding principles. If a slice must deviate from a principle, document the exception explicitly in that slice's description.
+- For brownfield PRDs with a transition plan: the FIRST vertical slice should establish migration scaffolding (feature flags, co-existence layer, backward-compatible wrapper) before any behavioral changes. This ensures rollback capability exists from the start. Later slices build on this scaffolding.
 </vertical-slice-rules>
 
 **Estimating each slice:**
@@ -235,6 +238,11 @@ Apply each lens systematically:
 - Any circular dependencies?
 - Is the critical path realistic?
 - Any unnecessary blocking relationships that reduce parallelism?
+
+**Constitution compliance** (only if a constitution exists in config.json):
+- Does each slice's Technical Implementation respect architectural boundaries and coding principles?
+- Are constitution exceptions documented explicitly in the slices that require them?
+- Do quality standards impose constraints on any slice? (e.g., test coverage requirements mean every slice must include tests)
 
 Produce structured findings:
 - **Critical Issues** — must fix (horizontal slices, >8h tasks, missing PRD coverage, circular deps)

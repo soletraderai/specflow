@@ -1,22 +1,24 @@
 {
   "name": "specflow",
   "owner": {
-    "name": "Plumb Digital",
-    "url": "https://github.com/soletraderai"
+    "name": "Sole Trader AI Pty Ltd",
+    "url": "https://github.com/soletraderai",
+    "email": "hello@soletrader.ai"
   },
   "metadata": {
     "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
-    "version": "1.4.0"
+    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "specflow",
       "source": "./plugins/specflow",
       "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": {
-        "name": "Plumb Digital",
-        "url": "https://github.com/soletraderai"
+        "name": "Sole Trader AI Pty Ltd",
+        "url": "https://github.com/soletraderai",
+        "email": "hello@soletrader.ai"
       },
       "homepage": "https://github.com/soletraderai/specflow",
       "license": "MIT",

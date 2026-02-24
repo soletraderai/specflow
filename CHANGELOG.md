@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-02-25
+
+### Added
+
+- Project Constitution support — define non-negotiable coding principles, architectural boundaries, and quality standards during setup
+  - Setup skill gains Phase 3b: optional constitution interview (max 5 principles per category)
+  - Constitution stored in `config.json` under `constitution` key; omitted entirely if skipped
+  - PRD skill threads constitution through interview (Phase 3), module validation (Phase 4), PRD template (Phase 5), and self-review (Phase 7)
+  - Task skill checks constitution compliance during codebase exploration (Step 3), vertical slice rules (Step 4), and critical review (Step 6)
+  - Prime skill surfaces constitution principle counts in session summary
+- Brownfield/migration PRD support — better handling of refactors, migrations, and modifications to existing systems
+  - PRD Phase 2 auto-classifies greenfield vs. brownfield with user confirmation
+  - PRD Phase 3 adds brownfield-specific interview areas: current state analysis, migration/transition, backward compatibility, rollback/risk
+  - PRD template gains `type: greenfield | brownfield` frontmatter and conditional Migration Strategy section (Current State, Transition Plan, Backward Compatibility, Rollback Plan)
+  - PRD Phase 7 self-review extends completeness and feasibility lenses for brownfield
+  - Task skill adds brownfield first-slice rule: migration scaffolding before behavioral changes
+
 ## [1.4.0] - 2026-02-25
 
 ### Added
@@ -68,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.5.0]: https://github.com/soletraderai/specflow/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/soletraderai/specflow/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/soletraderai/specflow/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/soletraderai/specflow/compare/v1.1.0...v1.2.0
