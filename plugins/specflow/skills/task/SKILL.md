@@ -1,5 +1,5 @@
 ---
-name: task
+name: "specflow:task"
 description: >
   Break a PRD into actionable Linear issues organized as vertical slices with
   dependency tracking, time estimates, and project linking. Use this skill
