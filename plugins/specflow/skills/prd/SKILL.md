@@ -48,9 +48,28 @@ After the initial exploration above, check for specialist agents:
 3. Collect subagent findings and integrate them into the exploration summary you share with the user
 4. If `docs/specflow/config.json` doesn't exist or has no agents configured, note "Run `/specflow:setup` for enhanced specialist analysis" and continue normally — this is purely additive
 
+#### Greenfield vs. Brownfield Classification
+
+After exploration is complete, classify the project type:
+
+1. Auto-detect using heuristics:
+   - **Brownfield signals:** User language includes words like "refactor", "migrate", "replace", "upgrade", "rewrite", "modernize", "consolidate", or "deprecate"; codebase exploration found existing code in the problem domain (e.g., there's already an auth system and the user wants to change it)
+   - **Greenfield signals:** No existing code in the problem domain; user language focuses on "build", "create", "add new", "implement from scratch"
+2. Present the classification to the user: "This looks like a **brownfield** change (modifying existing functionality) / **greenfield** feature (building something new). Is that correct?"
+3. The user always gets final say — they can override the classification
+4. Store the classification for use in Phase 3 (interview) and Phase 5 (template)
+
 ### Phase 3: Deep Interview
 
 This is where the real work happens. Interview the user relentlessly about every aspect of the plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one by one.
+
+#### Constitution-Informed Constraints
+
+Before starting the interview, load the project constitution from `docs/specflow/config.json` (if it exists and has a `constitution` key). Keep the principles active throughout the interview:
+
+- Proactively surface relevant principles when the user's proposal conflicts with them. For example, if the constitution says "prefer composition over inheritance" and the user proposes a deep class hierarchy, raise it immediately: "Your constitution says 'prefer composition over inheritance' — should we explore a composition-based approach here, or is this an approved exception?"
+- Don't lecture — flag the tension, let the user decide, and record the decision
+- If no constitution exists, skip this entirely and proceed normally
 
 Key areas to probe:
 
@@ -83,6 +102,13 @@ Key areas to probe:
 - Accessibility requirements
 - Browser/device compatibility
 
+**Brownfield-specific areas** (only probe if classified as brownfield in Phase 2):
+
+- **Current state analysis** — What does the existing system do today? What works well and should be preserved? What are the known pain points? Are there undocumented behaviors or edge cases that users depend on?
+- **Migration and transition** — Should migration be incremental or all-or-nothing? Will old and new systems need to co-exist during a transition period? Is there data to migrate? What's the reversibility requirement?
+- **Backward compatibility** — Are there existing APIs, contracts, or interfaces that must continue working? Who are the external consumers? What's the deprecation strategy and timeline?
+- **Rollback and risk** — What does rollback look like if things go wrong? Can feature flags gate the change? What monitoring detects problems? What's the blast radius of a failure?
+
 Don't accept vague answers. If the user says "it should be fast," ask "what latency is acceptable?" If they say "users can manage their settings," ask "which settings, specifically?" Ambiguity in a PRD becomes bugs in implementation.
 
 ### Phase 4: Module Design
@@ -99,6 +125,14 @@ Share this module map with the user and check:
 - Do these modules match their mental model?
 - Are any missing or unnecessary?
 - Which modules should have tests written for them?
+
+#### Constitution Validation
+
+If a project constitution exists in config.json, check each module's design against it after presenting the module map:
+
+- Do any modules violate architectural boundaries? (e.g., a UI module that directly accesses the database when the constitution forbids it)
+- Do quality standards impose constraints on any module? (e.g., "100% test coverage for business logic" means certain modules must be designed for testability)
+- Surface any tensions as explicit trade-off decisions for the user to resolve: "Module X crosses the boundary 'no direct DB access from UI' — should we add a service layer, or is this an approved exception?"
 
 ### Phase 5: Write the PRD
 
@@ -130,6 +164,7 @@ This is specflow's own devil's advocate logic. Apply each lens systematically:
 - Do implementation decisions include rationale, not just choices?
 - Is out of scope explicit about what was discussed but deferred?
 - No GitHub references anywhere in the document
+- If brownfield: are all Migration Strategy sub-sections (Current State, Transition Plan, Backward Compatibility, Rollback Plan) substantive? Is the rollback plan realistic and not hand-wavy?
 
 **Consistency:**
 - Any contradictions between sections (e.g., something listed as out of scope but described in implementation)?
@@ -140,11 +175,18 @@ This is specflow's own devil's advocate logic. Apply each lens systematically:
 - Are the proposed modules realistic given the existing codebase?
 - Any hidden dependencies not captured?
 - Are non-functional requirements achievable with the chosen approach?
+- If brownfield: is the migration strategy realistic given codebase complexity? Does the rollback plan assume reversibility that doesn't actually exist (e.g., assuming data migration can be reversed when it can't)?
 
 **Assumptions:**
 - Where did the author assume instead of asking the user?
 - Any ambiguities that could cause different interpretations by different developers?
 - Could a developer implement this without needing to ask clarifying questions?
+
+**Constitution compliance** (only if a constitution exists in config.json):
+- Do any implementation decisions violate coding principles, architectural boundaries, or quality standards?
+- Is the Constitution Alignment section present and accurate?
+- Are all approved exceptions documented with rationale?
+- Would a developer following this PRD inadvertently break a constitution principle?
 
 Produce structured findings:
 - **Critical Issues** — must fix before presenting (gaps, contradictions, missing requirements)
@@ -184,6 +226,7 @@ Use this exact structure for every PRD:
 ```markdown
 ---
 title: "<PRD Title>"
+type: greenfield | brownfield
 status: Draft
 created: YYYY-MM-DD
 ---
@@ -231,6 +274,46 @@ created: YYYY-MM-DD
 - Technology choices and why
 
 [Do NOT include specific file paths or code snippets -- they become outdated quickly.]
+
+### Constitution Alignment
+
+[Only include this sub-section if a project constitution exists in config.json. Omit entirely if no constitution is defined.]
+
+[Document which constitution principles each implementation decision supports. If any approved exceptions were granted during the interview, document them here with rationale.]
+
+- **Supported principles:** [List principles that the design actively satisfies]
+- **Approved exceptions:** [List any principles that this design intentionally deviates from, with the rationale discussed during the interview. If none, state "None — all principles upheld."]
+
+## Migration Strategy
+
+[Only include this section for brownfield PRDs. Omit entirely for greenfield.]
+
+### Current State
+
+[Detailed description of the existing system being modified. What it does, how it works, who uses it, and what its known limitations are.]
+
+### Transition Plan
+
+[How the migration will be executed:]
+- Deployment strategy (incremental rollout, blue-green, canary, etc.)
+- Co-existence period — how long old and new systems run simultaneously, and how traffic is routed
+- Data migration — what data needs to move, in what order, and how integrity is verified
+- Feature flags — which flags gate the change and how they're managed
+
+### Backward Compatibility
+
+[What must continue working during and after the transition:]
+- Existing API contracts and their consumers
+- External integrations that depend on current behavior
+- Deprecation timeline for old interfaces
+
+### Rollback Plan
+
+[What happens if things go wrong:]
+- Steps to reverse the change
+- Data migration reversal (if applicable)
+- Monitoring and alerting that trigger rollback
+- Rollback window — how long after deployment can we still cleanly roll back
 
 ## Testing Decisions
 

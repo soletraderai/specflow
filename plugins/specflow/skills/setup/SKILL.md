@@ -71,6 +71,32 @@ Steps:
 4. Present findings to the user: "Detected: Next.js, TypeScript, Tailwind, Prisma" (example)
 5. Ask the user to confirm the detected stack is accurate, and if anything is missing
 
+### Phase 3b: Project Constitution (Optional)
+
+Ask the user if they want to define project principles that every PRD should follow. These are non-negotiable constraints — hard rules the team has agreed on. If something needs judgment, that's what the PRD interview handles.
+
+Steps:
+1. Ask: "Would you like to define project principles that every PRD should follow? (You can skip this and add them later by re-running setup.)"
+2. If the user skips, move to Phase 4. Do NOT add a `constitution` key to config.json — downstream skills degrade gracefully when it's absent.
+3. If yes, interview across three categories (max 5 principles per category):
+
+**Coding principles** — rules about how code should be written
+- Examples: "prefer composition over inheritance", "never use `any` in TypeScript", "all functions must have return types"
+- Ask: "What coding principles should every developer follow? (Up to 5, or press enter to skip this category.)"
+
+**Architectural boundaries** — rules about system structure
+- Examples: "no direct DB access from UI components", "all external API calls go through a service layer", "no circular dependencies between modules"
+- Ask: "What architectural boundaries should never be crossed? (Up to 5, or press enter to skip.)"
+
+**Quality standards** — rules about testing, review, and release
+- Examples: "100% test coverage for business logic", "no PR without reviewer", "all public APIs must have integration tests"
+- Ask: "What quality standards must every feature meet? (Up to 5, or press enter to skip.)"
+
+4. After collecting principles, summarize them back to the user grouped by category
+5. Ask the user to confirm, edit, or remove any principles
+6. Store confirmed principles in config.json under the `constitution` key (see Phase 5 schema)
+7. If the user provided principles in some categories but skipped others, only include the non-empty categories
+
 ### Phase 4: Install Specialist Agents
 
 Based on the detected tech stack, recommend and install specialist agents from the `wshobson/agents` marketplace.
@@ -128,6 +154,11 @@ Save to `docs/specflow/config.json` with this structure:
     "configured": true,
     "team": "Engineering"
   },
+  "constitution": {
+    "coding": ["Prefer composition over inheritance", "Never use `any` in TypeScript"],
+    "architecture": ["No direct DB access from UI components", "All external API calls go through a service layer"],
+    "quality": ["100% test coverage for business logic", "No PR without reviewer"]
+  },
   "agents": {
     "marketplace": "wshobson/agents",
     "base": [
@@ -161,6 +192,7 @@ Populate each field based on what was detected and installed in the previous pha
 - `techStack`: categorize detected technologies into languages, frameworks, databases, and infrastructure
 - `linear.configured`: whether Linear MCP was found or set up
 - `linear.team`: the team name from Phase 2 (omit if Linear is not configured)
+- `constitution`: only present if the user defined principles in Phase 3b. Contains up to three sub-keys (`coding`, `architecture`, `quality`), each an array of strings. Omit the entire key if the user skipped constitution setup. Omit individual sub-keys for categories the user left empty.
 - `agents.base`: the 3 base plugins (always the same list)
 - `agents.techStack`: only the tech-stack plugins that were installed
 - `agents.installed`: combined list of all successfully installed plugins (base + tech-stack)
@@ -196,6 +228,7 @@ Print a setup summary covering everything that was done:
 - **Linear MCP**: configured / not configured (with warning if not configured)
 - **Tech stack**: list of detected technologies
 - **Agents installed**: list of installed plugins (with note on how to remove)
+- **Constitution**: {n} coding, {n} architecture, {n} quality principles / skipped
 - **Config saved**: `docs/specflow/config.json`
 - **Prime**: configured with {n} custom files / not configured (auto-detection only)
 

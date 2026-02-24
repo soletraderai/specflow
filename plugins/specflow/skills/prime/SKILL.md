@@ -105,6 +105,7 @@ Print a concise summary of everything that was loaded. Use this exact format:
 Project: {languages} / {frameworks}
 Branch: {branch} | {n} uncommitted changes
 Recent: {latest commit hash + message}
+Constitution: {n} coding, {n} architecture, {n} quality principles
 Specflow: {prd name} ({status}) | {task review name} ({status})
 Files loaded: {n} config, {n} repo-specific
 ```
@@ -114,6 +115,7 @@ Adapt the summary based on what was actually found:
 - If no uncommitted changes: show "clean working tree"
 - If no config.json: show "Project: auto-detected" with whatever was found
 - If prime.files were configured: include the repo-specific count
+- If constitution exists in config.json: show the principle counts per category. If no constitution: omit the Constitution line entirely.
 
 End with: "Context loaded. Ready to work."
 
