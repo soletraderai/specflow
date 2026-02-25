@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.7.0] - 2026-02-25
+
+### Changed
+
+- PRD Phase 2 & Phase 7 agent analysis now delegates to orchestrator (`roles.orchestrator` / `agent-teams:team-lead`) which decides which specialist agents to spawn, instead of the skill template prescribing specific agents
+- PRD Phase 3 error/loading probing sharpened — enumerates per network call and external resource instead of generic "what are the error states?"
+- PRD Phase 3 concurrency probing includes concrete examples (double-submit, rapid toggle)
+- PRD Phase 4 module review scales to feature complexity — inline confirmation for 3 or fewer modules, full review round for larger designs
+
+### Added
+
+- PRD Phase 1 now explicitly supports solution-focused input — extracts the implied problem and confirms with user instead of asking them to reframe
+- PRD Phase 7 completeness check for error/loading states — flags every async interaction missing error or loading UX as a Warning
+
 ## [1.6.0] - 2026-02-25
 
 ### Added
@@ -96,6 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.7.0]: https://github.com/soletraderai/specflow/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/soletraderai/specflow/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/soletraderai/specflow/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/soletraderai/specflow/compare/v1.3.0...v1.4.0

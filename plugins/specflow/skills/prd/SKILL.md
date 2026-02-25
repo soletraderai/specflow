@@ -26,6 +26,8 @@ Ask the user for a long, detailed description of:
 
 Let them talk. Don't interrupt with structure yet -- raw context is valuable. After they've shared their initial thoughts, summarize what you heard back to them to confirm understanding.
 
+**If the user provides solution-focused input** (describing what they want built rather than what problem it solves): accept their input as-is — do not ask them to reframe it as a problem. Instead, extract the implied problem yourself and present it in your summary for confirmation: "It sounds like the underlying problem is [your inference]. Is that right, or is there a different motivation?" This keeps Phase 1 efficient while ensuring the Problem Statement section of the PRD has a genuine problem framing, not a restated solution.
+
 ### Phase 2: Codebase Exploration
 
 Before diving deeper into discussion, explore the repository to ground the conversation in reality:
@@ -37,16 +39,22 @@ Before diving deeper into discussion, explore the repository to ground the conve
 
 Share what you found with the user -- they may not be aware of all the implications.
 
-#### Agent-Assisted Analysis (if available)
+#### Agent-Assisted Analysis
 
 After the initial exploration above, check for specialist agents:
 
 1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured (`agents.roles` exists), spawn relevant agents via the Task tool in parallel (max 3):
-   - Use the `roles.architectureReview` agent to analyze codebase architecture relevant to the PRD — pass it the problem domain from Phase 1 and the key modules/files found during exploration
-   - Use the appropriate tech-stack agent (from `agents.techStack`) to analyze framework-specific patterns relevant to the feature
-3. Collect subagent findings and integrate them into the exploration summary you share with the user
-4. If `docs/specflow/config.json` doesn't exist or has no agents configured, note "Run `/specflow:setup` for enhanced specialist analysis" and continue normally — this is purely additive
+2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent (e.g., `agent-teams:team-lead`) via the Task tool. Pass it:
+   - The problem domain from Phase 1
+   - Key files and patterns found during initial exploration
+   - The full list of available agents from config.json (`agents.roles` and `agents.techStack`)
+   - Task: "Analyze the codebase architecture relevant to this feature. Identify patterns, constraints, and dependencies. Then recommend which specialist agents (from the available list) should be spawned for deeper analysis, and provide a specific prompt for each recommended agent."
+3. The orchestrator will return:
+   - Its own architectural analysis findings (using its Read, Glob, Grep, Bash tools)
+   - Recommendations for which specialist agents to spawn (if any), with specific prompts
+4. Spawn the orchestrator's recommended specialist agents in parallel via the Task tool (max 2, since the orchestrator used 1 of the 3 agent slots)
+5. Collect all findings (orchestrator + specialists) and integrate them into the exploration summary you share with the user
+6. If `docs/specflow/config.json` doesn't exist or has no agents configured, note "Run `/specflow:setup` for enhanced specialist analysis" and continue with manual exploration only
 
 #### Greenfield vs. Brownfield Classification
 
@@ -80,9 +88,9 @@ Key areas to probe:
 
 **Behavior and edge cases**
 - What happens in the happy path?
-- What are the error states? How should each be handled?
+- What are the error states? For every user action that involves a network call or external resource (form submit, API call, iframe/embed load, third-party script), ask: what does the user see when it fails? What does the user see while it loads? Is there retry behavior?
 - What are the boundary conditions?
-- Are there race conditions or concurrency concerns?
+- Are there race conditions or concurrency concerns? (e.g., double-submit on forms, rapid toggle on expand/collapse)
 - What happens if this feature is partially complete?
 
 **Scope boundaries**
@@ -125,6 +133,8 @@ Share this module map with the user and check:
 - Do these modules match their mental model?
 - Are any missing or unnecessary?
 - Which modules should have tests written for them?
+
+For features with 3 or fewer modules where the user's own description maps one-to-one to the proposed modules, present the module map inline with a brief confirmation prompt ("Here are the modules I'll use — does this match your thinking?") rather than requiring a separate interaction round. For larger or more ambiguous module designs, wait for explicit user approval before proceeding to Phase 5.
 
 #### Constitution Validation
 
@@ -169,6 +179,7 @@ This is specflow's own devil's advocate logic. Apply each lens systematically:
 - Do implementation decisions include rationale, not just choices?
 - Is out of scope explicit about what was discussed but deferred?
 - No GitHub references anywhere in the document
+- For every user action that triggers a network call or loads an external resource: are both the error state and the loading state defined in the user stories or implementation decisions? If not, flag as a Warning with the specific interaction that is underspecified.
 - If brownfield: are all Migration Strategy sub-sections (Current State, Transition Plan, Backward Compatibility, Rollback Plan) substantive? Is the rollback plan realistic and not hand-wavy?
 
 **Consistency:**
@@ -200,14 +211,17 @@ Produce structured findings:
 
 Address all critical issues immediately by editing the saved PRD file.
 
-#### Layer 2: Agent-Assisted Review (if available)
+#### Layer 2: Agent-Assisted Review
 
 1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured, spawn review agents via the Task tool for supplementary perspectives:
-   - Use `roles.architectureReview` agent to review architectural decisions in the PRD
-   - Pass the full PRD content and ask for architecture-focused feedback
-3. Integrate any agent findings into the review — these supplement the built-in framework but do not replace it
-4. If no agents are available, skip this layer entirely
+2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent via the Task tool. This is a separate pass from Phase 2 — the Phase 2 orchestrator analyzed the codebase, this one reviews the PRD document itself. Pass it:
+   - The full PRD content
+   - The available agents from config.json
+   - Task: "Review this PRD for architectural soundness. Are the proposed modules feasible? Are there risks or contradictions not addressed? Recommend which specialist agents (from the available list) should provide additional review perspectives, and provide a specific prompt for each."
+3. The orchestrator will return its own review findings and may recommend specialist agents for additional perspectives
+4. Spawn any recommended specialist agents and collect their findings
+5. Integrate all agent findings into the review — these supplement the built-in framework but do not replace it
+6. If `docs/specflow/config.json` doesn't exist or has no agents configured, skip this layer
 
 #### Layer 3: Format & Naming Checklist
 
