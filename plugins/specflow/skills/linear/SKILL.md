@@ -221,7 +221,7 @@ Keep a running export map: `{ reviewId -> { linearId, linearUrl } }`
 
 ## Estimate
 
-**[X] hours** of development effort
+**[X]h** of development effort
 
 ## User Stories Addressed
 
@@ -272,14 +272,14 @@ After everything is complete, print a summary.
 
 ```
 Project: [name]
-Total: [sum] hours | Duration: ~[X] weeks at 50h/week | Target: [date]
+Total: [sum]h | Duration: ~[X] weeks at 50h/week | Target: [date]
 
 | Linear ID | Title | Estimate | Blocked By | Priority | Status |
 |-----------|-------|----------|------------|----------|--------|
-| CXP-42 | [title] | 12h | None | High | Todo |
-| CXP-43 | [title] | 6h | CXP-42 | Normal | Backlog |
+| CXP-42 | [title] | 0.75h | None | High | Todo |
+| CXP-43 | [title] | 0.5h | CXP-42 | Normal | Backlog |
 
-Critical path: CXP-42 -> CXP-44 -> CXP-45 ([X] hours)
+Critical path: CXP-42 -> CXP-44 -> CXP-45 ([X]h)
 Parallel work available after CXP-42: CXP-43 and CXP-44 can run simultaneously
 
 Review document updated: docs/specflow/task/[filename].md
@@ -296,8 +296,8 @@ Re-export complete: [N] updated | [M] created | [K] orphaned (removed from revie
 
 | Linear ID | Title | Action | Estimate | Status |
 |-----------|-------|--------|----------|--------|
-| CXP-42 | [title] | Updated | 12h | Todo |
-| CXP-45 | [title] | Created | 4h | Backlog |
+| CXP-42 | [title] | Updated | 0.75h | Todo |
+| CXP-45 | [title] | Created | 0.5h | Backlog |
 
 Orphaned issues (removed from review — clean up manually):
 - CXP-44: [title]
