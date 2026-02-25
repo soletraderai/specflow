@@ -26,6 +26,8 @@ Look for PRDs in `docs/specflow/prd/` by globbing for `*.md`. If multiple PRDs e
 
 If the user provides a PRD filename or path directly, use that.
 
+After identifying the PRD, update its YAML frontmatter to change `status: Draft` to `status: Accepted`. Generating tasks from a PRD is the acceptance signal — we only create tasks for accepted PRDs.
+
 ### 2. Gather Project Parameters
 
 Before exploring the codebase, confirm minimal project settings with the user:
@@ -59,16 +61,22 @@ Read the key modules and integration layers referenced in the PRD. Identify:
 
 This grounds the breakdown in reality rather than abstract planning. Having concrete file paths lets the developer jump straight into the relevant code.
 
-#### Agent-Assisted Analysis (if available)
+#### Agent-Assisted Analysis
 
 After the initial exploration above, check for specialist agents:
 
 1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured (`agents.roles` exists), spawn relevant agents via the Task tool in parallel (max 3):
-   - Use the `roles.architectureReview` agent to identify integration points and architectural patterns that inform slice boundaries
-   - Use the appropriate tech-stack agent (from `agents.techStack`) for framework-specific implementation insights
-3. Agent findings may reveal: additional integration points not obvious from manual exploration, technical risks warranting spike issues, better approaches based on framework-specific knowledge
-4. If `docs/specflow/config.json` doesn't exist or has no agents configured, continue normally — this is purely additive
+2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent (e.g., `agent-teams:team-lead`) via the Task tool. Pass it:
+   - The PRD content and proposed vertical slices (if drafted)
+   - Key files and integration layers found during initial exploration
+   - The full list of available agents from config.json (`agents.roles` and `agents.techStack`)
+   - Task: "Analyze the codebase architecture relevant to this task breakdown. Identify integration points, architectural patterns that inform slice boundaries, and technical risks. Then recommend which specialist agents (from the available list) should be spawned for deeper analysis, and provide a specific prompt for each recommended agent."
+3. The orchestrator will return:
+   - Its own findings on integration points, patterns, and risks (using its Read, Glob, Grep, Bash tools)
+   - Recommendations for which specialist agents to spawn (if any), with specific prompts
+4. Spawn the orchestrator's recommended specialist agents in parallel via the Task tool (max 2, since the orchestrator used 1 of the 3 agent slots)
+5. Agent findings may reveal: additional integration points not obvious from manual exploration, technical risks warranting spike issues, better approaches based on framework-specific knowledge
+6. If `docs/specflow/config.json` doesn't exist or has no agents configured, continue with manual exploration only
 
 ### 4. Draft Vertical Slices
 
@@ -80,6 +88,7 @@ Break the PRD into tracer bullet issues. Each issue is a thin vertical slice tha
 - Prefer many thin slices over few thick ones
 - The first slice should be the simplest possible end-to-end path (the "hello world" tracer bullet)
 - Later slices add breadth: edge cases, additional user stories, polish
+- Expect 15-40 tasks per PRD. A higher task count is correct behavior with 1-hour caps, not a sign of over-splitting
 - Only include tasks that directly implement the PRD -- no generic infrastructure, no "nice to haves" that aren't in the PRD, no tasks for things that already exist
 - Each slice must document the **current state** (what exists now) and **expected state** (what should exist after) in plain, behavior-focused language -- describe what the user sees and experiences, not code internals. A senior developer will oversee implementation, so these sections orient them on the "what" and "why", not the "how". Save file paths, interface names, and code-level details for the **Technical Implementation** and **Files to Modify/Create** sections.
 - The **technical implementation** section is advisory guidance only -- a senior developer may choose a different approach
@@ -91,11 +100,14 @@ Break the PRD into tracer bullet issues. Each issue is a thin vertical slice tha
 
 **Estimating each slice:**
 
-For each vertical slice, estimate effort in hours:
-- Trivial (config change, copy update): 1-2 hours
-- Small (single component, straightforward logic): 3-5 hours
-- Medium (multiple components, some integration): 6-8 hours
-- **Maximum 8 hours per task.** Any slice over 8h must be split. 8h = one day of work.
+For each vertical slice, estimate effort in hours using 15-minute increments:
+- Trivial (config tweak, copy change, single-line fix): **0.25h** (15 min)
+- Small (one component, one test, minimal integration): **0.5h** (30 min)
+- Medium (a few touch-points, some integration logic): **0.75h** (45 min)
+- Full (multiple touch-points across layers, end-to-end wiring): **1h** (60 min)
+- **Maximum 1 hour per task.** Any slice over 1h must be split further.
+
+With a 1-hour cap, a single user-facing behavior will often span multiple tasks in a dependency chain. This is expected and intentional — each task is a reviewable, completable unit of work. Don't try to cram related changes into one task just because they serve the same feature; let the dependency graph connect them.
 
 The sum of all estimates determines the project duration. After estimating all slices:
 - `total_hours = sum of all estimates`
@@ -133,10 +145,10 @@ status: Pending Review
 
 | ID | Title | Hours | Blocked By | Priority | Label |
 |----|-------|-------|------------|----------|-------|
-| [PRE]-001 | [title] | [X]h | -- | High | Feature |
-| [PRE]-002 | [title] | [X]h | [PRE]-001 | Normal | Feature |
-| [PRE]-003 | [title] | [X]h | [PRE]-001 | Normal | Feature |
-| [PRE]-004 | [title] | [X]h | [PRE]-002, [PRE]-003 | Normal | Feature |
+| [PRE]-001 | [title] | 0.5h | -- | High | Feature |
+| [PRE]-002 | [title] | 0.75h | [PRE]-001 | Normal | Feature |
+| [PRE]-003 | [title] | 1h | [PRE]-001 | Normal | Feature |
+| [PRE]-004 | [title] | 0.5h | [PRE]-002, [PRE]-003 | Normal | Feature |
 
 **Total: [N] tasks | [sum]h estimated | ~[duration] weeks at 50h/week**
 **Target date: [calculated date]**
@@ -148,7 +160,7 @@ status: Pending Review
 
 ### [PRE]-001: [Title]
 
-- **Estimate:** [X] hours
+- **Estimate:** [X]h
 - **Priority:** High
 - **Label:** Feature
 - **Blocked by:** --
@@ -226,7 +238,7 @@ Apply each lens systematically:
 
 **Estimate accuracy:**
 - Do estimates align with the complexity described?
-- Are any tasks over 8 hours? (must split)
+- Are any tasks over 1 hour? (must split)
 - Are dependencies captured correctly in the `Blocked by` column?
 
 **Coverage:**
@@ -246,22 +258,27 @@ Apply each lens systematically:
 - Do quality standards impose constraints on any slice? (e.g., test coverage requirements mean every slice must include tests)
 
 Produce structured findings:
-- **Critical Issues** — must fix (horizontal slices, >8h tasks, missing PRD coverage, circular deps)
+- **Critical Issues** — must fix (horizontal slices, >1h tasks, missing PRD coverage, circular deps)
 - **Warnings** — should fix (loose estimates, unnecessary blocking)
 - **Observations** — worth noting
 
-#### Agent-Assisted Review (if available)
+#### Agent-Assisted Review
 
 1. Read `docs/specflow/config.json` (if it exists)
-2. If review agents are configured, spawn for supplementary perspectives via the Task tool:
-   - Use `roles.architectureReview` agent to review the task breakdown from an architecture perspective
-3. Integrate findings — these supplement the built-in framework but do not replace it
+2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent via the Task tool. This is a separate pass from Step 3 — the Step 3 orchestrator analyzed the codebase for slice boundaries, this one reviews the task breakdown document itself. Pass it:
+   - The full task review document content
+   - The available agents from config.json
+   - Task: "Review this task breakdown for slice quality. Are slices truly vertical? Are estimates realistic? Are there missing tasks for PRD requirements? Recommend which specialist agents (from the available list) should provide additional review perspectives, and provide a specific prompt for each."
+3. The orchestrator will return its own review findings and may recommend specialist agents for additional perspectives
+4. Spawn any recommended specialist agents and collect their findings
+5. Integrate all agent findings into the review — these supplement the built-in framework but do not replace it
+6. If `docs/specflow/config.json` doesn't exist or has no agents configured, skip this step
 
 #### Apply Corrections
 
 Address all critical issues found:
 - Fix horizontal slices by restructuring into vertical ones
-- Split any tasks over 8 hours
+- Split any tasks over 1 hour
 - Add missing tasks for uncovered PRD requirements
 - Correct dependency issues
 - Update the saved review document with all corrections (rewrite the file)
@@ -282,7 +299,7 @@ Quick reference:
 
 Review the document and let me know:
 - Any task IDs to REMOVE (e.g., "remove PIU-003, PIU-007")
-- Any tasks to ADJUST (e.g., "PIU-002 should be 4h not 8h")
+- Any tasks to ADJUST (e.g., "PIU-002 should be 0.5h not 1h")
 - Any tasks to SPLIT or MERGE
 - Any missing tasks to ADD
 - Or "approved" to export to Linear
@@ -294,7 +311,7 @@ The user may respond in several ways:
 
 - **"Remove PIU-003, PIU-007"** -- Delete those tasks from the document, renumber remaining tasks sequentially ([PRE]-001, [PRE]-002, [PRE]-003...), update all `Blocked by` references to use the new IDs, recalculate totals. Save the updated document and present the new Quick Reference table.
 
-- **"PIU-002 should be 4h"** -- Update the estimate in both the table and the detail section. Recalculate totals. Save and show updated table.
+- **"PIU-002 should be 0.5h"** -- Update the estimate in both the table and the detail section. Recalculate totals. Save and show updated table.
 
 - **"Split PIU-004 into two tasks"** -- Ask what the split should be, create two new tasks, remove the original, renumber, save and show.
 
@@ -414,7 +431,7 @@ For each approved task from the review document, use `mcp__plugin_linear_linear_
 
 ## Estimate
 
-**[X] hours** of development effort
+**[X]h** of development effort
 
 ## User Stories Addressed
 
@@ -447,16 +464,18 @@ After creating all issues, print a summary table:
 
 ```
 Project: [name] ([Linear project URL])
-Total: [sum] hours | Duration: ~[X] weeks at 50h/week | Target: [date]
+Total: [sum]h | Duration: ~[X] weeks at 50h/week | Target: [date]
 
 | Linear ID | Title | Estimate | Blocked By | Priority | Status |
 |-----------|-------|----------|------------|----------|--------|
-| CXP-42 | Basic widget creation | 8h | None | High | Todo |
-| CXP-43 | Widget listing view | 6h | CXP-42 | Normal | Backlog |
-| CXP-44 | Widget editing | 12h | CXP-42 | Normal | Backlog |
-| CXP-45 | Error handling | 5h | CXP-43, CXP-44 | Normal | Backlog |
+| CXP-42 | Widget DB schema + basic creation API | 0.5h | None | High | Todo |
+| CXP-43 | Widget creation UI form | 0.75h | CXP-42 | Normal | Backlog |
+| CXP-44 | Widget listing API endpoint | 0.5h | CXP-42 | Normal | Backlog |
+| CXP-45 | Widget listing UI view | 0.75h | CXP-44 | Normal | Backlog |
+| CXP-46 | Widget inline editing | 1h | CXP-43 | Normal | Backlog |
+| CXP-47 | Error handling + loading states | 0.5h | CXP-45, CXP-46 | Normal | Backlog |
 
-Critical path: CXP-42 -> CXP-44 -> CXP-45 (25 hours)
+Critical path: CXP-42 -> CXP-43 -> CXP-46 -> CXP-47 (2.75h)
 Parallel work available after CXP-42: CXP-43 and CXP-44 can run simultaneously
 ```
 
