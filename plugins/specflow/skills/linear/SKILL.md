@@ -145,14 +145,13 @@ For each task, use `mcp__plugin_linear_linear__create_issue` with:
 - **description**: Populated from the issue template below
 - **priority**: Per-task priority mapped to number (High=2, Normal=3, Low=4)
 - **labels**: `[label]` from the task (typically "Feature")
-- **estimate**: Hour estimate as a number
 - **state**: "Todo" if the task has no blockers; "Backlog" if it has any blockers
 - **blockedBy**: Array of Linear issue identifiers, mapped from review IDs using the export map built so far
 
 **Re-export (export map exists):**
 
 For each task in the review, check the export map:
-- **Found in map** → use `mcp__plugin_linear_linear__update_issue` with: `id` (Linear ID from map), `title`, `description`, `priority`, `estimate`, `state`, `blockedBy`, `labels`, `project`
+- **Found in map** → use `mcp__plugin_linear_linear__update_issue` with: `id` (Linear ID from map), `title`, `description`, `priority`, `state`, `blockedBy`, `labels`, `project`
 - **Not in map** → use `mcp__plugin_linear_linear__create_issue` (same params as first export)
 
 After processing all tasks, check for **orphaned tasks** -- entries in the export map whose review IDs no longer appear in the review document. Warn the user about these but do NOT auto-delete them from Linear:
@@ -218,10 +217,6 @@ Keep a running export map: `{ reviewId -> { linearId, linearUrl } }`
 ## Definition of Done
 
 [Definition of Done from the task review, verbatim]
-
-## Estimate
-
-**[X]h** of development effort
 
 ## User Stories Addressed
 
@@ -316,7 +311,7 @@ Note which issues can be worked on in parallel and identify the critical path (l
 - Dependencies use Linear's native `blockedBy`/`blocks` relationships so they appear in the issue dependency graph
 - Every issue is linked to the project so they appear in the project view
 - Issues with unresolved blockers get status **"Backlog"**; unblocked issues get **"Todo"**
-- Hour estimates go in the `estimate` field on each issue
+- Do NOT send hour estimates to Linear (no `estimate` field on issues, no estimate section in descriptions) -- estimates stay in the review document for admin visibility only
 - Both "Medium" and "Normal" map to priority 3 -- the frontmatter may use "Medium" while task details use "Normal"
 - The issue template content is taken verbatim from the review document -- do not rewrite or summarize it during export
 - Do **NOT** modify the parent PRD document
