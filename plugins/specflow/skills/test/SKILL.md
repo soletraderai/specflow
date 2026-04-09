@@ -467,13 +467,6 @@ If Playwright produced screenshots:
       - **url**: The local file path (or upload URL if Linear requires remote URLs)
    b. Reference the attachment in the comment
 
-#### 6d. Slack Notification (Optional)
-
-If Slack integration is configured in the project (check `config.json` for Slack settings):
-
-1. Attempt to send a notification with the verdict summary
-2. If Slack is not configured or the notification fails, skip silently — do not halt or warn the user
-
 ---
 
 ### Phase 7: Verification Tracking
