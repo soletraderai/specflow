@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.9.2] - 2026-04-09
+
+### Added
+
+- Test skill Phase 6d: automatically applies QA labels to Linear issues after verification
+  - PASS → `QA Pass`, FAIL → `QA Fail`, NEEDS REVIEW → `QA Need Review`
+  - Replaces previous QA labels on re-verification while preserving non-QA labels
+
 ## [1.9.1] - 2026-04-09
 
 ### Changed
@@ -151,6 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.9.2]: https://github.com/soletraderai/specflow/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/soletraderai/specflow/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/soletraderai/specflow/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/soletraderai/specflow/compare/v1.8.0...v1.8.1

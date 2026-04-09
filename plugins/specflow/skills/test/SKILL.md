@@ -544,6 +544,28 @@ If Playwright produced screenshots:
       - **url**: The local file path (or upload URL if Linear requires remote URLs)
    b. Reference the attachment in the comment
 
+#### 6d. Apply QA Label to Linear Issue
+
+After posting the comment, apply the appropriate QA label to the Linear issue using `mcp__plugin_linear_linear__save_issue`. The label group is **Specflow QA** with three child labels:
+
+| Verdict | Label to Apply |
+|---------|---------------|
+| PASS | `QA Pass` |
+| FAIL | `QA Fail` |
+| NEEDS REVIEW | `QA Need Review` |
+
+Steps:
+1. Read the issue's existing labels from the Linear issue data (fetched in Phase 2a)
+2. Build the updated labels array: keep all existing labels, remove any previous QA labels (`QA Pass`, `QA Fail`, `QA Need Review`), and add the new verdict label
+3. Call `mcp__plugin_linear_linear__save_issue` with:
+   - **id**: The Linear issue identifier
+   - **labels**: The updated labels array (existing labels + new QA label)
+
+This ensures:
+- Previous QA labels are replaced (e.g., a re-verified task moves from `QA Fail` to `QA Pass`)
+- Existing non-QA labels (e.g., `Feature`, `Bug`) are preserved
+- The team can filter Done issues by QA status at a glance
+
 ---
 
 ### Phase 7: Verification Tracking
