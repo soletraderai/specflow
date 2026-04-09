@@ -23,14 +23,83 @@ specflow:prd → specflow:task → specflow:linear → [dev builds] → [marks D
 
 ## Process
 
+### Phase 0: System Readiness Check
+
+Before doing anything else, check all prerequisites and present a clear status summary. This runs once at the start — not per-task.
+
+#### 0a. Check All Prerequisites
+
+Run these checks in parallel:
+
+1. **Linear MCP** — call `mcp__plugin_linear_linear__list_teams` to verify the Linear MCP is accessible. If this fails, halt: "Linear MCP is not configured. Run `/specflow:setup` to set it up."
+2. **Specflow config** — read `docs/specflow/config.json` for `linear.team`. Note whether it exists.
+3. **Task review files** — glob for `docs/specflow/task/*-tasks-*.md`. If none exist, halt: "No task review files found. Run `/specflow:task` first."
+4. **Export maps** — check if any task review files contain an `## Export Map` section. Note the count.
+5. **Playwright** — run `npx playwright --version 2>/dev/null` to check if Playwright is installed. Note version or "not installed".
+6. **Environment variables** — read the `.env` file directly and parse `KEY=VALUE` lines. Check for `SPECFLOW_TEST_BASE_URL`, `SPECFLOW_TEST_EMAIL`, `SPECFLOW_TEST_PASSWORD`. Note which are present and which are missing.
+7. **Pages config** — check if `docs/specflow/pages.json` exists. Note present or missing.
+
+#### 0b. Present Readiness Summary
+
+Present the results as a status table before proceeding:
+
+```
+System Readiness Check:
+
+| Requirement                  | Status                          |
+|------------------------------|---------------------------------|
+| Linear MCP                   | Connected                       |
+| Linear team                  | Engineering (from config.json)  |
+| Task review files            | 3 found (2 with export maps)    |
+| Playwright                   | Installed (v1.59.1)             |
+| SPECFLOW_TEST_BASE_URL       | Set (http://localhost:3000)     |
+| SPECFLOW_TEST_EMAIL          | Set                             |
+| SPECFLOW_TEST_PASSWORD       | Set                             |
+| pages.json                   | Present (4 pages configured)    |
+
+Verification modes available:
+- Code review: YES
+- Visual verification (Playwright): YES
+```
+
+If any Playwright prerequisites are missing, clearly state the impact:
+
+```
+| SPECFLOW_TEST_BASE_URL       | MISSING                         |
+| SPECFLOW_TEST_EMAIL          | MISSING                         |
+| SPECFLOW_TEST_PASSWORD       | MISSING                         |
+| pages.json                   | MISSING                         |
+
+Verification modes available:
+- Code review: YES
+- Visual verification (Playwright): NO — missing .env credentials and pages.json
+
+To enable visual verification, add to .env:
+  SPECFLOW_TEST_BASE_URL=http://localhost:3000
+  SPECFLOW_TEST_EMAIL=your-test-email
+  SPECFLOW_TEST_PASSWORD=your-test-password
+And create docs/specflow/pages.json (see Phase 2d for schema).
+```
+
+#### 0c. Confirm or Abort
+
+After presenting the readiness summary, ask:
+
+- If everything is available: "All systems ready. Proceed with verification?"
+- If Playwright prerequisites are missing: "Visual verification is unavailable — verification will use code review only. Proceed, or set up the missing prerequisites first?"
+- If critical prerequisites are missing (no Linear, no task reviews): halt with a clear message about what needs to be done first.
+
+Wait for the user to confirm before proceeding to Phase 1.
+
+---
+
 ### Phase 1: Task Selection
 
 Identify completed Linear tasks that need verification.
 
 #### 1a. Load Configuration
 
-1. Read `docs/specflow/config.json` for the Linear team name (at `linear.team` in the JSON structure)
-2. If `config.json` doesn't exist, or `linear.team` is missing or `null`, ask the user: "Which Linear team should I check for completed tasks?"
+Use the team name already resolved in Phase 0. If `config.json` didn't have `linear.team`, ask the user: "Which Linear team should I check for completed tasks?"
 
 #### 1b. Fetch Done Tasks from Linear
 
@@ -129,31 +198,39 @@ Using the reverse lookup from Phase 1c, locate the task in its review document:
 2. Read the parent PRD to get broader context: user stories, implementation decisions, scope boundaries
 3. This context helps interpret ambiguous acceptance criteria
 
-#### 2d. Load Frontend Configuration
+#### 2d. Resolve Frontend Verification Mode
 
-1. Check if `docs/specflow/pages.json` exists — if so, read it. Expected structure:
-   ```json
-   {
-     "auth": {
-       "loginPath": "/login",
-       "emailSelector": "#email",
-       "passwordSelector": "#password",
-       "submitSelector": "button[type=submit]"
-     },
-     "pages": {
-       "feature-area-name": {
-         "path": "/dashboard/widgets",
-         "description": "Widget management page"
-       }
-     }
-   }
-   ```
-   If `pages.json` doesn't exist or doesn't have a matching page entry for the feature area, skip Playwright.
-2. Read the `.env` file directly (do NOT use `dotenv` or any package — just read the file and parse `KEY=VALUE` lines). Look for:
-   - `SPECFLOW_TEST_BASE_URL` — the base URL for Playwright testing (e.g., `http://localhost:3000`)
-   - `SPECFLOW_TEST_EMAIL` — login email for authenticated pages
-   - `SPECFLOW_TEST_PASSWORD` — login password for authenticated pages
-3. Note which frontend verification capabilities are available based on what was found
+Use the results from Phase 0's readiness check — do NOT re-read `.env` or re-check Playwright.
+
+1. If Phase 0 confirmed Playwright is available (all prerequisites met):
+   - Read `docs/specflow/pages.json` and find the page entry matching this task's feature area (match by layer name, component path, or route keywords)
+   - If a matching page entry is found: Playwright verification is available for this task
+   - If no matching page entry: fall back to code review only for this task (note: "No pages.json entry matches this feature area")
+2. If Phase 0 showed Playwright as unavailable: code review only — this was already communicated to the user
+
+**`pages.json` expected structure** (referenced by Phase 0 and used here):
+
+```json
+{
+  "auth": {
+    "loginPath": "/login",
+    "emailSelector": "#email",
+    "passwordSelector": "#password",
+    "submitSelector": "button[type=submit]"
+  },
+  "pages": {
+    "feature-area-name": {
+      "path": "/dashboard/widgets",
+      "description": "Widget management page"
+    }
+  }
+}
+```
+
+**`.env` variables** (checked once in Phase 0, not per-task):
+- `SPECFLOW_TEST_BASE_URL` — the base URL for Playwright testing (e.g., `http://localhost:3000`)
+- `SPECFLOW_TEST_EMAIL` — login email for authenticated pages
+- `SPECFLOW_TEST_PASSWORD` — login password for authenticated pages
 
 #### 2e. Present Verification Plan
 
