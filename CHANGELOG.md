@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.9.1] - 2026-04-09
+
+### Changed
+
+- Test skill now runs a system readiness check (Phase 0) before starting verification — checks Linear MCP, config, task reviews, Playwright, .env credentials, and pages.json upfront with a clear status table
+- Test skill Phase 2d references Phase 0 results instead of re-checking prerequisites per task
+- Removed Slack notification from test skill — Linear's native notifications handle this better
+- Added release versioning rule to CLAUDE.md
+
 ## [1.9.0] - 2026-04-09
 
 ### Added
@@ -142,6 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.9.1]: https://github.com/soletraderai/specflow/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/soletraderai/specflow/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/soletraderai/specflow/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/soletraderai/specflow/compare/v1.7.0...v1.8.0
