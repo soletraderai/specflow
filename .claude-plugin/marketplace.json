@@ -6,15 +6,15 @@
     "email": "hello@soletrader.ai"
   },
   "metadata": {
-    "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
-    "version": "1.9.0"
+    "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear, and verify completed work.",
+    "version": "1.9.2"
   },
   "plugins": [
     {
       "name": "specflow",
       "source": "./plugins/specflow",
-      "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear.",
-      "version": "1.9.0",
+      "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear, and verify completed work.",
+      "version": "1.9.2",
       "author": {
         "name": "Sole Trader AI Pty Ltd",
         "url": "https://github.com/soletraderai",
