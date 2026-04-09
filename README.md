@@ -1,6 +1,6 @@
 # Specflow
 
-A Claude Code plugin for structured product requirements workflows — create PRDs, break them into tasks, and export to Linear.
+A Claude Code plugin for structured product requirements workflows — create PRDs, break them into tasks, export to Linear, and verify completed work.
 
 ## Overview
 
@@ -10,6 +10,7 @@ Specflow guides you through a complete product planning pipeline:
 2. **Create a PRD** — Structured discovery interview that produces a comprehensive Product Requirements Document
 3. **Break into tasks** — Decompose the PRD into vertical-slice issues with dependency tracking, time estimates, and acceptance criteria
 4. **Export to Linear** — Push approved tasks to Linear as a project with properly sequenced issues and blocker relationships
+5. **Verify completed tasks** — QA-check Done tasks against their acceptance criteria, QA scenarios, and definition of done using code review and Playwright browser testing
 
 ## Skills
 
@@ -20,6 +21,7 @@ Specflow guides you through a complete product planning pipeline:
 | `/specflow:prd` | Create a structured PRD through guided discovery |
 | `/specflow:task` | Break a PRD into actionable tasks organized as vertical slices |
 | `/specflow:linear` | Export an approved task review to Linear as a project with issues |
+| `/specflow:test` | Verify completed Linear tasks against acceptance criteria, QA scenarios, and definition of done |
 
 ## Prerequisites
 
@@ -74,13 +76,23 @@ Reads the PRD, explores relevant code, and generates a task review document in `
 
 Takes the approved task review and creates a Linear project with issues in dependency order, complete with `blockedBy` relationships and hour estimates.
 
+### 5. Verify completed tasks
+
+```
+/specflow:test
+```
+
+After developers mark tasks as Done in Linear, specflow traces them back to their task review documents and runs multi-layer verification: schema checks, code review, and Playwright browser testing. Posts a structured QA report to each Linear issue with a PASS/FAIL/NEEDS REVIEW verdict.
+
 ## How It Works
 
 Specflow uses a file-based workflow:
 
 ```
 docs/specflow/prd/       → PRD documents (Markdown with YAML frontmatter)
-docs/specflow/task/       → Task review documents (parsed during Linear export)
+docs/specflow/task/      → Task review documents (parsed during Linear export)
+docs/specflow/test/      → Verification logs and QA reports
+docs/specflow/test/assets/ → Playwright screenshots
 ```
 
 Each step reads from the previous step's output, so you always have a reviewable artifact before anything is pushed to Linear.

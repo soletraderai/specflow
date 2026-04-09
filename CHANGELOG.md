@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.9.0] - 2026-04-09
+
+### Added
+
+- New `/specflow:test` skill for QA verification of completed Linear tasks
+  - Traces Done tasks back to their task review documents via Export Map reverse lookup
+  - Multi-layer verification: Database/Schema (Prisma), Backend (API), Frontend (code + Playwright screenshots), Mobile (code review), Tests
+  - Executes Given/When/Then QA scenarios from task reviews against the codebase
+  - Mandatory devil's advocate self-review challenges every PASS and FAIL before finalizing
+  - Posts structured QA report to Linear with verdict, evidence, and screenshots
+  - Playwright visual verification with automatic global install and graceful degradation
+  - Verification tracking log in `docs/specflow/test/` prevents re-verifying passed tasks
+  - Batch mode processes multiple tasks sequentially with per-task progress reporting
+
 ## [1.8.1] - 2026-02-26
 
 ### Changed
@@ -128,6 +142,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Namespaced skill names with `specflow:` prefix for clearer autocomplete
 - Marketplace structure with plugin subdirectory
 
+[1.9.0]: https://github.com/soletraderai/specflow/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/soletraderai/specflow/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/soletraderai/specflow/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/soletraderai/specflow/compare/v1.6.0...v1.7.0
