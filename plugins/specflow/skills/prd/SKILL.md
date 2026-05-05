@@ -1,363 +1,508 @@
 ---
-name: "specflow:prd"
-description: >
-  Create a structured Product Requirements Document (PRD) through guided discovery.
-  Use this skill whenever the user wants to create a PRD, write product requirements,
-  plan a new feature with formal documentation, or says things like "let's write a PRD",
-  "I need requirements for...", "create a product spec", "document this feature",
-  or runs /specflow:prd. Also trigger when a user describes a problem and wants to
-  turn it into a formal plan before implementation.
+name: specflow:prd
+description: User-facing entry point for PRD creation. Five-phase orchestrator — A preamble + goal confirmation, B grilling (invokes /grill), C PRD body synthesis, D HTML render (invokes specflow:render), E Gate 2 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature.
+status: v2-enhancement
+phase: 1
+requires:
+  - docs/specflow/admin/profiles.json
+  - docs/specflow/admin/CONTEXT.md
+  - docs/specflow/admin/decision-log.md
+  - docs/specflow/admin/rules/non-negotiable.md
+  - docs/specflow/admin/rules/guidelines.md
+  - docs/specflow/admin/environment.json
+produces:
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-interview.md
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.html
+  - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest.md
+  - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/findings/
+eval: Goal confirmed before grilling; interview signed off; PRD body has Vision (traces to Goal), every requirement traces to a Resolved line AND serves the goal, every AC is binary; HTML renders with working interview link; Gate 2 manifest closes with Orchestrator sign-off entry.
 ---
 
-# PRD Creator
+# specflow:prd
 
-Guide the user through a structured discovery process to produce a comprehensive PRD, then save it to the `docs/specflow/prd/` directory for review.
+You are the user-facing entry point for PRD creation. You own the full flow from "I want to build X" to "PRD reviewed and signed off."
 
-The goal is to deeply understand the problem before writing anything. A good PRD eliminates ambiguity so that implementation can proceed without constant back-and-forth. The interview phase is the most important part -- rush it and the PRD will have gaps that cost far more to fix later.
+This is a **5-phase orchestrator**. You delegate the grilling to `/grill` and the rendering to `specflow:render`; both run as forked sub-skills per the orchestrator pattern (see `templates/orchestrator-pattern.md`). Your parent context never accumulates the sub-skills' raw work.
 
-## Process
+---
 
-### Phase 1: Problem Discovery
+## Inputs
 
-Ask the user for a long, detailed description of:
-- The problem they want to solve
-- Who is affected and how
-- Any ideas they already have for solutions
+The user invokes you with one of:
+- An overview of what they want to achieve (new feature) — *"create a PRD for X"*, *"/specflow:prd"*, or `specflow:prd {free-form overview}`.
+- A feature ID for an in-flight feature — `specflow:prd {NNN}` or `specflow:prd {NNN-slug}`.
 
-Let them talk. Don't interrupt with structure yet -- raw context is valuable. After they've shared their initial thoughts, summarize what you heard back to them to confirm understanding.
+**Resume logic.** Before starting Phase A, detect the situation:
 
-**If the user provides solution-focused input** (describing what they want built rather than what problem it solves): accept their input as-is — do not ask them to reframe it as a problem. Instead, extract the implied problem yourself and present it in your summary for confirmation: "It sounds like the underlying problem is [your inference]. Is that right, or is there a different motivation?" This keeps Phase 1 efficient while ensuring the Problem Statement section of the PRD has a genuine problem framing, not a restated solution.
+1. If a feature ID was provided, locate `docs/specflow/features/NNN-{slug}/` and read its `NNN-{slug}-interview.md` (Glob to find the slug if only NNN given).
+2. Determine the resume point:
+   - **No feature folder for the given ID, or no ID given** → start Phase A (new feature).
+   - **Interview exists, no Goal section confirmed** → resume Phase A (continue goal articulation).
+   - **Goal confirmed, no rounds or rounds without sign-off** → resume Phase B (continue grilling).
+   - **Interview signed off, no PRD body** → skip to Phase C.
+   - **PRD body exists, no HTML or HTML stale** → skip to Phase D.
+   - **PRD + HTML exist, no Gate 2 manifest** → skip to Phase E.
+   - **Everything complete** → ask the user: *"This feature appears complete (interview signed off, PRD synthesised, HTML rendered, Gate 2 closed). What do you want to do? (1) re-render only, (2) re-run Gate 2, (3) `specflow:scope-change` to revise."*
 
-### Phase 2: Codebase Exploration
+Tell the user explicitly which phase you're starting at.
 
-Before diving deeper into discussion, explore the repository to ground the conversation in reality:
+---
 
-- Verify any assertions the user made about current behavior
-- Understand the relevant parts of the architecture
-- Identify existing patterns that the solution should follow
-- Note any constraints or dependencies that might affect the design
+## Phase A — Preamble + Goal confirmation
 
-Share what you found with the user -- they may not be aware of all the implications.
+### A.1 Allocate feature ID and slug
 
-#### Agent-Assisted Analysis
+If new feature:
+1. List `docs/specflow/features/` (Glob `features/*/`).
+2. Find the highest existing `NNN` (parse the prefix of each subfolder name).
+3. Increment by 1, zero-pad to 3 digits → this is the new `NNN`.
+4. Propose a slug based on the user's overview: kebab-case, 2-4 words, descriptive, no filler. Example: overview *"add notifications popover to the header"* → slug `notifications-popover`.
+5. Present: *"I'll create feature `NNN-{slug}`. Confirm or edit the slug."*
+6. On confirm: proceed. On edit: use the user's slug (validate kebab-case, no spaces, no path separators).
 
-After the initial exploration above, check for specialist agents:
+### A.2 Create the feature folder
 
-1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent (e.g., `agent-teams:team-lead`) via the Task tool. Pass it:
-   - The problem domain from Phase 1
-   - Key files and patterns found during initial exploration
-   - The full list of available agents from config.json (`agents.roles` and `agents.techStack`)
-   - Task: "Analyze the codebase architecture relevant to this feature. Identify patterns, constraints, and dependencies. Then recommend which specialist agents (from the available list) should be spawned for deeper analysis, and provide a specific prompt for each recommended agent."
-3. The orchestrator will return:
-   - Its own architectural analysis findings (using its Read, Glob, Grep, Bash tools)
-   - Recommendations for which specialist agents to spawn (if any), with specific prompts
-4. Spawn the orchestrator's recommended specialist agents in parallel via the Task tool (max 2, since the orchestrator used 1 of the 3 agent slots)
-5. Collect all findings (orchestrator + specialists) and integrate them into the exploration summary you share with the user
-6. If `docs/specflow/config.json` doesn't exist or has no agents configured, note "Run `/specflow:setup` for enhanced specialist analysis" and continue with manual exploration only
+Use Bash to create the folder structure:
 
-#### Greenfield vs. Brownfield Classification
+```bash
+mkdir -p docs/specflow/features/NNN-{slug}/{design,docs,assets,debate-log}
+```
 
-After exploration is complete, classify the project type:
+### A.3 Gather codebase context
 
-1. Auto-detect using heuristics:
-   - **Brownfield signals:** User language includes words like "refactor", "migrate", "replace", "upgrade", "rewrite", "modernize", "consolidate", or "deprecate"; codebase exploration found existing code in the problem domain (e.g., there's already an auth system and the user wants to change it)
-   - **Greenfield signals:** No existing code in the problem domain; user language focuses on "build", "create", "add new", "implement from scratch"
-2. Present the classification to the user: "This looks like a **brownfield** change (modifying existing functionality) / **greenfield** feature (building something new). Is that correct?"
-3. The user always gets final say — they can override the classification
-4. Store the classification for use in Phase 3 (interview) and Phase 5 (template)
+Read in parallel (use multiple Read tool calls in one message):
+- `docs/specflow/admin/CONTEXT.md`
+- `docs/specflow/admin/decision-log.md` (entire file; you'll filter to recent + relevant)
+- `docs/specflow/admin/profiles.json`
+- `docs/specflow/admin/environment.json`
+- `docs/specflow/admin/rules/non-negotiable.md`
+- `docs/specflow/admin/rules/guidelines.md`
 
-### Phase 3: Deep Interview
+Then inspect the codebase based on the user's overview:
+- Glob for files matching keywords from the overview (e.g. overview mentions "notifications" → Glob `**/*notification*`, `**/*Notify*`, etc.).
+- Grep for adjacent concepts.
+- Identify prior PRDs in `docs/specflow/features/*/` whose slugs touch adjacent domains (Glob, then read the relevant `prd.md` files).
 
-This is where the real work happens. Interview the user relentlessly about every aspect of the plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one by one.
+Distill what you saw into bullet points for the *Codebase context* section. Be concrete: cite file paths, line counts, conventions detected, prior PRD references.
 
-#### Constitution-Informed Constraints
+### A.4 Write the interview file preamble
 
-Before starting the interview, load the project constitution from `docs/specflow/config.json` (if it exists and has a `constitution` key). Keep the principles active throughout the interview:
+Use Write tool to create `docs/specflow/features/NNN-{slug}/NNN-{slug}-interview.md` with this exact structure:
 
-- Proactively surface relevant principles when the user's proposal conflicts with them. For example, if the constitution says "prefer composition over inheritance" and the user proposes a deep class hierarchy, raise it immediately: "Your constitution says 'prefer composition over inheritance' — should we explore a composition-based approach here, or is this an approved exception?"
-- Don't lecture — flag the tension, let the user decide, and record the decision
-- If no constitution exists, skip this entirely and proceed normally
+```markdown
+# PRD interview — features/NNN-{slug}
 
-Key areas to probe:
+## Original request
+> {verbatim user overview, in a blockquote}
 
-**Users and actors**
-- Who are all the actors involved? (end users, admins, systems, third parties)
-- What are their goals and constraints?
-- How does this change their current workflow?
+## Codebase context (pre-grilling)
+- {bullet 1 — concrete observation with file:line citation}
+- {bullet 2 — convention detected, named}
+- {bullet 3 — prior PRD reference}
+- {bullet 4 — applicable rule from registry}
+- {bullet 5 — relevant decision-log entry}
+- ... (5-10 bullets typical; more if the feature touches a lot)
 
-**Behavior and edge cases**
-- What happens in the happy path?
-- What are the error states? For every user action that involves a network call or external resource (form submit, API call, iframe/embed load, third-party script), ask: what does the user see when it fails? What does the user see while it loads? Is there retry behavior?
-- What are the boundary conditions?
-- Are there race conditions or concurrency concerns? (e.g., double-submit on forms, rapid toggle on expand/collapse)
-- What happens if this feature is partially complete?
+## Goal (confirmed before grilling)
+[TBD — articulating below; user confirms before this section is filled]
 
-**Scope boundaries**
-- What is explicitly NOT included?
-- What's the minimum viable version vs. the full vision?
-- Are there phases or milestones?
+## Rounds
 
-**Integration points**
-- What existing systems does this touch?
-- Are there API contracts to define or modify?
-- Are there schema changes needed?
-- How does this affect existing features?
+(grilling will append here)
 
-**Non-functional requirements**
-- Performance expectations
-- Security considerations
-- Accessibility requirements
-- Browser/device compatibility
+## Topics not discussed
 
-**Brownfield-specific areas** (only probe if classified as brownfield in Phase 2):
+(out-of-scope topics will append here)
 
-- **Current state analysis** — What does the existing system do today? What works well and should be preserved? What are the known pain points? Are there undocumented behaviors or edge cases that users depend on?
-- **Migration and transition** — Should migration be incremental or all-or-nothing? Will old and new systems need to co-exist during a transition period? Is there data to migrate? What's the reversibility requirement?
-- **Backward compatibility** — Are there existing APIs, contracts, or interfaces that must continue working? Who are the external consumers? What's the deprecation strategy and timeline?
-- **Rollback and risk** — What does rollback look like if things go wrong? Can feature flags gate the change? What monitoring detects problems? What's the blast radius of a failure?
+## Sign-off
 
-Don't accept vague answers. If the user says "it should be fast," ask "what latency is acceptable?" If they say "users can manage their settings," ask "which settings, specifically?" Ambiguity in a PRD becomes bugs in implementation.
+(grill will append the dated sign-off line here)
+```
 
-### Phase 4: Module Design
+### A.5 Articulate the goal
 
-Sketch out the major modules that need to be built or modified. Actively look for opportunities to extract deep modules -- ones that encapsulate a lot of functionality behind a simple, testable interface that rarely changes. A deep module is preferable to a shallow one because it hides complexity and provides a stable contract.
+Based on the codebase context, the user's overview, profiles, decision-log, and CONTEXT.md, draft the goal. Five fields, every field cites at least one source:
 
-For each module, identify:
-- Its responsibility (single sentence)
-- Its public interface (inputs and outputs)
-- What it hides from the rest of the system
-- Dependencies on other modules
+- **Outcome** — what changes for the user / system when this is done.
+- **Audience** — who benefits, named by canonical profile from `profiles.json`. If the audience doesn't match an existing profile, flag it (this might mean a new profile is needed).
+- **Success looks like** — the observable, ideally testable, definition of done at the goal level (not at the feature level — keep it high).
+- **Driving value** — why this is worth doing. The pain it removes, the opportunity it captures, the obligation it satisfies.
+- **Out of scope at the goal level** — what you're explicitly NOT trying to achieve. Critical for keeping grilling focused.
 
-Share this module map with the user and check:
-- Do these modules match their mental model?
-- Are any missing or unnecessary?
-- Which modules should have tests written for them?
+Present in this format:
 
-For features with 3 or fewer modules where the user's own description maps one-to-one to the proposed modules, present the module map inline with a brief confirmation prompt ("Here are the modules I'll use — does this match your thinking?") rather than requiring a separate interaction round. For larger or more ambiguous module designs, wait for explicit user approval before proceeding to Phase 5.
+```
+Before grilling, let me confirm the goal.
 
-#### Constitution Validation
+Outcome: {your draft}
+  (cited: {source})
 
-If a project constitution exists in config.json, check each module's design against it after presenting the module map:
+Audience: {your draft}
+  (cited: {source})
 
-- Do any modules violate architectural boundaries? (e.g., a UI module that directly accesses the database when the constitution forbids it)
-- Do quality standards impose constraints on any module? (e.g., "100% test coverage for business logic" means certain modules must be designed for testability)
-- Surface any tensions as explicit trade-off decisions for the user to resolve: "Module X crosses the boundary 'no direct DB access from UI' — should we add a service layer, or is this an approved exception?"
+Success looks like: {your draft}
+  (cited: {source})
 
-### Phase 5: Write the PRD
+Driving value: {your draft}
+  (cited: {source})
 
-Once you have complete understanding, write the PRD using the template below. Every section should be substantive -- if a section feels thin, you probably need to go back and ask more questions.
+Out of scope at the goal level: {your draft}
+  (cited: {source})
 
-After writing, review the PRD with the user. Make revisions until they're satisfied.
+Confirm, edit, or replace?
+```
 
-### Phase 6: Save PRD
+### A.6 Confirm / iterate
 
-Save the PRD to the `docs/specflow/prd/` directory:
+User responds:
+- **Confirm** — proceed to A.7.
+- **Edit** — incorporate the edits, re-present, loop until confirmed.
+- **Replace** — take their version. If they leave a field blank, ask one targeted question to fill it.
 
-1. Derive a kebab-case slug from the PRD title (e.g., "User Authentication Flow" → `user-authentication-flow`)
-2. Auto-detect the next PRD number:
-   a. Glob for `docs/specflow/prd/*.md`
-   b. Extract 3-digit numbers from filenames matching pattern `^(\d{3})-`
-   c. Next number = max found + 1 (zero-padded to 3 digits)
-   d. If no numbered PRDs exist, start at `001`
-3. Create the `docs/specflow/prd/` directory if it doesn't exist
-4. Fill in the YAML frontmatter with the title, `prd_id: PRD-{NNN}`, type, status, and today's date
-5. Write the file to `docs/specflow/prd/{NNN}-{slug}.md` (e.g., `001-user-authentication-flow.md`)
-6. Confirm the saved file path and PRD ID with the user
+Do not proceed until every field has user-confirmed content.
 
-### Phase 7: Self-Review (Devil's Advocate)
+### A.7 Write the Goal section
 
-Re-read the saved PRD file and apply a structured review before presenting to the user. This phase has three layers: the built-in review framework (primary), optional agent review (supplementary), and a final format checklist.
+Use the Edit tool to replace the `[TBD — articulating below; user confirms before this section is filled]` placeholder with the confirmed Goal section:
 
-#### Layer 1: Built-in PRD Review Framework
+```markdown
+## Goal (confirmed before grilling)
 
-This is specflow's own devil's advocate logic. Apply each lens systematically:
+- **Outcome:** {confirmed text}
+- **Audience:** {confirmed text}
+- **Success looks like:** {confirmed text}
+- **Driving value:** {confirmed text}
+- **Out of scope at the goal level:** {confirmed text}
 
-**Completeness:**
-- Is every template section substantive (not placeholder text)?
-- Are user stories specific, actionable, and testable?
-- Do implementation decisions include rationale, not just choices?
-- Is out of scope explicit about what was discussed but deferred?
-- No GitHub references anywhere in the document
-- For every user action that triggers a network call or loads an external resource: are both the error state and the loading state defined in the user stories or implementation decisions? If not, flag as a Warning with the specific interaction that is underspecified.
-- If brownfield: are all Migration Strategy sub-sections (Current State, Transition Plan, Backward Compatibility, Rollback Plan) substantive? Is the rollback plan realistic and not hand-wavy?
+User confirmed: {YYYY-MM-DD using today's date}.
+```
 
-**Consistency:**
-- Any contradictions between sections (e.g., something listed as out of scope but described in implementation)?
-- Are technical terms and module names used consistently throughout?
-- Do module interfaces match the behavior described in user stories?
+Tell the user: *"Goal confirmed and written. Proceeding to grilling."* Hand off to Phase B.
 
-**Feasibility:**
-- Are the proposed modules realistic given the existing codebase?
-- Any hidden dependencies not captured?
-- Are non-functional requirements achievable with the chosen approach?
-- If brownfield: is the migration strategy realistic given codebase complexity? Does the rollback plan assume reversibility that doesn't actually exist (e.g., assuming data migration can be reversed when it can't)?
+---
 
-**Assumptions:**
-- Where did the author assume instead of asking the user?
-- Any ambiguities that could cause different interpretations by different developers?
-- Could a developer implement this without needing to ask clarifying questions?
+## Phase B — Grilling
 
-**Constitution compliance** (only if a constitution exists in config.json):
-- Do any implementation decisions violate coding principles, architectural boundaries, or quality standards?
-- Is the Constitution Alignment section present and accurate?
-- Are all approved exceptions documented with rationale?
-- Would a developer following this PRD inadvertently break a constitution principle?
+### B.1 Invoke /grill as a sub-skill
 
-Produce structured findings:
-- **Critical Issues** — must fix before presenting (gaps, contradictions, missing requirements)
-- **Warnings** — should fix or explicitly flag to the user
-- **Observations** — worth noting but not blocking
+Use the Skill tool to invoke `/grill` with the feature ID:
 
-Address all critical issues immediately by editing the saved PRD file.
+```
+Skill: /grill {NNN-slug}
+```
 
-#### Layer 2: Agent-Assisted Review
+`/grill` runs in its own forked context. It reads the interview file (including the confirmed Goal), interrogates the user one question at a time, and appends each round to the interview file as it's resolved. When the user signs off, `/grill` returns one line confirming the path of the interview and the round count.
 
-1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent via the Task tool. This is a separate pass from Phase 2 — the Phase 2 orchestrator analyzed the codebase, this one reviews the PRD document itself. Pass it:
-   - The full PRD content
-   - The available agents from config.json
-   - Task: "Review this PRD for architectural soundness. Are the proposed modules feasible? Are there risks or contradictions not addressed? Recommend which specialist agents (from the available list) should provide additional review perspectives, and provide a specific prompt for each."
-3. The orchestrator will return its own review findings and may recommend specialist agents for additional perspectives
-4. Spawn any recommended specialist agents and collect their findings
-5. Integrate all agent findings into the review — these supplement the built-in framework but do not replace it
-6. If `docs/specflow/config.json` doesn't exist or has no agents configured, skip this layer
+### B.2 Verify grilling completed
 
-#### Layer 3: Format & Naming Checklist
+After `/grill` returns:
 
-Final verification pass:
-- Filename follows `{NNN}-{kebab-case-feature-name}.md` convention
-- File is saved in `docs/specflow/prd/`
-- YAML frontmatter includes `prd_id: PRD-{NNN}` matching the filename number
+1. Read `features/NNN-{slug}/NNN-{slug}-interview.md`.
+2. Verify the `## Sign-off` section has at least one dated line for this grilling pass.
+3. Verify the `## Rounds` section has at least one round.
+4. If verification fails (e.g. user aborted grilling): tell the user *"Grilling did not complete. The interview file at `{path}` has no sign-off line. Re-run `/grill {NNN-slug}` when ready to resume."* — do NOT proceed to Phase C.
 
-#### Present Results
+### B.3 Hand off to Phase C
 
-If assumptions were found that should have been questions, go back to the user for clarification before finalizing.
+If verification passes, proceed to synthesis.
 
-Present the review summary to the user with any warnings or observations, then confirm the PRD is ready.
+---
 
-End with: "Run `/specflow:task` to break this PRD into actionable tasks."
+## Phase C — PRD body synthesis
 
-## PRD Template
+### C.1 Re-read the completed interview
 
-Use this exact structure for every PRD:
+Use Read tool on `features/NNN-{slug}/NNN-{slug}-interview.md`. You now have:
+- The confirmed Goal section.
+- All Rounds with their Resolved lines.
+- Topics not discussed.
+- Sign-off date.
+
+### C.2 Synthesise the PRD body
+
+Use Write tool to create `docs/specflow/features/NNN-{slug}/NNN-{slug}-prd.md` with this structure:
 
 ```markdown
 ---
-title: "<PRD Title>"
-prd_id: PRD-NNN
-type: greenfield | brownfield
-status: Draft
-created: YYYY-MM-DD
+feature: NNN-slug
+status: draft
+created: {YYYY-MM-DD using today's date}
+interview: ./NNN-{slug}-interview.md
 ---
 
-## Problem Statement
+# {Feature title — derived from slug, title-cased, with stop-words restored}
 
-[The problem from the user's perspective. What pain exists today? Why does it matter? Include context about who is affected and how frequently.]
+## Vision
 
-## Solution
+{Synthesise directly from the interview's Goal section. Vision is one paragraph that
+says: what the world looks like when this feature exists, who it serves, why it matters.
+Do NOT re-derive from the rounds — the goal IS the precedent.}
 
-[The proposed solution from the user's perspective. What will change for them? How will their workflow improve? Keep this focused on outcomes, not implementation details.]
+## Problem
 
-## User Stories
+{From Resolved assumptions about the problem space. What is broken / missing /
+inefficient today? Cite the interview's Resolved lines that ground each claim.}
 
-[A focused numbered list covering the most important aspects of the feature. Each story follows the format:]
+## Goals
 
-1. As a <actor>, I want <feature>, so that <benefit>
+{The concrete, achievable sub-goals that ladder up to the Vision. From the interview's
+Goal "Success looks like" + relevant Resolved lines.}
 
-   **Verification Scenarios:**
-   - Given <precondition>, When <action>, Then <expected outcome>
-   - Given <precondition>, When <action>, Then <expected outcome>
+## Non-goals
 
-[Each story must include 2-4 verification scenarios in Given/When/Then format. These are the scenarios a human QA tester will execute to verify the story is complete. Cover the happy path first, then key error/edge paths.]
+{From the interview's "Out of scope at the goal level" + Topics not discussed. Be
+explicit. Each non-goal cites why it's excluded.}
 
-[Example:]
-1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+## Users
 
-   **Verification Scenarios:**
-   - Given I am logged in and have 2 accounts, When I navigate to the accounts page, Then I see the current balance for each account displayed in my local currency
-   - Given I am logged in and the balance service is unavailable, When I navigate to the accounts page, Then I see a "Balance temporarily unavailable" message instead of stale data
-   - Given I am logged in and have 0 accounts, When I navigate to the accounts page, Then I see a prompt to open my first account
+{From profiles.json (canonical names) + the interview's Audience field. For each user
+type, one sentence on what they need from this feature.}
 
-[Keep this list tight and high-impact. Aim for 6-10 stories that cover the core happy paths, key error states, and the most important actor perspectives. Avoid redundant stories — combine related behaviors into a single story where possible. Quality over quantity.]
+## Requirements
 
-## Implementation Decisions
+- **R1.** {requirement text in plain language}
+  - Trace: interview Round {N} — *{paraphrase the Resolved line}*
+  - Serves goal: {which goal field — Outcome / Audience / Success / Value}
+- **R2.** {...}
+- **R3.** {...}
 
-[Decisions made during the interview process. Include:]
+(Every requirement MUST trace to one or more Resolved lines AND serve at least one goal
+field. No orphan requirements. No requirements that contradict the goal.)
 
-- Modules to be built or modified, with their responsibilities
-- Public interfaces of those modules
-- Architectural decisions and their rationale
-- Schema changes
-- API contracts
-- Key interactions between modules
-- Technology choices and why
+## Acceptance criteria
 
-[Do NOT include specific file paths or code snippets -- they become outdated quickly.]
+- **AC-1.** {binary pass/fail check, observable, testable}
+  - Verifies: R1
+- **AC-2.** {...}
+  - Verifies: R2, R3
 
-### Constitution Alignment
+(Every requirement is covered by at least one AC. Every AC is binary — pass or fail,
+no judgement calls. Every AC names which requirement(s) it verifies.)
 
-[Only include this sub-section if a project constitution exists in config.json. Omit entirely if no constitution is defined.]
+## Open questions
 
-[Document which constitution principles each implementation decision supports. If any approved exceptions were granted during the interview, document them here with rationale.]
+{Questions that surfaced during grilling but were not resolved — typically because they
+need data we don't have yet, or stakeholder input outside this feature's scope. Each
+entry: question + what's needed to resolve it + when we plan to resolve it.}
 
-- **Supported principles:** [List principles that the design actively satisfies]
-- **Approved exceptions:** [List any principles that this design intentionally deviates from, with the rationale discussed during the interview. If none, state "None — all principles upheld."]
+(If grilling resolved everything, write "None — all questions resolved during grilling.")
 
-## Migration Strategy
+## See also
 
-[Only include this section for brownfield PRDs. Omit entirely for greenfield.]
-
-### Current State
-
-[Detailed description of the existing system being modified. What it does, how it works, who uses it, and what its known limitations are.]
-
-### Transition Plan
-
-[How the migration will be executed:]
-- Deployment strategy (incremental rollout, blue-green, canary, etc.)
-- Co-existence period — how long old and new systems run simultaneously, and how traffic is routed
-- Data migration — what data needs to move, in what order, and how integrity is verified
-- Feature flags — which flags gate the change and how they're managed
-
-### Backward Compatibility
-
-[What must continue working during and after the transition:]
-- Existing API contracts and their consumers
-- External integrations that depend on current behavior
-- Deprecation timeline for old interfaces
-
-### Rollback Plan
-
-[What happens if things go wrong:]
-- Steps to reverse the change
-- Data migration reversal (if applicable)
-- Monitoring and alerting that trigger rollback
-- Rollback window — how long after deployment can we still cleanly roll back
-
-## Testing Decisions
-
-[Include:]
-
-- What makes a good test for this feature (test external behavior, not implementation details)
-- Which modules will have tests and what those tests verify
-- Prior art -- similar tests in the codebase that can serve as patterns
-- Any special testing considerations (mocking, fixtures, integration tests)
-- Human QA strategy: which verification scenarios require manual testing by a QA tester, and what environment setup or test data they need to execute those scenarios
-
-## Out of Scope
-
-[Explicitly list what this PRD does NOT cover. This prevents scope creep and sets clear expectations. Include things that were discussed but deliberately deferred.]
-
-## Further Notes
-
-[Anything else relevant: links to related issues, design mockups, research, open questions that don't block implementation, future considerations.]
+- Interview: [`./NNN-{slug}-interview.md`](./NNN-{slug}-interview.md)
+- Tasks: [`./NNN-{slug}-tasks.md`](./NNN-{slug}-tasks.md) (generated by `specflow:task`)
+- Tests: [`./NNN-{slug}-test.md`](./NNN-{slug}-test.md) (generated by `specflow:test`)
 ```
 
-## Guidance
+### C.3 Self-check before saving
 
-- Spend most of your time in Phase 3. A thorough interview prevents rework.
-- Push back on scope creep during the interview -- help the user find the smallest useful version.
-- The user stories section is the heart of the PRD. If it's thin, the PRD isn't ready.
-- Implementation decisions should capture the "why" not just the "what."
-- When in doubt, ask another question rather than making an assumption.
+Before invoking the render in Phase D, verify:
+
+1. **Vision traces to Goal.** Re-read the interview's Goal section and the PRD's Vision. The Vision should be the prose form of the Goal — same Outcome, same Audience, same Driving value. If they diverge, fix the Vision.
+2. **Every requirement has a Trace + Serves-goal pair.** No requirements that don't trace to a Resolved line. No requirements that don't serve at least one goal field.
+3. **Every AC verifies a requirement.** No orphan ACs. No requirements without coverage.
+4. **No requirement contradicts the goal's Out-of-scope-at-goal-level.** Cross-check.
+
+If any check fails, fix the PRD before proceeding.
+
+---
+
+## Phase D — Render
+
+### D.1 Invoke specflow:render
+
+Use the Skill tool:
+
+```
+Skill: specflow:render {NNN-slug}
+```
+
+It produces `features/NNN-{slug}/NNN-{slug}-prd.html` with a header link to the sibling interview file.
+
+### D.2 Verify render
+
+Read the HTML file's first 50 lines. Verify:
+- File exists.
+- Header strip includes the feature ID + slug.
+- Header includes a link to `./NNN-{slug}-interview.md`.
+- No drift banner (if there is one, the markdown is newer than the HTML — re-invoke render).
+
+---
+
+## Phase E — Gate 2 multi-agent debate manifest
+
+### E.1 Set up the debate folder
+
+Use Bash:
+
+```bash
+mkdir -p docs/specflow/features/NNN-{slug}/debate-log/prd-gate2/findings/{round-1,round-2,round-3}
+mkdir -p docs/specflow/features/NNN-{slug}/debate-log/prd-gate2/raw
+touch docs/specflow/features/NNN-{slug}/debate-log/prd-gate2/manifest.md
+```
+
+### E.2 Identify reviewers
+
+From `docs/specflow/admin/agents/standard/`, the standing reviewer set is:
+- `lifecycle/devils-advocate.md` — always present.
+- `principles/simplicity-reviewer.md`
+- `principles/surgical-reviewer.md`
+- `principles/think-before-coding-reviewer.md`
+- `principles/goal-driven-reviewer.md`
+
+Plus, if `admin/environment.json` has `cli.codex.available: true`, include Codex as a sixth reviewer.
+
+### E.3 Round 1 — parallel finding fire
+
+For each reviewer, dispatch a forked sub-agent (use the Agent tool with the reviewer's role definition as system context, or invoke the Skill tool if reviewers become invokable skills in a later phase). Pass each reviewer:
+- The PRD path (`features/NNN-{slug}/NNN-{slug}-prd.md`).
+- The interview path (read first — goal especially).
+- Their own role definition (from `admin/agents/standard/{lifecycle,principles}/{reviewer}.md`).
+- Instruction: write a minimal finding JSON to `debate-log/prd-gate2/findings/round-1/{reviewer-name}.json` and return only the file path.
+
+The Round-1 finding JSON shape:
+
+```json
+{
+  "reviewer": "{reviewer-name}",
+  "principle": "{principle id, e.g. simplicity-first}",
+  "round": 1,
+  "findings": [
+    {
+      "id": "{reviewer}-r1-f1",
+      "severity": "block | concern | note",
+      "evidence": "concrete reference — file:line, requirement ID, rule ID, decision-log entry, etc.",
+      "claim": "what's wrong, in one sentence",
+      "proposed_change": "concrete fix, not abstract"
+    },
+    ...
+  ]
+}
+```
+
+Wait for all reviewers to return their finding paths.
+
+### E.4 Round 2 — AI responds
+
+In your own forked context (a new Task or Agent invocation if needed to keep the parent clean), read every Round-1 finding via command substitution. For each finding, write a structured response to `debate-log/prd-gate2/findings/round-2/responses.json`:
+
+```json
+{
+  "round": 2,
+  "responses": {
+    "{reviewer}-r1-f1": {
+      "decision": "accept | push_back",
+      "rationale": "...",
+      "revision_applied": "if accept: brief description of the revision applied to prd.md"
+    },
+    ...
+  }
+}
+```
+
+If accepting: actually edit `NNN-{slug}-prd.md` to apply the revision.
+
+### E.5 Round 3 — Reviewers sharpen or accept
+
+Re-dispatch each reviewer (fresh forked context) with their Round-1 finding + the Round-2 response. Each writes to `debate-log/prd-gate2/findings/round-3/{reviewer-name}.json`:
+
+```json
+{
+  "reviewer": "{reviewer-name}",
+  "round": 3,
+  "responses": {
+    "{reviewer}-r1-f1": {
+      "decision": "accept | sharpen",
+      "rationale": "if sharpen: new evidence or reframed concern, escalated severity"
+    }
+  }
+}
+```
+
+If any sharpen: re-edit the PRD one more time and record the revision in `debate-log/prd-gate2/findings/round-3/ai-revision.md`.
+
+### E.6 Closer — Orchestrator collates
+
+Now act as the Orchestrator. Read all findings + responses across all three rounds. Write the human-readable `debate-log/prd-gate2/manifest.md`:
+
+```markdown
+# Gate 2 — PRD vs interview review
+
+**Feature:** NNN-slug
+**Date:** {YYYY-MM-DD}
+**Reviewers:** {comma-separated list}
+
+## Accepted findings
+- **{finding-id}** ({reviewer}, {severity}) — {claim}
+  - Evidence: {evidence}
+  - Revision applied: {description}
+
+## Rejected findings
+- **{finding-id}** ({reviewer}, {severity}) — {claim}
+  - Evidence: {evidence}
+  - Reason for rejection: {AI's Round-2 push-back, sharpened in Round 3 if applicable}
+
+## Escalated to human
+- **{finding-id}** ({reviewer}, {severity}) — {claim}
+  - Reason: reviewers and writer did not converge in 3 rounds; surfaced for human decision.
+  - Recommendation: {one-line suggested resolution}
+
+## Closing decision
+
+Gate 2 status: **passed | passed-with-escalations | failed**
+
+{One paragraph closing rationale by the Orchestrator. If passed: PRD is fit to proceed
+to specflow:task. If escalations: list the items the human must resolve before proceeding.
+If failed: list the blocking findings and what must change.}
+
+— Orchestrator, {YYYY-MM-DD}
+```
+
+### E.7 Final disposition
+
+If Gate 2 status is **passed** or **passed-with-escalations**: tell the user *"PRD synthesised and Gate 2 review complete. Status: {status}. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready."*
+
+If escalations exist, list them in your response so the user sees them without opening the manifest.
+
+If Gate 2 status is **failed**: tell the user *"PRD failed Gate 2 review. Blocking findings:\n{list}\n\nReview the manifest at `debate-log/prd-gate2/manifest.md` and either revise the PRD or adjust the interview's Resolved lines, then re-run `specflow:prd {NNN-slug}` to resume from Phase C."*
+
+---
+
+## What you MUST NOT do
+
+- **Do not skip Phase A's goal confirmation.** Even if the user provides a detailed overview, articulate the goal and get explicit confirmation. The goal is the precedent everything anchors to.
+- **Do not let `/grill` start without a confirmed Goal section.** `/grill` will refuse, but you should not even invoke it if the goal isn't confirmed.
+- **Do not synthesise the PRD body until the interview is signed off.** No exceptions.
+- **Do not duplicate the interview's content into the PRD body.** PRD references the interview by relative path; the interview is the audit trail.
+- **Do not bypass Gate 2.** A PRD that hasn't been through Gate 2 is not a finished PRD; downstream skills (`specflow:task`) should reject it.
+- **Do not edit the Goal section.** Only `specflow:scope-change` does that.
+- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the interview file, the PRD body, or the debate manifest. Per the project's CLAUDE.md, this is non-negotiable.
+
+---
+
+## Verify before declaring done
+
+Before returning to the user with "PRD complete":
+
+1. `features/NNN-{slug}/NNN-{slug}-interview.md` exists with confirmed Goal + at least one round + sign-off line.
+2. `features/NNN-{slug}/NNN-{slug}-prd.md` exists with all required sections (Vision, Problem, Goals, Non-goals, Users, Requirements, AC, Open questions, See also).
+3. Vision traces to Goal; every requirement traces to a Resolved line AND serves a goal field; every AC is binary and verifies a requirement; no requirements contradict Out-of-scope-at-goal-level.
+4. `features/NNN-{slug}/NNN-{slug}-prd.html` exists; header link to interview works.
+5. `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with closing decision entry signed by the Orchestrator.
+6. Gate 2 status is recorded (passed / passed-with-escalations / failed) and surfaced to the user.
+
+If any verify step fails, fix it before returning.
+
+---
+
+## Reference
+
+- `docs/PRD.md` Appendix Q — interview file structure spec.
+- `docs/PRD.md` Appendix N — multi-agent debate manifest spec.
+- `docs/PRD.md` Appendix P — PRD HTML rendering spec.
+- `templates/orchestrator-pattern.md` — fork / file handoff / command substitution conventions.
+- `skills/grill/SKILL.md` — the sub-skill invoked in Phase B.
+- `skills/render/SKILL.md` — the sub-skill invoked in Phase D.
+- `templates/agents/standard/lifecycle/{orchestrator,devils-advocate,verifier}.md` — reviewer prompts for Gate 2.
+- `templates/agents/standard/principles/*.md` — principle-reviewer prompts for Gate 2.

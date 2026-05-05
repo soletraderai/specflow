@@ -1,0 +1,99 @@
+{
+  "profiles": [
+    {
+      "name": "Power user — operations coordinator",
+      "role": "Internal ops coordinator who lives in the orders dashboard 6+ hours a day, triaging exceptions and escalating problem orders.",
+      "goals": [
+        "Skim hundreds of orders per shift and surface the handful that need attention",
+        "Act on exceptions in keystrokes — bulk-update status, mass-assign, jump by order ID",
+        "Trust that the data on screen is fresh enough to act on without re-checking another system"
+      ],
+      "constraints": [
+        "Desktop with multiple monitors; rarely uses a mouse for routine tasks",
+        "Has memorised URL patterns and keyboard shortcuts; resistant to UI churn",
+        "Reports bugs the tier-1 audience never notices (off-by-one filters, stale caches)"
+      ],
+      "painPoints": [
+        "Modal dialogs that block keyboard navigation",
+        "Pagination forced on workflows that need a complete view",
+        "Bulk actions hidden behind per-row menus"
+      ]
+    },
+    {
+      "name": "First-time visitor — new internal hire",
+      "role": "Newly onboarded internal user navigating Northwind Orders for the first time, learning the product alongside their job.",
+      "goals": [
+        "Find the page they were sent to without reading documentation",
+        "Recover gracefully from mistakes without losing work or escalating",
+        "Build a mental model of the product through use, not training"
+      ],
+      "constraints": [
+        "No prior context for domain jargon (SKU, EDI, backorder, drop-ship)",
+        "Likely on a freshly-issued laptop with default settings",
+        "Limited tolerance for cryptic error messages or jargon-heavy empty states"
+      ],
+      "painPoints": [
+        "Forms that lose state on validation errors",
+        "Loading states that don't communicate what's happening",
+        "Errors that say *what* went wrong but not *what to do next*"
+      ]
+    },
+    {
+      "name": "Admin — platform operator",
+      "role": "Internal user managing user accounts, role assignments, and operational policies. Read-heavy with rare high-stakes write actions.",
+      "goals": [
+        "Provision and de-provision users in under a minute",
+        "Audit who did what when without an engineer's help",
+        "Enforce policy across teams without per-user manual steps"
+      ],
+      "constraints": [
+        "Touches sensitive surfaces — auth, billing, schema (Red lane in this project)",
+        "Misclicks here cause incidents; needs unsafe-action friction",
+        "Often the auditor's primary contact when compliance reviews land"
+      ],
+      "painPoints": [
+        "Audit trails that don't capture who did what when",
+        "Tools that take five clicks to do common operations",
+        "Unsafe defaults that turn a misclick into a postmortem"
+      ]
+    },
+    {
+      "name": "Support agent — customer success",
+      "role": "Internal user resolving customer-reported issues, often impersonating a customer or assisting them through a call.",
+      "goals": [
+        "See what the customer is seeing without leaving their seat",
+        "Reproduce the issue with the customer's data and configuration",
+        "Resolve in one touch where possible; escalate cleanly when not"
+      ],
+      "constraints": [
+        "Often working with a customer in real time on a call",
+        "Needs auditability — who saw what, when, on whose behalf",
+        "Cannot escalate to engineering for routine reproduction"
+      ],
+      "painPoints": [
+        "Impersonation modes that drift from the real customer experience",
+        "Logs without correlation IDs",
+        "Issues that require an engineer to reproduce"
+      ]
+    },
+    {
+      "name": "Mobile warehouse operator",
+      "role": "Warehouse staff operating from a mobile device on the warehouse floor, often with gloves, intermittent Wi-Fi, and one-handed use.",
+      "goals": [
+        "Confirm pickups and dispatches at the bay without re-typing back at the desk",
+        "Sync when connectivity returns without losing data",
+        "Operate single-handed where the workflow demands it"
+      ],
+      "constraints": [
+        "Variable network — offline transitions are routine, not exceptional",
+        "Outdoor lighting through warehouse skylights; high-glare conditions",
+        "Limited screen real estate; safety-critical context (forklift floor)"
+      ],
+      "painPoints": [
+        "Forms that assume always-on connectivity",
+        "UIs that fail silently when offline rather than queueing",
+        "Tap targets sized for desktop precision pointing"
+      ]
+    }
+  ]
+}

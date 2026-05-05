@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:89-91 — Requirement R12 ('Self-contained HTML output') traces to 'codebase context (pre-grilling)' rather than to a `Resolved` line from any of the six grilling rounds. Every other requirement (R1-R11) cites a Round-N Resolved line. R12 is the only one that breaks the pattern.",
+      "claim": "Trace integrity — R12 is a real constraint and the codebase context bullet is real, but the trace pattern the rest of the PRD follows requires a Resolved line per requirement. A reader auditing requirement provenance hits R12 and has to walk back to the codebase context to verify, which is a different surface than the rounds (Surgical Changes, line 'Match existing style').",
+      "proposed_change": "Either (a) move R12 to a `## Inherited constraints` section that cites the codebase context bullet directly (separate from Requirements, which trace to grilling rounds); or (b) strengthen the trace by adding a sentence to R12: 'Trace: codebase context (pre-grilling) bullet — `adjacent skills: specflow:render already produces self-contained HTML; same convention applies here`. No grilling round was needed because the convention was inherited and pre-confirmed.' Option (b) is the smaller change and preserves the requirement structure."
+    }
+  ]
+}

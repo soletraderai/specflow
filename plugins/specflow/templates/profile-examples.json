@@ -1,0 +1,156 @@
+{
+  "profiles": [
+    {
+      "name": "Admin / Platform Operator",
+      "role": "Internal user managing platform configuration, user accounts, and operational concerns.",
+      "goals": [
+        "Provision and de-provision users quickly",
+        "Diagnose issues from logs and metrics without engineer support",
+        "Enforce policy across tenants without per-tenant manual steps"
+      ],
+      "constraints": [
+        "Operates from a desktop with multiple monitors",
+        "Touches sensitive surfaces — auth, billing, schema",
+        "Read-heavy workflow with rare but high-stakes write actions"
+      ],
+      "painPoints": [
+        "Tools that require multiple clicks to do common operations",
+        "Audit trails that don't capture who did what when",
+        "Unsafe defaults that turn a misclick into an incident"
+      ]
+    },
+    {
+      "name": "End User / Customer",
+      "role": "External user interacting with the product to accomplish their own goals.",
+      "goals": [
+        "Complete the primary task quickly without learning the product",
+        "Recover gracefully from mistakes without losing work",
+        "Understand status without reading documentation"
+      ],
+      "constraints": [
+        "May be on mobile, tablet, or desktop unpredictably",
+        "Variable connectivity — must tolerate offline transitions",
+        "Limited tolerance for jargon or product-specific terminology"
+      ],
+      "painPoints": [
+        "Forms that lose state on validation errors",
+        "Loading states that don't communicate what's happening",
+        "Error messages that say *what* went wrong but not *what to do next*"
+      ]
+    },
+    {
+      "name": "Power User",
+      "role": "Heavy customer who uses the product for hours a day and has memorised its shape.",
+      "goals": [
+        "Skip the hand-holding — execute by keyboard, by URL, by API",
+        "Customise defaults to match their established workflow",
+        "Bulk-operate where the UI assumes one-at-a-time"
+      ],
+      "constraints": [
+        "Resistant to UI churn — re-learning costs them productivity",
+        "Has built tooling on top of stable surfaces (URLs, API contracts)",
+        "Reports bugs the tier 1 audience doesn't notice"
+      ],
+      "painPoints": [
+        "Modal dialogs that block keyboard navigation",
+        "Pagination forced on workflows that need a complete view",
+        "Breaking changes shipped without notice"
+      ]
+    },
+    {
+      "name": "Support / Customer Success",
+      "role": "Internal user resolving customer-reported issues, often impersonating or assisting customers.",
+      "goals": [
+        "See what the customer is seeing without leaving their seat",
+        "Reproduce issues with the customer's data and configuration",
+        "Resolve in one touch where possible"
+      ],
+      "constraints": [
+        "May not have engineering access — depends on UI affordances",
+        "Often working with a customer in real time on a call",
+        "Needs auditability — who saw what, when, on whose behalf"
+      ],
+      "painPoints": [
+        "Impersonation modes that drift from the real customer experience",
+        "Logs without correlation IDs",
+        "Issues that require an engineer to reproduce"
+      ]
+    },
+    {
+      "name": "Developer / API Consumer",
+      "role": "External or internal developer integrating with the product's API or extending it.",
+      "goals": [
+        "Find the relevant endpoint and example without reading the whole reference",
+        "Fail fast and obviously when their request is malformed",
+        "Trust that documented behaviour matches actual behaviour"
+      ],
+      "constraints": [
+        "Uses the API from heterogeneous environments — CLI, web, server, edge",
+        "Sensitive to rate limits, latency, and contract churn",
+        "Reads error responses programmatically, not just visually"
+      ],
+      "painPoints": [
+        "Errors returned as 200 with `{success: false}`",
+        "Documentation drift — examples that don't run",
+        "Versioning schemes that aren't enforced"
+      ]
+    },
+    {
+      "name": "Finance / Billing",
+      "role": "Internal user who needs accurate, auditable, and timely visibility into revenue and spend.",
+      "goals": [
+        "Reconcile reported revenue against ledger systems",
+        "Trace any charge or refund back to the originating event",
+        "Close the period without engineering escalation"
+      ],
+      "constraints": [
+        "Works on a strict monthly cadence with hard external deadlines",
+        "Cannot tolerate silent data corrections — every change must be auditable",
+        "Often handing off to external auditors who don't know the product"
+      ],
+      "painPoints": [
+        "Reports whose numbers change retroactively without an audit trail",
+        "Currency or timezone handling that's silently inconsistent",
+        "Ledger-of-record ambiguity (which system tells the truth?)"
+      ]
+    },
+    {
+      "name": "Auditor / Compliance",
+      "role": "Internal or external auditor verifying the system meets policy, regulatory, or contractual requirements.",
+      "goals": [
+        "Sample any record and trace its full lifecycle",
+        "Confirm that controls (auth, encryption, retention) are not just configured but observed",
+        "Produce evidence packages without product-team involvement"
+      ],
+      "constraints": [
+        "May be reviewing the system years after the work was done",
+        "Cannot accept 'we'll fix it next sprint' as remediation",
+        "Reads logs, configs, and admin interfaces — not source code"
+      ],
+      "painPoints": [
+        "Logs that drop fields or change schema without retention",
+        "Configurations that drift from documentation",
+        "Audit-only roles that need broader access than they should have"
+      ]
+    },
+    {
+      "name": "Field Worker / Mobile-first User",
+      "role": "External or internal user operating in the field, often on mobile, often with intermittent connectivity.",
+      "goals": [
+        "Capture observations on-site without re-typing back at the desk",
+        "Sync when connectivity returns without losing data",
+        "Operate single-handed where the workflow demands it"
+      ],
+      "constraints": [
+        "Variable network — offline transitions are routine, not exceptional",
+        "Outdoor lighting, gloves, one-handed use",
+        "Limited screen real estate; high-stakes context (often safety-related)"
+      ],
+      "painPoints": [
+        "Forms that assume always-on connectivity",
+        "UIs that fail silently when offline rather than queueing",
+        "Image capture that loses metadata or compresses too aggressively"
+      ]
+    }
+  ]
+}

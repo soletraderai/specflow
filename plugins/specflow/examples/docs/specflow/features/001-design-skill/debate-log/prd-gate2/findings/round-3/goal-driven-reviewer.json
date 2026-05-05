@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI added AC-11 verbatim — every iteration entry must have a non-empty *Why* field per Appendix C3.1. The coverage gap is closed; the architectural rule from C3.1 now has a corresponding AC that downstream `specflow:test` plans can exercise. Accepted."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI's pushback holds. AC-9 verifies the contract (presence of a Codex review section with at least one finding or the no-concerns sentinel); fidelity-counting is implementation-level and belongs in the test plan, not the AC. AI cited Phase 1 scope item 15: 'every skill that produces output declares verify steps inline' — verify steps live in SKILL.md, not in PRD ACs. The principle separation (PRD describes the contract; SKILL.md describes the verify mechanism) is correct. The over-specification concern is real — locking AC-9 to stdout-counting would commit the test plan to one mechanism when JSON-output counting might be cleaner. Defence holds."
+    }
+  }
+}

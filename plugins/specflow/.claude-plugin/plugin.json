@@ -1,7 +1,7 @@
 {
   "name": "specflow",
-  "version": "1.9.2",
-  "description": "Product requirements workflow: create PRDs, break into tasks, export to Linear, and verify completed work.",
+  "version": "2.0.0",
+  "description": "Production-grade, self-adaptive product workflow: install once globally, every project accumulates its own constitution, profiles, agents, decisions, and task history — and uses that memory to make every subsequent piece of work smarter than the last.",
   "author": {
     "name": "Sole Trader AI Pty Ltd",
     "url": "https://github.com/soletraderai",
@@ -9,5 +9,17 @@
   },
   "repository": "https://github.com/soletraderai/specflow",
   "license": "MIT",
-  "keywords": ["prd", "linear", "product-management", "workflow", "tasks", "qa", "testing", "verification"]
+  "keywords": [
+    "prd",
+    "linear",
+    "product-management",
+    "workflow",
+    "tasks",
+    "qa",
+    "testing",
+    "verification",
+    "self-learning",
+    "agents",
+    "memory"
+  ]
 }

@@ -1,0 +1,3494 @@
+[{
+  "data": [
+    {
+      "start": "0.320",
+      "dur": "4.560",
+      "text": "All right. What I have for you today is"
+    },
+    {
+      "start": "2.480",
+      "dur": "4.720",
+      "text": "a playbook to help you 10x your AI"
+    },
+    {
+      "start": "4.880",
+      "dur": "4.560",
+      "text": "coding with parallel agentic"
+    },
+    {
+      "start": "7.200",
+      "dur": "4.640",
+      "text": "development. I'm going to get into all"
+    },
+    {
+      "start": "9.440",
+      "dur": "5.040",
+      "text": "of the strategies that I use on a daily"
+    },
+    {
+      "start": "11.840",
+      "dur": "5.040",
+      "text": "basis to run many cloud code sessions at"
+    },
+    {
+      "start": "14.480",
+      "dur": "4.320",
+      "text": "the exact same time. And of course, I'll"
+    },
+    {
+      "start": "16.880",
+      "dur": "3.440",
+      "text": "cover how these strategies will work no"
+    },
+    {
+      "start": "18.800",
+      "dur": "3.440",
+      "text": "matter the coding agent that you're"
+    },
+    {
+      "start": "20.320",
+      "dur": "3.760",
+      "text": "using or the applications that you are"
+    },
+    {
+      "start": "22.240",
+      "dur": "3.119",
+      "text": "building. I would highly encourage you"
+    },
+    {
+      "start": "24.080",
+      "dur": "3.359",
+      "text": "when you're trying to get the most"
+    },
+    {
+      "start": "25.359",
+      "dur": "4.721",
+      "text": "output possible to run more than a"
+    },
+    {
+      "start": "27.439",
+      "dur": "4.240",
+      "text": "single coding agent session at a time. I"
+    },
+    {
+      "start": "30.080",
+      "dur": "4.240",
+      "text": "mean, sure, it's a good start. It'll at"
+    },
+    {
+      "start": "31.679",
+      "dur": "4.961",
+      "text": "least 2x your output using AI coding"
+    },
+    {
+      "start": "34.320",
+      "dur": "4.640",
+      "text": "assistance, but why stop there? Why not"
+    },
+    {
+      "start": "36.640",
+      "dur": "4.960",
+      "text": "go for parallel agents to 10x your"
+    },
+    {
+      "start": "38.960",
+      "dur": "5.439",
+      "text": "output or even beyond that? And by the"
+    },
+    {
+      "start": "41.600",
+      "dur": "5.200",
+      "text": "way, this 10x versus 2x framing is very"
+    },
+    {
+      "start": "44.399",
+      "dur": "5.361",
+      "text": "inspired by this book, 10x is easier"
+    },
+    {
+      "start": "46.800",
+      "dur": "4.560",
+      "text": "than 2x Dan Sullivan and Dr. Benjamin"
+    },
+    {
+      "start": "49.760",
+      "dur": "3.119",
+      "text": "Hardy. is a very good read by the way"
+    },
+    {
+      "start": "51.360",
+      "dur": "3.440",
+      "text": "and I'm applying it here because the"
+    },
+    {
+      "start": "52.879",
+      "dur": "4.961",
+      "text": "main argument in the book is that when"
+    },
+    {
+      "start": "54.800",
+      "dur": "5.439",
+      "text": "you go 10x over 2x or that's your goal"
+    },
+    {
+      "start": "57.840",
+      "dur": "5.519",
+      "text": "it actually is easier because it forces"
+    },
+    {
+      "start": "60.239",
+      "dur": "5.041",
+      "text": "you to think differently for AI coding"
+    },
+    {
+      "start": "63.359",
+      "dur": "4.241",
+      "text": "it forces us to think about building a"
+    },
+    {
+      "start": "65.280",
+      "dur": "3.920",
+      "text": "system to make our coding agents more"
+    },
+    {
+      "start": "67.600",
+      "dur": "3.440",
+      "text": "self- sustainable because otherwise"
+    },
+    {
+      "start": "69.200",
+      "dur": "3.279",
+      "text": "there's no way that it would scale and"
+    },
+    {
+      "start": "71.040",
+      "dur": "3.439",
+      "text": "of course there are features already"
+    },
+    {
+      "start": "72.479",
+      "dur": "3.601",
+      "text": "built into these coding agents to"
+    },
+    {
+      "start": "74.479",
+      "dur": "3.601",
+      "text": "support parallel agentic development"
+    },
+    {
+      "start": "76.080",
+      "dur": "4.560",
+      "text": "like claude code has claude agent teams"
+    },
+    {
+      "start": "78.080",
+      "dur": "4.640",
+      "text": "for example but honestly That's not very"
+    },
+    {
+      "start": "80.640",
+      "dur": "4.560",
+      "text": "reliable and it's not a true system to"
+    },
+    {
+      "start": "82.720",
+      "dur": "4.800",
+      "text": "give agents self- sustainability to make"
+    },
+    {
+      "start": "85.200",
+      "dur": "4.239",
+      "text": "parallel agents really realistic and"
+    },
+    {
+      "start": "87.520",
+      "dur": "4.000",
+      "text": "it's also definitely not enough to just"
+    },
+    {
+      "start": "89.439",
+      "dur": "4.720",
+      "text": "spin up five instances of cloud code or"
+    },
+    {
+      "start": "91.520",
+      "dur": "4.800",
+      "text": "codecs or whatever because sure I can"
+    },
+    {
+      "start": "94.159",
+      "dur": "3.681",
+      "text": "give multiple different feature requests"
+    },
+    {
+      "start": "96.320",
+      "dur": "2.799",
+      "text": "to these different agents but they're"
+    },
+    {
+      "start": "97.840",
+      "dur": "3.440",
+      "text": "going to step on each other's toes"
+    },
+    {
+      "start": "99.119",
+      "dur": "3.921",
+      "text": "constantly override each other's changes"
+    },
+    {
+      "start": "101.280",
+      "dur": "3.760",
+      "text": "we need a system especially centered"
+    },
+    {
+      "start": "103.040",
+      "dur": "3.520",
+      "text": "around work trees and so that's the"
+    },
+    {
+      "start": "105.040",
+      "dur": "3.439",
+      "text": "system that I want to cover with you"
+    },
+    {
+      "start": "106.560",
+      "dur": "4.000",
+      "text": "right now this video is really two parts"
+    },
+    {
+      "start": "108.479",
+      "dur": "4.320",
+      "text": "I want to start with the five pillars"
+    },
+    {
+      "start": "110.560",
+      "dur": "3.519",
+      "text": "and this is really simple to understand."
+    },
+    {
+      "start": "112.799",
+      "dur": "3.600",
+      "text": "I just want to cover the five things"
+    },
+    {
+      "start": "114.079",
+      "dur": "4.000",
+      "text": "that we need for parallel agentic"
+    },
+    {
+      "start": "116.399",
+      "dur": "4.080",
+      "text": "development to really work and a lot of"
+    },
+    {
+      "start": "118.079",
+      "dur": "3.841",
+      "text": "it is going to center around git work"
+    },
+    {
+      "start": "120.479",
+      "dur": "3.761",
+      "text": "trees and then the second part of the"
+    },
+    {
+      "start": "121.920",
+      "dur": "4.000",
+      "text": "video goes a little bit deeper for real"
+    },
+    {
+      "start": "124.240",
+      "dur": "3.280",
+      "text": "engineering. This is the good stuff here"
+    },
+    {
+      "start": "125.920",
+      "dur": "3.440",
+      "text": "because there are some common problems"
+    },
+    {
+      "start": "127.520",
+      "dur": "4.079",
+      "text": "that come up whenever you have your"
+    },
+    {
+      "start": "129.360",
+      "dur": "4.560",
+      "text": "agents do end toend validation in"
+    },
+    {
+      "start": "131.599",
+      "dur": "4.241",
+      "text": "parallel port conflicts installing"
+    },
+    {
+      "start": "133.920",
+      "dur": "3.520",
+      "text": "dependencies token blowout. I want to"
+    },
+    {
+      "start": "135.840",
+      "dur": "3.520",
+      "text": "talk about how we address all of these"
+    },
+    {
+      "start": "137.440",
+      "dur": "4.560",
+      "text": "things to make it so that you can really"
+    },
+    {
+      "start": "139.360",
+      "dur": "4.800",
+      "text": "scale your work, 10x your agentic"
+    },
+    {
+      "start": "142.000",
+      "dur": "3.599",
+      "text": "development and beyond. Now, before we"
+    },
+    {
+      "start": "144.160",
+      "dur": "2.960",
+      "text": "get into the five pillars, I want to"
+    },
+    {
+      "start": "145.599",
+      "dur": "3.280",
+      "text": "just really quickly address the elephant"
+    },
+    {
+      "start": "147.120",
+      "dur": "3.199",
+      "text": "in the room here, which is Archon. If"
+    },
+    {
+      "start": "148.879",
+      "dur": "3.360",
+      "text": "you've been following my open-source"
+    },
+    {
+      "start": "150.319",
+      "dur": "3.521",
+      "text": "harness builder, you know that I've"
+    },
+    {
+      "start": "152.239",
+      "dur": "3.841",
+      "text": "built support for a lot of these things"
+    },
+    {
+      "start": "153.840",
+      "dur": "4.960",
+      "text": "like isolation and workre. So, it's a"
+    },
+    {
+      "start": "156.080",
+      "dur": "5.120",
+      "text": "system that ships ready for you to do"
+    },
+    {
+      "start": "158.800",
+      "dur": "4.320",
+      "text": "parallel agentic development at extreme"
+    },
+    {
+      "start": "161.200",
+      "dur": "4.160",
+      "text": "scale. And so a lot of the things that"
+    },
+    {
+      "start": "163.120",
+      "dur": "3.600",
+      "text": "we'll cover in this video, Archon takes"
+    },
+    {
+      "start": "165.360",
+      "dur": "3.200",
+      "text": "care of for you, but it's still"
+    },
+    {
+      "start": "166.720",
+      "dur": "4.000",
+      "text": "important to understand how Archon"
+    },
+    {
+      "start": "168.560",
+      "dur": "3.759",
+      "text": "works, how to use it effectively, and"
+    },
+    {
+      "start": "170.720",
+      "dur": "2.799",
+      "text": "then some of the strategies that we'll"
+    },
+    {
+      "start": "172.319",
+      "dur": "2.241",
+      "text": "talk about in the second part of the"
+    },
+    {
+      "start": "173.519",
+      "dur": "2.881",
+      "text": "video are things that you'd actually"
+    },
+    {
+      "start": "174.560",
+      "dur": "4.080",
+      "text": "want to build in your Archon workflows."
+    },
+    {
+      "start": "176.400",
+      "dur": "4.080",
+      "text": "And so even if you are using Archon,"
+    },
+    {
+      "start": "178.640",
+      "dur": "3.599",
+      "text": "it's still really good to know how this"
+    },
+    {
+      "start": "180.480",
+      "dur": "3.839",
+      "text": "works. And also, I don't want to always"
+    },
+    {
+      "start": "182.239",
+      "dur": "3.920",
+      "text": "expect you to use my tool even though it"
+    },
+    {
+      "start": "184.319",
+      "dur": "3.041",
+      "text": "is free and open source. And so that's"
+    },
+    {
+      "start": "186.159",
+      "dur": "3.521",
+      "text": "why I want to cover these things with"
+    },
+    {
+      "start": "187.360",
+      "dur": "3.760",
+      "text": "you, my system for parallel agentic"
+    },
+    {
+      "start": "189.680",
+      "dur": "3.440",
+      "text": "development. So with that, let's get"
+    },
+    {
+      "start": "191.120",
+      "dur": "4.479",
+      "text": "into the five pillars. All right, so"
+    },
+    {
+      "start": "193.120",
+      "dur": "4.240",
+      "text": "pillar number one is that issue is the"
+    },
+    {
+      "start": "195.599",
+      "dur": "3.920",
+      "text": "spec. Pretty much all of my agenda"
+    },
+    {
+      "start": "197.360",
+      "dur": "4.640",
+      "text": "coding. Now, my input into any"
+    },
+    {
+      "start": "199.519",
+      "dur": "3.761",
+      "text": "implementation is always a GitHub issue."
+    },
+    {
+      "start": "202.000",
+      "dur": "3.040",
+      "text": "And of course, if you're using some kind"
+    },
+    {
+      "start": "203.280",
+      "dur": "4.480",
+      "text": "of task management platform like Linear"
+    },
+    {
+      "start": "205.040",
+      "dur": "5.119",
+      "text": "or Jira, the ticket is going to be the"
+    },
+    {
+      "start": "207.760",
+      "dur": "4.399",
+      "text": "input into the implementation. And then"
+    },
+    {
+      "start": "210.159",
+      "dur": "3.440",
+      "text": "for validation, the input is always the"
+    },
+    {
+      "start": "212.159",
+      "dur": "2.961",
+      "text": "pull request. We'll talk about that in a"
+    },
+    {
+      "start": "213.599",
+      "dur": "4.161",
+      "text": "little bit as well, but let me go to the"
+    },
+    {
+      "start": "215.120",
+      "dur": "4.800",
+      "text": "GitHub repository for this video to show"
+    },
+    {
+      "start": "217.760",
+      "dur": "4.240",
+      "text": "you exactly what I mean. So, by the way,"
+    },
+    {
+      "start": "219.920",
+      "dur": "5.360",
+      "text": "for this video, I built a very simple"
+    },
+    {
+      "start": "222.000",
+      "dur": "4.799",
+      "text": "GitHub issue triager dashboard. So, it's"
+    },
+    {
+      "start": "225.280",
+      "dur": "2.879",
+      "text": "not like it's some crazy powerful"
+    },
+    {
+      "start": "226.799",
+      "dur": "2.800",
+      "text": "application I built or anything. I just"
+    },
+    {
+      "start": "228.159",
+      "dur": "3.921",
+      "text": "built it to have a demonstration for"
+    },
+    {
+      "start": "229.599",
+      "dur": "4.321",
+      "text": "this video. It helps us classify GitHub"
+    },
+    {
+      "start": "232.080",
+      "dur": "3.360",
+      "text": "issues, managing a repo, and then"
+    },
+    {
+      "start": "233.920",
+      "dur": "3.599",
+      "text": "everything is stored in the back end in"
+    },
+    {
+      "start": "235.440",
+      "dur": "4.079",
+      "text": "a Postgress database using Neon. So, we"
+    },
+    {
+      "start": "237.519",
+      "dur": "3.601",
+      "text": "have our issues, plans for the issues,"
+    },
+    {
+      "start": "239.519",
+      "dur": "3.440",
+      "text": "and classifications. I might actually"
+    },
+    {
+      "start": "241.120",
+      "dur": "3.679",
+      "text": "keep working on this. But anyway, the"
+    },
+    {
+      "start": "242.959",
+      "dur": "4.881",
+      "text": "point here going back to the repository"
+    },
+    {
+      "start": "244.799",
+      "dur": "5.440",
+      "text": "is that I have five open issues. And so"
+    },
+    {
+      "start": "247.840",
+      "dur": "4.880",
+      "text": "I am ready to spin up five agents in"
+    },
+    {
+      "start": "250.239",
+      "dur": "5.041",
+      "text": "parallel to handle each one of them. The"
+    },
+    {
+      "start": "252.720",
+      "dur": "5.120",
+      "text": "power of having the issue or the ticket"
+    },
+    {
+      "start": "255.280",
+      "dur": "5.040",
+      "text": "as the input is we already have the"
+    },
+    {
+      "start": "257.840",
+      "dur": "4.639",
+      "text": "individual pieces of work scoped out."
+    },
+    {
+      "start": "260.320",
+      "dur": "4.240",
+      "text": "And so usually what I'll do is I'll"
+    },
+    {
+      "start": "262.479",
+      "dur": "3.681",
+      "text": "create a bunch of issues in batch and"
+    },
+    {
+      "start": "264.560",
+      "dur": "3.199",
+      "text": "I'll use a coding agent to help me do"
+    },
+    {
+      "start": "266.160",
+      "dur": "3.360",
+      "text": "that because generally when you're"
+    },
+    {
+      "start": "267.759",
+      "dur": "4.000",
+      "text": "working on an application you move in"
+    },
+    {
+      "start": "269.520",
+      "dur": "3.600",
+      "text": "sprints where you have a bunch of bugs"
+    },
+    {
+      "start": "271.759",
+      "dur": "3.361",
+      "text": "and features that you want to implement"
+    },
+    {
+      "start": "273.120",
+      "dur": "4.639",
+      "text": "at the same time. And so usually I'll"
+    },
+    {
+      "start": "275.120",
+      "dur": "5.040",
+      "text": "work with my coding agent here to create"
+    },
+    {
+      "start": "277.759",
+      "dur": "5.041",
+      "text": "these bugs and feature requests as"
+    },
+    {
+      "start": "280.160",
+      "dur": "4.400",
+      "text": "issues in GitHub and then I'll go into"
+    },
+    {
+      "start": "282.800",
+      "dur": "3.520",
+      "text": "my parallel development. So it's sort of"
+    },
+    {
+      "start": "284.560",
+      "dur": "4.240",
+      "text": "like a fano pattern, right? like you"
+    },
+    {
+      "start": "286.320",
+      "dur": "4.159",
+      "text": "start with one coding agent session to"
+    },
+    {
+      "start": "288.800",
+      "dur": "3.920",
+      "text": "split your work into these different"
+    },
+    {
+      "start": "290.479",
+      "dur": "4.561",
+      "text": "issues. Then you send them all out to be"
+    },
+    {
+      "start": "292.720",
+      "dur": "4.479",
+      "text": "implemented at the same time. Then going"
+    },
+    {
+      "start": "295.040",
+      "dur": "5.040",
+      "text": "to pillars two and three. Once we have"
+    },
+    {
+      "start": "297.199",
+      "dur": "4.720",
+      "text": "the bug fix or feature scoped out in an"
+    },
+    {
+      "start": "300.080",
+      "dur": "3.360",
+      "text": "issue or ticket, then we're going to go"
+    },
+    {
+      "start": "301.919",
+      "dur": "3.121",
+      "text": "through the stages of planning,"
+    },
+    {
+      "start": "303.440",
+      "dur": "3.520",
+      "text": "building, and validating, but each one"
+    },
+    {
+      "start": "305.040",
+      "dur": "4.400",
+      "text": "of the coding agents working with their"
+    },
+    {
+      "start": "306.960",
+      "dur": "4.480",
+      "text": "own local copy of the codebase so they"
+    },
+    {
+      "start": "309.440",
+      "dur": "4.640",
+      "text": "aren't overwriting each other's changes."
+    },
+    {
+      "start": "311.440",
+      "dur": "4.720",
+      "text": "That is what git work trees gives us."
+    },
+    {
+      "start": "314.080",
+      "dur": "4.399",
+      "text": "And by the way, work trees are supported"
+    },
+    {
+      "start": "316.160",
+      "dur": "4.640",
+      "text": "natively in claude code. So I can do"
+    },
+    {
+      "start": "318.479",
+      "dur": "5.280",
+      "text": "claude and then it's d-worktree"
+    },
+    {
+      "start": "320.800",
+      "dur": "4.959",
+      "text": "or you can just do dashw and then you"
+    },
+    {
+      "start": "323.759",
+      "dur": "3.761",
+      "text": "give the name of the work tree. Like it"
+    },
+    {
+      "start": "325.759",
+      "dur": "4.241",
+      "text": "can just be the issue number like"
+    },
+    {
+      "start": "327.520",
+      "dur": "4.320",
+      "text": "issue-10 or you can give a description"
+    },
+    {
+      "start": "330.000",
+      "dur": "3.199",
+      "text": "of the feature whatever it is. And so"
+    },
+    {
+      "start": "331.840",
+      "dur": "3.040",
+      "text": "I'm going to send this in. You can see"
+    },
+    {
+      "start": "333.199",
+      "dur": "4.321",
+      "text": "here that the path that we're operating"
+    },
+    {
+      "start": "334.880",
+      "dur": "5.200",
+      "text": "in is a work tree created in the"
+    },
+    {
+      "start": "337.520",
+      "dur": "4.320",
+      "text": "do.cloud folder. So this is my main"
+    },
+    {
+      "start": "340.080",
+      "dur": "4.160",
+      "text": "codebase right here. But then if I go"
+    },
+    {
+      "start": "341.840",
+      "dur": "4.320",
+      "text": "into doclaude work trees, we can see"
+    },
+    {
+      "start": "344.240",
+      "dur": "3.600",
+      "text": "that we have the folder issue 10. That's"
+    },
+    {
+      "start": "346.160",
+      "dur": "4.080",
+      "text": "the name of our workree. And then we"
+    },
+    {
+      "start": "347.840",
+      "dur": "4.560",
+      "text": "have the exact same codebase duplicated"
+    },
+    {
+      "start": "350.240",
+      "dur": "4.080",
+      "text": "here. That is the beauty of work trees"
+    },
+    {
+      "start": "352.400",
+      "dur": "4.079",
+      "text": "is now when our coding agent works on"
+    },
+    {
+      "start": "354.320",
+      "dur": "3.840",
+      "text": "the feature here, it's not going to be"
+    },
+    {
+      "start": "356.479",
+      "dur": "3.440",
+      "text": "overriding other features that other"
+    },
+    {
+      "start": "358.160",
+      "dur": "4.160",
+      "text": "coding agents are building. Each one of"
+    },
+    {
+      "start": "359.919",
+      "dur": "4.161",
+      "text": "them has their own environment. And by"
+    },
+    {
+      "start": "362.320",
+      "dur": "4.080",
+      "text": "the way, later on in the video when I"
+    },
+    {
+      "start": "364.080",
+      "dur": "4.000",
+      "text": "show you my system to handle the more"
+    },
+    {
+      "start": "366.400",
+      "dur": "3.200",
+      "text": "trickier parts of parallel development,"
+    },
+    {
+      "start": "368.080",
+      "dur": "3.520",
+      "text": "I'll talk about how we can create work"
+    },
+    {
+      "start": "369.600",
+      "dur": "3.760",
+      "text": "trees for any coding agent, even ones"
+    },
+    {
+      "start": "371.600",
+      "dur": "3.840",
+      "text": "that don't support it natively like"
+    },
+    {
+      "start": "373.360",
+      "dur": "3.760",
+      "text": "Claude Code. But this is the starting"
+    },
+    {
+      "start": "375.440",
+      "dur": "3.840",
+      "text": "point. It's very easy to do work trees"
+    },
+    {
+      "start": "377.120",
+      "dur": "4.160",
+      "text": "with Claude like I just showed you. All"
+    },
+    {
+      "start": "379.280",
+      "dur": "5.199",
+      "text": "right. Now, what I did off camera is I"
+    },
+    {
+      "start": "381.280",
+      "dur": "5.919",
+      "text": "created five git work trees to work on"
+    },
+    {
+      "start": "384.479",
+      "dur": "5.361",
+      "text": "each of the issues in parallel. So, I"
+    },
+    {
+      "start": "387.199",
+      "dur": "4.161",
+      "text": "essentially did a claude-w, but I'm"
+    },
+    {
+      "start": "389.840",
+      "dur": "3.359",
+      "text": "using a custom script here because it"
+    },
+    {
+      "start": "391.360",
+      "dur": "3.600",
+      "text": "takes care of some of the fancier stuff"
+    },
+    {
+      "start": "393.199",
+      "dur": "3.280",
+      "text": "that we'll get to in a little bit in the"
+    },
+    {
+      "start": "394.960",
+      "dur": "3.760",
+      "text": "video, like installing the dependencies"
+    },
+    {
+      "start": "396.479",
+      "dur": "3.601",
+      "text": "up front, creating a database branch."
+    },
+    {
+      "start": "398.720",
+      "dur": "3.199",
+      "text": "We'll get into all that. It's very"
+    },
+    {
+      "start": "400.080",
+      "dur": "4.239",
+      "text": "powerful. But essentially, I have five"
+    },
+    {
+      "start": "401.919",
+      "dur": "4.641",
+      "text": "work trees ready to go. And so, at this"
+    },
+    {
+      "start": "404.319",
+      "dur": "3.841",
+      "text": "point, this is where we point each work"
+    },
+    {
+      "start": "406.560",
+      "dur": "4.960",
+      "text": "tree, each cloud code in the work tree"
+    },
+    {
+      "start": "408.160",
+      "dur": "5.200",
+      "text": "to a GitHub issue as our input. And you"
+    },
+    {
+      "start": "411.520",
+      "dur": "5.280",
+      "text": "can use whatever your agent coding"
+    },
+    {
+      "start": "413.360",
+      "dur": "4.880",
+      "text": "process usually is to plan, build, and"
+    },
+    {
+      "start": "416.800",
+      "dur": "3.040",
+      "text": "validate. So maybe you have a set of"
+    },
+    {
+      "start": "418.240",
+      "dur": "4.000",
+      "text": "skills or commands. Maybe you're using a"
+    },
+    {
+      "start": "419.840",
+      "dur": "4.000",
+      "text": "framework like GitHub specit or BMAD. It"
+    },
+    {
+      "start": "422.240",
+      "dur": "3.840",
+      "text": "doesn't matter. You can use your usual"
+    },
+    {
+      "start": "423.840",
+      "dur": "3.759",
+      "text": "process. It's just instead of you typing"
+    },
+    {
+      "start": "426.080",
+      "dur": "3.040",
+      "text": "what you want up front, you're just"
+    },
+    {
+      "start": "427.599",
+      "dur": "3.201",
+      "text": "going to point it right to the issue. So"
+    },
+    {
+      "start": "429.120",
+      "dur": "2.960",
+      "text": "take a look at this. We'll look at our"
+    },
+    {
+      "start": "430.800",
+      "dur": "2.799",
+      "text": "issue list here. We'll say for the first"
+    },
+    {
+      "start": "432.080",
+      "dur": "3.920",
+      "text": "work tree, we want to work on issue"
+    },
+    {
+      "start": "433.599",
+      "dur": "6.320",
+      "text": "number one. All I have to say is use the"
+    },
+    {
+      "start": "436.000",
+      "dur": "7.840",
+      "text": "GitHub CLI to view issue one and help me"
+    },
+    {
+      "start": "439.919",
+      "dur": "6.081",
+      "text": "make a plan for it. It is that simple."
+    },
+    {
+      "start": "443.840",
+      "dur": "3.680",
+      "text": "And so for the sake of simplicity here,"
+    },
+    {
+      "start": "446.000",
+      "dur": "3.440",
+      "text": "I'm not going through my usual, you"
+    },
+    {
+      "start": "447.520",
+      "dur": "3.119",
+      "text": "know, more elaborate process with my"
+    },
+    {
+      "start": "449.440",
+      "dur": "2.319",
+      "text": "planning command and implementing"
+    },
+    {
+      "start": "450.639",
+      "dur": "3.601",
+      "text": "command. I'm just kind of doing free"
+    },
+    {
+      "start": "451.759",
+      "dur": "5.361",
+      "text": "form text here. Uh if you want to see my"
+    },
+    {
+      "start": "454.240",
+      "dur": "4.320",
+      "text": "full process for building with AI coding"
+    },
+    {
+      "start": "457.120",
+      "dur": "3.919",
+      "text": "assistance, I'll link to a video right"
+    },
+    {
+      "start": "458.560",
+      "dur": "4.240",
+      "text": "here where I show more intricately what"
+    },
+    {
+      "start": "461.039",
+      "dur": "3.201",
+      "text": "I do for planning and building and"
+    },
+    {
+      "start": "462.800",
+      "dur": "3.360",
+      "text": "validating. The point here is more to"
+    },
+    {
+      "start": "464.240",
+      "dur": "3.679",
+      "text": "focus on the parallel side of things."
+    },
+    {
+      "start": "466.160",
+      "dur": "3.039",
+      "text": "And so I sent this off. I'll literally"
+    },
+    {
+      "start": "467.919",
+      "dur": "3.521",
+      "text": "just copy this prompt. Check this out."
+    },
+    {
+      "start": "469.199",
+      "dur": "4.560",
+      "text": "I'll go into this one and say I'll use"
+    },
+    {
+      "start": "471.440",
+      "dur": "4.560",
+      "text": "the GitHub CLI to view issue number two."
+    },
+    {
+      "start": "473.759",
+      "dur": "4.880",
+      "text": "Very cool. And then go on to this one"
+    },
+    {
+      "start": "476.000",
+      "dur": "3.919",
+      "text": "and we'll do issue number three. It's a"
+    },
+    {
+      "start": "478.639",
+      "dur": "2.641",
+      "text": "little bit redundant here, but I'm"
+    },
+    {
+      "start": "479.919",
+      "dur": "3.521",
+      "text": "keeping this in the video on purpose"
+    },
+    {
+      "start": "481.280",
+      "dur": "3.280",
+      "text": "just to show you how easy it is to start"
+    },
+    {
+      "start": "483.440",
+      "dur": "4.319",
+      "text": "up the session because we're going to"
+    },
+    {
+      "start": "484.560",
+      "dur": "4.800",
+      "text": "use our exact same process of planning."
+    },
+    {
+      "start": "487.759",
+      "dur": "3.201",
+      "text": "Maybe it's a command or whatever."
+    },
+    {
+      "start": "489.360",
+      "dur": "3.760",
+      "text": "Literally the only thing we have to"
+    },
+    {
+      "start": "490.960",
+      "dur": "3.600",
+      "text": "change is the underlying issue number."
+    },
+    {
+      "start": "493.120",
+      "dur": "3.120",
+      "text": "And so now it's going to create a plan"
+    },
+    {
+      "start": "494.560",
+      "dur": "3.680",
+      "text": "for each one of these all in parallel."
+    },
+    {
+      "start": "496.240",
+      "dur": "3.840",
+      "text": "And so I'll come back once we have that."
+    },
+    {
+      "start": "498.240",
+      "dur": "3.840",
+      "text": "All right. So the plan is back for each"
+    },
+    {
+      "start": "500.080",
+      "dur": "3.600",
+      "text": "one of our issues now. And so I'm not"
+    },
+    {
+      "start": "502.080",
+      "dur": "3.040",
+      "text": "going to get into the weeds with exactly"
+    },
+    {
+      "start": "503.680",
+      "dur": "3.919",
+      "text": "what it's planning for each issue."
+    },
+    {
+      "start": "505.120",
+      "dur": "4.639",
+      "text": "That's not the point of this video. The"
+    },
+    {
+      "start": "507.599",
+      "dur": "4.160",
+      "text": "point is now we have all these plans. I"
+    },
+    {
+      "start": "509.759",
+      "dur": "3.361",
+      "text": "can just say go ahead and implement. And"
+    },
+    {
+      "start": "511.759",
+      "dur": "2.241",
+      "text": "we can do it all at the same time"
+    },
+    {
+      "start": "513.120",
+      "dur": "2.479",
+      "text": "because they're not going to be"
+    },
+    {
+      "start": "514.000",
+      "dur": "3.680",
+      "text": "overriding each other's changes since we"
+    },
+    {
+      "start": "515.599",
+      "dur": "4.081",
+      "text": "have the separate code bases. And so"
+    },
+    {
+      "start": "517.680",
+      "dur": "3.520",
+      "text": "again, usually my plan and implement"
+    },
+    {
+      "start": "519.680",
+      "dur": "3.120",
+      "text": "process is more elaborate. I'm going to"
+    },
+    {
+      "start": "521.200",
+      "dur": "3.600",
+      "text": "be reviewing on the plan and iterating"
+    },
+    {
+      "start": "522.800",
+      "dur": "3.520",
+      "text": "it with the agent, but for the sake of"
+    },
+    {
+      "start": "524.800",
+      "dur": "3.200",
+      "text": "demo here, I'm just going to say go with"
+    },
+    {
+      "start": "526.320",
+      "dur": "3.360",
+      "text": "what you recommend and implement all the"
+    },
+    {
+      "start": "528.000",
+      "dur": "5.040",
+      "text": "way to a pull request. I'm just going to"
+    },
+    {
+      "start": "529.680",
+      "dur": "5.120",
+      "text": "say this for each one of our work trees."
+    },
+    {
+      "start": "533.040",
+      "dur": "4.799",
+      "text": "And so it's important here that the"
+    },
+    {
+      "start": "534.800",
+      "dur": "5.920",
+      "text": "output of the implementation is a pull"
+    },
+    {
+      "start": "537.839",
+      "dur": "4.961",
+      "text": "request. Like I said, the issue is input"
+    },
+    {
+      "start": "540.720",
+      "dur": "4.080",
+      "text": "into the implementation and then the"
+    },
+    {
+      "start": "542.800",
+      "dur": "4.159",
+      "text": "pull request is going to be the input"
+    },
+    {
+      "start": "544.800",
+      "dur": "3.520",
+      "text": "into the validation. And so I'll let it"
+    },
+    {
+      "start": "546.959",
+      "dur": "3.201",
+      "text": "go through the implementation for each"
+    },
+    {
+      "start": "548.320",
+      "dur": "4.079",
+      "text": "of these and then I'll talk about the"
+    },
+    {
+      "start": "550.160",
+      "dur": "4.560",
+      "text": "fourth pillar for how we can do better"
+    },
+    {
+      "start": "552.399",
+      "dur": "4.721",
+      "text": "validation. Okay, so our implementation"
+    },
+    {
+      "start": "554.720",
+      "dur": "4.640",
+      "text": "is done for each of our work trees. As"
+    },
+    {
+      "start": "557.120",
+      "dur": "4.960",
+      "text": "you can see here, we now have a poll"
+    },
+    {
+      "start": "559.360",
+      "dur": "5.360",
+      "text": "request open up for every single one of"
+    },
+    {
+      "start": "562.080",
+      "dur": "5.439",
+      "text": "our issues. And so that my friend takes"
+    },
+    {
+      "start": "564.720",
+      "dur": "4.239",
+      "text": "us to the fourth pillar. And so the"
+    },
+    {
+      "start": "567.519",
+      "dur": "3.361",
+      "text": "interesting thing about pillars number"
+    },
+    {
+      "start": "568.959",
+      "dur": "3.761",
+      "text": "four and five is they're not directly"
+    },
+    {
+      "start": "570.880",
+      "dur": "4.079",
+      "text": "related to parallel agentic development"
+    },
+    {
+      "start": "572.720",
+      "dur": "4.640",
+      "text": "like the first three, but it's all about"
+    },
+    {
+      "start": "574.959",
+      "dur": "4.241",
+      "text": "the reliability of the validation to"
+    },
+    {
+      "start": "577.360",
+      "dur": "3.360",
+      "text": "make it so that you can really scale"
+    },
+    {
+      "start": "579.200",
+      "dur": "3.520",
+      "text": "your parallel agentic development."
+    },
+    {
+      "start": "580.720",
+      "dur": "4.160",
+      "text": "Because the thing is, if you don't have"
+    },
+    {
+      "start": "582.720",
+      "dur": "4.000",
+      "text": "a lot built into your system for self-"
+    },
+    {
+      "start": "584.880",
+      "dur": "3.920",
+      "text": "validation, then you're going to become"
+    },
+    {
+      "start": "586.720",
+      "dur": "3.600",
+      "text": "such a big bottleneck for your system"
+    },
+    {
+      "start": "588.800",
+      "dur": "3.440",
+      "text": "that you can't have that many agents"
+    },
+    {
+      "start": "590.320",
+      "dur": "4.880",
+      "text": "going at the same time. So that's why"
+    },
+    {
+      "start": "592.240",
+      "dur": "5.360",
+      "text": "I'm so focused on these two things to"
+    },
+    {
+      "start": "595.200",
+      "dur": "5.040",
+      "text": "make the whole process more reliable. So"
+    },
+    {
+      "start": "597.600",
+      "dur": "4.239",
+      "text": "one of the most important strategies for"
+    },
+    {
+      "start": "600.240",
+      "dur": "3.680",
+      "text": "honestly working with large language"
+    },
+    {
+      "start": "601.839",
+      "dur": "4.881",
+      "text": "models in general is you don't want it"
+    },
+    {
+      "start": "603.920",
+      "dur": "4.720",
+      "text": "to validate its own work in the same"
+    },
+    {
+      "start": "606.720",
+      "dur": "4.559",
+      "text": "context window where it did the"
+    },
+    {
+      "start": "608.640",
+      "dur": "4.639",
+      "text": "implementation. There is so much bias"
+    },
+    {
+      "start": "611.279",
+      "dur": "4.240",
+      "text": "that the agent builds up within the"
+    },
+    {
+      "start": "613.279",
+      "dur": "4.240",
+      "text": "conversation that if you tell it to"
+    },
+    {
+      "start": "615.519",
+      "dur": "4.081",
+      "text": "review the code in the same context"
+    },
+    {
+      "start": "617.519",
+      "dur": "4.000",
+      "text": "window, it's like asking a kid to grade"
+    },
+    {
+      "start": "619.600",
+      "dur": "3.600",
+      "text": "their own homework. they're going to"
+    },
+    {
+      "start": "621.519",
+      "dur": "3.921",
+      "text": "sweep a lot of things under the rug and"
+    },
+    {
+      "start": "623.200",
+      "dur": "4.480",
+      "text": "say it looks good because they just did"
+    },
+    {
+      "start": "625.440",
+      "dur": "4.959",
+      "text": "the work. And so what we want to do is"
+    },
+    {
+      "start": "627.680",
+      "dur": "4.960",
+      "text": "start a fresh context window. The"
+    },
+    {
+      "start": "630.399",
+      "dur": "4.241",
+      "text": "reviewer should never see the writer's"
+    },
+    {
+      "start": "632.640",
+      "dur": "4.319",
+      "text": "chat. So now going back to our cloud"
+    },
+    {
+      "start": "634.640",
+      "dur": "4.240",
+      "text": "code sessions, there is a specialized"
+    },
+    {
+      "start": "636.959",
+      "dur": "4.320",
+      "text": "command that I have created for this"
+    },
+    {
+      "start": "638.880",
+      "dur": "4.720",
+      "text": "called review PR. So it automatically"
+    },
+    {
+      "start": "641.279",
+      "dur": "4.721",
+      "text": "data mines the poll request associated"
+    },
+    {
+      "start": "643.600",
+      "dur": "4.080",
+      "text": "with the current branch and it does a"
+    },
+    {
+      "start": "646.000",
+      "dur": "3.200",
+      "text": "comprehensive review. But the important"
+    },
+    {
+      "start": "647.680",
+      "dur": "2.880",
+      "text": "thing is we want to do this in a"
+    },
+    {
+      "start": "649.200",
+      "dur": "4.879",
+      "text": "separate session. So I'm actually going"
+    },
+    {
+      "start": "650.560",
+      "dur": "6.399",
+      "text": "to run a slashclear completely wipe the"
+    },
+    {
+      "start": "654.079",
+      "dur": "5.361",
+      "text": "context window. Then I will do a review"
+    },
+    {
+      "start": "656.959",
+      "dur": "4.081",
+      "text": "PR. So I don't need to get super deep"
+    },
+    {
+      "start": "659.440",
+      "dur": "3.120",
+      "text": "into what the workflow looks like here,"
+    },
+    {
+      "start": "661.040",
+      "dur": "4.640",
+      "text": "but essentially it's going to based on"
+    },
+    {
+      "start": "662.560",
+      "dur": "4.719",
+      "text": "the git diffs analyze the code changes,"
+    },
+    {
+      "start": "665.680",
+      "dur": "3.360",
+      "text": "compare it to the issue to make sure"
+    },
+    {
+      "start": "667.279",
+      "dur": "4.161",
+      "text": "we're really addressing the issue and"
+    },
+    {
+      "start": "669.040",
+      "dur": "4.160",
+      "text": "then spin up specialized sub aents just"
+    },
+    {
+      "start": "671.440",
+      "dur": "4.079",
+      "text": "to make sure that the implementation is"
+    },
+    {
+      "start": "673.200",
+      "dur": "3.520",
+      "text": "ideal. And of course this command will"
+    },
+    {
+      "start": "675.519",
+      "dur": "3.601",
+      "text": "be linked in the description. this"
+    },
+    {
+      "start": "676.720",
+      "dur": "3.920",
+      "text": "entire repository will be because also"
+    },
+    {
+      "start": "679.120",
+      "dur": "3.040",
+      "text": "there's a lot of references that I have"
+    },
+    {
+      "start": "680.640",
+      "dur": "3.439",
+      "text": "here getting into some of the fancier"
+    },
+    {
+      "start": "682.160",
+      "dur": "3.359",
+      "text": "stuff we'll talk about in a little bit."
+    },
+    {
+      "start": "684.079",
+      "dur": "3.440",
+      "text": "So I'm going to go ahead and run review"
+    },
+    {
+      "start": "685.519",
+      "dur": "3.681",
+      "text": "PR here and then I'm just going to keep"
+    },
+    {
+      "start": "687.519",
+      "dur": "3.841",
+      "text": "going through all of these sessions"
+    },
+    {
+      "start": "689.200",
+      "dur": "3.920",
+      "text": "clearing doing the review PR. I'll come"
+    },
+    {
+      "start": "691.360",
+      "dur": "4.159",
+      "text": "back once we have the reviews for each"
+    },
+    {
+      "start": "693.120",
+      "dur": "4.800",
+      "text": "one of them. Our reviews are done. Looks"
+    },
+    {
+      "start": "695.519",
+      "dur": "4.560",
+      "text": "like this one says approve ship as is."
+    },
+    {
+      "start": "697.920",
+      "dur": "3.599",
+      "text": "We got uh one with approve with changes,"
+    },
+    {
+      "start": "700.079",
+      "dur": "3.281",
+      "text": "approve with changes, approve with"
+    },
+    {
+      "start": "701.519",
+      "dur": "3.760",
+      "text": "changes. So couple of little things to"
+    },
+    {
+      "start": "703.360",
+      "dur": "4.080",
+      "text": "fix here. And then uh this one, oh"
+    },
+    {
+      "start": "705.279",
+      "dur": "4.000",
+      "text": "actually request changes. So this one it"
+    },
+    {
+      "start": "707.440",
+      "dur": "3.600",
+      "text": "found two critical issues. So it's good"
+    },
+    {
+      "start": "709.279",
+      "dur": "2.961",
+      "text": "we're doing the review here. Always"
+    },
+    {
+      "start": "711.040",
+      "dur": "2.720",
+      "text": "important to do the review with the"
+    },
+    {
+      "start": "712.240",
+      "dur": "3.360",
+      "text": "coding agent and then yourself after"
+    },
+    {
+      "start": "713.760",
+      "dur": "4.240",
+      "text": "before you're merging any pull requests"
+    },
+    {
+      "start": "715.600",
+      "dur": "3.520",
+      "text": "into production. And then one other"
+    },
+    {
+      "start": "718.000",
+      "dur": "3.760",
+      "text": "thing I want to show you here, just"
+    },
+    {
+      "start": "719.120",
+      "dur": "5.200",
+      "text": "another cool golden nugget to include is"
+    },
+    {
+      "start": "721.760",
+      "dur": "4.400",
+      "text": "I love also using other coding agents to"
+    },
+    {
+      "start": "724.320",
+      "dur": "4.480",
+      "text": "review the work of Claude Code. So for"
+    },
+    {
+      "start": "726.160",
+      "dur": "5.119",
+      "text": "example, using the codeex plugin for"
+    },
+    {
+      "start": "728.800",
+      "dur": "4.479",
+      "text": "Claude Code. Very powerful. I'll link to"
+    },
+    {
+      "start": "731.279",
+      "dur": "3.921",
+      "text": "this GitHub repo in the description."
+    },
+    {
+      "start": "733.279",
+      "dur": "3.921",
+      "text": "very easy to get installed through the"
+    },
+    {
+      "start": "735.200",
+      "dur": "4.160",
+      "text": "anthropic plug-in marketplace. And so"
+    },
+    {
+      "start": "737.200",
+      "dur": "5.759",
+      "text": "then what we can do is run a command"
+    },
+    {
+      "start": "739.360",
+      "dur": "5.760",
+      "text": "called /codex adversarial review. And so"
+    },
+    {
+      "start": "742.959",
+      "dur": "4.241",
+      "text": "it's going to review this current branch"
+    },
+    {
+      "start": "745.120",
+      "dur": "3.920",
+      "text": "as it relates to the changes from main."
+    },
+    {
+      "start": "747.200",
+      "dur": "4.319",
+      "text": "I'm going to send this off on each one"
+    },
+    {
+      "start": "749.040",
+      "dur": "4.239",
+      "text": "of them. Not that you always have to do"
+    },
+    {
+      "start": "751.519",
+      "dur": "3.760",
+      "text": "this comprehensive of a review where you"
+    },
+    {
+      "start": "753.279",
+      "dur": "3.921",
+      "text": "have both Claude and Codeex doing the"
+    },
+    {
+      "start": "755.279",
+      "dur": "3.281",
+      "text": "review in separate sessions, but it can"
+    },
+    {
+      "start": "757.200",
+      "dur": "3.439",
+      "text": "be pretty helpful if you want to be"
+    },
+    {
+      "start": "758.560",
+      "dur": "3.680",
+      "text": "really thorough making sure that again"
+    },
+    {
+      "start": "760.639",
+      "dur": "4.320",
+      "text": "the agent takes care of as much"
+    },
+    {
+      "start": "762.240",
+      "dur": "4.560",
+      "text": "validation as possible so that you don't"
+    },
+    {
+      "start": "764.959",
+      "dur": "3.761",
+      "text": "have to be the bottleneck for your"
+    },
+    {
+      "start": "766.800",
+      "dur": "3.680",
+      "text": "system. And there we go. We got our"
+    },
+    {
+      "start": "768.720",
+      "dur": "3.679",
+      "text": "codeex reviews back for all of our pull"
+    },
+    {
+      "start": "770.480",
+      "dur": "3.760",
+      "text": "requests. And it ripped apart my code."
+    },
+    {
+      "start": "772.399",
+      "dur": "3.440",
+      "text": "It says I need attention for this one."
+    },
+    {
+      "start": "774.240",
+      "dur": "3.360",
+      "text": "Uh this one it actually approved, but"
+    },
+    {
+      "start": "775.839",
+      "dur": "3.761",
+      "text": "then for the other three I checked off"
+    },
+    {
+      "start": "777.600",
+      "dur": "4.000",
+      "text": "camera. They all need attention. So,"
+    },
+    {
+      "start": "779.600",
+      "dur": "3.679",
+      "text": "it's good that we're doing these very"
+    },
+    {
+      "start": "781.600",
+      "dur": "3.359",
+      "text": "comprehensive reviews. We're definitely"
+    },
+    {
+      "start": "783.279",
+      "dur": "3.601",
+      "text": "finding things. And so, the goal here is"
+    },
+    {
+      "start": "784.959",
+      "dur": "4.320",
+      "text": "for the agent to address as many things"
+    },
+    {
+      "start": "786.880",
+      "dur": "4.399",
+      "text": "as possible. So, by the time it's our"
+    },
+    {
+      "start": "789.279",
+      "dur": "3.680",
+      "text": "turn to review, we don't have to be as"
+    },
+    {
+      "start": "791.279",
+      "dur": "4.641",
+      "text": "much of a bottleneck. There's less for"
+    },
+    {
+      "start": "792.959",
+      "dur": "5.120",
+      "text": "us to address. And so, at this point, we"
+    },
+    {
+      "start": "795.920",
+      "dur": "3.760",
+      "text": "now have our coding agent address these"
+    },
+    {
+      "start": "798.079",
+      "dur": "3.121",
+      "text": "problems, review things ourselves, and"
+    },
+    {
+      "start": "799.680",
+      "dur": "3.680",
+      "text": "then merge the pull requests. And then"
+    },
+    {
+      "start": "801.200",
+      "dur": "4.400",
+      "text": "we just move on to the next batch of"
+    },
+    {
+      "start": "803.360",
+      "dur": "4.560",
+      "text": "issues or tickets. That's the loop that"
+    },
+    {
+      "start": "805.600",
+      "dur": "5.039",
+      "text": "we go through here with parallel agentic"
+    },
+    {
+      "start": "807.920",
+      "dur": "4.560",
+      "text": "development. Very cool. And so the last"
+    },
+    {
+      "start": "810.639",
+      "dur": "4.320",
+      "text": "thing that I want to cover here as far"
+    },
+    {
+      "start": "812.480",
+      "dur": "5.280",
+      "text": "as the pillars go is the self-healing"
+    },
+    {
+      "start": "814.959",
+      "dur": "5.440",
+      "text": "layer. This is pillar number five. The"
+    },
+    {
+      "start": "817.760",
+      "dur": "5.199",
+      "text": "big mental model here is whenever we"
+    },
+    {
+      "start": "820.399",
+      "dur": "4.721",
+      "text": "encounter a bug in a pull request, we"
+    },
+    {
+      "start": "822.959",
+      "dur": "4.161",
+      "text": "don't just fix the bug and move on, but"
+    },
+    {
+      "start": "825.120",
+      "dur": "4.320",
+      "text": "we fix the underlying system that"
+    },
+    {
+      "start": "827.120",
+      "dur": "4.080",
+      "text": "allowed for the bug. And so this is"
+    },
+    {
+      "start": "829.440",
+      "dur": "4.880",
+      "text": "where we evolve what I like to call the"
+    },
+    {
+      "start": "831.200",
+      "dur": "5.120",
+      "text": "AI layer. all of the context engineering"
+    },
+    {
+      "start": "834.320",
+      "dur": "4.720",
+      "text": "for our coding agent like our global"
+    },
+    {
+      "start": "836.320",
+      "dur": "4.240",
+      "text": "rules, our workflows, our skills,"
+    },
+    {
+      "start": "839.040",
+      "dur": "4.239",
+      "text": "anything that's context to the coding"
+    },
+    {
+      "start": "840.560",
+      "dur": "4.880",
+      "text": "agent, we might want to make it better."
+    },
+    {
+      "start": "843.279",
+      "dur": "4.641",
+      "text": "And the easiest way to start this"
+    },
+    {
+      "start": "845.440",
+      "dur": "5.120",
+      "text": "process is for any of the issues that we"
+    },
+    {
+      "start": "847.920",
+      "dur": "6.800",
+      "text": "identified here, we just say like, hey,"
+    },
+    {
+      "start": "850.560",
+      "dur": "9.200",
+      "text": "uh, issue XYZ came up. What could we fix"
+    },
+    {
+      "start": "854.720",
+      "dur": "8.000",
+      "text": "in our rules, skills, workflows, etc. so"
+    },
+    {
+      "start": "859.760",
+      "dur": "4.000",
+      "text": "that this doesn't happen again. Now,"
+    },
+    {
+      "start": "862.720",
+      "dur": "3.280",
+      "text": "obviously, this is an"
+    },
+    {
+      "start": "863.760",
+      "dur": "3.920",
+      "text": "oversimplification, but the point is you"
+    },
+    {
+      "start": "866.000",
+      "dur": "4.000",
+      "text": "can work with the coding agent. It has"
+    },
+    {
+      "start": "867.680",
+      "dur": "3.760",
+      "text": "full context from the reviews to help"
+    },
+    {
+      "start": "870.000",
+      "dur": "4.560",
+      "text": "you identify like these are the core"
+    },
+    {
+      "start": "871.440",
+      "dur": "5.519",
+      "text": "problems. Like maybe your validate skill"
+    },
+    {
+      "start": "874.560",
+      "dur": "4.160",
+      "text": "doesn't have enough of a process laid"
+    },
+    {
+      "start": "876.959",
+      "dur": "3.761",
+      "text": "out or your planning isn't elaborate"
+    },
+    {
+      "start": "878.720",
+      "dur": "4.000",
+      "text": "enough or your rules need to specify"
+    },
+    {
+      "start": "880.720",
+      "dur": "3.840",
+      "text": "something new so that the coding agent"
+    },
+    {
+      "start": "882.720",
+      "dur": "3.280",
+      "text": "understands your codebase properly. Just"
+    },
+    {
+      "start": "884.560",
+      "dur": "3.519",
+      "text": "kind of spitballing a couple examples"
+    },
+    {
+      "start": "886.000",
+      "dur": "3.440",
+      "text": "here to give you the idea that usually"
+    },
+    {
+      "start": "888.079",
+      "dur": "3.760",
+      "text": "there's something that we need to change"
+    },
+    {
+      "start": "889.440",
+      "dur": "3.920",
+      "text": "in, you know, for cloud code, our claude"
+    },
+    {
+      "start": "891.839",
+      "dur": "3.281",
+      "text": "layer, like we have our commands, we"
+    },
+    {
+      "start": "893.360",
+      "dur": "4.080",
+      "text": "have our skills, or maybe it's something"
+    },
+    {
+      "start": "895.120",
+      "dur": "4.000",
+      "text": "we'd have to change in our claw.md."
+    },
+    {
+      "start": "897.440",
+      "dur": "3.680",
+      "text": "Whatever it is, it's good to make those"
+    },
+    {
+      "start": "899.120",
+      "dur": "3.839",
+      "text": "improvements cuz then we're evolving not"
+    },
+    {
+      "start": "901.120",
+      "dur": "4.079",
+      "text": "just our code base over time, but also"
+    },
+    {
+      "start": "902.959",
+      "dur": "4.161",
+      "text": "the reliability of our coding agents."
+    },
+    {
+      "start": "905.199",
+      "dur": "3.681",
+      "text": "And again, that's very important so that"
+    },
+    {
+      "start": "907.120",
+      "dur": "3.600",
+      "text": "over time we reduce how much we have to"
+    },
+    {
+      "start": "908.880",
+      "dur": "4.319",
+      "text": "be a bottleneck because we're making our"
+    },
+    {
+      "start": "910.720",
+      "dur": "4.479",
+      "text": "coding agents more self-sufficient. And"
+    },
+    {
+      "start": "913.199",
+      "dur": "4.561",
+      "text": "the last thing that I'll point out here"
+    },
+    {
+      "start": "915.199",
+      "dur": "5.200",
+      "text": "is it's also very powerful since we have"
+    },
+    {
+      "start": "917.760",
+      "dur": "5.439",
+      "text": "the issue going in and the pull request"
+    },
+    {
+      "start": "920.399",
+      "dur": "5.201",
+      "text": "coming out of our implementation. We can"
+    },
+    {
+      "start": "923.199",
+      "dur": "4.801",
+      "text": "actually do a comparison here. So like I"
+    },
+    {
+      "start": "925.600",
+      "dur": "4.400",
+      "text": "can open up this pull request and I can"
+    },
+    {
+      "start": "928.000",
+      "dur": "3.920",
+      "text": "go to the issues. It's related to issue"
+    },
+    {
+      "start": "930.000",
+      "dur": "5.040",
+      "text": "number one, right? So like pull request"
+    },
+    {
+      "start": "931.920",
+      "dur": "5.840",
+      "text": "number 12 closes issue number one. And"
+    },
+    {
+      "start": "935.040",
+      "dur": "4.560",
+      "text": "we can identify any discrepancies here."
+    },
+    {
+      "start": "937.760",
+      "dur": "3.600",
+      "text": "So, we can look at the git diffs and"
+    },
+    {
+      "start": "939.600",
+      "dur": "3.280",
+      "text": "obviously have our coding agent help us"
+    },
+    {
+      "start": "941.360",
+      "dur": "4.159",
+      "text": "do this, especially if you're not quite"
+    },
+    {
+      "start": "942.880",
+      "dur": "5.680",
+      "text": "as technical. We can compare what was"
+    },
+    {
+      "start": "945.519",
+      "dur": "5.281",
+      "text": "done for the actual work compared to the"
+    },
+    {
+      "start": "948.560",
+      "dur": "4.639",
+      "text": "scope that we had laid out in the issue."
+    },
+    {
+      "start": "950.800",
+      "dur": "4.080",
+      "text": "If the coding agent deviated in any kind"
+    },
+    {
+      "start": "953.199",
+      "dur": "3.601",
+      "text": "of way from planning to implementation,"
+    },
+    {
+      "start": "954.880",
+      "dur": "3.759",
+      "text": "it'll be obvious just comparing the poll"
+    },
+    {
+      "start": "956.800",
+      "dur": "3.440",
+      "text": "request to the issue. So, it's yet"
+    },
+    {
+      "start": "958.639",
+      "dur": "3.361",
+      "text": "another reason that I love using issues"
+    },
+    {
+      "start": "960.240",
+      "dur": "4.000",
+      "text": "and pull requests as the artifacts to"
+    },
+    {
+      "start": "962.000",
+      "dur": "3.920",
+      "text": "drive everything for my AI coding"
+    },
+    {
+      "start": "964.240",
+      "dur": "3.360",
+      "text": "because then it's very easy to, you"
+    },
+    {
+      "start": "965.920",
+      "dur": "2.960",
+      "text": "know, look back retroactively and see if"
+    },
+    {
+      "start": "967.600",
+      "dur": "2.880",
+      "text": "there's anything in our process that"
+    },
+    {
+      "start": "968.880",
+      "dur": "3.280",
+      "text": "needs to be adjusted because we deviate"
+    },
+    {
+      "start": "970.480",
+      "dur": "4.400",
+      "text": "from our plans frequently. That happens"
+    },
+    {
+      "start": "972.160",
+      "dur": "5.440",
+      "text": "a lot with coding agents. Really good to"
+    },
+    {
+      "start": "974.880",
+      "dur": "4.639",
+      "text": "do this after you have a set of pull"
+    },
+    {
+      "start": "977.600",
+      "dur": "4.080",
+      "text": "requests. All right, so if you have made"
+    },
+    {
+      "start": "979.519",
+      "dur": "4.161",
+      "text": "it this far, congratulations. You now"
+    },
+    {
+      "start": "981.680",
+      "dur": "4.320",
+      "text": "know the core workflow for parallel"
+    },
+    {
+      "start": "983.680",
+      "dur": "4.240",
+      "text": "agentic development. But now I want to"
+    },
+    {
+      "start": "986.000",
+      "dur": "3.920",
+      "text": "get into some of the trickier stuff that"
+    },
+    {
+      "start": "987.920",
+      "dur": "3.919",
+      "text": "you're going to encounter if you really"
+    },
+    {
+      "start": "989.920",
+      "dur": "3.599",
+      "text": "set up your agents for success by"
+    },
+    {
+      "start": "991.839",
+      "dur": "5.201",
+      "text": "allowing them to do end-to-end"
+    },
+    {
+      "start": "993.519",
+      "dur": "5.841",
+      "text": "validation. Static code analysis is not"
+    },
+    {
+      "start": "997.040",
+      "dur": "4.320",
+      "text": "enough. You need your agents to actually"
+    },
+    {
+      "start": "999.360",
+      "dur": "4.000",
+      "text": "start your application and use it as a"
+    },
+    {
+      "start": "1001.360",
+      "dur": "4.479",
+      "text": "user would to make sure you're really"
+    },
+    {
+      "start": "1003.360",
+      "dur": "3.839",
+      "text": "ready for the pull request merge. But"
+    },
+    {
+      "start": "1005.839",
+      "dur": "3.120",
+      "text": "there are these core problems that come"
+    },
+    {
+      "start": "1007.199",
+      "dur": "3.760",
+      "text": "up that we need to address for our"
+    },
+    {
+      "start": "1008.959",
+      "dur": "3.841",
+      "text": "agents to really be able to handle"
+    },
+    {
+      "start": "1010.959",
+      "dur": "4.081",
+      "text": "issues and pull requests completely end"
+    },
+    {
+      "start": "1012.800",
+      "dur": "4.000",
+      "text": "to end. So we can have five issues at"
+    },
+    {
+      "start": "1015.040",
+      "dur": "3.599",
+      "text": "breakfast and then five poll requests"
+    },
+    {
+      "start": "1016.800",
+      "dur": "3.839",
+      "text": "ready for us to review and merge before"
+    },
+    {
+      "start": "1018.639",
+      "dur": "3.681",
+      "text": "lunch. And so these are the five"
+    },
+    {
+      "start": "1020.639",
+      "dur": "3.761",
+      "text": "problems. And by the way, I'm going to"
+    },
+    {
+      "start": "1022.320",
+      "dur": "4.400",
+      "text": "go pretty quickly through these things"
+    },
+    {
+      "start": "1024.400",
+      "dur": "3.600",
+      "text": "because in the repository that I have"
+    },
+    {
+      "start": "1026.720",
+      "dur": "3.119",
+      "text": "here, of course linked in the"
+    },
+    {
+      "start": "1028.000",
+      "dur": "3.839",
+      "text": "description, all of this is a reference"
+    },
+    {
+      "start": "1029.839",
+      "dur": "3.521",
+      "text": "for you to point your coding agent at."
+    },
+    {
+      "start": "1031.839",
+      "dur": "2.881",
+      "text": "And so I literally say that at the top"
+    },
+    {
+      "start": "1033.360",
+      "dur": "3.360",
+      "text": "of the readme here. If you want to"
+    },
+    {
+      "start": "1034.720",
+      "dur": "3.760",
+      "text": "incorporate these ideas for handling"
+    },
+    {
+      "start": "1036.720",
+      "dur": "4.319",
+      "text": "port conflicts and database branching"
+    },
+    {
+      "start": "1038.480",
+      "dur": "4.079",
+      "text": "and all of that into your own AI coding"
+    },
+    {
+      "start": "1041.039",
+      "dur": "2.880",
+      "text": "systems, then just point your coding"
+    },
+    {
+      "start": "1042.559",
+      "dur": "3.041",
+      "text": "agent here and say, \"Hey, take these"
+    },
+    {
+      "start": "1043.919",
+      "dur": "3.841",
+      "text": "ideas from Cole. I love them.\" That's"
+    },
+    {
+      "start": "1045.600",
+      "dur": "4.800",
+      "text": "the goal that I have for you here. And"
+    },
+    {
+      "start": "1047.760",
+      "dur": "4.400",
+      "text": "so the first problem is port conflicts."
+    },
+    {
+      "start": "1050.400",
+      "dur": "3.519",
+      "text": "If you're starting many versions of your"
+    },
+    {
+      "start": "1052.160",
+      "dur": "3.519",
+      "text": "application up on your computer, they're"
+    },
+    {
+      "start": "1053.919",
+      "dur": "2.961",
+      "text": "going to try taking the same port and"
+    },
+    {
+      "start": "1055.679",
+      "dur": "3.921",
+      "text": "that's going to confuse your coding"
+    },
+    {
+      "start": "1056.880",
+      "dur": "4.560",
+      "text": "agent a lot. Also, we have to reinstall"
+    },
+    {
+      "start": "1059.600",
+      "dur": "4.000",
+      "text": "dependencies for every single work tree"
+    },
+    {
+      "start": "1061.440",
+      "dur": "4.479",
+      "text": "because it is a new local copy of our"
+    },
+    {
+      "start": "1063.600",
+      "dur": "4.720",
+      "text": "codebase. So, how do we make that fast?"
+    },
+    {
+      "start": "1065.919",
+      "dur": "4.241",
+      "text": "And then we also have the issue of if"
+    },
+    {
+      "start": "1068.320",
+      "dur": "4.640",
+      "text": "different feature implementations are"
+    },
+    {
+      "start": "1070.160",
+      "dur": "4.480",
+      "text": "changing the database, we will actually"
+    },
+    {
+      "start": "1072.960",
+      "dur": "3.360",
+      "text": "break different work trees if they're"
+    },
+    {
+      "start": "1074.640",
+      "dur": "3.520",
+      "text": "all pointing to the same database. So,"
+    },
+    {
+      "start": "1076.320",
+      "dur": "4.080",
+      "text": "not only do we need a work tree for the"
+    },
+    {
+      "start": "1078.160",
+      "dur": "4.399",
+      "text": "codebase, but we need something like a"
+    },
+    {
+      "start": "1080.400",
+      "dur": "3.360",
+      "text": "work tree for the database as well."
+    },
+    {
+      "start": "1082.559",
+      "dur": "3.921",
+      "text": "We'll talk about what that looks like"
+    },
+    {
+      "start": "1083.760",
+      "dur": "5.200",
+      "text": "with neon branching and how you can do"
+    },
+    {
+      "start": "1086.480",
+      "dur": "4.160",
+      "text": "something similar with SQLite as well."
+    },
+    {
+      "start": "1088.960",
+      "dur": "3.920",
+      "text": "And then of course we have scaling"
+    },
+    {
+      "start": "1090.640",
+      "dur": "4.640",
+      "text": "issues with token blowouts and PR"
+    },
+    {
+      "start": "1092.880",
+      "dur": "4.720",
+      "text": "pileup. But I want to focus on these"
+    },
+    {
+      "start": "1095.280",
+      "dur": "4.000",
+      "text": "three to start. Okay. So going back to"
+    },
+    {
+      "start": "1097.600",
+      "dur": "3.439",
+      "text": "our cloud sessions here. This is the"
+    },
+    {
+      "start": "1099.280",
+      "dur": "5.240",
+      "text": "script that I teased earlier. I'm not"
+    },
+    {
+      "start": "1101.039",
+      "dur": "3.481",
+      "text": "just running claude-w"
+    },
+    {
+      "start": "1109.039",
+      "dur": "4.481",
+      "text": "issues. And so the first thing that I'm"
+    },
+    {
+      "start": "1111.039",
+      "dur": "4.561",
+      "text": "doing is I am installing all of the node"
+    },
+    {
+      "start": "1113.520",
+      "dur": "3.600",
+      "text": "modules up front. So that way my agent"
+    },
+    {
+      "start": "1115.600",
+      "dur": "3.120",
+      "text": "doesn't have to take care of that when"
+    },
+    {
+      "start": "1117.120",
+      "dur": "3.280",
+      "text": "it goes from implementation to"
+    },
+    {
+      "start": "1118.720",
+      "dur": "3.600",
+      "text": "validation. That also keeps the agent"
+    },
+    {
+      "start": "1120.400",
+      "dur": "3.680",
+      "text": "focused and it makes the process not"
+    },
+    {
+      "start": "1122.320",
+      "dur": "4.000",
+      "text": "take as long when I'm actually having"
+    },
+    {
+      "start": "1124.080",
+      "dur": "4.880",
+      "text": "the agent run. And then the other thing"
+    },
+    {
+      "start": "1126.320",
+      "dur": "5.440",
+      "text": "that I'm doing here is I am creating a"
+    },
+    {
+      "start": "1128.960",
+      "dur": "4.640",
+      "text": "what is called a neon branch. And so"
+    },
+    {
+      "start": "1131.760",
+      "dur": "4.400",
+      "text": "okay this this is like a really cool"
+    },
+    {
+      "start": "1133.600",
+      "dur": "4.319",
+      "text": "feature. So within neon and most"
+    },
+    {
+      "start": "1136.160",
+      "dur": "4.000",
+      "text": "databases support this but neon just"
+    },
+    {
+      "start": "1137.919",
+      "dur": "3.921",
+      "text": "does this so well. We have the idea of"
+    },
+    {
+      "start": "1140.160",
+      "dur": "4.000",
+      "text": "database branching. Take a look at this."
+    },
+    {
+      "start": "1141.840",
+      "dur": "5.360",
+      "text": "We have our main production database and"
+    },
+    {
+      "start": "1144.160",
+      "dur": "5.600",
+      "text": "then we have a special branch for each"
+    },
+    {
+      "start": "1147.200",
+      "dur": "4.560",
+      "text": "one of the work trees. So we essentially"
+    },
+    {
+      "start": "1149.760",
+      "dur": "3.600",
+      "text": "have not just codebase isolation with"
+    },
+    {
+      "start": "1151.760",
+      "dur": "4.159",
+      "text": "work trees but now we have database"
+    },
+    {
+      "start": "1153.360",
+      "dur": "4.559",
+      "text": "isolation as well. And the beautiful"
+    },
+    {
+      "start": "1155.919",
+      "dur": "4.000",
+      "text": "thing here if I click into one of the"
+    },
+    {
+      "start": "1157.919",
+      "dur": "5.041",
+      "text": "branches and I look at the tables we"
+    },
+    {
+      "start": "1159.919",
+      "dur": "5.120",
+      "text": "have all of the tables and data copied"
+    },
+    {
+      "start": "1162.960",
+      "dur": "4.560",
+      "text": "over from the main production instance."
+    },
+    {
+      "start": "1165.039",
+      "dur": "4.721",
+      "text": "So it carries everything over and now I"
+    },
+    {
+      "start": "1167.520",
+      "dur": "4.080",
+      "text": "can test database updates and inserting"
+    },
+    {
+      "start": "1169.760",
+      "dur": "3.440",
+      "text": "records for testing and everything and"
+    },
+    {
+      "start": "1171.600",
+      "dur": "3.520",
+      "text": "it's not going to go right to my"
+    },
+    {
+      "start": "1173.200",
+      "dur": "4.160",
+      "text": "production data or conflict with the"
+    },
+    {
+      "start": "1175.120",
+      "dur": "4.559",
+      "text": "other branches that I'm working in with"
+    },
+    {
+      "start": "1177.360",
+      "dur": "3.520",
+      "text": "other pull requests. This is so"
+    },
+    {
+      "start": "1179.679",
+      "dur": "3.681",
+      "text": "important if you're doing anything with"
+    },
+    {
+      "start": "1180.880",
+      "dur": "4.480",
+      "text": "a database which is most applications"
+    },
+    {
+      "start": "1183.360",
+      "dur": "4.240",
+      "text": "you need something like database"
+    },
+    {
+      "start": "1185.360",
+      "dur": "3.439",
+      "text": "branching with ne which neon offers."
+    },
+    {
+      "start": "1187.600",
+      "dur": "2.720",
+      "text": "Another solution if you just want"
+    },
+    {
+      "start": "1188.799",
+      "dur": "3.441",
+      "text": "something free and local is you can have"
+    },
+    {
+      "start": "1190.320",
+      "dur": "3.920",
+      "text": "like a SQLite database that you spin up"
+    },
+    {
+      "start": "1192.240",
+      "dur": "4.400",
+      "text": "in each workree. You can certainly have"
+    },
+    {
+      "start": "1194.240",
+      "dur": "5.120",
+      "text": "cloud code help you set that up as well."
+    },
+    {
+      "start": "1196.640",
+      "dur": "6.000",
+      "text": "And the script for all of this, the w.sh"
+    },
+    {
+      "start": "1199.360",
+      "dur": "5.280",
+      "text": "or PS1 if you are on Windows, it runs"
+    },
+    {
+      "start": "1202.640",
+      "dur": "3.760",
+      "text": "this workree setup command and that is"
+    },
+    {
+      "start": "1204.640",
+      "dur": "3.680",
+      "text": "what creates the workree and then also"
+    },
+    {
+      "start": "1206.400",
+      "dur": "3.279",
+      "text": "the branch in Neon. And this is also"
+    },
+    {
+      "start": "1208.320",
+      "dur": "3.359",
+      "text": "really cool by the way because you can"
+    },
+    {
+      "start": "1209.679",
+      "dur": "3.761",
+      "text": "use this script in any coding agent."
+    },
+    {
+      "start": "1211.679",
+      "dur": "4.321",
+      "text": "This is how you're able to add workree"
+    },
+    {
+      "start": "1213.440",
+      "dur": "4.239",
+      "text": "support automatically without having it"
+    },
+    {
+      "start": "1216.000",
+      "dur": "3.039",
+      "text": "built right into the tool like we have"
+    },
+    {
+      "start": "1217.679",
+      "dur": "3.921",
+      "text": "with cloud code. We don't have that"
+    },
+    {
+      "start": "1219.039",
+      "dur": "4.241",
+      "text": "luxury with every single coding agent."
+    },
+    {
+      "start": "1221.600",
+      "dur": "3.760",
+      "text": "And then the other cool thing I want to"
+    },
+    {
+      "start": "1223.280",
+      "dur": "3.920",
+      "text": "show you here is our startup command. I"
+    },
+    {
+      "start": "1225.360",
+      "dur": "4.080",
+      "text": "have this separate command that handles"
+    },
+    {
+      "start": "1227.200",
+      "dur": "5.040",
+      "text": "startup as well. And what this does is"
+    },
+    {
+      "start": "1229.440",
+      "dur": "4.320",
+      "text": "it assigns a unique port based on the"
+    },
+    {
+      "start": "1232.240",
+      "dur": "3.679",
+      "text": "name of the work tree. So it uses the"
+    },
+    {
+      "start": "1233.760",
+      "dur": "3.840",
+      "text": "work tree name to create a random port."
+    },
+    {
+      "start": "1235.919",
+      "dur": "4.081",
+      "text": "So that way when we start up the"
+    },
+    {
+      "start": "1237.600",
+      "dur": "4.559",
+      "text": "application, it has a unique port that"
+    },
+    {
+      "start": "1240.000",
+      "dur": "4.960",
+      "text": "isn't going to conflict with the other"
+    },
+    {
+      "start": "1242.159",
+      "dur": "5.281",
+      "text": "branches. So my base port is port 4000"
+    },
+    {
+      "start": "1244.960",
+      "dur": "3.920",
+      "text": "and then it's 4161 for this one. And"
+    },
+    {
+      "start": "1247.440",
+      "dur": "4.080",
+      "text": "then going to the bottom of this one,"
+    },
+    {
+      "start": "1248.880",
+      "dur": "4.240",
+      "text": "the port is 4107."
+    },
+    {
+      "start": "1251.520",
+      "dur": "3.680",
+      "text": "So going to the browser here, you can"
+    },
+    {
+      "start": "1253.120",
+      "dur": "3.919",
+      "text": "see this is the main application that's"
+    },
+    {
+      "start": "1255.200",
+      "dur": "3.760",
+      "text": "running on main right now. And then I"
+    },
+    {
+      "start": "1257.039",
+      "dur": "3.681",
+      "text": "have all of the instances running on"
+    },
+    {
+      "start": "1258.960",
+      "dur": "3.760",
+      "text": "different ports in our workree. So our"
+    },
+    {
+      "start": "1260.720",
+      "dur": "3.760",
+      "text": "agents are able to start all these up in"
+    },
+    {
+      "start": "1262.720",
+      "dur": "3.360",
+      "text": "parallel and test everything in"
+    },
+    {
+      "start": "1264.480",
+      "dur": "2.880",
+      "text": "parallel. And you can see that we have"
+    },
+    {
+      "start": "1266.080",
+      "dur": "2.959",
+      "text": "different features like this one has"
+    },
+    {
+      "start": "1267.360",
+      "dur": "2.880",
+      "text": "classify all pending. That's not"
+    },
+    {
+      "start": "1269.039",
+      "dur": "3.681",
+      "text": "currently in main because that's what we"
+    },
+    {
+      "start": "1270.240",
+      "dur": "3.919",
+      "text": "implemented for this pull request. And"
+    },
+    {
+      "start": "1272.720",
+      "dur": "3.280",
+      "text": "so everything that I've covered here"
+    },
+    {
+      "start": "1274.159",
+      "dur": "3.441",
+      "text": "that hits on these first three things."
+    },
+    {
+      "start": "1276.000",
+      "dur": "2.799",
+      "text": "And I know I'm going through it pretty"
+    },
+    {
+      "start": "1277.600",
+      "dur": "3.280",
+      "text": "quickly, but you can just point your"
+    },
+    {
+      "start": "1278.799",
+      "dur": "3.841",
+      "text": "coding agent at the repo and bring these"
+    },
+    {
+      "start": "1280.880",
+      "dur": "3.440",
+      "text": "commands into your own ecosystem if"
+    },
+    {
+      "start": "1282.640",
+      "dur": "2.960",
+      "text": "you'd like to. All right, so the last"
+    },
+    {
+      "start": "1284.320",
+      "dur": "2.719",
+      "text": "two things I'm going to cover very"
+    },
+    {
+      "start": "1285.600",
+      "dur": "2.959",
+      "text": "briefly here, just a couple of"
+    },
+    {
+      "start": "1287.039",
+      "dur": "4.561",
+      "text": "recommendations that I have for you. We"
+    },
+    {
+      "start": "1288.559",
+      "dur": "5.521",
+      "text": "got token blowout and PR pileup. And so"
+    },
+    {
+      "start": "1291.600",
+      "dur": "4.319",
+      "text": "for token blowout, the main thing we"
+    },
+    {
+      "start": "1294.080",
+      "dur": "3.839",
+      "text": "have to be aware of here is if we want"
+    },
+    {
+      "start": "1295.919",
+      "dur": "3.681",
+      "text": "our coding agents to be reliable, yes,"
+    },
+    {
+      "start": "1297.919",
+      "dur": "3.760",
+      "text": "we need to give it a very endto-end"
+    },
+    {
+      "start": "1299.600",
+      "dur": "3.920",
+      "text": "process, including a lot of validation"
+    },
+    {
+      "start": "1301.679",
+      "dur": "4.240",
+      "text": "and review. But it also means it's going"
+    },
+    {
+      "start": "1303.520",
+      "dur": "5.200",
+      "text": "to take more tokens. But the cool thing"
+    },
+    {
+      "start": "1305.919",
+      "dur": "4.401",
+      "text": "is with really any AI coding agent, you"
+    },
+    {
+      "start": "1308.720",
+      "dur": "3.760",
+      "text": "can switch between models. You aren't"
+    },
+    {
+      "start": "1310.320",
+      "dur": "4.080",
+      "text": "stuck always using the highest"
+    },
+    {
+      "start": "1312.480",
+      "dur": "4.079",
+      "text": "capability model. You can go to"
+    },
+    {
+      "start": "1314.400",
+      "dur": "3.920",
+      "text": "something lower like Haiku or Sonnet and"
+    },
+    {
+      "start": "1316.559",
+      "dur": "3.041",
+      "text": "Claude Code for example when you're"
+    },
+    {
+      "start": "1318.320",
+      "dur": "2.880",
+      "text": "doing something that you want to be"
+    },
+    {
+      "start": "1319.600",
+      "dur": "3.760",
+      "text": "cheap and fast and doesn't need as much"
+    },
+    {
+      "start": "1321.200",
+      "dur": "3.599",
+      "text": "reasoning power like codebased analysis,"
+    },
+    {
+      "start": "1323.360",
+      "dur": "3.600",
+      "text": "web research, even using something like"
+    },
+    {
+      "start": "1324.799",
+      "dur": "3.841",
+      "text": "Sonnet for code review. And so within"
+    },
+    {
+      "start": "1326.960",
+      "dur": "2.959",
+      "text": "cloud code and it works the same with"
+    },
+    {
+      "start": "1328.640",
+      "dur": "3.279",
+      "text": "other coding agents as well. You can"
+    },
+    {
+      "start": "1329.919",
+      "dur": "3.841",
+      "text": "just do slashmodel and then you're able"
+    },
+    {
+      "start": "1331.919",
+      "dur": "3.601",
+      "text": "to pick between the different models."
+    },
+    {
+      "start": "1333.760",
+      "dur": "3.039",
+      "text": "Like let me just run it. I'll do this in"
+    },
+    {
+      "start": "1335.520",
+      "dur": "4.080",
+      "text": "another session here because I already"
+    },
+    {
+      "start": "1336.799",
+      "dur": "4.081",
+      "text": "ran it. So slashmodel I can pick between"
+    },
+    {
+      "start": "1339.600",
+      "dur": "3.439",
+      "text": "the different models depending on the"
+    },
+    {
+      "start": "1340.880",
+      "dur": "4.080",
+      "text": "task that I know I'm about to do. And"
+    },
+    {
+      "start": "1343.039",
+      "dur": "4.161",
+      "text": "the other cool thing that you can do is"
+    },
+    {
+      "start": "1344.960",
+      "dur": "4.160",
+      "text": "when you invoke skills in sub aents you"
+    },
+    {
+      "start": "1347.200",
+      "dur": "4.880",
+      "text": "can give a specialized model to those as"
+    },
+    {
+      "start": "1349.120",
+      "dur": "7.120",
+      "text": "well. So I can say use Haiku for a sub"
+    },
+    {
+      "start": "1352.080",
+      "dur": "6.240",
+      "text": "agent and do uh research for XYZ, right?"
+    },
+    {
+      "start": "1356.240",
+      "dur": "4.400",
+      "text": "Like use this model for this sub agent"
+    },
+    {
+      "start": "1358.320",
+      "dur": "4.479",
+      "text": "to do this thing. So I highly recommend"
+    },
+    {
+      "start": "1360.640",
+      "dur": "4.399",
+      "text": "doing that a lot to manage the tokens as"
+    },
+    {
+      "start": "1362.799",
+      "dur": "4.081",
+      "text": "you're doing these longer workflows. And"
+    },
+    {
+      "start": "1365.039",
+      "dur": "5.361",
+      "text": "then really for the last thing with PR"
+    },
+    {
+      "start": "1366.880",
+      "dur": "5.760",
+      "text": "pileup, the main thing is to reduce"
+    },
+    {
+      "start": "1370.400",
+      "dur": "4.800",
+      "text": "yourself being the human bottleneck,"
+    },
+    {
+      "start": "1372.640",
+      "dur": "4.800",
+      "text": "right? So, like anytime that you feel"
+    },
+    {
+      "start": "1375.200",
+      "dur": "3.680",
+      "text": "like you're slowing down on these code"
+    },
+    {
+      "start": "1377.440",
+      "dur": "3.440",
+      "text": "reviews and you just want to get over to"
+    },
+    {
+      "start": "1378.880",
+      "dur": "3.440",
+      "text": "that next batch of issues, if there's"
+    },
+    {
+      "start": "1380.880",
+      "dur": "2.560",
+      "text": "any issues that come up where it feels"
+    },
+    {
+      "start": "1382.320",
+      "dur": "4.320",
+      "text": "like you're spending a lot of time"
+    },
+    {
+      "start": "1383.440",
+      "dur": "4.880",
+      "text": "fixing, that is your signal to do the"
+    },
+    {
+      "start": "1386.640",
+      "dur": "3.519",
+      "text": "self-healing layer. You definitely need"
+    },
+    {
+      "start": "1388.320",
+      "dur": "3.440",
+      "text": "to add in more validation, something in"
+    },
+    {
+      "start": "1390.159",
+      "dur": "4.081",
+      "text": "the AI layer to make it so that there's"
+    },
+    {
+      "start": "1391.760",
+      "dur": "4.240",
+      "text": "not so much of a burden on you to do the"
+    },
+    {
+      "start": "1394.240",
+      "dur": "3.840",
+      "text": "reviews of the code and fixing all of"
+    },
+    {
+      "start": "1396.000",
+      "dur": "4.000",
+      "text": "those things. So, there you go, my"
+    },
+    {
+      "start": "1398.080",
+      "dur": "4.240",
+      "text": "friend. That is your playbook to 10X"
+    },
+    {
+      "start": "1400.000",
+      "dur": "4.720",
+      "text": "your AI coding with Parallel Agents. And"
+    },
+    {
+      "start": "1402.320",
+      "dur": "4.400",
+      "text": "remember to use this repository as a"
+    },
+    {
+      "start": "1404.720",
+      "dur": "4.079",
+      "text": "reference. My entire system packaged up"
+    },
+    {
+      "start": "1406.720",
+      "dur": "4.480",
+      "text": "here that you can have your coding agent"
+    },
+    {
+      "start": "1408.799",
+      "dur": "4.081",
+      "text": "steal for yourself. So I hope that you"
+    },
+    {
+      "start": "1411.200",
+      "dur": "3.440",
+      "text": "found this really useful. Even just the"
+    },
+    {
+      "start": "1412.880",
+      "dur": "4.159",
+      "text": "mental models here that you can apply no"
+    },
+    {
+      "start": "1414.640",
+      "dur": "4.720",
+      "text": "matter what your process is for parallel"
+    },
+    {
+      "start": "1417.039",
+      "dur": "3.921",
+      "text": "agentic development. And so with that,"
+    },
+    {
+      "start": "1419.360",
+      "dur": "3.520",
+      "text": "if you appreciated this video and you're"
+    },
+    {
+      "start": "1420.960",
+      "dur": "3.839",
+      "text": "looking forward to more things on"
+    },
+    {
+      "start": "1422.880",
+      "dur": "3.840",
+      "text": "agentic engineering and building"
+    },
+    {
+      "start": "1424.799",
+      "dur": "3.601",
+      "text": "harnesses and my open source harness"
+    },
+    {
+      "start": "1426.720",
+      "dur": "3.600",
+      "text": "builder archon, I would really"
+    },
+    {
+      "start": "1428.400",
+      "dur": "3.840",
+      "text": "appreciate a like and a subscribe. And"
+    },
+    {
+      "start": "1430.320",
+      "dur": "4.400",
+      "text": "with that, I will see you in the next"
+    },
+    {
+      "start": "1432.240",
+      "dur": "2.480",
+      "text": "video."
+    }
+  ]
+}]

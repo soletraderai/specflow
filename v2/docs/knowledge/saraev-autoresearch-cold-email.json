@@ -1,0 +1,3899 @@
+[{
+  "data": [
+    {
+      "start": "0.080",
+      "dur": "3.440",
+      "text": "An open source project just dropped that"
+    },
+    {
+      "start": "2.000",
+      "dur": "3.920",
+      "text": "when you combine it with claude code"
+    },
+    {
+      "start": "3.520",
+      "dur": "4.239",
+      "text": "literally becomes self-improving AI."
+    },
+    {
+      "start": "5.920",
+      "dur": "3.599",
+      "text": "This is not engagement farming or hype"
+    },
+    {
+      "start": "7.759",
+      "dur": "3.840",
+      "text": "bait. This is a real repo that was just"
+    },
+    {
+      "start": "9.519",
+      "dur": "3.921",
+      "text": "released by Andre Karpathy who is widely"
+    },
+    {
+      "start": "11.599",
+      "dur": "3.841",
+      "text": "renowned as one of the foremost voices"
+    },
+    {
+      "start": "13.440",
+      "dur": "3.759",
+      "text": "in AI and machine learning research. And"
+    },
+    {
+      "start": "15.440",
+      "dur": "4.080",
+      "text": "basically what he did was while training"
+    },
+    {
+      "start": "17.199",
+      "dur": "4.481",
+      "text": "his model he thought why don't I just"
+    },
+    {
+      "start": "19.520",
+      "dur": "4.080",
+      "text": "have my models train my models instead."
+    },
+    {
+      "start": "21.680",
+      "dur": "3.759",
+      "text": "He built an elegant pipeline which he's"
+    },
+    {
+      "start": "23.600",
+      "dur": "3.919",
+      "text": "calling auto research and essentially"
+    },
+    {
+      "start": "25.439",
+      "dur": "4.401",
+      "text": "completely and fully automates the"
+    },
+    {
+      "start": "27.519",
+      "dur": "4.401",
+      "text": "process of experimentation. He says it"
+    },
+    {
+      "start": "29.840",
+      "dur": "4.559",
+      "text": "right here. The idea is to give an AI"
+    },
+    {
+      "start": "31.920",
+      "dur": "3.840",
+      "text": "agent a small but real LLM training"
+    },
+    {
+      "start": "34.399",
+      "dur": "3.761",
+      "text": "setup and just let it experiment"
+    },
+    {
+      "start": "35.760",
+      "dur": "4.479",
+      "text": "autonomously overnight. It'll modify the"
+    },
+    {
+      "start": "38.160",
+      "dur": "4.000",
+      "text": "code, train for 5 minutes, check if the"
+    },
+    {
+      "start": "40.239",
+      "dur": "3.681",
+      "text": "results improved, keep or discard, and"
+    },
+    {
+      "start": "42.160",
+      "dur": "3.680",
+      "text": "then just repeat. You wake up in the"
+    },
+    {
+      "start": "43.920",
+      "dur": "4.799",
+      "text": "morning to a log of experiments and"
+    },
+    {
+      "start": "45.840",
+      "dur": "4.879",
+      "text": "hopefully a better model. Now, I'm not"
+    },
+    {
+      "start": "48.719",
+      "dur": "4.081",
+      "text": "in machine learning training. I don't"
+    },
+    {
+      "start": "50.719",
+      "dur": "3.921",
+      "text": "help make models more intelligent. What"
+    },
+    {
+      "start": "52.800",
+      "dur": "3.599",
+      "text": "I do is I take models that other people"
+    },
+    {
+      "start": "54.640",
+      "dur": "3.759",
+      "text": "have made and then I use them for the"
+    },
+    {
+      "start": "56.399",
+      "dur": "3.921",
+      "text": "purposes of making money. And so"
+    },
+    {
+      "start": "58.399",
+      "dur": "3.281",
+      "text": "immediately when this dropped, I started"
+    },
+    {
+      "start": "60.320",
+      "dur": "3.200",
+      "text": "thinking about ways that I could apply"
+    },
+    {
+      "start": "61.680",
+      "dur": "3.519",
+      "text": "this principle of auto research into my"
+    },
+    {
+      "start": "63.520",
+      "dur": "3.919",
+      "text": "own life to improve obviously my own"
+    },
+    {
+      "start": "65.199",
+      "dur": "3.600",
+      "text": "economic outcomes. And there are so many"
+    },
+    {
+      "start": "67.439",
+      "dur": "2.720",
+      "text": "it's not even funny. So what I'm going"
+    },
+    {
+      "start": "68.799",
+      "dur": "3.041",
+      "text": "to do is I'm going to run through some"
+    },
+    {
+      "start": "70.159",
+      "dur": "2.960",
+      "text": "real practical examples in a moment,"
+    },
+    {
+      "start": "71.840",
+      "dur": "2.639",
+      "text": "things that I'm actually doing in my own"
+    },
+    {
+      "start": "73.119",
+      "dur": "3.040",
+      "text": "business that you can implement inside"
+    },
+    {
+      "start": "74.479",
+      "dur": "3.121",
+      "text": "of Cloud Code. Then I'm going to show"
+    },
+    {
+      "start": "76.159",
+      "dur": "3.201",
+      "text": "you how to actually do it. So go through"
+    },
+    {
+      "start": "77.600",
+      "dur": "4.159",
+      "text": "the step by step of setting up the repo"
+    },
+    {
+      "start": "79.360",
+      "dur": "4.079",
+      "text": "and building some experimentation done"
+    },
+    {
+      "start": "81.759",
+      "dur": "3.441",
+      "text": "totally autonomously for you. And at the"
+    },
+    {
+      "start": "83.439",
+      "dur": "4.081",
+      "text": "end you will have a fully automated"
+    },
+    {
+      "start": "85.200",
+      "dur": "4.000",
+      "text": "self-improving pipeline just like Andre"
+    },
+    {
+      "start": "87.520",
+      "dur": "3.040",
+      "text": "Krypathy here has done for his own"
+    },
+    {
+      "start": "89.200",
+      "dur": "3.440",
+      "text": "machine learning training. So here's one"
+    },
+    {
+      "start": "90.560",
+      "dur": "3.840",
+      "text": "of many examples. I do a lot of cold"
+    },
+    {
+      "start": "92.640",
+      "dur": "3.439",
+      "text": "email in my own business and then for"
+    },
+    {
+      "start": "94.400",
+      "dur": "3.679",
+      "text": "clients. And cold email in case you"
+    },
+    {
+      "start": "96.079",
+      "dur": "4.000",
+      "text": "didn't know is where you package up a"
+    },
+    {
+      "start": "98.079",
+      "dur": "3.441",
+      "text": "really nice sexy sounding offer and then"
+    },
+    {
+      "start": "100.079",
+      "dur": "2.801",
+      "text": "you send it to people you've never met"
+    },
+    {
+      "start": "101.520",
+      "dur": "3.279",
+      "text": "with the hopes that they take you up on"
+    },
+    {
+      "start": "102.880",
+      "dur": "3.199",
+      "text": "it and then maybe convert. So jump on a"
+    },
+    {
+      "start": "104.799",
+      "dur": "3.041",
+      "text": "call with you, fill out a form,"
+    },
+    {
+      "start": "106.079",
+      "dur": "3.360",
+      "text": "whatever. Now the key metric in cold"
+    },
+    {
+      "start": "107.840",
+      "dur": "3.279",
+      "text": "email is usually reply rate."
+    },
+    {
+      "start": "109.439",
+      "dur": "3.360",
+      "text": "specifically positive reply rate, but"
+    },
+    {
+      "start": "111.119",
+      "dur": "3.121",
+      "text": "reply rate's easier for our purposes, so"
+    },
+    {
+      "start": "112.799",
+      "dur": "3.121",
+      "text": "that's what I'm going to go with. And as"
+    },
+    {
+      "start": "114.240",
+      "dur": "3.600",
+      "text": "you can see, most cold email software"
+    },
+    {
+      "start": "115.920",
+      "dur": "4.640",
+      "text": "tracks this for you out of the box. So"
+    },
+    {
+      "start": "117.840",
+      "dur": "5.200",
+      "text": "2.4% of people replied to this campaign."
+    },
+    {
+      "start": "120.560",
+      "dur": "4.559",
+      "text": "2.5% of people replied to this campaign"
+    },
+    {
+      "start": "123.040",
+      "dur": "3.759",
+      "text": "and so on. Well, turns out that's all"
+    },
+    {
+      "start": "125.119",
+      "dur": "3.760",
+      "text": "you need in order to build an automatic"
+    },
+    {
+      "start": "126.799",
+      "dur": "3.761",
+      "text": "experimentation pipeline. You need some"
+    },
+    {
+      "start": "128.879",
+      "dur": "4.561",
+      "text": "metric that you want to improve and then"
+    },
+    {
+      "start": "130.560",
+      "dur": "4.560",
+      "text": "you need some way factor, some thing you"
+    },
+    {
+      "start": "133.440",
+      "dur": "3.600",
+      "text": "can modify to improve it. And so what I"
+    },
+    {
+      "start": "135.120",
+      "dur": "3.520",
+      "text": "have is my metric is reply, right? And"
+    },
+    {
+      "start": "137.040",
+      "dur": "3.600",
+      "text": "then what I have is the thing that I can"
+    },
+    {
+      "start": "138.640",
+      "dur": "4.160",
+      "text": "adjust is my cold email copy. So what"
+    },
+    {
+      "start": "140.640",
+      "dur": "5.120",
+      "text": "this looks like in practice for me is a"
+    },
+    {
+      "start": "142.800",
+      "dur": "5.120",
+      "text": "folder called email optimizer. There are"
+    },
+    {
+      "start": "145.760",
+      "dur": "4.320",
+      "text": "a bunch of additional code files here,"
+    },
+    {
+      "start": "147.920",
+      "dur": "3.679",
+      "text": "configs, places where I'm storing the"
+    },
+    {
+      "start": "150.080",
+      "dur": "3.360",
+      "text": "results of my data and so on and so"
+    },
+    {
+      "start": "151.599",
+      "dur": "3.681",
+      "text": "forth that aren't super important. What"
+    },
+    {
+      "start": "153.440",
+      "dur": "3.920",
+      "text": "is important is this file right over"
+    },
+    {
+      "start": "155.280",
+      "dur": "4.239",
+      "text": "here called orchestrator.py."
+    },
+    {
+      "start": "157.360",
+      "dur": "4.560",
+      "text": "And this contains all of the prompt that"
+    },
+    {
+      "start": "159.519",
+      "dur": "4.080",
+      "text": "I'm feeding into my orchestrator agent"
+    },
+    {
+      "start": "161.920",
+      "dur": "3.520",
+      "text": "who essentially is responsible for"
+    },
+    {
+      "start": "163.599",
+      "dur": "3.121",
+      "text": "spinning up new cold email campaigns and"
+    },
+    {
+      "start": "165.440",
+      "dur": "2.879",
+      "text": "then testing them against each other"
+    },
+    {
+      "start": "166.720",
+      "dur": "3.280",
+      "text": "until I get better and better results."
+    },
+    {
+      "start": "168.319",
+      "dur": "3.361",
+      "text": "And it was as simple for me as literally"
+    },
+    {
+      "start": "170.000",
+      "dur": "4.160",
+      "text": "copying the repo and making some slight"
+    },
+    {
+      "start": "171.680",
+      "dur": "4.080",
+      "text": "adjustments. What I do is I tell it that"
+    },
+    {
+      "start": "174.160",
+      "dur": "3.439",
+      "text": "it's inspired by Carpathy's auto"
+    },
+    {
+      "start": "175.760",
+      "dur": "3.680",
+      "text": "research pattern. The core idea is an AI"
+    },
+    {
+      "start": "177.599",
+      "dur": "3.441",
+      "text": "agent that runs experiments autonomously"
+    },
+    {
+      "start": "179.440",
+      "dur": "4.000",
+      "text": "in a tight loop using an objective"
+    },
+    {
+      "start": "181.040",
+      "dur": "4.720",
+      "text": "metric as a feedback signal. I have the"
+    },
+    {
+      "start": "183.440",
+      "dur": "4.960",
+      "text": "architecture over here. I run the loop"
+    },
+    {
+      "start": "185.760",
+      "dur": "5.600",
+      "text": "every 4 hours and at the end of every 4"
+    },
+    {
+      "start": "188.400",
+      "dur": "4.800",
+      "text": "hours I actually have better copy that's"
+    },
+    {
+      "start": "191.360",
+      "dur": "3.440",
+      "text": "self-evolving over time based on the"
+    },
+    {
+      "start": "193.200",
+      "dur": "3.039",
+      "text": "results from my previous test. And you"
+    },
+    {
+      "start": "194.800",
+      "dur": "3.760",
+      "text": "can see some of the examples right over"
+    },
+    {
+      "start": "196.239",
+      "dur": "4.241",
+      "text": "here. Anything with C is what we call a"
+    },
+    {
+      "start": "198.560",
+      "dur": "4.240",
+      "text": "challenger. Anything with B is what's"
+    },
+    {
+      "start": "200.480",
+      "dur": "4.880",
+      "text": "called baseline. And so the model starts"
+    },
+    {
+      "start": "202.800",
+      "dur": "4.719",
+      "text": "with a baseline type of copy, which we"
+    },
+    {
+      "start": "205.360",
+      "dur": "4.640",
+      "text": "could see right over here. And then it"
+    },
+    {
+      "start": "207.519",
+      "dur": "4.321",
+      "text": "makes slight modifications based off of"
+    },
+    {
+      "start": "210.000",
+      "dur": "4.080",
+      "text": "what it knows to perform really well in"
+    },
+    {
+      "start": "211.840",
+      "dur": "4.080",
+      "text": "cold email copy before testing it out."
+    },
+    {
+      "start": "214.080",
+      "dur": "4.159",
+      "text": "It runs the two side by side and then"
+    },
+    {
+      "start": "215.920",
+      "dur": "4.239",
+      "text": "automatically harvests based off of the"
+    },
+    {
+      "start": "218.239",
+      "dur": "3.441",
+      "text": "results, aka the number of replies and"
+    },
+    {
+      "start": "220.159",
+      "dur": "2.961",
+      "text": "so on and so forth for both campaigns."
+    },
+    {
+      "start": "221.680",
+      "dur": "2.800",
+      "text": "Now, that part isn't the important bit."
+    },
+    {
+      "start": "223.120",
+      "dur": "3.360",
+      "text": "I mean, we've been optimizing cold"
+    },
+    {
+      "start": "224.480",
+      "dur": "4.720",
+      "text": "emails for for many years at this point."
+    },
+    {
+      "start": "226.480",
+      "dur": "5.839",
+      "text": "The important bit is it then creates new"
+    },
+    {
+      "start": "229.200",
+      "dur": "5.360",
+      "text": "copy based off of the learnings from"
+    },
+    {
+      "start": "232.319",
+      "dur": "4.241",
+      "text": "previous experiments. As the models get"
+    },
+    {
+      "start": "234.560",
+      "dur": "4.160",
+      "text": "better and better and better, they log"
+    },
+    {
+      "start": "236.560",
+      "dur": "5.039",
+      "text": "all of their learnings to a resource.m"
+    },
+    {
+      "start": "238.720",
+      "dur": "5.439",
+      "text": "MD that significantly improves future"
+    },
+    {
+      "start": "241.599",
+      "dur": "5.121",
+      "text": "models abilities to make changes. And so"
+    },
+    {
+      "start": "244.159",
+      "dur": "4.961",
+      "text": "here's a big list of things that this is"
+    },
+    {
+      "start": "246.720",
+      "dur": "4.400",
+      "text": "essentially figured out. Move reply rate"
+    },
+    {
+      "start": "249.120",
+      "dur": "4.160",
+      "text": "up. And so in that way, we get to push"
+    },
+    {
+      "start": "251.120",
+      "dur": "3.520",
+      "text": "towards that direction over time. Now,"
+    },
+    {
+      "start": "253.280",
+      "dur": "3.199",
+      "text": "this has only been running for a few"
+    },
+    {
+      "start": "254.640",
+      "dur": "3.439",
+      "text": "days now. Imagine this running for a"
+    },
+    {
+      "start": "256.479",
+      "dur": "3.841",
+      "text": "year. And instead of optimizing on a"
+    },
+    {
+      "start": "258.079",
+      "dur": "4.161",
+      "text": "basis of once every 4 hours, imagine if"
+    },
+    {
+      "start": "260.320",
+      "dur": "3.680",
+      "text": "this optimized on a basis of once every"
+    },
+    {
+      "start": "262.240",
+      "dur": "3.120",
+      "text": "5 minutes. Well, that's what my next leg"
+    },
+    {
+      "start": "264.000",
+      "dur": "2.560",
+      "text": "of testing is going to do. We're going"
+    },
+    {
+      "start": "265.360",
+      "dur": "3.119",
+      "text": "to be significantly improving the"
+    },
+    {
+      "start": "266.560",
+      "dur": "4.720",
+      "text": "volume, pumping all this stuff out at"
+    },
+    {
+      "start": "268.479",
+      "dur": "4.241",
+      "text": "10x the level, and then optimizing and"
+    },
+    {
+      "start": "271.280",
+      "dur": "2.880",
+      "text": "iterating our results again fully"
+    },
+    {
+      "start": "272.720",
+      "dur": "2.640",
+      "text": "autonomously. So, that's just one"
+    },
+    {
+      "start": "274.160",
+      "dur": "2.960",
+      "text": "example. I'm going to run you guys"
+    },
+    {
+      "start": "275.360",
+      "dur": "3.760",
+      "text": "through a bunch of other use cases that"
+    },
+    {
+      "start": "277.120",
+      "dur": "3.519",
+      "text": "you can apply auto research to, whether"
+    },
+    {
+      "start": "279.120",
+      "dur": "3.040",
+      "text": "you're in machine learning engineering"
+    },
+    {
+      "start": "280.639",
+      "dur": "3.761",
+      "text": "or whether you're just trying to improve"
+    },
+    {
+      "start": "282.160",
+      "dur": "4.160",
+      "text": "the profitability of, let's say, a"
+    },
+    {
+      "start": "284.400",
+      "dur": "3.280",
+      "text": "paperclick ad campaign. But first, let's"
+    },
+    {
+      "start": "286.320",
+      "dur": "3.840",
+      "text": "make sure we all know how to actually"
+    },
+    {
+      "start": "287.680",
+      "dur": "4.320",
+      "text": "use this thing. So the way that auto"
+    },
+    {
+      "start": "290.160",
+      "dur": "4.240",
+      "text": "research works to make a long story"
+    },
+    {
+      "start": "292.000",
+      "dur": "4.479",
+      "text": "short is we start with an experiment and"
+    },
+    {
+      "start": "294.400",
+      "dur": "5.120",
+      "text": "just like in science everything begins"
+    },
+    {
+      "start": "296.479",
+      "dur": "5.841",
+      "text": "with some sort of hypothesis. Okay. So"
+    },
+    {
+      "start": "299.520",
+      "dur": "5.679",
+      "text": "my hypothesis might be hey if I make a"
+    },
+    {
+      "start": "302.320",
+      "dur": "4.560",
+      "text": "slight adjustment to the copy of this"
+    },
+    {
+      "start": "305.199",
+      "dur": "4.000",
+      "text": "campaign so that it's a little bit"
+    },
+    {
+      "start": "306.880",
+      "dur": "3.920",
+      "text": "punchier. I think it's going to go well."
+    },
+    {
+      "start": "309.199",
+      "dur": "4.081",
+      "text": "You insert that using this little"
+    },
+    {
+      "start": "310.800",
+      "dur": "5.040",
+      "text": "test.md. It's your goal metric and some"
+    },
+    {
+      "start": "313.280",
+      "dur": "5.759",
+      "text": "highle instructions. From there, the"
+    },
+    {
+      "start": "315.840",
+      "dur": "5.600",
+      "text": "auto research agent will go through"
+    },
+    {
+      "start": "319.039",
+      "dur": "4.481",
+      "text": "employ the experiment usually using API"
+    },
+    {
+      "start": "321.440",
+      "dur": "5.360",
+      "text": "calls. In my case, in the example we"
+    },
+    {
+      "start": "323.520",
+      "dur": "5.360",
+      "text": "just saw um to instantly in Karpathy's"
+    },
+    {
+      "start": "326.800",
+      "dur": "3.839",
+      "text": "specific example we saw, he's doing it"
+    },
+    {
+      "start": "328.880",
+      "dur": "3.840",
+      "text": "through adjusting what are called"
+    },
+    {
+      "start": "330.639",
+      "dur": "4.161",
+      "text": "hyperparameters and then after that we"
+    },
+    {
+      "start": "332.720",
+      "dur": "3.680",
+      "text": "measure the results. Now, in order for"
+    },
+    {
+      "start": "334.800",
+      "dur": "3.119",
+      "text": "us to make sure that this works, you"
+    },
+    {
+      "start": "336.400",
+      "dur": "2.799",
+      "text": "know, the hypothesis isn't enough. We"
+    },
+    {
+      "start": "337.919",
+      "dur": "3.120",
+      "text": "need some sort of metric that we're"
+    },
+    {
+      "start": "339.199",
+      "dur": "3.041",
+      "text": "tracking. Now, in my case, the metric"
+    },
+    {
+      "start": "341.039",
+      "dur": "3.361",
+      "text": "was obviously pretty simple. It was"
+    },
+    {
+      "start": "342.240",
+      "dur": "3.120",
+      "text": "reply rate. In Karpathy's case, it was"
+    },
+    {
+      "start": "344.400",
+      "dur": "3.280",
+      "text": "pretty simple. It was something called"
+    },
+    {
+      "start": "345.360",
+      "dur": "4.640",
+      "text": "validation loss. As long as you have"
+    },
+    {
+      "start": "347.680",
+      "dur": "4.320",
+      "text": "that, you can then just pick the winner"
+    },
+    {
+      "start": "350.000",
+      "dur": "4.080",
+      "text": "and then make a slight change before"
+    },
+    {
+      "start": "352.000",
+      "dur": "3.600",
+      "text": "looping back. And depending on how tight"
+    },
+    {
+      "start": "354.080",
+      "dur": "3.440",
+      "text": "this feedback loop is, you could"
+    },
+    {
+      "start": "355.600",
+      "dur": "3.520",
+      "text": "theoretically do this in a minute or"
+    },
+    {
+      "start": "357.520",
+      "dur": "2.959",
+      "text": "two. I mean, if he had more"
+    },
+    {
+      "start": "359.120",
+      "dur": "2.880",
+      "text": "infrastructure when he's training his"
+    },
+    {
+      "start": "360.479",
+      "dur": "3.280",
+      "text": "models, he could probably do in 5"
+    },
+    {
+      "start": "362.000",
+      "dur": "3.600",
+      "text": "minutes what he does in one. And then in"
+    },
+    {
+      "start": "363.759",
+      "dur": "3.601",
+      "text": "that way, you know, progress really,"
+    },
+    {
+      "start": "365.600",
+      "dur": "3.680",
+      "text": "really quickly over to some, you know,"
+    },
+    {
+      "start": "367.360",
+      "dur": "3.360",
+      "text": "desired goal. In my case, if I had more"
+    },
+    {
+      "start": "369.280",
+      "dur": "3.199",
+      "text": "cold email infrastructure, I could do"
+    },
+    {
+      "start": "370.720",
+      "dur": "3.120",
+      "text": "the same thing. So, at this point, scale"
+    },
+    {
+      "start": "372.479",
+      "dur": "3.041",
+      "text": "is more or less all you need. This"
+    },
+    {
+      "start": "373.840",
+      "dur": "3.680",
+      "text": "allows you to run hundreds of tests with"
+    },
+    {
+      "start": "375.520",
+      "dur": "3.840",
+      "text": "literally zero human involvement. I"
+    },
+    {
+      "start": "377.520",
+      "dur": "3.679",
+      "text": "mean, I'm not even in the loop anymore."
+    },
+    {
+      "start": "379.360",
+      "dur": "3.760",
+      "text": "And to be clear, like, if I was in the"
+    },
+    {
+      "start": "381.199",
+      "dur": "3.921",
+      "text": "loop, would I be making better decisions"
+    },
+    {
+      "start": "383.120",
+      "dur": "4.240",
+      "text": "than the AI model? Like, probably. I'd"
+    },
+    {
+      "start": "385.120",
+      "dur": "3.760",
+      "text": "be a much more efficient optimizer, but"
+    },
+    {
+      "start": "387.360",
+      "dur": "4.160",
+      "text": "that doesn't really matter because the"
+    },
+    {
+      "start": "388.880",
+      "dur": "5.120",
+      "text": "reality is I take a lot more time to"
+    },
+    {
+      "start": "391.520",
+      "dur": "4.640",
+      "text": "optimize than a model does. I also eat,"
+    },
+    {
+      "start": "394.000",
+      "dur": "3.680",
+      "text": "sleep, have to go to the washroom, and"
+    },
+    {
+      "start": "396.160",
+      "dur": "3.920",
+      "text": "do a variety of other things with my"
+    },
+    {
+      "start": "397.680",
+      "dur": "4.560",
+      "text": "day. AI agents don't. you could very"
+    },
+    {
+      "start": "400.080",
+      "dur": "4.320",
+      "text": "quickly and easily set this up on again"
+    },
+    {
+      "start": "402.240",
+      "dur": "4.480",
+      "text": "an hourly loop and have this run 24"
+    },
+    {
+      "start": "404.400",
+      "dur": "3.600",
+      "text": "times a day whereas realistically if you"
+    },
+    {
+      "start": "406.720",
+      "dur": "3.199",
+      "text": "were to try and do it all yourself you"
+    },
+    {
+      "start": "408.000",
+      "dur": "3.520",
+      "text": "could only do it a couple times and so"
+    },
+    {
+      "start": "409.919",
+      "dur": "3.761",
+      "text": "in that way whatever metric that you're"
+    },
+    {
+      "start": "411.520",
+      "dur": "4.480",
+      "text": "tracking goes up over time right in my"
+    },
+    {
+      "start": "413.680",
+      "dur": "5.120",
+      "text": "case reply rates significantly go up you"
+    },
+    {
+      "start": "416.000",
+      "dur": "5.520",
+      "text": "know test one I might be at a 1.5% test"
+    },
+    {
+      "start": "418.800",
+      "dur": "5.440",
+      "text": "12 I might be at a 2.7% before you know"
+    },
+    {
+      "start": "421.520",
+      "dur": "5.280",
+      "text": "it I reach literally like the optimal"
+    },
+    {
+      "start": "424.240",
+      "dur": "4.320",
+      "text": "quality possible for my set of cold"
+    },
+    {
+      "start": "426.800",
+      "dur": "3.040",
+      "text": "emails and then their audiences and you"
+    },
+    {
+      "start": "428.560",
+      "dur": "3.039",
+      "text": "can apply this has mentioned to a bunch"
+    },
+    {
+      "start": "429.840",
+      "dur": "3.759",
+      "text": "of other strategies. So what are those"
+    },
+    {
+      "start": "431.599",
+      "dur": "5.600",
+      "text": "strategies? The requirement that you"
+    },
+    {
+      "start": "433.599",
+      "dur": "6.961",
+      "text": "need is anything that has an objective"
+    },
+    {
+      "start": "437.199",
+      "dur": "5.681",
+      "text": "metric you can track and an API or"
+    },
+    {
+      "start": "440.560",
+      "dur": "5.600",
+      "text": "application programming interface that"
+    },
+    {
+      "start": "442.880",
+      "dur": "5.520",
+      "text": "you can send a request to to get. Okay,"
+    },
+    {
+      "start": "446.160",
+      "dur": "6.080",
+      "text": "so some brief examples of this cold"
+    },
+    {
+      "start": "448.400",
+      "dur": "5.600",
+      "text": "email copy obviously fantastic. Why?"
+    },
+    {
+      "start": "452.240",
+      "dur": "4.799",
+      "text": "Well, because in our case we have the"
+    },
+    {
+      "start": "454.000",
+      "dur": "5.199",
+      "text": "instantly API. The Instantly API allows"
+    },
+    {
+      "start": "457.039",
+      "dur": "3.921",
+      "text": "us to query metrics and so I can give"
+    },
+    {
+      "start": "459.199",
+      "dur": "4.000",
+      "text": "the agent the ability to call a quick"
+    },
+    {
+      "start": "460.960",
+      "dur": "4.560",
+      "text": "tool, call up the Instantly API, see how"
+    },
+    {
+      "start": "463.199",
+      "dur": "3.761",
+      "text": "the performance was relative to um, you"
+    },
+    {
+      "start": "465.520",
+      "dur": "3.600",
+      "text": "know, the the challenger in the base"
+    },
+    {
+      "start": "466.960",
+      "dur": "3.760",
+      "text": "campaign. At the same time, you know, I"
+    },
+    {
+      "start": "469.120",
+      "dur": "4.960",
+      "text": "have a very clear metric, which in my"
+    },
+    {
+      "start": "470.720",
+      "dur": "5.039",
+      "text": "case is reply rate. Okay, how about"
+    },
+    {
+      "start": "474.080",
+      "dur": "4.160",
+      "text": "landing pages? Let's say you're doing"
+    },
+    {
+      "start": "475.759",
+      "dur": "4.560",
+      "text": "some form of CRO, which is conversion"
+    },
+    {
+      "start": "478.240",
+      "dur": "3.920",
+      "text": "rate optimization, and you want to test"
+    },
+    {
+      "start": "480.319",
+      "dur": "3.921",
+      "text": "to see how you can make your landing"
+    },
+    {
+      "start": "482.160",
+      "dur": "3.920",
+      "text": "page as efficient as humanly possible."
+    },
+    {
+      "start": "484.240",
+      "dur": "4.079",
+      "text": "Well, you can now completely automate it"
+    },
+    {
+      "start": "486.080",
+      "dur": "4.399",
+      "text": "with auto research. What you do is you"
+    },
+    {
+      "start": "488.319",
+      "dur": "3.681",
+      "text": "pick the metric that you want, which in"
+    },
+    {
+      "start": "490.479",
+      "dur": "4.720",
+      "text": "our case would literally just be"
+    },
+    {
+      "start": "492.000",
+      "dur": "5.120",
+      "text": "conversion rate. Okay? And then if your"
+    },
+    {
+      "start": "495.199",
+      "dur": "3.601",
+      "text": "website is hosted locally or it's hosted"
+    },
+    {
+      "start": "497.120",
+      "dur": "3.680",
+      "text": "using some API or something like that,"
+    },
+    {
+      "start": "498.800",
+      "dur": "5.440",
+      "text": "let's say a website builder like Wix or"
+    },
+    {
+      "start": "500.800",
+      "dur": "5.200",
+      "text": "or or or WordPress or Web Flow, what you"
+    },
+    {
+      "start": "504.240",
+      "dur": "4.239",
+      "text": "can do is you could give it access to"
+    },
+    {
+      "start": "506.000",
+      "dur": "4.240",
+      "text": "the API and then you could say, \"Hey,"
+    },
+    {
+      "start": "508.479",
+      "dur": "3.601",
+      "text": "change this according to this resource"
+    },
+    {
+      "start": "510.240",
+      "dur": "4.320",
+      "text": "of best practices that other agents have"
+    },
+    {
+      "start": "512.080",
+      "dur": "3.759",
+      "text": "done. Make your change. test that for I"
+    },
+    {
+      "start": "514.560",
+      "dur": "3.520",
+      "text": "don't know a day depending on how much"
+    },
+    {
+      "start": "515.839",
+      "dur": "3.841",
+      "text": "volume you have and at the end"
+    },
+    {
+      "start": "518.080",
+      "dur": "3.680",
+      "text": "consolidate the winner and then get rid"
+    },
+    {
+      "start": "519.680",
+      "dur": "4.159",
+      "text": "of the loser. You can do the exact same"
+    },
+    {
+      "start": "521.760",
+      "dur": "3.360",
+      "text": "thing for ad creatives. Okay, what's the"
+    },
+    {
+      "start": "523.839",
+      "dur": "2.321",
+      "text": "main thing that you want for ad"
+    },
+    {
+      "start": "525.120",
+      "dur": "2.640",
+      "text": "creatives? Obviously, it's going to be"
+    },
+    {
+      "start": "526.160",
+      "dur": "3.359",
+      "text": "some form of conversion rate as well."
+    },
+    {
+      "start": "527.760",
+      "dur": "3.840",
+      "text": "Whatever specific type of conversion"
+    },
+    {
+      "start": "529.519",
+      "dur": "4.241",
+      "text": "rate is, that's up to you. Okay, but all"
+    },
+    {
+      "start": "531.600",
+      "dur": "4.720",
+      "text": "you need to do is query some sort of"
+    },
+    {
+      "start": "533.760",
+      "dur": "4.480",
+      "text": "API. Now, you know, a lot of these ad"
+    },
+    {
+      "start": "536.320",
+      "dur": "3.680",
+      "text": "platforms like Facebook and Google"
+    },
+    {
+      "start": "538.240",
+      "dur": "3.840",
+      "text": "basically already do this for you."
+    },
+    {
+      "start": "540.000",
+      "dur": "3.600",
+      "text": "minded grant you granted I don't think"
+    },
+    {
+      "start": "542.080",
+      "dur": "3.280",
+      "text": "they do it anywhere near as effectively"
+    },
+    {
+      "start": "543.600",
+      "dur": "4.640",
+      "text": "as you can with modern models like Opus"
+    },
+    {
+      "start": "545.360",
+      "dur": "4.720",
+      "text": "4.6 or GPT 5.4 for what you can do is"
+    },
+    {
+      "start": "548.240",
+      "dur": "4.159",
+      "text": "you could give it the API to call a"
+    },
+    {
+      "start": "550.080",
+      "dur": "4.720",
+      "text": "specific ad resource and then you could"
+    },
+    {
+      "start": "552.399",
+      "dur": "4.961",
+      "text": "also just give it the metric to optimize"
+    },
+    {
+      "start": "554.800",
+      "dur": "4.320",
+      "text": "for which is CVR and then it'll crush."
+    },
+    {
+      "start": "557.360",
+      "dur": "4.080",
+      "text": "How about some form of customer"
+    },
+    {
+      "start": "559.120",
+      "dur": "4.480",
+      "text": "satisfaction for chatbot scripts? Maybe"
+    },
+    {
+      "start": "561.440",
+      "dur": "4.320",
+      "text": "use some sort of customer satisfaction"
+    },
+    {
+      "start": "563.600",
+      "dur": "4.799",
+      "text": "score and then you know now you just"
+    },
+    {
+      "start": "565.760",
+      "dur": "4.480",
+      "text": "adjust the main template, okay, that all"
+    },
+    {
+      "start": "568.399",
+      "dur": "4.641",
+      "text": "customer service agents, whether human"
+    },
+    {
+      "start": "570.240",
+      "dur": "5.120",
+      "text": "or AI are are going off of. That's super"
+    },
+    {
+      "start": "573.040",
+      "dur": "4.400",
+      "text": "simple and easy to do. How about product"
+    },
+    {
+      "start": "575.360",
+      "dur": "4.479",
+      "text": "descriptions for some sort of ecom if"
+    },
+    {
+      "start": "577.440",
+      "dur": "4.399",
+      "text": "you have like, I don't know, Amazon FBA"
+    },
+    {
+      "start": "579.839",
+      "dur": "4.081",
+      "text": "or something like that? you know, maybe"
+    },
+    {
+      "start": "581.839",
+      "dur": "4.000",
+      "text": "they don't necessarily have APIs, but"
+    },
+    {
+      "start": "583.920",
+      "dur": "5.039",
+      "text": "maybe now you set up um what's called"
+    },
+    {
+      "start": "585.839",
+      "dur": "4.961",
+      "text": "Chrome DevTools MCP, give it a very"
+    },
+    {
+      "start": "588.959",
+      "dur": "4.081",
+      "text": "tightly scoped list of steps it has to"
+    },
+    {
+      "start": "590.800",
+      "dur": "4.240",
+      "text": "do to update the actual body of the"
+    },
+    {
+      "start": "593.040",
+      "dur": "3.840",
+      "text": "landing page, and then based off of"
+    },
+    {
+      "start": "595.040",
+      "dur": "3.919",
+      "text": "metrics like uh I don't know, how many"
+    },
+    {
+      "start": "596.880",
+      "dur": "3.680",
+      "text": "freaking dollars you've sold in the last"
+    },
+    {
+      "start": "598.959",
+      "dur": "3.121",
+      "text": "little while, you can very quickly"
+    },
+    {
+      "start": "600.560",
+      "dur": "3.200",
+      "text": "optimize and make your product landing"
+    },
+    {
+      "start": "602.080",
+      "dur": "2.879",
+      "text": "page better and better and better. You"
+    },
+    {
+      "start": "603.760",
+      "dur": "2.480",
+      "text": "know, in my case, I make a lot of"
+    },
+    {
+      "start": "604.959",
+      "dur": "2.880",
+      "text": "YouTube content these days. I could do"
+    },
+    {
+      "start": "606.240",
+      "dur": "4.080",
+      "text": "this automatically with YouTube titles"
+    },
+    {
+      "start": "607.839",
+      "dur": "3.761",
+      "text": "and the YouTube data analytics v3 API."
+    },
+    {
+      "start": "610.320",
+      "dur": "2.720",
+      "text": "You know, you could optimize subject"
+    },
+    {
+      "start": "611.600",
+      "dur": "3.280",
+      "text": "lines for your newsletters in the same"
+    },
+    {
+      "start": "613.040",
+      "dur": "2.799",
+      "text": "way. You could optimize pricing pages"
+    },
+    {
+      "start": "614.880",
+      "dur": "2.880",
+      "text": "the same way. You could optimize"
+    },
+    {
+      "start": "615.839",
+      "dur": "3.841",
+      "text": "literally whatever you want. And so"
+    },
+    {
+      "start": "617.760",
+      "dur": "3.759",
+      "text": "hopefully it's clear that at least for,"
+    },
+    {
+      "start": "619.680",
+      "dur": "3.279",
+      "text": "you know, uh most sales and marketing"
+    },
+    {
+      "start": "621.519",
+      "dur": "3.440",
+      "text": "purposes, and we're not even going into"
+    },
+    {
+      "start": "622.959",
+      "dur": "4.401",
+      "text": "the back end here, Auto Research allows"
+    },
+    {
+      "start": "624.959",
+      "dur": "4.481",
+      "text": "you to build a consolidated set of"
+    },
+    {
+      "start": "627.360",
+      "dur": "3.280",
+      "text": "knowledge on what works, what doesn't,"
+    },
+    {
+      "start": "629.440",
+      "dur": "3.360",
+      "text": "and then have that running in the"
+    },
+    {
+      "start": "630.640",
+      "dur": "3.600",
+      "text": "background for you 24/7 with no human"
+    },
+    {
+      "start": "632.800",
+      "dur": "3.760",
+      "text": "involvement. But how the heck does this"
+    },
+    {
+      "start": "634.240",
+      "dur": "3.599",
+      "text": "actually work? Well, three simple steps."
+    },
+    {
+      "start": "636.560",
+      "dur": "2.719",
+      "text": "The first is we're going to clone the"
+    },
+    {
+      "start": "637.839",
+      "dur": "2.961",
+      "text": "repo. I'll show you how to do that in a"
+    },
+    {
+      "start": "639.279",
+      "dur": "3.441",
+      "text": "moment. We're then going to write some"
+    },
+    {
+      "start": "640.800",
+      "dur": "3.200",
+      "text": "sort of test. Okay? And you can call it"
+    },
+    {
+      "start": "642.720",
+      "dur": "3.200",
+      "text": "tests that I'm you can call it whatever"
+    },
+    {
+      "start": "644.000",
+      "dur": "4.640",
+      "text": "you want. But this only needs to include"
+    },
+    {
+      "start": "645.920",
+      "dur": "4.640",
+      "text": "a goal, a metric, and a test method. And"
+    },
+    {
+      "start": "648.640",
+      "dur": "4.240",
+      "text": "then you just give the agent the ability"
+    },
+    {
+      "start": "650.560",
+      "dur": "4.080",
+      "text": "to run this on autopilot. In my case,"
+    },
+    {
+      "start": "652.880",
+      "dur": "3.280",
+      "text": "I'm using a service called GitHub"
+    },
+    {
+      "start": "654.640",
+      "dur": "2.879",
+      "text": "actions, which allows me to store this"
+    },
+    {
+      "start": "656.160",
+      "dur": "3.440",
+      "text": "in the cloud and then run this on"
+    },
+    {
+      "start": "657.519",
+      "dur": "4.721",
+      "text": "regular intervals like 4 hours. You can"
+    },
+    {
+      "start": "659.600",
+      "dur": "3.919",
+      "text": "use GitHub actions, you could use modal,"
+    },
+    {
+      "start": "662.240",
+      "dur": "2.480",
+      "text": "you could use a billion other providers,"
+    },
+    {
+      "start": "663.519",
+      "dur": "2.401",
+      "text": "and I'll show you how to do all of that"
+    },
+    {
+      "start": "664.720",
+      "dur": "2.480",
+      "text": "right now. So the first thing you need"
+    },
+    {
+      "start": "665.920",
+      "dur": "3.280",
+      "text": "to do is you just need to get the auto"
+    },
+    {
+      "start": "667.200",
+      "dur": "4.400",
+      "text": "research repo. Now I have a link. it's"
+    },
+    {
+      "start": "669.200",
+      "dur": "4.079",
+      "text": "the uh top one or top two in the"
+    },
+    {
+      "start": "671.600",
+      "dur": "3.200",
+      "text": "description. So, click on that. You'll"
+    },
+    {
+      "start": "673.279",
+      "dur": "2.961",
+      "text": "head over to this page. This will"
+    },
+    {
+      "start": "674.800",
+      "dur": "3.840",
+      "text": "include all the information including"
+    },
+    {
+      "start": "676.240",
+      "dur": "4.320",
+      "text": "the Python training scripts, the project"
+    },
+    {
+      "start": "678.640",
+      "dur": "4.879",
+      "text": "description, a bunch of other scripts,"
+    },
+    {
+      "start": "680.560",
+      "dur": "4.719",
+      "text": "and then what he's calling program.md"
+    },
+    {
+      "start": "683.519",
+      "dur": "3.361",
+      "text": "where you provide the model everything"
+    },
+    {
+      "start": "685.279",
+      "dur": "3.361",
+      "text": "that it needs in order to manage this"
+    },
+    {
+      "start": "686.880",
+      "dur": "3.120",
+      "text": "whole research process. So, you see in"
+    },
+    {
+      "start": "688.640",
+      "dur": "2.400",
+      "text": "his case, he says this is an experiment"
+    },
+    {
+      "start": "690.000",
+      "dur": "3.040",
+      "text": "where you're going to do your own"
+    },
+    {
+      "start": "691.040",
+      "dur": "4.320",
+      "text": "research, work with the user to agree on"
+    },
+    {
+      "start": "693.040",
+      "dur": "4.320",
+      "text": "this, create this, read that, verify"
+    },
+    {
+      "start": "695.360",
+      "dur": "3.280",
+      "text": "this exists, and so on and so forth. And"
+    },
+    {
+      "start": "697.360",
+      "dur": "2.560",
+      "text": "I want you to know this stuff is not"
+    },
+    {
+      "start": "698.640",
+      "dur": "3.120",
+      "text": "super important. He's actually"
+    },
+    {
+      "start": "699.920",
+      "dur": "3.520",
+      "text": "explicitly said that his prompt is"
+    },
+    {
+      "start": "701.760",
+      "dur": "3.840",
+      "text": "probably pretty crappy and that it'd be"
+    },
+    {
+      "start": "703.440",
+      "dur": "3.680",
+      "text": "very easy to make a better one. So with"
+    },
+    {
+      "start": "705.600",
+      "dur": "3.440",
+      "text": "all that in mind, now we need to go over"
+    },
+    {
+      "start": "707.120",
+      "dur": "3.920",
+      "text": "to our agent. Next, head over to an"
+    },
+    {
+      "start": "709.040",
+      "dur": "3.919",
+      "text": "integrated development environment or"
+    },
+    {
+      "start": "711.040",
+      "dur": "3.440",
+      "text": "some sort of tool that allows you to run"
+    },
+    {
+      "start": "712.959",
+      "dur": "3.120",
+      "text": "clawed code. In my case, I'm using"
+    },
+    {
+      "start": "714.480",
+      "dur": "3.039",
+      "text": "what's called anti-gravity. You guys"
+    },
+    {
+      "start": "716.079",
+      "dur": "2.961",
+      "text": "could use Visual Studio Code. You guys"
+    },
+    {
+      "start": "717.519",
+      "dur": "3.681",
+      "text": "could use like a 100 different apps to"
+    },
+    {
+      "start": "719.040",
+      "dur": "3.359",
+      "text": "be honest. Um, by the way, if this seems"
+    },
+    {
+      "start": "721.200",
+      "dur": "2.720",
+      "text": "like magic to you, you don't know what"
+    },
+    {
+      "start": "722.399",
+      "dur": "3.120",
+      "text": "any of the buttons on the page are. I"
+    },
+    {
+      "start": "723.920",
+      "dur": "3.760",
+      "text": "literally run through all of it in an"
+    },
+    {
+      "start": "725.519",
+      "dur": "3.601",
+      "text": "extensive 4-hour cloud code course that"
+    },
+    {
+      "start": "727.680",
+      "dur": "3.120",
+      "text": "even teaches you like what the different"
+    },
+    {
+      "start": "729.120",
+      "dur": "3.200",
+      "text": "icons are and so on and so forth. Really"
+    },
+    {
+      "start": "730.800",
+      "dur": "3.039",
+      "text": "holds your hand through it. So just head"
+    },
+    {
+      "start": "732.320",
+      "dur": "3.199",
+      "text": "to the top uh right hand corner of the"
+    },
+    {
+      "start": "733.839",
+      "dur": "2.881",
+      "text": "video for that. Anyway, assuming you"
+    },
+    {
+      "start": "735.519",
+      "dur": "3.440",
+      "text": "have all this stuff open, we're going to"
+    },
+    {
+      "start": "736.720",
+      "dur": "4.400",
+      "text": "want to create a new folder. So I'm"
+    },
+    {
+      "start": "738.959",
+      "dur": "4.401",
+      "text": "going to go here to open folder and then"
+    },
+    {
+      "start": "741.120",
+      "dur": "4.719",
+      "text": "I'm going to go new. I'm going to say"
+    },
+    {
+      "start": "743.360",
+      "dur": "4.159",
+      "text": "Carpathy auto research demo. And then"
+    },
+    {
+      "start": "745.839",
+      "dur": "3.680",
+      "text": "I'll click create. Then I'm going to"
+    },
+    {
+      "start": "747.519",
+      "dur": "3.361",
+      "text": "open this folder. Okay. Okay. And now in"
+    },
+    {
+      "start": "749.519",
+      "dur": "2.560",
+      "text": "order to open up cla code, I'm just"
+    },
+    {
+      "start": "750.880",
+      "dur": "3.440",
+      "text": "going to double click anywhere in here,"
+    },
+    {
+      "start": "752.079",
+      "dur": "3.440",
+      "text": "click on my little claude code button,"
+    },
+    {
+      "start": "754.320",
+      "dur": "3.440",
+      "text": "and then what I want to do is I"
+    },
+    {
+      "start": "755.519",
+      "dur": "5.681",
+      "text": "basically want to clone this. So I'll"
+    },
+    {
+      "start": "757.760",
+      "dur": "5.600",
+      "text": "say, hey, clone this in the current"
+    },
+    {
+      "start": "761.200",
+      "dur": "3.520",
+      "text": "working directory."
+    },
+    {
+      "start": "763.360",
+      "dur": "4.159",
+      "text": "What this is going to do is it's going"
+    },
+    {
+      "start": "764.720",
+      "dur": "5.440",
+      "text": "to make an HTTP request over to GitHub,"
+    },
+    {
+      "start": "767.519",
+      "dur": "4.320",
+      "text": "and then clone this service, store that"
+    },
+    {
+      "start": "770.160",
+      "dur": "3.119",
+      "text": "down below in a folder called auto"
+    },
+    {
+      "start": "771.839",
+      "dur": "2.721",
+      "text": "research. And the reason why we're doing"
+    },
+    {
+      "start": "773.279",
+      "dur": "3.521",
+      "text": "this is because we just want all of the"
+    },
+    {
+      "start": "774.560",
+      "dur": "3.519",
+      "text": "context of this whole repo before we go"
+    },
+    {
+      "start": "776.800",
+      "dur": "2.640",
+      "text": "ahead and actually define, you know,"
+    },
+    {
+      "start": "778.079",
+      "dur": "3.361",
+      "text": "what it is that we're going to do on"
+    },
+    {
+      "start": "779.440",
+      "dur": "3.199",
+      "text": "this. And so what I want to do just for"
+    },
+    {
+      "start": "781.440",
+      "dur": "3.199",
+      "text": "demonstration sake is I'm just going to"
+    },
+    {
+      "start": "782.639",
+      "dur": "3.200",
+      "text": "reproduce my cold email example. After"
+    },
+    {
+      "start": "784.639",
+      "dur": "2.961",
+      "text": "that, I'm going to give myself a little"
+    },
+    {
+      "start": "785.839",
+      "dur": "3.680",
+      "text": "bit of space. And now, because I have"
+    },
+    {
+      "start": "787.600",
+      "dur": "3.760",
+      "text": "access to a voice dictation tool called"
+    },
+    {
+      "start": "789.519",
+      "dur": "4.000",
+      "text": "Whisper Flow down over here, I'm just"
+    },
+    {
+      "start": "791.360",
+      "dur": "4.960",
+      "text": "going to hold my Fn key and then tell it"
+    },
+    {
+      "start": "793.519",
+      "dur": "5.120",
+      "text": "what I want. Hey, I want you to use the"
+    },
+    {
+      "start": "796.320",
+      "dur": "4.639",
+      "text": "context in the auto research folder to"
+    },
+    {
+      "start": "798.639",
+      "dur": "4.401",
+      "text": "help me build a very similar idea,"
+    },
+    {
+      "start": "800.959",
+      "dur": "4.000",
+      "text": "except instead of testing for validation"
+    },
+    {
+      "start": "803.040",
+      "dur": "4.000",
+      "text": "loss and iterating on a machine learning"
+    },
+    {
+      "start": "804.959",
+      "dur": "4.241",
+      "text": "model. I want you to do all of this, but"
+    },
+    {
+      "start": "807.040",
+      "dur": "4.320",
+      "text": "for cold email. The metric I'm"
+    },
+    {
+      "start": "809.200",
+      "dur": "3.920",
+      "text": "interested in optimizing for is my reply"
+    },
+    {
+      "start": "811.360",
+      "dur": "3.760",
+      "text": "rate. The platform I'm going to be doing"
+    },
+    {
+      "start": "813.120",
+      "dur": "3.839",
+      "text": "all this stuff on is instantly, and I'll"
+    },
+    {
+      "start": "815.120",
+      "dur": "3.519",
+      "text": "give you the API credentials and"
+    },
+    {
+      "start": "816.959",
+      "dur": "3.440",
+      "text": "everything that you need in a moment."
+    },
+    {
+      "start": "818.639",
+      "dur": "3.521",
+      "text": "And finally, the thing that you're going"
+    },
+    {
+      "start": "820.399",
+      "dur": "3.761",
+      "text": "to change between one experiment and the"
+    },
+    {
+      "start": "822.160",
+      "dur": "4.640",
+      "text": "other is going to be the copy of the"
+    },
+    {
+      "start": "824.160",
+      "dur": "4.560",
+      "text": "cold emails. Finally, I want you to take"
+    },
+    {
+      "start": "826.800",
+      "dur": "4.159",
+      "text": "all this and then put this on the cloud"
+    },
+    {
+      "start": "828.720",
+      "dur": "4.400",
+      "text": "using GitHub actions. So, it runs once"
+    },
+    {
+      "start": "830.959",
+      "dur": "4.161",
+      "text": "every hour and it has everything it"
+    },
+    {
+      "start": "833.120",
+      "dur": "4.399",
+      "text": "needs to work on autopilot. Once I've"
+    },
+    {
+      "start": "835.120",
+      "dur": "4.320",
+      "text": "pasted that in, I'll press enter. Now,"
+    },
+    {
+      "start": "837.519",
+      "dur": "4.000",
+      "text": "it's going to go through all of the auto"
+    },
+    {
+      "start": "839.440",
+      "dur": "3.519",
+      "text": "research documentation. You know, it has"
+    },
+    {
+      "start": "841.519",
+      "dur": "3.201",
+      "text": "a few things here that's probably not"
+    },
+    {
+      "start": "842.959",
+      "dur": "3.841",
+      "text": "super important, like this image, which"
+    },
+    {
+      "start": "844.720",
+      "dur": "4.000",
+      "text": "shows uh I don't know, the progress on"
+    },
+    {
+      "start": "846.800",
+      "dur": "5.360",
+      "text": "Carpathy's side. You can see here his"
+    },
+    {
+      "start": "848.720",
+      "dur": "5.520",
+      "text": "baseline was validation BPB. It's some"
+    },
+    {
+      "start": "852.160",
+      "dur": "4.560",
+      "text": "form of basically accuracy how good the"
+    },
+    {
+      "start": "854.240",
+      "dur": "4.240",
+      "text": "model is. Started up here and then after"
+    },
+    {
+      "start": "856.720",
+      "dur": "3.359",
+      "text": "just a few runs it got all the way down"
+    },
+    {
+      "start": "858.480",
+      "dur": "3.120",
+      "text": "over here by adjusting various"
+    },
+    {
+      "start": "860.079",
+      "dur": "3.281",
+      "text": "parameters. This is more or less"
+    },
+    {
+      "start": "861.600",
+      "dur": "4.080",
+      "text": "everything that's going to occur except"
+    },
+    {
+      "start": "863.360",
+      "dur": "4.320",
+      "text": "with our cold email. So it'll be like um"
+    },
+    {
+      "start": "865.680",
+      "dur": "3.599",
+      "text": "you know invert this graph reply rate"
+    },
+    {
+      "start": "867.680",
+      "dur": "4.000",
+      "text": "will start here and then the idea is the"
+    },
+    {
+      "start": "869.279",
+      "dur": "3.761",
+      "text": "reply rate will go up over time. Anyway,"
+    },
+    {
+      "start": "871.680",
+      "dur": "2.880",
+      "text": "I'm going to let it run for however long"
+    },
+    {
+      "start": "873.040",
+      "dur": "3.200",
+      "text": "it needs to before it does everything"
+    },
+    {
+      "start": "874.560",
+      "dur": "2.719",
+      "text": "that it has to. And then at the end of"
+    },
+    {
+      "start": "876.240",
+      "dur": "2.800",
+      "text": "it, we're going to have a fully"
+    },
+    {
+      "start": "877.279",
+      "dur": "3.841",
+      "text": "functional autoresearch campaign. It's"
+    },
+    {
+      "start": "879.040",
+      "dur": "4.159",
+      "text": "now asking me some questions. How should"
+    },
+    {
+      "start": "881.120",
+      "dur": "4.159",
+      "text": "the system generate new email copy"
+    },
+    {
+      "start": "883.199",
+      "dur": "3.440",
+      "text": "variants? So, I'll say Claude, do you"
+    },
+    {
+      "start": "885.279",
+      "dur": "2.881",
+      "text": "already have campaigns running and"
+    },
+    {
+      "start": "886.639",
+      "dur": "3.361",
+      "text": "instantly or will this create everything"
+    },
+    {
+      "start": "888.160",
+      "dur": "3.919",
+      "text": "from scratch? So, I'm going to say from"
+    },
+    {
+      "start": "890.000",
+      "dur": "3.920",
+      "text": "scratch. Then click submit answers. And"
+    },
+    {
+      "start": "892.079",
+      "dur": "4.481",
+      "text": "it's now going through and building the"
+    },
+    {
+      "start": "893.920",
+      "dur": "4.560",
+      "text": "email optimizer. For simplicity, I'm"
+    },
+    {
+      "start": "896.560",
+      "dur": "3.600",
+      "text": "naming it similar to the other one just"
+    },
+    {
+      "start": "898.480",
+      "dur": "3.840",
+      "text": "so you guys could see what's going on."
+    },
+    {
+      "start": "900.160",
+      "dur": "4.320",
+      "text": "Now it's actually building an instantly"
+    },
+    {
+      "start": "902.320",
+      "dur": "3.840",
+      "text": "client which will contain all of the API"
+    },
+    {
+      "start": "904.480",
+      "dur": "4.000",
+      "text": "calls that it needs to make to instantly"
+    },
+    {
+      "start": "906.160",
+      "dur": "4.720",
+      "text": "to get the information. We also have the"
+    },
+    {
+      "start": "908.480",
+      "dur": "4.799",
+      "text": "orchestrator. Now orchestrator just for"
+    },
+    {
+      "start": "910.880",
+      "dur": "4.399",
+      "text": "anybody that doesn't uh isn't inherently"
+    },
+    {
+      "start": "913.279",
+      "dur": "3.920",
+      "text": "familiar with the language is basically"
+    },
+    {
+      "start": "915.279",
+      "dur": "4.401",
+      "text": "almost always going to be like your top"
+    },
+    {
+      "start": "917.199",
+      "dur": "5.121",
+      "text": "top level agent. And the idea is it's"
+    },
+    {
+      "start": "919.680",
+      "dur": "4.320",
+      "text": "the orchestrator which orchestrates okay"
+    },
+    {
+      "start": "922.320",
+      "dur": "3.519",
+      "text": "kind of like a conductor in a symphony"
+    },
+    {
+      "start": "924.000",
+      "dur": "5.279",
+      "text": "or something the function of a bunch of"
+    },
+    {
+      "start": "925.839",
+      "dur": "4.961",
+      "text": "lower level agents or tools. And so in"
+    },
+    {
+      "start": "929.279",
+      "dur": "3.041",
+      "text": "this case, what this orchestrator is"
+    },
+    {
+      "start": "930.800",
+      "dur": "3.920",
+      "text": "doing, I'm going to try and draw a"
+    },
+    {
+      "start": "932.320",
+      "dur": "3.920",
+      "text": "little blue cloud code logo. Didn't do a"
+    },
+    {
+      "start": "934.720",
+      "dur": "2.720",
+      "text": "very good job there. But basically"
+    },
+    {
+      "start": "936.240",
+      "dur": "3.520",
+      "text": "what's occurring is this is"
+    },
+    {
+      "start": "937.440",
+      "dur": "3.920",
+      "text": "orchestrating any sub aents that we'll"
+    },
+    {
+      "start": "939.760",
+      "dur": "4.160",
+      "text": "need for maybe the purposes of writing"
+    },
+    {
+      "start": "941.360",
+      "dur": "5.919",
+      "text": "copy. Um it'll orchestrate the calling"
+    },
+    {
+      "start": "943.920",
+      "dur": "5.680",
+      "text": "of like the instantly API. It'll"
+    },
+    {
+      "start": "947.279",
+      "dur": "4.961",
+      "text": "orchestrate the I don't know storing of"
+    },
+    {
+      "start": "949.600",
+      "dur": "3.919",
+      "text": "documents and uh I don't know JSON"
+    },
+    {
+      "start": "952.240",
+      "dur": "2.399",
+      "text": "results and obviously you could build in"
+    },
+    {
+      "start": "953.519",
+      "dur": "3.120",
+      "text": "a database. You could do whatever the"
+    },
+    {
+      "start": "954.639",
+      "dur": "3.521",
+      "text": "heck you want there. And so this is what"
+    },
+    {
+      "start": "956.639",
+      "dur": "2.721",
+      "text": "is essentially going to be us just"
+    },
+    {
+      "start": "958.160",
+      "dur": "3.679",
+      "text": "speaking to the orchestrator saying,"
+    },
+    {
+      "start": "959.360",
+      "dur": "4.560",
+      "text": "\"Hey man, here's what you are. You're an"
+    },
+    {
+      "start": "961.839",
+      "dur": "3.761",
+      "text": "email optimizer orchestrator and you"
+    },
+    {
+      "start": "963.920",
+      "dur": "3.359",
+      "text": "have access to all this stuff. Next, the"
+    },
+    {
+      "start": "965.600",
+      "dur": "3.919",
+      "text": "utility scripts are just little one-off"
+    },
+    {
+      "start": "967.279",
+      "dur": "4.321",
+      "text": "API calls like tools that allow it to do"
+    },
+    {
+      "start": "969.519",
+      "dur": "4.477",
+      "text": "things like purge old leads, deploy and"
+    },
+    {
+      "start": "971.600",
+      "dur": "4.400",
+      "text": "batch, test my parsers, and so on."
+    },
+    {
+      "start": "973.996",
+      "dur": "4.724",
+      "text": "[gasps] the config files here like"
+    },
+    {
+      "start": "976.000",
+      "dur": "4.959",
+      "text": "baseline resource and in this case I fed"
+    },
+    {
+      "start": "978.720",
+      "dur": "4.080",
+      "text": "it some additional documentation from a"
+    },
+    {
+      "start": "980.959",
+      "dur": "3.120",
+      "text": "big course I did inside of Maker School"
+    },
+    {
+      "start": "982.800",
+      "dur": "3.680",
+      "text": "that teaches people how to write good"
+    },
+    {
+      "start": "984.079",
+      "dur": "4.241",
+      "text": "quality cold emails. This is just things"
+    },
+    {
+      "start": "986.480",
+      "dur": "4.000",
+      "text": "that I have the ability to change. So I"
+    },
+    {
+      "start": "988.320",
+      "dur": "4.800",
+      "text": "can change my baseline test. That's the"
+    },
+    {
+      "start": "990.480",
+      "dur": "4.400",
+      "text": "first test the cold email optimizer will"
+    },
+    {
+      "start": "993.120",
+      "dur": "3.360",
+      "text": "ever test against. I could change what's"
+    },
+    {
+      "start": "994.880",
+      "dur": "3.519",
+      "text": "in resources, although obviously that's"
+    },
+    {
+      "start": "996.480",
+      "dur": "3.840",
+      "text": "going to be added to. And then I also"
+    },
+    {
+      "start": "998.399",
+      "dur": "4.161",
+      "text": "have little tokens over here so it can"
+    },
+    {
+      "start": "1000.320",
+      "dur": "3.920",
+      "text": "access the um APIs. And then finally,"
+    },
+    {
+      "start": "1002.560",
+      "dur": "2.959",
+      "text": "the GitHub actions workflow. All right."
+    },
+    {
+      "start": "1004.240",
+      "dur": "2.800",
+      "text": "And I'm scrolling through here. It's"
+    },
+    {
+      "start": "1005.519",
+      "dur": "4.240",
+      "text": "doing the vast majority of the work,"
+    },
+    {
+      "start": "1007.040",
+      "dur": "4.159",
+      "text": "which is pretty nice. And in in this"
+    },
+    {
+      "start": "1009.759",
+      "dur": "2.880",
+      "text": "case, it's actually creating some sub"
+    },
+    {
+      "start": "1011.199",
+      "dur": "3.121",
+      "text": "agents to do it for me. And if I open"
+    },
+    {
+      "start": "1012.639",
+      "dur": "5.200",
+      "text": "this up, you can see we actually have a"
+    },
+    {
+      "start": "1014.320",
+      "dur": "5.600",
+      "text": "bunch of data. So this is av.example."
+    },
+    {
+      "start": "1017.839",
+      "dur": "3.601",
+      "text": "So um I'm going to ask it to basically"
+    },
+    {
+      "start": "1019.920",
+      "dur": "2.880",
+      "text": "set this up as a demo, meaning you guys"
+    },
+    {
+      "start": "1021.440",
+      "dur": "3.680",
+      "text": "can just pump in whatever the heck you"
+    },
+    {
+      "start": "1022.800",
+      "dur": "4.159",
+      "text": "want. And then also I'm going to add a"
+    },
+    {
+      "start": "1025.120",
+      "dur": "3.360",
+      "text": "Slack web hook. The reason why I'm doing"
+    },
+    {
+      "start": "1026.959",
+      "dur": "2.960",
+      "text": "that is because I basically just want it"
+    },
+    {
+      "start": "1028.480",
+      "dur": "2.959",
+      "text": "to be able to tell me how it's doing"
+    },
+    {
+      "start": "1029.919",
+      "dur": "2.721",
+      "text": "whenever it makes the changes. Now that"
+    },
+    {
+      "start": "1031.439",
+      "dur": "2.400",
+      "text": "it's doing some testing, we can"
+    },
+    {
+      "start": "1032.640",
+      "dur": "3.840",
+      "text": "basically go ahead. So just for"
+    },
+    {
+      "start": "1033.839",
+      "dur": "6.161",
+      "text": "demonstration purposes, I'll say great"
+    },
+    {
+      "start": "1036.480",
+      "dur": "6.559",
+      "text": "create a baseline and a challenger and"
+    },
+    {
+      "start": "1040.000",
+      "dur": "4.720",
+      "text": "show me dry run. This is a demo. You can"
+    },
+    {
+      "start": "1043.039",
+      "dur": "3.520",
+      "text": "see what it's written over here as well."
+    },
+    {
+      "start": "1044.720",
+      "dur": "4.160",
+      "text": "The way it works is it runs every hour"
+    },
+    {
+      "start": "1046.559",
+      "dur": "4.161",
+      "text": "via GitHub actions cron. That's just a"
+    },
+    {
+      "start": "1048.880",
+      "dur": "4.159",
+      "text": "scheduling tool that triggers once per"
+    },
+    {
+      "start": "1050.720",
+      "dur": "4.079",
+      "text": "hour. There's three steps. It's going to"
+    },
+    {
+      "start": "1053.039",
+      "dur": "3.520",
+      "text": "harvest by collecting results from the"
+    },
+    {
+      "start": "1054.799",
+      "dur": "3.681",
+      "text": "previous experiment. It'll generate by"
+    },
+    {
+      "start": "1056.559",
+      "dur": "3.841",
+      "text": "creating a new challenger and then it'll"
+    },
+    {
+      "start": "1058.480",
+      "dur": "3.760",
+      "text": "deploy by creating the campaigns,"
+    },
+    {
+      "start": "1060.400",
+      "dur": "4.080",
+      "text": "drawing the leads from a pre-existing"
+    },
+    {
+      "start": "1062.240",
+      "dur": "4.160",
+      "text": "pool or database that I've given it and"
+    },
+    {
+      "start": "1064.480",
+      "dur": "4.559",
+      "text": "then finally activating everything. So"
+    },
+    {
+      "start": "1066.400",
+      "dur": "4.880",
+      "text": "you see the leads are over here. We have"
+    },
+    {
+      "start": "1069.039",
+      "dur": "4.640",
+      "text": "uh the usage then obviously we have like"
+    },
+    {
+      "start": "1071.280",
+      "dur": "3.680",
+      "text": "the big fat long script as well. I"
+    },
+    {
+      "start": "1073.679",
+      "dur": "3.041",
+      "text": "didn't have to write any of it. And this"
+    },
+    {
+      "start": "1074.960",
+      "dur": "3.760",
+      "text": "all follows very similar logic to what"
+    },
+    {
+      "start": "1076.720",
+      "dur": "3.520",
+      "text": "Carpathy was doing. It's just instead of"
+    },
+    {
+      "start": "1078.720",
+      "dur": "2.720",
+      "text": "doing this for like machine learning"
+    },
+    {
+      "start": "1080.240",
+      "dur": "3.360",
+      "text": "purposes, we're obviously doing this for"
+    },
+    {
+      "start": "1081.440",
+      "dur": "3.440",
+      "text": "financial purposes, better reply rates."
+    },
+    {
+      "start": "1083.600",
+      "dur": "3.280",
+      "text": "Now, because so much of this stuff"
+    },
+    {
+      "start": "1084.880",
+      "dur": "3.600",
+      "text": "occurs completely autonomously, I would"
+    },
+    {
+      "start": "1086.880",
+      "dur": "3.440",
+      "text": "recommend you always have a way to"
+    },
+    {
+      "start": "1088.480",
+      "dur": "3.760",
+      "text": "visualize or at least keep track of"
+    },
+    {
+      "start": "1090.320",
+      "dur": "4.400",
+      "text": "things as they go. And so what I've done"
+    },
+    {
+      "start": "1092.240",
+      "dur": "4.640",
+      "text": "is I've set up a little Slack ping via"
+    },
+    {
+      "start": "1094.720",
+      "dur": "4.959",
+      "text": "web hook that notifies me every time a"
+    },
+    {
+      "start": "1096.880",
+      "dur": "4.640",
+      "text": "new challenger or a baseline variant"
+    },
+    {
+      "start": "1099.679",
+      "dur": "3.281",
+      "text": "test is created. And so what happened is"
+    },
+    {
+      "start": "1101.520",
+      "dur": "2.960",
+      "text": "the other day we actually tested three"
+    },
+    {
+      "start": "1102.960",
+      "dur": "3.200",
+      "text": "different ones. You can see some of"
+    },
+    {
+      "start": "1104.480",
+      "dur": "3.280",
+      "text": "these tests were pretty small and pretty"
+    },
+    {
+      "start": "1106.160",
+      "dur": "3.440",
+      "text": "minor. We just made adjustments to the"
+    },
+    {
+      "start": "1107.760",
+      "dur": "3.520",
+      "text": "subject line and so on and so forth. But"
+    },
+    {
+      "start": "1109.600",
+      "dur": "3.199",
+      "text": "it stores things like the baseline and"
+    },
+    {
+      "start": "1111.280",
+      "dur": "3.200",
+      "text": "the challenger. And then whenever a"
+    },
+    {
+      "start": "1112.799",
+      "dur": "3.201",
+      "text": "harvest occurs, it tells us more or less"
+    },
+    {
+      "start": "1114.480",
+      "dur": "3.120",
+      "text": "which one won. Okay. And we now have the"
+    },
+    {
+      "start": "1116.000",
+      "dur": "3.679",
+      "text": "baseline which is a subject of quick"
+    },
+    {
+      "start": "1117.600",
+      "dur": "3.680",
+      "text": "question. Gives me a bunch of uh"
+    },
+    {
+      "start": "1119.679",
+      "dur": "4.081",
+      "text": "baseline copy here. So I actually wrote"
+    },
+    {
+      "start": "1121.280",
+      "dur": "3.680",
+      "text": "this initial first email. And then it's"
+    },
+    {
+      "start": "1123.760",
+      "dur": "3.360",
+      "text": "generating the challenger. The"
+    },
+    {
+      "start": "1124.960",
+      "dur": "4.079",
+      "text": "hypothesis is the baseline is too long."
+    },
+    {
+      "start": "1127.120",
+      "dur": "3.840",
+      "text": "It buries the offer and it also lacks a"
+    },
+    {
+      "start": "1129.039",
+      "dur": "4.081",
+      "text": "specific CTA time. So it's going to try"
+    },
+    {
+      "start": "1130.960",
+      "dur": "3.920",
+      "text": "rewriting it to sub 75 words leading"
+    },
+    {
+      "start": "1133.120",
+      "dur": "3.360",
+      "text": "with relevance frontloading the risk"
+    },
+    {
+      "start": "1134.880",
+      "dur": "3.120",
+      "text": "reversal and ending with a concrete time"
+    },
+    {
+      "start": "1136.480",
+      "dur": "3.520",
+      "text": "ask. You'd see it's quite the"
+    },
+    {
+      "start": "1138.000",
+      "dur": "3.760",
+      "text": "significant change here. Hey, first"
+    },
+    {
+      "start": "1140.000",
+      "dur": "3.039",
+      "text": "name. My drive PPC leads for a 2 mill a"
+    },
+    {
+      "start": "1141.760",
+      "dur": "2.560",
+      "text": "year dental marketing firm in Calgary."
+    },
+    {
+      "start": "1143.039",
+      "dur": "2.801",
+      "text": "I've sold over 10 million business"
+    },
+    {
+      "start": "1144.320",
+      "dur": "3.359",
+      "text": "agencies like yours through cold outdown"
+    },
+    {
+      "start": "1145.840",
+      "dur": "3.520",
+      "text": "alone. Got a backlog of people wanting"
+    },
+    {
+      "start": "1147.679",
+      "dur": "2.880",
+      "text": "PPC right now variety of verticals. I'd"
+    },
+    {
+      "start": "1149.360",
+      "dur": "2.559",
+      "text": "send you booked appointments and only"
+    },
+    {
+      "start": "1150.559",
+      "dur": "3.761",
+      "text": "charge if we hit a number you and I"
+    },
+    {
+      "start": "1151.919",
+      "dur": "3.760",
+      "text": "agree on beforehand. Zero risk on your"
+    },
+    {
+      "start": "1154.320",
+      "dur": "3.440",
+      "text": "end. Is this worth a quick call? It even"
+    },
+    {
+      "start": "1155.679",
+      "dur": "3.120",
+      "text": "then gives a specific time. So I mean it"
+    },
+    {
+      "start": "1157.760",
+      "dur": "2.480",
+      "text": "remains to be seen whether the"
+    },
+    {
+      "start": "1158.799",
+      "dur": "3.120",
+      "text": "challenger is going to be better than"
+    },
+    {
+      "start": "1160.240",
+      "dur": "2.880",
+      "text": "the the baseline, of course, but that's"
+    },
+    {
+      "start": "1161.919",
+      "dur": "2.801",
+      "text": "just part of the game. And you can see"
+    },
+    {
+      "start": "1163.120",
+      "dur": "4.320",
+      "text": "this has now actually been deployed. We"
+    },
+    {
+      "start": "1164.720",
+      "dur": "4.880",
+      "text": "have uh that same copy over here. And"
+    },
+    {
+      "start": "1167.440",
+      "dur": "3.920",
+      "text": "then if we go over to our baseline, we"
+    },
+    {
+      "start": "1169.600",
+      "dur": "3.600",
+      "text": "also have the baseline copy over here,"
+    },
+    {
+      "start": "1171.360",
+      "dur": "3.199",
+      "text": "which is that old cold email. And"
+    },
+    {
+      "start": "1173.200",
+      "dur": "2.719",
+      "text": "basically what's going to occur now is"
+    },
+    {
+      "start": "1174.559",
+      "dur": "3.041",
+      "text": "they're just going to test against each"
+    },
+    {
+      "start": "1175.919",
+      "dur": "3.521",
+      "text": "other until we figure out which one is"
+    },
+    {
+      "start": "1177.600",
+      "dur": "3.680",
+      "text": "better. Now on net, because this is an"
+    },
+    {
+      "start": "1179.440",
+      "dur": "4.080",
+      "text": "AI model we're working with, in my"
+    },
+    {
+      "start": "1181.280",
+      "dur": "4.560",
+      "text": "experience, most challengers are not up"
+    },
+    {
+      "start": "1183.520",
+      "dur": "4.320",
+      "text": "to the task of the baseline. Usually the"
+    },
+    {
+      "start": "1185.840",
+      "dur": "5.040",
+      "text": "baseline is better because I wrote it,"
+    },
+    {
+      "start": "1187.840",
+      "dur": "4.719",
+      "text": "but eventually the challengers do become"
+    },
+    {
+      "start": "1190.880",
+      "dur": "3.520",
+      "text": "better and you start seeing significant"
+    },
+    {
+      "start": "1192.559",
+      "dur": "3.921",
+      "text": "improvements in the reply rate relative"
+    },
+    {
+      "start": "1194.400",
+      "dur": "3.519",
+      "text": "to the original. um which then you know"
+    },
+    {
+      "start": "1196.480",
+      "dur": "3.120",
+      "text": "makes them higher and higher and higher"
+    },
+    {
+      "start": "1197.919",
+      "dur": "3.281",
+      "text": "and higher over time. Then the"
+    },
+    {
+      "start": "1199.600",
+      "dur": "3.360",
+      "text": "challenger becomes the new baseline and"
+    },
+    {
+      "start": "1201.200",
+      "dur": "3.440",
+      "text": "then you just repeat. And so basically"
+    },
+    {
+      "start": "1202.960",
+      "dur": "3.200",
+      "text": "what this is to be honest is like the"
+    },
+    {
+      "start": "1204.640",
+      "dur": "4.159",
+      "text": "automation of like scientific"
+    },
+    {
+      "start": "1206.160",
+      "dur": "4.080",
+      "text": "experiments. Um you know this is"
+    },
+    {
+      "start": "1208.799",
+      "dur": "3.521",
+      "text": "something where right now there's just"
+    },
+    {
+      "start": "1210.240",
+      "dur": "3.679",
+      "text": "so much logistical overhead and friction"
+    },
+    {
+      "start": "1212.320",
+      "dur": "3.440",
+      "text": "involved in like running any sort of"
+    },
+    {
+      "start": "1213.919",
+      "dur": "3.361",
+      "text": "experiment whether you're a marketer, a"
+    },
+    {
+      "start": "1215.760",
+      "dur": "3.039",
+      "text": "salesperson, somebody doing some backend"
+    },
+    {
+      "start": "1217.280",
+      "dur": "2.960",
+      "text": "functionary business or whatever. And"
+    },
+    {
+      "start": "1218.799",
+      "dur": "3.201",
+      "text": "this just eliminates all that friction."
+    },
+    {
+      "start": "1220.240",
+      "dur": "3.280",
+      "text": "I no longer have to like copy and paste"
+    },
+    {
+      "start": "1222.000",
+      "dur": "3.600",
+      "text": "the leads. I no longer have to like do"
+    },
+    {
+      "start": "1223.520",
+      "dur": "4.000",
+      "text": "anything manually. Um, it's all done via"
+    },
+    {
+      "start": "1225.600",
+      "dur": "3.360",
+      "text": "simple API calls. And now that we can"
+    },
+    {
+      "start": "1227.520",
+      "dur": "2.800",
+      "text": "put this thing on a loop, even though"
+    },
+    {
+      "start": "1228.960",
+      "dur": "3.040",
+      "text": "every time I run the orchestrator, it's"
+    },
+    {
+      "start": "1230.320",
+      "dur": "3.359",
+      "text": "technically like a different agent. It"
+    },
+    {
+      "start": "1232.000",
+      "dur": "3.360",
+      "text": "has all the context from all of the"
+    },
+    {
+      "start": "1233.679",
+      "dur": "3.761",
+      "text": "previous runs, which allows it to grow"
+    },
+    {
+      "start": "1235.360",
+      "dur": "4.480",
+      "text": "more intelligent over time. I anticipate"
+    },
+    {
+      "start": "1237.440",
+      "dur": "4.160",
+      "text": "that eventually after something like 500"
+    },
+    {
+      "start": "1239.840",
+      "dur": "3.600",
+      "text": "to maybe a,000 runs. You'll probably"
+    },
+    {
+      "start": "1241.600",
+      "dur": "3.520",
+      "text": "have to consolidate some of the previous"
+    },
+    {
+      "start": "1243.440",
+      "dur": "3.440",
+      "text": "learnings so that that document doesn't"
+    },
+    {
+      "start": "1245.120",
+      "dur": "4.000",
+      "text": "get super long. But whatever you're"
+    },
+    {
+      "start": "1246.880",
+      "dur": "5.440",
+      "text": "using this for, whether landing pages,"
+    },
+    {
+      "start": "1249.120",
+      "dur": "4.960",
+      "text": "PPC, uh newsletter copy, whatever the"
+    },
+    {
+      "start": "1252.320",
+      "dur": "3.280",
+      "text": "heck, you know, SEO pages, hopefully you"
+    },
+    {
+      "start": "1254.080",
+      "dur": "3.599",
+      "text": "guys understand that as things get"
+    },
+    {
+      "start": "1255.600",
+      "dur": "4.079",
+      "text": "better, the new challengers are just"
+    },
+    {
+      "start": "1257.679",
+      "dur": "4.480",
+      "text": "going to be millions upon millions of"
+    },
+    {
+      "start": "1259.679",
+      "dur": "4.721",
+      "text": "times more profitable and e efficacious"
+    },
+    {
+      "start": "1262.159",
+      "dur": "3.441",
+      "text": "than um what your initial baseline was."
+    },
+    {
+      "start": "1264.400",
+      "dur": "2.399",
+      "text": "Now, I should note there's some other"
+    },
+    {
+      "start": "1265.600",
+      "dur": "2.640",
+      "text": "things that you have to do in order to"
+    },
+    {
+      "start": "1266.799",
+      "dur": "2.561",
+      "text": "set this up completely. Like for"
+    },
+    {
+      "start": "1268.240",
+      "dur": "2.799",
+      "text": "instance, I actually had to go grab my"
+    },
+    {
+      "start": "1269.360",
+      "dur": "2.799",
+      "text": "API keys. The way you do this on"
+    },
+    {
+      "start": "1271.039",
+      "dur": "2.561",
+      "text": "Instantly is pretty straightforward."
+    },
+    {
+      "start": "1272.159",
+      "dur": "3.361",
+      "text": "Settings, then you go integrations, then"
+    },
+    {
+      "start": "1273.600",
+      "dur": "3.840",
+      "text": "you go API keys down here. Then you"
+    },
+    {
+      "start": "1275.520",
+      "dur": "3.519",
+      "text": "create an API key, say whatever the heck"
+    },
+    {
+      "start": "1277.440",
+      "dur": "3.440",
+      "text": "you want, select scopes all, and then"
+    },
+    {
+      "start": "1279.039",
+      "dur": "3.361",
+      "text": "actually copy it over. Um, you obviously"
+    },
+    {
+      "start": "1280.880",
+      "dur": "2.880",
+      "text": "need to do that as well with whatever AI"
+    },
+    {
+      "start": "1282.400",
+      "dur": "2.880",
+      "text": "model you're using to do the"
+    },
+    {
+      "start": "1283.760",
+      "dur": "3.440",
+      "text": "orchestration. In my case, I was using"
+    },
+    {
+      "start": "1285.280",
+      "dur": "3.680",
+      "text": "Claude Opus 4.6, so I just went over to"
+    },
+    {
+      "start": "1287.200",
+      "dur": "2.800",
+      "text": "anthropic, got their API key. Um, and"
+    },
+    {
+      "start": "1288.960",
+      "dur": "2.560",
+      "text": "then, you know, if you have any other"
+    },
+    {
+      "start": "1290.000",
+      "dur": "3.760",
+      "text": "other services you want to use like"
+    },
+    {
+      "start": "1291.520",
+      "dur": "4.240",
+      "text": "GitHub, for instance, or whatever, you"
+    },
+    {
+      "start": "1293.760",
+      "dur": "3.440",
+      "text": "also have to push that up. But agents"
+    },
+    {
+      "start": "1295.760",
+      "dur": "2.799",
+      "text": "will handle all that stuff for you. Just"
+    },
+    {
+      "start": "1297.200",
+      "dur": "3.359",
+      "text": "ask them, hey, you know, where do I go"
+    },
+    {
+      "start": "1298.559",
+      "dur": "3.441",
+      "text": "to get my API key? Okay, can you sign me"
+    },
+    {
+      "start": "1300.559",
+      "dur": "2.881",
+      "text": "in? And so on and so forth, and you'll"
+    },
+    {
+      "start": "1302.000",
+      "dur": "3.120",
+      "text": "be good to go. The final thing I want to"
+    },
+    {
+      "start": "1303.440",
+      "dur": "4.080",
+      "text": "talk about are use cases that I would"
+    },
+    {
+      "start": "1305.120",
+      "dur": "4.640",
+      "text": "consider not ideal for some form of auto"
+    },
+    {
+      "start": "1307.520",
+      "dur": "4.240",
+      "text": "optimization. Um, in general, things"
+    },
+    {
+      "start": "1309.760",
+      "dur": "4.640",
+      "text": "that work really well are things that"
+    },
+    {
+      "start": "1311.760",
+      "dur": "6.159",
+      "text": "have fast feedback loops. Okay, so why"
+    },
+    {
+      "start": "1314.400",
+      "dur": "5.840",
+      "text": "did Carpathy's um AI agent or like nano"
+    },
+    {
+      "start": "1317.919",
+      "dur": "5.361",
+      "text": "GPT loop work so well? Because it was"
+    },
+    {
+      "start": "1320.240",
+      "dur": "4.880",
+      "text": "literally a fiveinut loop. You know, if"
+    },
+    {
+      "start": "1323.280",
+      "dur": "3.920",
+      "text": "you have a five-minute loop, technically"
+    },
+    {
+      "start": "1325.120",
+      "dur": "4.799",
+      "text": "speaking, that means that in 60 minutes"
+    },
+    {
+      "start": "1327.200",
+      "dur": "4.400",
+      "text": "you could run 12 experiments. And so"
+    },
+    {
+      "start": "1329.919",
+      "dur": "3.601",
+      "text": "obviously 12 experiments is a lot of"
+    },
+    {
+      "start": "1331.600",
+      "dur": "3.040",
+      "text": "data. And assuming that you know you're"
+    },
+    {
+      "start": "1333.520",
+      "dur": "2.159",
+      "text": "running it on your own servers or"
+    },
+    {
+      "start": "1334.640",
+      "dur": "2.800",
+      "text": "whatever, you can just have that thing"
+    },
+    {
+      "start": "1335.679",
+      "dur": "3.761",
+      "text": "churn. But basically that means that"
+    },
+    {
+      "start": "1337.440",
+      "dur": "3.760",
+      "text": "your your iteration loop will be much"
+    },
+    {
+      "start": "1339.440",
+      "dur": "3.599",
+      "text": "faster because you'll be able to kind of"
+    },
+    {
+      "start": "1341.200",
+      "dur": "4.400",
+      "text": "draw it like this as opposed to like"
+    },
+    {
+      "start": "1343.039",
+      "dur": "4.081",
+      "text": "this. You know, it's going to take a lot"
+    },
+    {
+      "start": "1345.600",
+      "dur": "2.480",
+      "text": "longer to figure out what works and what"
+    },
+    {
+      "start": "1347.120",
+      "dur": "3.520",
+      "text": "doesn't. If you're all the way down"
+    },
+    {
+      "start": "1348.080",
+      "dur": "4.400",
+      "text": "here, another good thing to keep in mind"
+    },
+    {
+      "start": "1350.640",
+      "dur": "3.680",
+      "text": "is you need a clear metric. So in my"
+    },
+    {
+      "start": "1352.480",
+      "dur": "3.199",
+      "text": "case, reply rate was a fantastic metric."
+    },
+    {
+      "start": "1354.320",
+      "dur": "2.960",
+      "text": "Why? That's objective. How many people"
+    },
+    {
+      "start": "1355.679",
+      "dur": "3.041",
+      "text": "actually replied to my email campaigns?"
+    },
+    {
+      "start": "1357.280",
+      "dur": "2.960",
+      "text": "Click-through rate. It's very very"
+    },
+    {
+      "start": "1358.720",
+      "dur": "3.680",
+      "text": "objective because you know obviously"
+    },
+    {
+      "start": "1360.240",
+      "dur": "3.439",
+      "text": "this is people clicking through an email"
+    },
+    {
+      "start": "1362.400",
+      "dur": "3.440",
+      "text": "all the stuff is automatically tracked"
+    },
+    {
+      "start": "1363.679",
+      "dur": "4.480",
+      "text": "but if you had something that was way"
+    },
+    {
+      "start": "1365.840",
+      "dur": "3.920",
+      "text": "fuzzier in addition to way slower you"
+    },
+    {
+      "start": "1368.159",
+      "dur": "3.601",
+      "text": "know the probability of you actually"
+    },
+    {
+      "start": "1369.760",
+      "dur": "3.919",
+      "text": "making this work uh is is much lower"
+    },
+    {
+      "start": "1371.760",
+      "dur": "5.360",
+      "text": "because how do you subjectively measure"
+    },
+    {
+      "start": "1373.679",
+      "dur": "5.120",
+      "text": "like warmth you know you can't it's like"
+    },
+    {
+      "start": "1377.120",
+      "dur": "3.120",
+      "text": "happiness it's like you can't what you"
+    },
+    {
+      "start": "1378.799",
+      "dur": "2.801",
+      "text": "have to do is you have to find proxies"
+    },
+    {
+      "start": "1380.240",
+      "dur": "3.840",
+      "text": "for all these things which are usually"
+    },
+    {
+      "start": "1381.600",
+      "dur": "4.240",
+      "text": "like scales and metrics and analytics"
+    },
+    {
+      "start": "1384.080",
+      "dur": "3.760",
+      "text": "and so on and so forth and then the"
+    },
+    {
+      "start": "1385.840",
+      "dur": "4.240",
+      "text": "third thing is you need some sort of API"
+    },
+    {
+      "start": "1387.840",
+      "dur": "3.680",
+      "text": "I access to change the inputs. Um, and"
+    },
+    {
+      "start": "1390.080",
+      "dur": "2.800",
+      "text": "if you don't have the API access, you"
+    },
+    {
+      "start": "1391.520",
+      "dur": "3.600",
+      "text": "could build some sort of Chrome dev"
+    },
+    {
+      "start": "1392.880",
+      "dur": "3.600",
+      "text": "tools or CLI based flow, but like you"
+    },
+    {
+      "start": "1395.120",
+      "dur": "2.480",
+      "text": "need to have that because if you don't,"
+    },
+    {
+      "start": "1396.480",
+      "dur": "2.160",
+      "text": "how the heck is the agent supposed to"
+    },
+    {
+      "start": "1397.600",
+      "dur": "2.480",
+      "text": "make any changes? What are they going to"
+    },
+    {
+      "start": "1398.640",
+      "dur": "3.279",
+      "text": "do? Just give you a list of changes to"
+    },
+    {
+      "start": "1400.080",
+      "dur": "3.680",
+      "text": "manually go in. You can do that, but"
+    },
+    {
+      "start": "1401.919",
+      "dur": "3.281",
+      "text": "that sort of defeats the whole purpose."
+    },
+    {
+      "start": "1403.760",
+      "dur": "2.880",
+      "text": "Anyway, so what I'm going to do with"
+    },
+    {
+      "start": "1405.200",
+      "dur": "2.880",
+      "text": "this is I'm going to provide everything"
+    },
+    {
+      "start": "1406.640",
+      "dur": "4.320",
+      "text": "that you guys need, including the email"
+    },
+    {
+      "start": "1408.080",
+      "dur": "5.280",
+      "text": "optimizer repo, uh, the Carpathy, um,"
+    },
+    {
+      "start": "1410.960",
+      "dur": "4.320",
+      "text": "auto research, GitHub repo, and"
+    },
+    {
+      "start": "1413.360",
+      "dur": "3.199",
+      "text": "everything else down below. Feel free to"
+    },
+    {
+      "start": "1415.280",
+      "dur": "2.720",
+      "text": "take a look at it, give it a click,"
+    },
+    {
+      "start": "1416.559",
+      "dur": "3.841",
+      "text": "explore it, and use it for your own use"
+    },
+    {
+      "start": "1418.000",
+      "dur": "4.880",
+      "text": "case. I'd be really interested to hear"
+    },
+    {
+      "start": "1420.400",
+      "dur": "4.560",
+      "text": "what you guys end up using this on. Um,"
+    },
+    {
+      "start": "1422.880",
+      "dur": "3.200",
+      "text": "this is what all major labs that are"
+    },
+    {
+      "start": "1424.960",
+      "dur": "2.400",
+      "text": "working on machine learning models"
+    },
+    {
+      "start": "1426.080",
+      "dur": "2.560",
+      "text": "around the world are currently doing, by"
+    },
+    {
+      "start": "1427.360",
+      "dur": "3.600",
+      "text": "the way, in case it wasn't clear."
+    },
+    {
+      "start": "1428.640",
+      "dur": "3.919",
+      "text": "They're constantly running many, many,"
+    },
+    {
+      "start": "1430.960",
+      "dur": "3.040",
+      "text": "many experiments behind the scenes"
+    },
+    {
+      "start": "1432.559",
+      "dur": "2.961",
+      "text": "overnight to like make their models"
+    },
+    {
+      "start": "1434.000",
+      "dur": "2.799",
+      "text": "better and so on and so forth. So, the"
+    },
+    {
+      "start": "1435.520",
+      "dur": "2.639",
+      "text": "fact that we're able to democratize that"
+    },
+    {
+      "start": "1436.799",
+      "dur": "3.360",
+      "text": "and now do that for ourselves, for our"
+    },
+    {
+      "start": "1438.159",
+      "dur": "4.241",
+      "text": "own businesses, and for our own uh own"
+    },
+    {
+      "start": "1440.159",
+      "dur": "3.281",
+      "text": "models is now like incredible. But I'd"
+    },
+    {
+      "start": "1442.400",
+      "dur": "3.279",
+      "text": "be really curious to hear what sort of"
+    },
+    {
+      "start": "1443.440",
+      "dur": "3.440",
+      "text": "use cases you guys have with this. And"
+    },
+    {
+      "start": "1445.679",
+      "dur": "2.880",
+      "text": "you know, if it makes sense, I could"
+    },
+    {
+      "start": "1446.880",
+      "dur": "2.880",
+      "text": "compile a list of these use cases and"
+    },
+    {
+      "start": "1448.559",
+      "dur": "2.240",
+      "text": "then I could make another follow-up"
+    },
+    {
+      "start": "1449.760",
+      "dur": "2.480",
+      "text": "video that just goes through every"
+    },
+    {
+      "start": "1450.799",
+      "dur": "3.120",
+      "text": "single one and then even gives like real"
+    },
+    {
+      "start": "1452.240",
+      "dur": "3.520",
+      "text": "examples of them. Um, because that'd be"
+    },
+    {
+      "start": "1453.919",
+      "dur": "3.120",
+      "text": "really dope. Aside from that, if you"
+    },
+    {
+      "start": "1455.760",
+      "dur": "3.360",
+      "text": "guys do me a big solid, something like"
+    },
+    {
+      "start": "1457.039",
+      "dur": "3.520",
+      "text": "73% of you are not subscribed to the"
+    },
+    {
+      "start": "1459.120",
+      "dur": "3.280",
+      "text": "channel, which really hurts cuz I try"
+    },
+    {
+      "start": "1460.559",
+      "dur": "3.441",
+      "text": "and make high-quality content for both"
+    },
+    {
+      "start": "1462.400",
+      "dur": "3.040",
+      "text": "subscribers and non-subscribers. But"
+    },
+    {
+      "start": "1464.000",
+      "dur": "3.600",
+      "text": "YouTube pushes my content way more"
+    },
+    {
+      "start": "1465.440",
+      "dur": "3.680",
+      "text": "heavily when that ratio improves. So, if"
+    },
+    {
+      "start": "1467.600",
+      "dur": "3.040",
+      "text": "I give you any value today whatsoever,"
+    },
+    {
+      "start": "1469.120",
+      "dur": "3.039",
+      "text": "please do click the subscribe button. I"
+    },
+    {
+      "start": "1470.640",
+      "dur": "3.039",
+      "text": "hate asking for it, but it just makes a"
+    },
+    {
+      "start": "1472.159",
+      "dur": "3.201",
+      "text": "difference on YouTube, so I'll do what"
+    },
+    {
+      "start": "1473.679",
+      "dur": "2.961",
+      "text": "works. If you guys want more on cloud"
+    },
+    {
+      "start": "1475.360",
+      "dur": "2.799",
+      "text": "code and so on and so forth, definitely"
+    },
+    {
+      "start": "1476.640",
+      "dur": "2.960",
+      "text": "check that out. And yeah, I mean, I will"
+    },
+    {
+      "start": "1478.159",
+      "dur": "2.640",
+      "text": "catch all y'all in the next video."
+    },
+    {
+      "start": "1479.600",
+      "dur": "3.760",
+      "text": "Thanks so much for watching, as per"
+    },
+    {
+      "start": "1480.799",
+      "dur": "2.561",
+      "text": "usual. See you."
+    }
+  ]
+}]

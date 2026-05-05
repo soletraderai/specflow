@@ -1,0 +1,55 @@
+{
+  "product": "Northwind Orders — internal order-management dashboard",
+  "baseUrl": "http://localhost:3000",
+  "pages": [
+    {
+      "id": "dashboard",
+      "name": "Dashboard / home",
+      "path": "/",
+      "description": "Default landing page after login. Shows the user's open orders, recent activity, and a global search.",
+      "primaryProfiles": ["power-user-ops-coordinator", "first-time-visitor"],
+      "auth": "required"
+    },
+    {
+      "id": "orders-list",
+      "name": "Orders list",
+      "path": "/orders",
+      "description": "Filterable, sortable table of every order the user has access to. Supports bulk actions for power users.",
+      "primaryProfiles": ["power-user-ops-coordinator"],
+      "auth": "required"
+    },
+    {
+      "id": "order-detail",
+      "name": "Order detail",
+      "path": "/orders/:orderId",
+      "description": "Full order record — line items, customer, shipping, status timeline, audit trail. Read-heavy, occasional high-stakes writes (refund, cancel).",
+      "primaryProfiles": ["power-user-ops-coordinator", "support-agent"],
+      "auth": "required"
+    },
+    {
+      "id": "customer-detail",
+      "name": "Customer detail",
+      "path": "/customers/:customerId",
+      "description": "Customer record with order history, contact details, and notes. Used by support to triage tickets.",
+      "primaryProfiles": ["support-agent"],
+      "auth": "required"
+    },
+    {
+      "id": "admin-users",
+      "name": "Admin — user management",
+      "path": "/admin/users",
+      "description": "Provision and de-provision internal users, assign roles, view audit log of permission changes.",
+      "primaryProfiles": ["admin-platform-operator"],
+      "auth": "required",
+      "redLane": true
+    },
+    {
+      "id": "mobile-pickup",
+      "name": "Mobile pickup screen",
+      "path": "/mobile/pickup/:orderId",
+      "description": "Mobile-first screen used by warehouse staff to confirm order pickup. Tolerates intermittent connectivity.",
+      "primaryProfiles": ["mobile-warehouse-operator"],
+      "auth": "required"
+    }
+  ]
+}

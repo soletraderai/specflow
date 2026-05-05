@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI's pushback holds. The contract-vs-mechanism separation cited from Phase 1 scope item 15 is correct — the AC describes the binary contract (the iteration-log diff value as a number), and the verb 'honoured' is a contract summary, not a verify mechanism. A fresh agent setting `admin/config.json.design.diffThreshold = 0.03` and reading the converged-line diff value can run the binary check against the override threshold. The proposed sharpened clause restated the same check more verbosely; verbosity is not strength, binary is. Defence holds."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI added the diff-visualisation path clause to T8 verbatim. The `Cap-reached diff: {path}` log line + non-empty-PNG check closes the AC-7 coverage gap; both halves of AC-7 (visual + three-option prompt) now have binary verification. Pattern matches T9's citation-format checks (artefact path resolves to a real file). Accepted."
+    }
+  }
+}

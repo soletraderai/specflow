@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (b) to T7 Notes verbatim — schema absence is now a documented default-to-literal-0.05 path with no write to `admin/config.json`. Schema addition is explicitly deferred to consumer-project setup, which keeps the feature blast radius inside `features/001-design-skill/` and `skills/design/SKILL.md`. The cross-feature scope drift is closed; a future reader hitting T7 sees both the config read and the no-write contract. Accepted."
+    }
+  }
+}

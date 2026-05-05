@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "002-develop-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (b) — the cross-skill schema dependency is now explicit in AC-10. Reviewers reading AC-10 can see the `specflow:misc` schema dependency without inferring it; implementers know to either confirm the existing schema covers `manifest_path` + `gate_finding_id` or land a separate `specflow:misc` enhancement PRD before `specflow:develop` v1 ships. The Phase 1 surface change is no longer smuggled into the Phase 2 PRD — it's named as a dependency that must be resolved, which is the surgical-changes-compliant shape. Accepted."
+    }
+  }
+}

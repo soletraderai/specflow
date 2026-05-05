@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-prd.md:R8 + R9 + AC-6 + Non-goals — R8 specifies the agent-teams plugin consultation contract ('once per task at lane-assignment time; team-spawn fires only when (lane is Green or Yellow) AND (task scope matches a glob) AND (plugin detected)'). R9 specifies the Red-lane exclusion ('Red-lane tasks always pick a single specialised agent regardless of `config.json.teams` configuration'). The Non-goals section says 'Building the agent-teams plugin itself' is out of scope. AC-6 verifies the plan logs `team-spawn invoked` or `single-specialist invoked` correctly. But the PRD does not specify what happens when the agent-teams plugin IS detected but `team-spawn` returns an error (plugin installed but broken state, team preset name doesn't match anything in `config.json.teams`, plugin version-skew with `specflow:develop`'s expected interface). Does the skill fall back to single-specialist invocation? Abort the task? Surface the error? The 'soft dependency, degrades to sequential' framing assumes binary present/absent — the failure-mode-when-present-but-broken case is silent.",
+      "claim": "Cross-artefact ambiguity (degraded-path coverage gap) — the soft-dependency contract for the agent-teams plugin covers (plugin-absent → sequential single-specialist) but does not cover (plugin-present-but-failing → ?). A reviewer running this skill on a project where `agent-teams` is installed but a team preset is misnamed would hit an undocumented failure surface. The Phase 1 example for soft-dependency degraded paths is `specflow:design`'s Codex flow, which explicitly states 'skip silently with a one-line note in the iteration log' for Codex absent. The agent-teams degraded path needs an equivalent specification for the present-but-failing case.",
+      "proposed_change": "Extend R8 with a present-but-failing clause: 'When the agent-teams plugin is detected but `team-spawn` returns an error (preset name unmatched, plugin version-skew, plugin internal error), `specflow:develop` falls back to sequential single-specialist invocation per R9's stack-match logic AND surfaces the failure to the user as a chat-line warning (e.g. `[agent-teams: team-spawn failed for preset {name} — falling back to single-specialist {agent}]`). The fallback does NOT abort the task; the user can intervene if needed.' Then add a corresponding AC sub-clause to AC-6: 'When `team-spawn` returns an error, the plan logs `team-spawn failed: {error}; fell back to single-specialist invoked: agent={agent-name}`.' This documents the third path (present-but-failing) the binary present/absent framing missed."
+    }
+  ]
+}

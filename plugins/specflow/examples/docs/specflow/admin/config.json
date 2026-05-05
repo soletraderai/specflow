@@ -1,0 +1,33 @@
+{
+  "specflowVersion": "2.0.0",
+  "confidentialPaths": [
+    "src/billing/**",
+    "src/auth/**",
+    "src/migrations/**",
+    "infrastructure/**",
+    "ops/runbooks/**",
+    ".env*",
+    "secrets/**"
+  ],
+  "defaults": {
+    "design": {
+      "target": "http://localhost:3000",
+      "mobileFrame": "iphone-14",
+      "diffThreshold": 0.05,
+      "iterationCap": 10
+    }
+  },
+  "teams": {},
+  "linearProject": {
+    "workspace": "northwind-orders",
+    "teamId": "ENG",
+    "projectId": null,
+    "labels": {
+      "specflow": "specflow",
+      "miscTask": "misc-task",
+      "redLane": "lane:red",
+      "yellowLane": "lane:yellow",
+      "greenLane": "lane:green"
+    }
+  }
+}

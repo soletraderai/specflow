@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:81-83 — Requirement R10 ('INVENTED VALUES sub-block') restates the placement rule that R6 already implies. R6 says invented values are 'flagged distinctly in the comment block'. R10 elevates the sub-block placement (before extracted values) to a separate requirement. Two PRD requirements track one user-resolved decision (interview Round 5).",
+      "claim": "Requirement count creep — R10 duplicates the spirit of R6's `--default-when-missing` flag specification (Simplicity First, 'Minimum code that solves the problem' applied to spec-level: minimum requirements that solve the spec).",
+      "proposed_change": "Merge R10 into R6. Add a sentence to R6: 'When invented values exist, they appear in a distinct `/* === INVENTED VALUES === */` sub-block at the top of the comment block, before the extracted values, so reviewers see them first.' Drop R10. AC-5 already covers the binary check for both R6 and R10; renumber accordingly."
+    }
+  ]
+}

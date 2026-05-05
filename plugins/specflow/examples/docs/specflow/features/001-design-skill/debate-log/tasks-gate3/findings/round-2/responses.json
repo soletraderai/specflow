@@ -1,0 +1,35 @@
+{
+  "round": 2,
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "push_back",
+      "rationale": "T7's threshold-override clause is already binary in the existing acceptance — the verb 'honoured' summarises the binary check that follows: the iteration log's `converged` line records the per-pixel diff value as a number against the configured threshold. A fresh agent runs the override case by setting `admin/config.json.design.diffThreshold = 0.03`, running the skill, and reading the converged-line diff value: pass if `< 0.03`, fail otherwise. The reviewer's proposed sharpened clause ('a run that converges at 0.04 with the override set is a failed run') restates the same binary check but more verbosely. Cited evidence: T7 acceptance line at features/001-design-skill/001-design-skill-tasks.md (Acceptance line 2) — 'records each iteration's diff value as a number'. The verify mechanism is the log-line value; 'honoured' names the contract, the log line does the binary work. Cited principle: PRD Phase 1 scope item 15 — 'verify steps live in SKILL.md, not in the AC contract.' The same separation applies to tasks: the acceptance describes the contract; the SKILL.md verify step (T7 Scope line: 'threshold read from `admin/config.json.design.diffThreshold`') describes the mechanism.",
+      "revision_applied": "none — push back; T7 acceptance retained as-is. The threshold-override sub-clause is binary against the existing diff-value-as-number rule."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-7 has two binary halves and T8 only verifies one. Adding a binary check for the diff-visualisation path closes the gap and matches the pattern T9 uses for citation-format checks (the artefact path resolves to a real file).",
+      "revision_applied": "Add a clause to T8 acceptance: 'Before the prompt fires, the skill writes the diff visualisation to a path recorded on the iteration-log line `Cap-reached diff: {path}`. The path resolves to a non-empty PNG file. A run with an empty path or unwritten file is a failed run.'"
+    },
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "T6 and T10 trace to two separate PRD requirements (R6 = the what — opt-in flag and per-value invented flag; R10 = the where — sub-block placement before extracted values). Gate 2's simplicity-r1-f1 already established that R6 and R10 are separate single-concern requirements (interview Round 5's 'but add' phrasing — see debate-log/prd-gate2/findings/round-3/simplicity-reviewer.json line 10). The same 1:1 R→T trace clarity argument applies at the task level: merging T10 into T6 would create a multi-anchor task (T6 covering both R6 and R10) and lose the visual coverage matrix's symmetry. AC-5 already verifies both rules — the 'shared AC' argument the reviewer cites is symmetric, not asymmetric: AC-5's coverage-by-two-tasks is the same surface as the requirements-by-two-rules structure. Cited evidence: features/001-design-skill/001-design-skill-prd.md R6 line 65 ('--default-when-missing opt-in flag') and R10 line 81 ('INVENTED VALUES sub-block') — two requirements in the PRD; Gate 2 closing decision lines 73-74 ('R10's separation from R6 is load-bearing... two distinct decisions').",
+      "revision_applied": "none — push back; T6 and T10 retained as separate tasks. R10 stays mapped to T10 in the coverage matrix."
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "T7's implicit assumption about `admin/config.json` schema state is real. Option (b) is the smaller change and matches the v1 default-when-missing pattern from R5 (reasonable defaults, opt-in writes). Schema addition deferred to consumer-project setup keeps blast radius inside the feature.",
+      "revision_applied": "Add a Notes line to T7: 'If `admin/config.json.design.diffThreshold` is absent, the skill uses the literal default `0.05` without writing to `admin/config.json`. Schema addition is deferred to consumer-project setup, not this skill.' No misc-task added."
+    },
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "rationale": "The conditional-ordering ambiguity in T11's Depends-on line is real and the proposed sharpening matches R11's contract (Codex fires after convergence OR after accepted drift, never after abort). The Notes line surfaces the assumption that the writer was carrying implicitly.",
+      "revision_applied": "Sharpen T11 Depends-on to: 'T7 always; T8 only when T7 ends in `cap-reached`.' Add a Notes line: 'On the `converged` path, T11 reads the loop's terminal state directly from the iteration log and skips T8 entirely. On `cap-reached`, T11 reads T8's `Cap-reached resolution` line and fires only when the value is `accept`.'"
+    },
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "The (Codex available + user aborted) cross-product case is silent in T11 acceptance and the failure mode the reviewer names (a stray skip note appearing on an aborted run) is exactly the kind of cross-artefact drift Gate 2's da-r1-f1 sharpened R11 to prevent. Pinning the abort clause to a regardless-of-availability check closes the gap.",
+      "revision_applied": "Sharpen T11 acceptance abort clause: 'When the user chose `abort` in T8, the iteration log contains neither the `## Codex review` section nor the `Codex not detected — semantic review skipped.` note, regardless of whether `admin/environment.json.cli.codex.available` is `true` or `false`. Abort short-circuits both Codex branches.'"
+    }
+  }
+}

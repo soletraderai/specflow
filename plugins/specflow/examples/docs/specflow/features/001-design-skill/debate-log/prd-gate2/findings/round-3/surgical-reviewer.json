@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (b) — added explicit trace-line citation to R12 plus a one-line reason ('No grilling round was needed because the convention was inherited from specflow:render and pre-confirmed'). The pattern-break is now documented in the requirement itself; a future reader hitting R12 sees both the trace and the reason for its different shape. Accepted."
+    }
+  }
+}

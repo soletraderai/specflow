@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "002-develop-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI added R17 verbatim — the PRD-anchor format is now an R-level requirement that AC-13 verifies. The orphan-AC gap is closed. Downstream skills (`specflow:test`) building a test plan against this PRD will exercise R17 directly; without R17, the architectural rule from `docs/PRD.md` § Phase 2 scope item 7 had no R-level expression in this PRD body and the test plan would have nothing to bind to. Block resolved."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AC-15 added — the goal Outcome surface (h) is now verified. The decision to add only the AC (not a parallel R) is defensible: the goal field's mention plus `docs/PRD.md` Phase 3 scope item 1's schema are sufficient to bind the skill to the development-time-fields contract; an R-level requirement would duplicate Phase 3 scope item 1 without adding information. Goal-coverage gap closed."
+    }
+  }
+}

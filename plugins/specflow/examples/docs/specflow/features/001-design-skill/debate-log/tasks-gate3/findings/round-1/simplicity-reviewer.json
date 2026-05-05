@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-tasks.md — T6 ('Implement `--default-when-missing` flag with per-value invention flags') and T10 ('INVENTED VALUES sub-block placed before extracted values') are split across two tasks but both touch the same surface (the comment-block writer) and both are verified by AC-5. The dependency chain T5 → T6 → T10 (with T10 also depending on T9) means a single-author implementation will land them as one diff anyway; splitting forces two task entries where one would do.",
+      "claim": "Over-decomposition — two tasks track one shippable unit (Simplicity First, 'Minimum surface that solves the problem'; applied to task-list level: minimum tasks that cover the requirements). T6 and T10 share an acceptance criterion (AC-5) and a file (`SKILL.md` comment-block writer); the split adds task-list overhead without adding reviewability.",
+      "proposed_change": "Merge T10 into T6 as a sub-task or a second acceptance clause. Updated T6 acceptance: 'Running `specflow:design {NNN-slug} --default-when-missing` on a feature with at least one unresolved reference produces an HTML file in which (a) every invented value is preceded by `/* INVENTED: {description} */` naming what was missing, and (b) all invented values appear inside a `/* === INVENTED VALUES === */` sub-block placed strictly before the `/* === EXTRACTED VALUES === */` sub-block.' Update the coverage matrix: R6 → T6, R10 → T6. Drop T10."
+    }
+  ]
+}

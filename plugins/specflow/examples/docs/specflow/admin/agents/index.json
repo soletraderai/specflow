@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-05-06T09:14:00Z",
+  "standard": [
+    {
+      "name": "orchestrator",
+      "category": "lifecycle",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/lifecycle/orchestrator.md"
+    },
+    {
+      "name": "devils-advocate",
+      "category": "lifecycle",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/lifecycle/devils-advocate.md"
+    },
+    {
+      "name": "verifier",
+      "category": "lifecycle",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/lifecycle/verifier.md"
+    },
+    {
+      "name": "simplicity-reviewer",
+      "category": "principles",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/principles/simplicity-reviewer.md"
+    },
+    {
+      "name": "surgical-reviewer",
+      "category": "principles",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/principles/surgical-reviewer.md"
+    },
+    {
+      "name": "think-before-coding-reviewer",
+      "category": "principles",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/principles/think-before-coding-reviewer.md"
+    },
+    {
+      "name": "goal-driven-reviewer",
+      "category": "principles",
+      "source": "specflow",
+      "version": "2.0.0",
+      "path": "agents/standard/principles/goal-driven-reviewer.md"
+    }
+  ],
+  "specialised": [
+    {
+      "name": "frontend-developer",
+      "category": "specialised",
+      "source": "frontend-mobile-development",
+      "version": "1.4.2",
+      "path": "agents/specialised/frontend-developer.md",
+      "addedAt": "2026-04-15"
+    },
+    {
+      "name": "code-reviewer",
+      "category": "specialised",
+      "source": "comprehensive-review",
+      "version": "1.2.0",
+      "path": "agents/specialised/code-reviewer.md",
+      "addedAt": "2026-04-15"
+    },
+    {
+      "name": "database-architect",
+      "category": "specialised",
+      "source": "comprehensive-review",
+      "version": "1.2.0",
+      "path": "agents/specialised/database-architect.md",
+      "addedAt": "2026-04-22"
+    }
+  ]
+}

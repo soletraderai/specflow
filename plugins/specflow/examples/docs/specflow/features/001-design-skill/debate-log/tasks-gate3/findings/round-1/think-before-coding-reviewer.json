@@ -1,0 +1,16 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "tbc-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-tasks.md — T11's Depends-on line reads 'T7, T8' but the acceptance carves out three distinct branches (loop ended `converged`; loop ended `cap-reached` then user chose `accept`; user chose `abort`). The task list never states the assumption that T8 *always runs* between T7 and T11 vs. T8 only running on `cap-reached`. A reader could infer either: 'T11 reads T8's resolution choice' (so T8 must always emit one) or 'T11 inspects the loop result directly and only consults T8 if cap-reached' (so T8 is conditionally on the path).",
+      "claim": "Unstated ordering assumption — the dependency `T11 depends on T7, T8` is ambiguous between unconditional and conditional ordering (Think Before Coding, 'Surface ordering assumptions'). The task list reads correctly forwards but a fresh implementer landing on T11 cannot tell whether T8 must execute on the `converged` path.",
+      "proposed_change": "Sharpen T11 Depends-on to: 'T7 always; T8 only when T7 ends in `cap-reached`.' And add a Notes line: 'On the `converged` path, T11 reads the loop's terminal state directly from the iteration log and skips T8 entirely. On `cap-reached`, T11 reads T8's `Cap-reached resolution` line and fires only when the value is `accept`.' This makes the conditional ordering explicit and matches R11's contract (Codex fires after convergence OR after accepted drift, never after abort)."
+    }
+  ]
+}

@@ -1,500 +1,421 @@
 ---
-name: "specflow:task"
-description: >
-  Break a PRD into actionable Linear issues organized as vertical slices with
-  dependency tracking, time estimates, and project linking. Use this skill
-  whenever the user says "prd to tasks", "break this PRD into tasks",
-  "create issues from PRD", "turn this into Linear issues", or runs
-  /specflow:task. Also trigger when a user has just finished creating a PRD
-  and wants to move to implementation planning. This skill creates a Linear
-  project, estimates effort, and generates properly sequenced issues with
-  blockedBy relationships so the team knows exactly what to build and in
-  what order.
+name: specflow:task
+description: User-facing entry point for task generation. Five-phase orchestrator — A pre-flight + read PRD/interview, B task synthesis with coverage matrix, C intent summaries surfaced in chat, D override capture to task-history.json, E Gate 3 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature.
+status: v2-enhancement
+phase: 1
+requires:
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-interview.md
+  - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest.md
+  - docs/specflow/admin/rules/non-negotiable.md
+  - docs/specflow/admin/rules/guidelines.md
+  - docs/specflow/admin/task-history.json
+  - docs/specflow/admin/decision-log.md
+produces:
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md
+  - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/manifest.md
+  - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/findings/
+  - docs/specflow/admin/task-history.json
+eval: tasks file exists with one task per PRD requirement; coverage matrix shows 100% PRD-requirement coverage and zero orphan tasks; every task acceptance is binary; Gate 3 debate manifest closes with Orchestrator sign-off entry; any user-driven recut wrote a record to task-history.json.
 ---
 
-# PRD to Linear Tasks
+# specflow:task
 
-Break a PRD into independently-grabbable Linear issues using vertical slices (tracer bullets), with time estimates and dependency tracking.
+You are the user-facing entry point for task generation. You own the full flow from "PRD signed off" to "task list reviewed, recorded, and gate-3 closed."
 
-The philosophy here is tracer bullets -- thin vertical slices that cut through every integration layer end-to-end. Each issue should be demoable on its own. This is the opposite of horizontal slicing (one issue for DB, one for API, one for UI). Vertical slices reduce integration risk and give the team working software at every step.
+This is a **5-phase orchestrator**. Phase E delegates to forked sub-agents (the principle reviewers + Devil's Advocate) per the orchestrator pattern (see `templates/orchestrator-pattern.md`). Your parent context never accumulates the reviewers' raw work.
 
-## Process
+---
 
-### 1. Locate the PRD
+## Inputs
 
-Look for PRDs in `docs/specflow/prd/` by globbing for `*.md`. If multiple PRDs exist, list them with their PRD IDs (from `prd_id` frontmatter or filename prefix) and ask the user which one to use. If only one exists, confirm it. Accept a PRD ID as input (e.g., "PRD-001"), matching by the 3-digit filename prefix. Read the full PRD content and internalize every section -- the user stories, implementation decisions, and scope boundaries all inform how to slice the work.
+The user invokes you with a feature ID:
+- `specflow:task {NNN}` or `specflow:task {NNN-slug}` — the feature must already have a PRD that closed Gate 2.
+- `/specflow:task` with no argument — ask the user which feature.
 
-If the user provides a PRD filename or path directly, use that.
+**Resume logic.** Before starting Phase A, detect the situation:
 
-After identifying the PRD, update its YAML frontmatter to change `status: Draft` to `status: Accepted`. Generating tasks from a PRD is the acceptance signal — we only create tasks for accepted PRDs.
+1. Locate `docs/specflow/features/NNN-{slug}/`. If missing, refuse: *"Feature `{NNN-slug}` does not exist. Run `specflow:prd` first."*
+2. Verify the PRD is gate-2-closed:
+   - `features/NNN-{slug}/{NNN-slug}-prd.md` exists.
+   - `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with a `**passed**` or `**passed-with-escalations**` closing decision.
+   - If not closed (or status `failed`), refuse: *"PRD has not closed Gate 2 (status: `{status}`). Resolve Gate 2 before tasking. Re-run `specflow:prd {NNN-slug}` to resume."*
+3. Determine the resume point:
+   - **No tasks file** → start Phase A.
+   - **Tasks file exists, no Gate 3 manifest** → resume Phase E.
+   - **Tasks file + Gate 3 manifest exist** → ask the user: *"This feature appears tasked (Gate 3 closed). What do you want to do? (1) re-run Gate 3 with the existing tasks, (2) regenerate tasks from scratch — old tasks archived, (3) `specflow:scope-change` if the PRD itself needs revision."*
 
-### 2. Gather Project Parameters
+Tell the user explicitly which phase you're starting at.
 
-Before exploring the codebase, confirm minimal project settings with the user:
+---
 
-**Priority level:**
-- Ask: "What priority should the project have?" (Urgent / High / Medium / Low)
-- Default suggestion: Medium (priority 3) unless the PRD suggests otherwise
+## Phase A — Pre-flight + read PRD/interview
 
-**Team assignment:**
-- Ask: "Which Linear team should these issues go to?"
-- If the user doesn't specify, prompt them to provide a team name
+### A.1 Verify the artefact chain
 
-**Timeline is NOT asked upfront.** The timeline is derived from the task estimates. After all tasks are estimated, calculate:
-- `total_hours = sum of all task estimates`
-- `duration_weeks = ceil(total_hours / 50)` (team capacity is 50 hours per week)
-- `target_date = today + duration_weeks`
+Use Read tool in parallel on:
+- `features/NNN-{slug}/{NNN-slug}-prd.md`
+- `features/NNN-{slug}/{NNN-slug}-interview.md`
+- `features/NNN-{slug}/debate-log/prd-gate2/manifest.md`
+- `admin/rules/non-negotiable.md`
+- `admin/rules/guidelines.md`
+- `admin/task-history.json` (empty array `{"tasks": []}` is fine)
+- `admin/decision-log.md` (optional)
 
-This means the estimates drive the timeline, not the other way around. The 50 hours/week is a conversion factor for translating hours into calendar time.
+### A.2 Extract the PRD's load-bearing fields
 
-### 3. Explore the Codebase
+You need clean lists for Phase B's coverage matrix:
+- **Requirements** — every `R1`, `R2`, …, with their Trace + Serves-goal pairs.
+- **Acceptance criteria** — every `AC-1`, `AC-2`, …, with which requirements they verify.
+- **Non-goals** — used in Phase E (Surgical Reviewer cross-checks).
+- **Open questions** — flagged so any task that depends on an unresolved question is marked.
 
-Read the key modules and integration layers referenced in the PRD. Identify:
+Write a small extraction file to `admin/scratch/{NNN-slug}-tasks/prd-extracts.json` (orchestrator-pattern: scratch directory per orchestration). The reviewers in Phase E read this via command substitution.
 
-- The distinct integration layers the feature touches (e.g. DB/schema, API/backend, UI, tests, config)
-- Existing patterns for similar features in the codebase
-- Natural seams where work can be parallelized
-- Technical risks or unknowns that might need spike issues
-- **Specific file paths** that will need modification for each piece of work
-- **New files** that will need to be created, following existing naming and directory conventions
-- **Constitution constraints** — if `docs/specflow/config.json` has a `constitution` key, load it and note which architectural boundaries and coding principles constrain how vertical slices should be structured. For example, if "all external API calls go through a service layer" is a boundary, every slice that adds an API call must include the service layer — you can't defer it to a later slice.
+### A.3 Tell the user what you're doing
 
-This grounds the breakdown in reality rather than abstract planning. Having concrete file paths lets the developer jump straight into the relevant code.
+*"Read the PRD and interview. Synthesising tasks now — every PRD requirement gets at least one task; every task anchors to a requirement and has a binary acceptance check."*
 
-#### Agent-Assisted Analysis
+---
 
-After the initial exploration above, check for specialist agents:
+## Phase B — Task synthesis with coverage matrix
 
-1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent (e.g., `agent-teams:team-lead`) via the Task tool. Pass it:
-   - The PRD content and proposed vertical slices (if drafted)
-   - Key files and integration layers found during initial exploration
-   - The full list of available agents from config.json (`agents.roles` and `agents.techStack`)
-   - Task: "Analyze the codebase architecture relevant to this task breakdown. Identify integration points, architectural patterns that inform slice boundaries, and technical risks. Then recommend which specialist agents (from the available list) should be spawned for deeper analysis, and provide a specific prompt for each recommended agent."
-3. The orchestrator will return:
-   - Its own findings on integration points, patterns, and risks (using its Read, Glob, Grep, Bash tools)
-   - Recommendations for which specialist agents to spawn (if any), with specific prompts
-4. Spawn the orchestrator's recommended specialist agents in parallel via the Task tool (max 2, since the orchestrator used 1 of the 3 agent slots)
-5. Agent findings may reveal: additional integration points not obvious from manual exploration, technical risks warranting spike issues, better approaches based on framework-specific knowledge
-6. If `docs/specflow/config.json` doesn't exist or has no agents configured, continue with manual exploration only
+### B.1 Derive tasks from requirements
 
-### 4. Draft Vertical Slices
+For each PRD requirement, derive one or more tasks. A task is the smallest shippable unit that:
+- Anchors to ≥1 PRD requirement (cite the requirement ID).
+- Has a binary acceptance check (cite the AC ID it satisfies, or write a new one tied to the requirement).
+- Names the surfaces it touches (files, components, modules).
+- Is independently reviewable — a reviewer can read this one task and tell whether it's done without holding the rest of the task list in their head.
 
-Break the PRD into tracer bullet issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end.
+**Sizing heuristics:**
+- A task that touches >5 files is probably two tasks. Split it.
+- A task whose acceptance criterion contains the word "and" twice is probably two tasks. Split it.
+- A task that depends on more than one other task should be reordered or split — long dependency chains kill parallelism.
 
-<vertical-slice-rules>
-- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
-- A completed slice is demoable or verifiable on its own
-- Prefer many thin slices over few thick ones
-- The first slice should be the simplest possible end-to-end path (the "hello world" tracer bullet)
-- Later slices add breadth: edge cases, additional user stories, polish
-- Expect 15-40 tasks per PRD. A higher task count is correct behavior with 1-hour caps, not a sign of over-splitting
-- Only include tasks that directly implement the PRD -- no generic infrastructure, no "nice to haves" that aren't in the PRD, no tasks for things that already exist
-- Each slice must document the **current state** (what exists now) and **expected state** (what should exist after) in plain, behavior-focused language -- describe what the user sees and experiences, not code internals. A senior developer will oversee implementation, so these sections orient them on the "what" and "why", not the "how". Save file paths, interface names, and code-level details for the **Technical Implementation** and **Files to Modify/Create** sections.
-- The **technical implementation** section is advisory guidance only -- a senior developer may choose a different approach
-- Each slice must list **files to modify** and **files to create** so the developer can immediately orient themselves in the codebase
-- Each slice must include **QA Verification** criteria -- Given/When/Then scenarios derived from the PRD's verification scenarios that a human QA tester can execute to verify the slice is complete
-- If a project constitution exists, every slice's Technical Implementation must respect stated architectural boundaries and coding principles. If a slice must deviate from a principle, document the exception explicitly in that slice's description.
-- For brownfield PRDs with a transition plan: the FIRST vertical slice should establish migration scaffolding (feature flags, co-existence layer, backward-compatible wrapper) before any behavioral changes. This ensures rollback capability exists from the start. Later slices build on this scaffolding.
-</vertical-slice-rules>
+### B.2 Build the coverage matrix
 
-**Estimating each slice:**
+Cross-tabulate PRD requirements against derived tasks. Two checks must pass:
+- **Forward coverage:** every requirement has ≥1 task.
+- **Reverse traceability:** every task anchors to ≥1 requirement. **Zero orphan tasks** — a task that doesn't trace to a requirement is scope creep and must be either dropped or surfaced as a `misc-task` candidate.
 
-For each vertical slice, estimate effort in hours using 15-minute increments:
-- Trivial (config tweak, copy change, single-line fix): **0.25h** (15 min)
-- Small (one component, one test, minimal integration): **0.5h** (30 min)
-- Medium (a few touch-points, some integration logic): **0.75h** (45 min)
-- Full (multiple touch-points across layers, end-to-end wiring): **1h** (60 min)
-- **Maximum 1 hour per task.** Any slice over 1h must be split further.
+If a requirement has no task, you've missed it — go back to B.1.
+If a task has no requirement, drop it OR (if you believe it's load-bearing) surface to the user as an explicit ask: *"Task T{N} doesn't trace to any PRD requirement. Either: (a) it's scope creep and I'll drop it, (b) the PRD is missing a requirement I should propose. Which?"*
 
-With a 1-hour cap, a single user-facing behavior will often span multiple tasks in a dependency chain. This is expected and intentional — each task is a reviewable, completable unit of work. Don't try to cram related changes into one task just because they serve the same feature; let the dependency graph connect them.
+### B.3 Write `tasks.md`
 
-The sum of all estimates determines the project duration. After estimating all slices:
-- `total_hours = sum of all estimates`
-- `duration_weeks = ceil(total_hours / 50)`
-- Present this as: "[total_hours]h total = ~[duration_weeks] weeks at 50h/week"
-
-### 5. Generate Review Document
-
-Before discussing anything with the user, save a structured review document to `docs/specflow/task/`. This document is the single source of truth for the proposed breakdown. The user will review it, call out task IDs to remove or adjust, and only approved tasks get exported to Linear.
-
-**Filename:** `{NNN}-tasks-{prd-kebab-name}.md` (e.g., `001-tasks-contact-form-profile-collection.md`) — the `{NNN}` prefix inherits the parent PRD's number.
-
-**Create the `docs/specflow/task/` directory** if it doesn't exist.
-
-The document must follow this exact format:
+Use Write tool to create `docs/specflow/features/NNN-{slug}/{NNN-slug}-tasks.md`:
 
 ```markdown
 ---
-prd: "[PRD Title]"
-prd_id: PRD-NNN
-prd_file: "docs/specflow/prd/{NNN}-{slug}.md"
-project: "[Project Name]"
-task_prefix: "[ABC]"
-total_hours: [sum]
-duration_weeks: [ceil(sum / 50)]
-team: [team name from user]
-priority: [level]
-target_date: YYYY-MM-DD
-status: Pending Review
+feature: NNN-slug
+status: draft
+created: {YYYY-MM-DD}
+prd: ./{NNN-slug}-prd.md
+interview: ./{NNN-slug}-interview.md
+gate3: ./debate-log/tasks-gate3/manifest.md
 ---
 
-# Task Review: [PRD Title]
+# Tasks — {Feature title — derived from slug, title-cased}
 
-## Quick Reference
+## Coverage matrix
 
-| ID | Title | Hours | Blocked By | Priority | Label |
-|----|-------|-------|------------|----------|-------|
-| [PRE]-001 | [title] | 0.5h | -- | High | Feature |
-| [PRE]-002 | [title] | 0.75h | [PRE]-001 | Normal | Feature |
-| [PRE]-003 | [title] | 1h | [PRE]-001 | Normal | Feature |
-| [PRE]-004 | [title] | 0.5h | [PRE]-002, [PRE]-003 | Normal | Feature |
+| PRD requirement | Tasks satisfying it |
+|---|---|
+| R1 | T1, T3 |
+| R2 | T2 |
+| R3 | T4, T5 |
 
-**Total: [N] tasks | [sum]h estimated | ~[duration] weeks at 50h/week**
-**Target date: [calculated date]**
-**Critical path: [PRE]-001 -> [PRE]-003 -> [PRE]-004 ([X]h)**
+## Tasks
 
----
+### T1 — {short title, ≤8 words}
+- **Anchor:** PRD R1 — *{paraphrase the requirement in one line}*
+- **Scope:** {file paths, components, modules touched. Be specific.}
+- **Acceptance:** {binary pass/fail check. Cite AC-N from the PRD if applicable.}
+- **Depends on:** {T-id of any task that must complete first, or "none"}
+- **Notes:** {gotchas, rule-registry entries that apply, decision-log references; or "none"}
 
-## Task Details
+### T2 — {short title}
+- **Anchor:** PRD R2 — *{paraphrase}*
+- ...
 
-### [PRE]-001: [Title]
+(continue for every task — typical: 5-15 tasks per PRD)
 
-- **Estimate:** [X]h
-- **Priority:** High
-- **Label:** Feature
-- **Blocked by:** --
-- **Layers:** [API, UI, Tests]
-- **User stories:** 1, 3, 5
+## Open questions inherited from PRD
 
-**Current State:**
-[Describe what the user or system currently experiences in plain language. Focus on behavior, not code. What does someone see or encounter today? If nothing exists yet, state "No equivalent functionality exists." Do NOT reference file paths, interface names, or line numbers here -- those belong in Technical Implementation and Files to Modify.]
+{If the PRD's "Open questions" section had any, list them here so any task that
+ depends on an unresolved question is flagged. Format: "Q: {question} — affects: T{N}, T{M}".}
 
-**Expected State:**
-[Describe what the user or system will experience after this task is complete. Focus on the observable outcome -- what changes, what's new, what's different from a user/behavior perspective. Be specific but non-technical. Save implementation details for the sections below.]
+## See also
 
-**Technical Implementation:**
-[2-3 sentence guidance on how this slice could be delivered end-to-end. This is advisory -- the developer may choose a different approach.]
-
-**Files to Modify:**
-- `path/to/existing-file.ts` — [brief reason for modification]
-- `path/to/another-file.tsx` — [brief reason for modification]
-
-**Files to Create:**
-- `path/to/new-file.ts` — [what this file will contain]
-- _(None if no new files needed)_
-
-**Acceptance criteria:**
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-**QA Verification:**
-- [ ] Given [precondition], When [action], Then [expected outcome]
-- [ ] Given [precondition], When [action], Then [expected outcome]
-
-[Behavioral Given/When/Then scenarios derived from the PRD's verification scenarios. These are what a human QA tester will execute to verify this slice is complete. Each scenario must be independently testable.]
-
-**Definition of Done:**
-- [ ] Code implements all acceptance criteria
-- [ ] Code reviewed
-- [ ] QA verification scenarios manually tested and passed
-- [ ] Issues found during QA resolved
-- [ ] Task is demo-ready
-
----
-
-### [PRE]-002: [Title]
-
-[Same format for each task...]
-
----
-
-## Phase 2 (Deferred)
-
-[If any slices were cut to fit the budget, list them here with brief descriptions so they aren't lost. If nothing was deferred, omit this section.]
+- PRD: [`./{NNN-slug}-prd.md`](./{NNN-slug}-prd.md)
+- Interview: [`./{NNN-slug}-interview.md`](./{NNN-slug}-interview.md)
+- Gate 3 manifest: [`./debate-log/tasks-gate3/manifest.md`](./debate-log/tasks-gate3/manifest.md) (generated by Phase E)
 ```
 
-**ID format rules:**
-- Each PRD gets a unique 3-letter prefix derived from its title. Choose letters that are memorable and clearly reference the feature (e.g., "Profile Image Upload" -> `PIU`, "User Authentication" -> `UAT`, "Dashboard Analytics" -> `DAN`). Record this prefix in the YAML frontmatter as `task_prefix`.
-- Format: `{PREFIX}-` followed by 3-digit zero-padded numbers: `PIU-001`, `PIU-002`, etc.
-- This prevents confusion when multiple PRDs are in flight -- every task ID is immediately traceable to its parent PRD.
-- Number tasks in dependency order -- blockers get lower numbers
-- These IDs are temporary for the review process only. They get replaced by real Linear identifiers during export.
+### B.4 Self-check before Phase C
 
-**The Quick Reference table is the most important part.** It gives the user a scannable overview where they can quickly spot tasks that don't belong. Every task in the document must appear in this table, and every row in the table must have a corresponding detail section below.
+Before surfacing intent summaries, verify:
+1. **Forward coverage** — re-walk the matrix; every PRD requirement appears in the *Tasks satisfying it* column.
+2. **Reverse traceability** — every task's *Anchor* line cites at least one valid requirement ID.
+3. **Binary acceptance** — every task's *Acceptance* line passes the binary test (could a fresh agent run the check and report pass/fail unambiguously). If not, sharpen the acceptance line.
+4. **No requirement contradicts the goal's Out-of-scope-at-goal-level** — re-read the interview's Goal section and cross-check.
 
-### 6. Critical Review (Before Presenting)
+If any check fails, fix the tasks file before proceeding.
 
-Before presenting to the user, re-read the saved review document and apply a structured review. This catches issues before the user sees the document.
+---
 
-#### Built-in Task Review Framework
+## Phase C — Intent summaries (chat-only)
 
-Apply each lens systematically:
+### C.1 Pick 3-5 highlighted tasks
 
-**Slice quality:**
-- Is each slice truly vertical (all layers end-to-end)? Any horizontal slices hiding (e.g., "set up database schema" without corresponding API/UI)?
-- Is each slice independently demo-able or verifiable?
+Choose tasks that are:
+- Most user-visible (reviewer can verify by using the feature, not just reading code).
+- Most architecturally load-bearing (touches a primary module or introduces a new pattern).
+- Hardest to estimate (would benefit from human sanity-check before lock-in).
 
-**Estimate accuracy:**
-- Do estimates align with the complexity described?
-- Are any tasks over 1 hour? (must split)
-- Are dependencies captured correctly in the `Blocked by` column?
+If the task list has fewer than 5 total, summarise all of them.
 
-**Coverage:**
-- Do all tasks trace back to specific PRD user stories?
-- Are there PRD requirements with no corresponding tasks?
-- Are edge cases and error handling represented?
-- Does every task have QA Verification criteria derived from the PRD's verification scenarios?
+### C.2 Write the summaries (in chat, not to file)
 
-**Dependency graph:**
-- Any circular dependencies?
-- Is the critical path realistic?
-- Any unnecessary blocking relationships that reduce parallelism?
+For each highlighted task, write a 2-sentence non-technical summary:
+- Sentence 1 — *what changes for the user / system when this task is done.*
+- Sentence 2 — *what's the reviewable surface (where you'd look to confirm).*
 
-**Constitution compliance** (only if a constitution exists in config.json):
-- Does each slice's Technical Implementation respect architectural boundaries and coding principles?
-- Are constitution exceptions documented explicitly in the slices that require them?
-- Do quality standards impose constraints on any slice? (e.g., test coverage requirements mean every slice must include tests)
-
-Produce structured findings:
-- **Critical Issues** — must fix (horizontal slices, >1h tasks, missing PRD coverage, circular deps)
-- **Warnings** — should fix (loose estimates, unnecessary blocking)
-- **Observations** — worth noting
-
-#### Agent-Assisted Review
-
-1. Read `docs/specflow/config.json` (if it exists)
-2. If agents are configured (`agents.roles` exists), spawn the `roles.orchestrator` agent via the Task tool. This is a separate pass from Step 3 — the Step 3 orchestrator analyzed the codebase for slice boundaries, this one reviews the task breakdown document itself. Pass it:
-   - The full task review document content
-   - The available agents from config.json
-   - Task: "Review this task breakdown for slice quality. Are slices truly vertical? Are estimates realistic? Are there missing tasks for PRD requirements? Recommend which specialist agents (from the available list) should provide additional review perspectives, and provide a specific prompt for each."
-3. The orchestrator will return its own review findings and may recommend specialist agents for additional perspectives
-4. Spawn any recommended specialist agents and collect their findings
-5. Integrate all agent findings into the review — these supplement the built-in framework but do not replace it
-6. If `docs/specflow/config.json` doesn't exist or has no agents configured, skip this step
-
-#### Apply Corrections
-
-Address all critical issues found:
-- Fix horizontal slices by restructuring into vertical ones
-- Split any tasks over 1 hour
-- Add missing tasks for uncovered PRD requirements
-- Correct dependency issues
-- Update the saved review document with all corrections (rewrite the file)
-
-Then proceed to present the corrected document.
-
-### 7. Present the Review Document
-
-After saving the file, tell the user:
+Surface them in chat under a header like:
 
 ```
-Task review saved to: docs/specflow/task/[filename].md
+## Highlights
 
-[N] tasks | [sum]h estimated | ~[X] weeks at 50h/week
+**T2 — Add notification popover trigger**
+When a notification arrives, the header shows a badge with an unread count, and clicking it opens the popover with the latest notifications. Reviewable in the live header — open the dev server, fire a notification, click the badge.
 
-Quick reference:
-[paste the Quick Reference table here]
+**T5 — Persist read state to API**
+Marking a notification as read syncs to the backend so the badge state survives page reload. Reviewable by reading a notification, refreshing, and confirming the badge stays cleared.
 
-Review the document and let me know:
-- Any task IDs to REMOVE (e.g., "remove PIU-003, PIU-007")
-- Any tasks to ADJUST (e.g., "PIU-002 should be 0.5h not 1h")
-- Any tasks to SPLIT or MERGE
-- Any missing tasks to ADD
-- Or "approved" to export to Linear
+...
 ```
 
-**How to handle user feedback:**
+This is **chat-only**. Do NOT write the summaries to a file. They're a sanity-check surface, not an artefact.
 
-The user may respond in several ways:
+### C.3 Ask for sign-off
 
-- **"Remove PIU-003, PIU-007"** -- Delete those tasks from the document, renumber remaining tasks sequentially ([PRE]-001, [PRE]-002, [PRE]-003...), update all `Blocked by` references to use the new IDs, recalculate totals. Save the updated document and present the new Quick Reference table.
+*"Coverage matrix shows {N} tasks covering all {M} PRD requirements. Highlights above. Sign off to proceed to Gate 3 review, or call out any tasks you want recut, retitled, re-anchored, dropped, or added."*
 
-- **"PIU-002 should be 0.5h"** -- Update the estimate in both the table and the detail section. Recalculate totals. Save and show updated table.
+---
 
-- **"Split PIU-004 into two tasks"** -- Ask what the split should be, create two new tasks, remove the original, renumber, save and show.
+## Phase D — Override capture
 
-- **"Add a task for X"** -- Add it with the next available ID, place it in the correct dependency position, save and show.
+### D.1 Detect overrides
 
-- **"Approved"** or **"Looks good"** -- Proceed to step 8.
+If the user accepts everything, skip to Phase E. If the user redirects:
+- *Recut* — split or merge tasks.
+- *Retitle* — rename a task.
+- *Re-anchor* — change the PRD requirement(s) a task traces to.
+- *Drop* — remove a task.
+- *Add* — introduce a new task (must trace to a PRD requirement).
 
-**Keep iterating** until the user explicitly approves. Each revision updates the saved document so it always reflects the current state.
+For each override:
 
-### 8. Create the Linear Project
+1. Apply it to `{NNN-slug}-tasks.md` (use Edit tool for surgical changes; use Write only if regenerating the whole file).
+2. Re-verify the coverage matrix (Phase B.4 checks must still pass).
+3. Append a record to `admin/task-history.json` under the `tasks` array:
 
-Only proceed here after the user has approved the review document.
+```json
+{
+  "id": "{NNN-slug}-T{N}",
+  "feature": "{NNN-slug}",
+  "title": "{final title}",
+  "anchor": "PRD R{N}",
+  "ai_proposal": {
+    "title": "{what AI proposed}",
+    "anchor": "PRD R{N}",
+    "scope": "{AI's scope}",
+    "acceptance": "{AI's acceptance line}"
+  },
+  "user_override": {
+    "type": "recut | retitle | re-anchor | drop | add",
+    "reason": "{user's stated reason, or 'unstated' if not given}",
+    "applied_at": "{YYYY-MM-DD HH:MM}"
+  },
+  "captured_at": "{YYYY-MM-DD HH:MM}",
+  "phase": "task-creation"
+}
+```
 
-Create a new Linear project using the Linear MCP:
+The other fields in the I3 schema (`linearId`, `actualHours`, `whatWorked`, `whatDidntWork`, `aiAssistance`) are populated later by `specflow:complete` — leave them off the entry at creation time.
 
-Use `mcp__plugin_linear_linear__save_project` with:
-- **name**: The PRD title (this becomes the project name)
-- **description**: A summary of the PRD (2-3 sentences covering problem and solution)
-- **team**: The team specified during setup
-- **priority**: The priority level agreed with the user (0=None, 1=Urgent, 2=High, 3=Medium, 4=Low)
-- **targetDate**: The calculated target date (ISO format)
-- **state**: "planned"
+### D.2 Confirm before Phase E
 
-If the project already exists (user set it up manually), ask for the project name and use that instead.
+After all overrides are applied: *"{N} overrides recorded to `task-history.json`. Re-running coverage check… all checks pass. Proceeding to Gate 3."*
 
-After creation, confirm the project URL with the user.
+If a coverage check now fails (e.g. user dropped a task that was the only cover for R3), refuse to proceed: *"Override left R{N} uncovered. Either restore a covering task or run `specflow:scope-change` to revise the PRD."*
 
-### 9. Create Milestones (Optional)
+---
 
-If the project naturally breaks into phases (e.g., "Foundation", "Core Features", "Polish"), create milestones:
+## Phase E — Gate 3 multi-agent debate manifest
 
-Use `mcp__plugin_linear_linear__create_milestone` for each phase with:
-- **project**: The project name/ID from step 8
-- **name**: Phase name
-- **targetDate**: Calculated based on the phase's proportion of total hours
+### E.1 Set up the debate folder
 
-Only create milestones if there are clear phases. Don't force phases where they don't exist naturally.
+Use Bash:
 
-### 10. Create Linear Issues
+```bash
+mkdir -p docs/specflow/features/NNN-{slug}/debate-log/tasks-gate3/findings/{round-1,round-2,round-3}
+mkdir -p docs/specflow/features/NNN-{slug}/debate-log/tasks-gate3/raw
+touch docs/specflow/features/NNN-{slug}/debate-log/tasks-gate3/manifest.md
+```
 
-Create issues in dependency order (blockers first) so you can reference real issue identifiers in the `blockedBy` field.
+### E.2 Identify reviewers
 
-For each approved task from the review document, use `mcp__plugin_linear_linear__create_issue` with:
+From `docs/specflow/admin/agents/standard/`, the standing reviewer set:
+- `lifecycle/devils-advocate.md` — always present.
+- `principles/simplicity-reviewer.md`
+- `principles/surgical-reviewer.md`
+- `principles/think-before-coding-reviewer.md`
+- `principles/goal-driven-reviewer.md` — **load-bearing at Gate 3** (coverage matrix is its primary lens).
 
-- **title**: The task title from the review document
-- **team**: The team specified during setup
-- **project**: The project name from step 8
-- **description**: Use the issue template below, populated from the review document's detail section
-- **priority**: The priority level for this specific issue (1=Urgent, 2=High, 3=Normal, 4=Low)
-- **labels**: The label from the review document -- typically ["Feature"] for new work
-- **estimate**: The hour estimate from the review document
-- **state**: "Backlog" for blocked issues, "Todo" for ready-to-start issues
-- **blockedBy**: Array of issue identifiers for any blocking issues (use the identifiers returned from previous create calls, mapped from the [PRE]-XXX references in the review document)
-- **blocks**: Array of issue identifiers this issue blocks (if creating out of order)
-- **milestone**: The milestone name if applicable
+Plus, if `admin/environment.json` has `cli.codex.available: true`, include Codex as a sixth reviewer.
 
-**Wait for each issue to be created before creating the next one** so you have real issue identifiers for the `blockedBy` field. Keep a mapping of `[PRE]-XXX -> Linear issue ID` as you go.
+### E.3 Round 1 — parallel finding fire
 
-<issue-template>
-## Parent PRD
+For each reviewer, dispatch a forked sub-agent (Agent tool with the reviewer's role definition as the brief). Pass each reviewer:
+- The tasks path (`features/NNN-{slug}/{NNN-slug}-tasks.md`).
+- The PRD path (read second — for traceability checking).
+- The interview path (read third — for goal alignment).
+- The Gate 2 manifest path (read fourth — escalations from Gate 2 may indicate task-level concerns).
+- Their own role definition (from `admin/agents/standard/{lifecycle,principles}/{reviewer}.md`).
+- The PRD-extracts file (`admin/scratch/{NNN-slug}-tasks/prd-extracts.json`) for clean requirement/AC lists.
+- Instruction: write a minimal finding JSON to `debate-log/tasks-gate3/findings/round-1/{reviewer-name}.json` (schema in the reviewer's role file) and return only the file path.
 
-[PRD title and link to the PRD file in the repo: `docs/specflow/prd/[filename]`]
+The reviewers' specific Gate-3 lenses (each role file documents these in detail):
+- **Goal-Driven Reviewer:** primary lens. Verifies forward coverage (every R has a T) and binary acceptance for every task.
+- **Surgical Reviewer:** verifies reverse traceability (every T anchors to an R) and flags any task whose scope drifts past the requirement it claims to satisfy.
+- **Simplicity Reviewer:** flags over-decomposition (3 tasks where 1 would do), speculative tasks "for later", and acceptance criteria that overspecify implementation.
+- **Think-Before-Coding Reviewer:** flags tasks whose acceptance depends on unstated assumptions (often: "the X service exists" when it doesn't).
+- **Devil's Advocate:** flags cross-artefact drift between tasks and the Gate 2 manifest (escalations the tasks didn't address).
 
-## Current State
+Wait for all reviewers to return their finding paths.
 
-[What the user or system currently experiences, in plain behavior-focused language. What does someone see or encounter today? Do not reference file paths or code here -- keep it focused on the experience and behavior. If nothing exists yet, state "No equivalent functionality exists."]
+### E.4 Round 2 — AI responds
 
-## Expected State
+In your own forked context, read every Round-1 finding via command substitution (`!{cat features/NNN-{slug}/debate-log/tasks-gate3/findings/round-1/*.json}`). For each finding, write a structured response to `debate-log/tasks-gate3/findings/round-2/responses.json`:
 
-[What the user or system will experience after this task is complete. Describe the observable outcome from a user/behavior perspective -- what changes, what's new, what's different. This is what "done" looks like. Keep it non-technical; implementation details belong in Technical Implementation below.]
+```json
+{
+  "round": 2,
+  "responses": {
+    "{reviewer}-r1-f1": {
+      "decision": "accept | push_back",
+      "rationale": "...",
+      "revision_applied": "if accept: brief description of the revision applied to tasks.md"
+    }
+  }
+}
+```
 
-## Technical Implementation
+If accepting: actually edit `{NNN-slug}-tasks.md` to apply the revision. If revisions are substantial, re-run Phase B.4 self-check before continuing.
 
-[Advisory guidance on how this could be implemented. The developer may choose a different approach based on their assessment.]
+### E.5 Round 3 — Reviewers sharpen or accept
 
-## Files to Modify
+Re-dispatch each reviewer (fresh forked context) with their Round-1 finding + the Round-2 response. Each writes to `debate-log/tasks-gate3/findings/round-3/{reviewer-name}.json` per the schema in their role file.
 
-[List each existing file that will likely need changes:]
-- `path/to/file.ts` — [brief reason]
-- `path/to/file.tsx` — [brief reason]
+If any sharpen: re-edit the tasks file one more time and record the revision in `debate-log/tasks-gate3/findings/round-3/ai-revision.md`.
 
-## Files to Create
+### E.6 Closer — Orchestrator collates
 
-[List any new files that need to be created:]
-- `path/to/new-file.ts` — [what this file will contain]
-- _(None if no new files needed)_
-
-## Layers Touched
-
-[From the review document:]
-- Database/Schema
-- API endpoint
-- UI component
-- Tests
-- Configuration
-
-## Acceptance Criteria
-
-[From the review document:]
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-## QA Verification
-
-[From the review document:]
-- [ ] Given [precondition], When [action], Then [expected outcome]
-- [ ] Given [precondition], When [action], Then [expected outcome]
-
-## Definition of Done
-
-- [ ] Code implements all acceptance criteria
-- [ ] Code reviewed
-- [ ] QA verification scenarios manually tested and passed
-- [ ] Issues found during QA resolved
-- [ ] Task is demo-ready
-
-## Estimate
-
-**[X]h** of development effort
-
-## User Stories Addressed
-
-[From the review document:]
-- User story 3
-- User story 7
-</issue-template>
-
-### 11. Update Review Document
-
-After all issues are created, update the review document:
-
-- Change `status: Pending Review` to `status: Exported`
-- Add a new section at the top (after frontmatter) mapping task IDs to real Linear identifiers:
+Now act as the Orchestrator (per `lifecycle/orchestrator.md` closer logic). Read all findings + responses across all three rounds. Write `debate-log/tasks-gate3/manifest.md`:
 
 ```markdown
-## Export Map
+# Gate 3 — tasks vs PRD review
 
-| Review ID | Linear ID | Linear URL |
-|-----------|-----------|------------|
-| [PRE]-001 | CXP-42 | [link] |
-| [PRE]-002 | CXP-43 | [link] |
+**Feature:** NNN-slug
+**Date:** {YYYY-MM-DD}
+**Reviewers:** {comma-separated list}
+**Artefact under review:** {NNN-slug}-tasks.md
+
+## Accepted findings
+- **{finding-id}** ({reviewer}, {severity}) — {claim}
+  - Evidence: {evidence}
+  - Revision applied: {description}
+
+## Rejected findings
+- **{finding-id}** ({reviewer}, {severity}) — {claim}
+  - Evidence: {evidence}
+  - Reason for rejection: {AI's Round-2 push-back, sharpened in Round 3 if applicable}
+
+## Escalated to human
+- **{finding-id}** ({reviewer}, {severity}) — {claim}
+  - Reason: reviewers and writer did not converge in 3 rounds; surfaced for human decision.
+  - Recommendation: {one-line suggested resolution}
+
+## Closing decision
+
+Gate 3 status: **passed | passed-with-escalations | failed**
+
+{One paragraph closing rationale by the Orchestrator. If passed: tasks fit to proceed
+to specflow:develop (Phase 2) or specflow:test (Phase 3). If escalations: list items
+the human must resolve. If failed: list blocking findings and what must change.}
+
+— Orchestrator, {YYYY-MM-DD}
 ```
 
-This preserves traceability between the review and what actually got created.
+Apply the orchestrator's pass/fail rules from `lifecycle/orchestrator.md` (FAIL on any unresolved `block`; HUMAN-DECISION-NEEDED on any unconverged `block`; PASS otherwise).
 
-### 12. Summary
+### E.7 Final disposition
 
-After creating all issues, print a summary table:
+If Gate 3 status is **passed** or **passed-with-escalations**: tell the user *"Tasks synthesised and Gate 3 review complete. Status: {status}. Manifest at `debate-log/tasks-gate3/manifest.md`. Next step: `specflow:test {NNN-slug}` for verification cadence, or `specflow:develop {NNN-slug}` (Phase 2) to begin implementation."*
 
-```
-Project: [name] ([Linear project URL])
-Total: [sum]h | Duration: ~[X] weeks at 50h/week | Target: [date]
+If escalations exist, list them in your response so the user sees them without opening the manifest.
 
-| Linear ID | Title | Estimate | Blocked By | Priority | Status |
-|-----------|-------|----------|------------|----------|--------|
-| CXP-42 | Widget DB schema + basic creation API | 0.5h | None | High | Todo |
-| CXP-43 | Widget creation UI form | 0.75h | CXP-42 | Normal | Backlog |
-| CXP-44 | Widget listing API endpoint | 0.5h | CXP-42 | Normal | Backlog |
-| CXP-45 | Widget listing UI view | 0.75h | CXP-44 | Normal | Backlog |
-| CXP-46 | Widget inline editing | 1h | CXP-43 | Normal | Backlog |
-| CXP-47 | Error handling + loading states | 0.5h | CXP-45, CXP-46 | Normal | Backlog |
+If Gate 3 status is **failed**: tell the user *"Tasks failed Gate 3 review. Blocking findings:\n{list}\n\nReview the manifest at `debate-log/tasks-gate3/manifest.md` and either revise the tasks or run `specflow:scope-change` if the PRD itself needs revision, then re-run `specflow:task {NNN-slug}` to resume from Phase A."*
 
-Critical path: CXP-42 -> CXP-43 -> CXP-46 -> CXP-47 (2.75h)
-Parallel work available after CXP-42: CXP-43 and CXP-44 can run simultaneously
+### E.8 Clean up scratch
+
+After successful close, remove the scratch directory:
+
+```bash
+rm -rf admin/scratch/{NNN-slug}-tasks
 ```
 
-Also note:
-- Which issues can be worked on in parallel
-- The critical path (longest dependency chain)
+(Retain on failure for debugging.)
 
-Do NOT modify the parent PRD document.
+---
 
-End with: "Run `/specflow:linear` to export this review to Linear." (if the user chose not to export during this session)
+## What you MUST NOT do
 
-## Important Notes
+- **Do not skip Phase A's chain check.** A PRD that didn't close Gate 2 is not a finished PRD. Tasking off it imports its problems into Phase 2.
+- **Do not let orphan tasks ship.** Every task anchors to a PRD requirement. No exceptions.
+- **Do not skip the override capture.** Every user redirect lands in `task-history.json`. Phase 3's self-learning depends on this corpus.
+- **Do not bypass Gate 3.** A task list that hasn't been through Gate 3 is not a finished task list; downstream skills (`specflow:develop`, `specflow:test`) should reject it.
+- **Do not edit PRD requirements from this skill.** If a Gate 3 finding indicates the PRD is wrong (not just the tasks), surface it as an escalation. PRD changes go through `specflow:scope-change`.
+- **Do not write the intent summaries to a file.** They're chat-only by design.
+- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the tasks file, the debate manifest, or `task-history.json`. Per the project's CLAUDE.md, this is non-negotiable.
 
-- All issues go to the team specified during setup
-- The team capacity is **50 hours per week** -- use this for all timeline calculations
-- Dependencies use Linear's native `blockedBy`/`blocks` relationships so they show in the issue graph
-- Every issue must be linked to the project so they appear in the project view
-- Issues that have unresolved blockers get status "Backlog"; unblocked issues get "Todo"
-- Hour estimates go in the `estimate` field on each issue
-- If the user has already created the project manually, just ask for the project name and link issues to it
-- **Nothing goes to Linear until the user explicitly approves the review document.** The review step is mandatory, not optional.
-- Keep tasks focused on what the PRD actually requires. Don't generate tasks for generic infrastructure, boilerplate setup, or things that already exist in the codebase. Every task should trace back to a specific user story or implementation decision in the PRD.
+---
+
+## Verify before declaring done
+
+Before returning to the user with "tasks complete":
+
+1. `features/NNN-{slug}/{NNN-slug}-tasks.md` exists with frontmatter, coverage matrix, and ≥1 task per PRD requirement.
+2. Coverage matrix shows 100% forward coverage AND zero orphan tasks (reverse traceability holds).
+3. Every task acceptance line passes the binary test.
+4. `features/NNN-{slug}/debate-log/tasks-gate3/manifest.md` exists with closing decision entry signed by the Orchestrator.
+5. Gate 3 status is recorded and surfaced to the user.
+6. Any user-driven recut wrote a record to `admin/task-history.json` (verify by reading the latest entry).
+7. Scratch directory `admin/scratch/{NNN-slug}-tasks/` is cleaned up (or retained on failure).
+
+If any verify step fails, fix it before returning.
+
+---
+
+## Reference
+
+- `docs/PRD.md` Phase 1 scope item 7 — coverage matrix + intent summary spec.
+- `docs/PRD.md` Appendix N (especially N1 Gate 3 + N2 manifest spec).
+- `docs/PRD.md` Appendix I3 — `task-history.json` schema.
+- `templates/orchestrator-pattern.md` — fork / file handoff / command substitution conventions.
+- `templates/agents/standard/lifecycle/orchestrator.md` — closer logic for Gate 3.
+- `templates/agents/standard/lifecycle/devils-advocate.md` — parallel reviewer for Gate 3.
+- `templates/agents/standard/principles/*.md` — principle-reviewer prompts; goal-driven-reviewer.md is load-bearing here.
+- `skills/prd/SKILL.md` — sister skill, Gate 2 pattern; mirror for consistency.

@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-prd.md:R6 + R11 — R6 introduces `config.json.develop.greenBatchCap` (default 3, configurable per project). R11 introduces `config.json.develop.codexAtGate4` (default false, configurable per project). The PRD adds two new `config.json.develop.*` config knobs for v1 of a skill that hasn't shipped yet. Both knobs are speculative configurability — the goal field doesn't name a second consumer demanding either knob, and the interview rounds (Round 2 + Round 4) introduced them as the AI's recommendation without surfacing the alternative of hard-coding the v1 defaults and adding configurability only when a real consumer asks.",
+      "claim": "Speculative configurability — the PRD ships two new `config.json.develop.*` knobs without a concrete second consumer demanding them. The CORE_PRINCIPLES.md Simplicity First sub-clause is explicit: 'Do not introduce config knobs without a concrete second consumer demanding them.' Both knobs were introduced by AI recommendation, not by a documented consumer ask; both have safe v1 defaults that could simply be the v1 behaviour, with configurability deferred to v2 if consumers report friction.",
+      "proposed_change": "Rewrite R6 to drop the configurable cap and ship a hard-coded v1 default of 3 tasks per Green batch: 'A Green batch is capped at 3 tasks per batch. v1 ships with a hard-coded cap; configurability is deferred to v2 if consumers report PR-review fatigue at 3 or report under-utilisation at 3.' Rewrite R11 to drop `config.json.develop.codexAtGate4` and hard-code the v1 default of false: 'Codex is invoked at Gate 5 only, not at Gate 4. v1 ships with this hard-coded; consumers building agentic systems who want Gate-4 Codex review can request it as a v2 enhancement.' Both knobs can land later when there's a real second consumer; shipping them in v1 is the speculative-configurability trap."
+    }
+  ]
+}

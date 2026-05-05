@@ -1,0 +1,79 @@
+{
+  "detectedAt": "2026-05-06T09:14:00Z",
+  "stack": {
+    "language": "typescript",
+    "runtime": "node@20.11.1",
+    "packageManager": "pnpm@9.4.0",
+    "frontend": {
+      "framework": "next",
+      "version": "14.2.3",
+      "router": "app",
+      "styling": "tailwind@3.4.1",
+      "componentLibrary": "internal — packages/ui"
+    },
+    "backend": {
+      "framework": "next-api-routes",
+      "orm": "prisma@5.13.0",
+      "database": "postgres@15.4"
+    },
+    "testing": {
+      "unit": "vitest@1.5.2",
+      "integration": "vitest@1.5.2",
+      "e2e": "playwright@1.43.1"
+    }
+  },
+  "cli": {
+    "playwright": {
+      "detected": true,
+      "version": "1.43.1",
+      "path": "node_modules/.bin/playwright"
+    },
+    "codex": {
+      "detected": true,
+      "version": "0.18.0",
+      "path": "/usr/local/bin/codex"
+    },
+    "gh": {
+      "detected": true,
+      "version": "2.49.2",
+      "path": "/opt/homebrew/bin/gh",
+      "authenticated": true
+    },
+    "git": {
+      "detected": true,
+      "version": "2.45.1"
+    }
+  },
+  "mcp": {
+    "linear": {
+      "detected": true,
+      "configuredFor": "northwind-orders workspace"
+    },
+    "github": {
+      "detected": true,
+      "configuredFor": "github.com/example/northwind-orders"
+    }
+  },
+  "plugins": [
+    {
+      "name": "specflow",
+      "version": "2.0.0",
+      "source": "marketplace"
+    },
+    {
+      "name": "frontend-mobile-development",
+      "version": "1.4.2",
+      "source": "marketplace"
+    },
+    {
+      "name": "comprehensive-review",
+      "version": "1.2.0",
+      "source": "marketplace"
+    }
+  ],
+  "agents": {
+    "standardCount": 7,
+    "specialisedCount": 3,
+    "indexPath": "docs/specflow/admin/agents/index.json"
+  }
+}

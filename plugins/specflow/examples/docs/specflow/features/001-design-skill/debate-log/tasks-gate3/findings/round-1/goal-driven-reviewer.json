@@ -1,0 +1,23 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "goal-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-tasks.md:T7 — Task T7's acceptance reads 'the loop terminates either when the per-pixel diff is `< threshold` or when the iteration counter reaches 10. The iteration log records each iteration's diff value as a number and the reason for termination as one of the literals `converged` or `cap-reached`.' This is binary on the *log line shape* but soft on the threshold-override clause: 'Threshold override via `admin/config.json.design.diffThreshold = 0.03` is honoured.' The word 'honoured' is not binary — a fresh agent could not tell whether the override was applied vs. silently ignored vs. partially applied.",
+      "claim": "Soft verification — the threshold-override sub-clause of T7's acceptance fails the binary test. PRD R7 explicitly makes the threshold configurable; the task acceptance must pin a binary check on that mechanism (Goal-Driven Execution, line 'Could a fresh agent run this step in isolation and tell me unambiguously whether it passed?').",
+      "proposed_change": "Sharpen T7 acceptance threshold-override clause to: 'When `admin/config.json.design.diffThreshold = 0.03`, the iteration log's `converged` line records a per-pixel diff value `< 0.03` (not the default `0.05`); a run that converges at 0.04 with the override set is a failed run.'"
+    },
+    {
+      "id": "goal-r1-f2",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-tasks.md — The coverage matrix maps R8 → T8 only, but PRD AC-7 requires both 'presents the remaining diff to the user (visual + numerical)' AND 'offers three options'. T8's acceptance covers the three-option prompt and the `Cap-reached resolution: {choice}` log line, but the visual-diff-presentation half of AC-7 has no binary check. A run that prompted with the three options but failed to surface the diff visualisation would still pass T8 as written.",
+      "claim": "Coverage gap on a load-bearing AC — AC-7 has two binary halves; T8 verifies one. The skill could ship with the prompt working but the diff-visual missing and the task list would not catch it (Goal-Driven Execution, 'Every requirement is covered by at least one binary check').",
+      "proposed_change": "Add a clause to T8 acceptance: 'Before the prompt fires, the skill writes the diff visualisation to a path recorded on the iteration-log line `Cap-reached diff: {path}`. The path resolves to a non-empty PNG file. A run with an empty path or unwritten file is a failed run.'"
+    }
+  ]
+}

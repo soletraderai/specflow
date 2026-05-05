@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-tasks.md — T7's Scope line reads 'threshold read from `admin/config.json.design.diffThreshold` with default `0.05`'. The `admin/config.json` file lives outside the feature folder (`features/001-design-skill/`) and is a project-wide config surface. T7 implicitly requires either (a) that `admin/config.json` already has a `design.diffThreshold` key, or (b) that this task is also responsible for adding the key with the default. Neither option is stated; the task scope drifts past the feature boundary without a misc-task flag.",
+      "claim": "Cross-feature scope drift — T7 touches a project-wide config file but doesn't declare whether it owns the schema addition or assumes it (Surgical Changes, 'Stay in the smallest blast radius; flag any required cross-cutting work as a misc-task'). A reviewer running T7 cannot tell whether `admin/config.json` should be edited or left alone.",
+      "proposed_change": "Either (a) add an explicit misc-task `T-misc-1` that adds `design.diffThreshold: 0.05` to `admin/config.json` and documents the key in the admin schema docs, with T7 depending on it; or (b) add a sentence to T7 Notes: 'If `admin/config.json.design.diffThreshold` is absent, the skill uses the literal default `0.05` without writing to `admin/config.json`. Schema addition is deferred to consumer-project setup, not this skill.' Option (b) is the smaller change and matches the v1 default-when-missing pattern from R5."
+    }
+  ]
+}

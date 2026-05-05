@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-prd.md:AC-10 — 'When Codex catches a Gate 5 finding that none of the standard five reviewers caught... `specflow:develop` invokes `specflow:misc --auto` with a payload proposing a new rule for `admin/rules/guidelines.md`. The misc-task entry references the Gate 5 manifest path and the Codex finding ID.' The Codex-only-finding promotion flow is correct and traces to Round 5; however, the AC describes a payload shape (`misc-task entry references the Gate 5 manifest path and the Codex finding ID`) that the existing `specflow:misc --auto` schema (Phase 1) doesn't currently capture as named fields — `manifest_path` and `gate_finding_id` aren't in the `misc-task` rolling-file structure documented in `skills/misc/SKILL.md`. Implementing AC-10 as written would require modifying `skills/misc/SKILL.md`'s payload schema to add those fields. That's a Phase 1 surface change smuggled into a Phase 2 PRD.",
+      "claim": "In-scope action that smells like Phase 1 creep — AC-10 implicitly modifies `specflow:misc`'s auto-payload schema (a Phase 1 skill that already shipped) to capture two new fields the current schema doesn't name. Surgical Changes principle: 'Touch only what you must.' If `specflow:develop` needs those fields in the misc-task entry, the schema change should land as a separate `specflow:misc` PRD revision (or a misc-task referencing the schema gap), not be assumed inside the Phase 2 PRD. A Phase 2 reviewer reading AC-10 cannot tell whether the misc-payload schema is a `specflow:develop` concern or a `specflow:misc` concern.",
+      "proposed_change": "Sharpen AC-10 to either (a) cite the existing `specflow:misc --auto` payload fields the new misc-task uses (e.g. observation, rule reference, why-line — already in the Phase 1 schema) and drop the implied new-fields requirement, OR (b) explicitly call out the schema dependency: 'AC-10 depends on `specflow:misc --auto` accepting `manifest_path` and `gate_finding_id` as named fields. If the current Phase 1 schema does not include these, ship them via a separate `specflow:misc` enhancement PRD before `specflow:develop` v1 lands.' Option (a) is the surgical change — reuse the existing schema; option (b) preserves the explicit-dependency trail. Either fixes the cross-skill creep."
+    }
+  ]
+}

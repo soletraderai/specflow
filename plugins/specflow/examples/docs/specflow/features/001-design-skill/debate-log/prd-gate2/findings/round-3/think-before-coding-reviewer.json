@@ -1,0 +1,17 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "responses": {
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI added the per-region-threshold tradeoff sentence to R7 verbatim, plus extended the interview's 'Topics not discussed' section to record the deferral with a reference back to this finding. The tradeoff is now articulated; an alternative (per-region thresholds) is named, considered, and explicitly deferred to v2. Future readers can see why the v1 ships one number, not because alternatives weren't considered. Accepted."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI added the one-line note to R11 naming the alternative (louder warning) and the project-level escape hatch (`admin/environment.json.cli.codex.required`). Single-interpretation framing is now multi-interpretation: silent-skip is the v1 default, and the alternative is explicitly available via a future config flag. Accepted."
+    }
+  }
+}

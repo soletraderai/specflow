@@ -1,0 +1,23 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "tbc-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:69-71 — Requirement R7 picks a 5% per-pixel diff threshold and cites Percy/Chromatic/Playwright `toHaveScreenshot` as the precedent. Interview Round 4's reasoning calls 5% 'industry-standard for visual regression tools'. But the PRD is silent on the assumption that *one* threshold serves *all* UI surfaces. A logo, a body-text section, and a marketing photo each have different drift tolerances. The PRD's 'configurable via admin/config.json.design.diffThreshold' makes the *number* configurable but doesn't articulate that the underlying assumption (one number per project) is itself a tradeoff.",
+      "claim": "Missing tradeoff articulation — the PRD commits to one threshold without naming that other approaches (per-region thresholds, per-component overrides) were viable alternatives. Reviewers reading R7 cannot tell whether the alternatives were considered and rejected, or never surfaced (Think Before Coding, line 'Surface tradeoffs').",
+      "proposed_change": "Add a sentence to R7's body: 'A single project-wide threshold is the v1 choice; per-region or per-component overrides were considered as alternatives but deferred — the configurable global is the simplest consumer interface that preserves auditability. If consumers report drift-blindness on specific UI surfaces, per-region thresholds become a v2 candidate.' Also extend the interview's `## Topics not discussed` section with: '*Per-region drift thresholds* — deferred to v2 if consumers report needs. v1 ships a single configurable global.'"
+    },
+    {
+      "id": "tbc-r1-f2",
+      "severity": "note",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:85-87 — Requirement R11 says when Codex is absent, the skill 'skips silently with a one-line note in the iteration log.' The 'silently' choice means a user running the skill without realising Codex isn't installed sees a converged mockup with no semantic review and might not notice. The interview Round 6 confirmed this without surfacing the alternative (a louder warning when Codex is absent for a high-stakes flow).",
+      "claim": "Single-interpretation framing of an ambiguous case — Codex-absent could mean (a) skip silently, log it for later (current choice), (b) warn audibly so the user knows semantic review didn't run, (c) refuse to converge until Codex is installed for high-stakes flows. The PRD picks (a) without naming (b) or (c) as alternatives that were considered.",
+      "proposed_change": "Add a one-line note to R11: 'The silent-skip-with-log choice was preferred over a louder warning to avoid noise on low-stakes mockups; users who need semantic-review enforcement set a project-level requirement on Codex via `admin/environment.json.cli.codex.required` (a future config flag if demand surfaces).' This names the alternative explicitly without expanding scope."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-tasks.md — T11's acceptance handles three Codex-presence branches (available + converged, available + accepted drift, absent + log note) and one negative branch (user chose `abort` → no section, no skip note). It does NOT cover the cross-product case where Codex is available AND the user chose `abort`. R11 says Codex is NOT invoked after abort regardless of availability — but T11's acceptance line for the abort branch reads 'When the user chose `abort` in T8, the iteration log contains neither the Codex section nor the skip note', which only covers the case the writer was thinking about. A reader implementing T11 with `cli.codex.available: true` and an abort path could read this and assume the skip note should appear (since Codex is available, just not invoked). The task list lost the 'abort short-circuits both branches' invariant from R11.",
+      "claim": "Cross-cutting branch ambiguity — the abort branch in T11 acceptance is silent on Codex-availability, leaving the (available + abort) combination implementer-dependent. A run with Codex available where the user aborted could ship with a misleading 'Codex not detected' note appended (because the implementer read the absent-branch log-note rule as the default), which is the failure mode R11 was sharpened in Gate 2 (da-r1-f1) to prevent (Devil's Advocate cross-cutting lens).",
+      "proposed_change": "Sharpen T11 acceptance abort clause: 'When the user chose `abort` in T8, the iteration log contains neither the `## Codex review` section nor the `Codex not detected — semantic review skipped.` note, regardless of whether `admin/environment.json.cli.codex.available` is `true` or `false`. Abort short-circuits both Codex branches.' This pins the cross-product case to a binary check."
+    }
+  ]
+}

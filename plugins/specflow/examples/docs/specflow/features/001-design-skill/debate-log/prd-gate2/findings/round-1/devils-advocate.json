@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:85-87 — Requirement R11 says 'Codex reads the mockup against the live source and the user's tone/intent (R4)'. The PRD generates two HTML files (R2: current.html and proposed.html) but R11 says 'the mockup' (singular). The PRD doesn't specify whether Codex reviews current.html, proposed.html, both, or only proposed.html. Interview Round 6's reasoning hints at proposed-only ('catch semantic regressions in the proposed direction') but the PRD didn't carry that distinction forward.",
+      "claim": "Cross-artefact ambiguity — R2 produces two artefacts; R11 reviews 'the mockup' as if there were one. A reviewer running this skill cannot tell which Codex review pass to expect, and the iteration log would have inconsistent shape across runs depending on how the implementer disambiguates.",
+      "proposed_change": "Edit R11 to specify: 'Codex reviews `proposed.html` against `current.html` (as the live-state baseline) and the user's tone/intent (R4); the comparison surfaces semantic gaps the visual diff missed (lost affordances, contrast regressions, intent drift). Codex does NOT review `current.html` standalone — it's the baseline, not the candidate.' This anchors the review pattern and matches Round 6's reasoning."
+    }
+  ]
+}

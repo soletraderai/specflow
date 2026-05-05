@@ -1,0 +1,13 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI cited interview line 63 verbatim — the user's 'but add' phrasing in Round 5 is a separate decision point, not an elaboration on Round 3. The trace integrity argument holds: merging R10 into R6 would lose the Round-5 trace. AC-5 already verifies both rules, so the requirement count cost is borne by the structure (R6 = what, R10 = where), not by the test surface. The principle 'minimum requirements that solve the spec' applies, but in this case two single-concern requirements is simpler to verify than one multi-concern requirement. Defence holds."
+    }
+  }
+}

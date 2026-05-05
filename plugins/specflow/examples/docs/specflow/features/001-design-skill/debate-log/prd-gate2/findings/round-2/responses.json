@@ -1,0 +1,40 @@
+{
+  "round": 2,
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "R10's separation from R6 is load-bearing. Interview Round 5 (line 63) records the user explicitly adding the sub-block-placement rule on top of Round 3's invented-value flagging — they're two distinct decisions, made in different rounds. Merging R10 into R6 would lose the trace to Round 5 and bury the placement rule inside R6's prose. AC-5 already verifies both rules together (the merge would not reduce ACs); separating R6 (the *what*) from R10 (the *where*) keeps each requirement single-concern, which is the structure used elsewhere in the PRD. Cited evidence: interview line 63 ('User's answer: confirmed, but add: when a value is INVENTED... the comment block calls it out distinctly with a separate INVENTED VALUES sub-block at the top, before the extracted values'). The 'but add' phrasing in the user's response signals a separate decision point, not an elaboration on R6.",
+      "revision_applied": "none — push back; status quo retained"
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "Trace consistency is real. Option (b) is the smaller change and preserves the requirement structure.",
+      "revision_applied": "Edit R12 to add the explicit trace line citing the codebase context bullet. Also add a short note explaining why no grilling round was needed: the convention was inherited and pre-confirmed."
+    },
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "rationale": "The tradeoff is genuine and the PRD currently glosses it. The proposed addition is small and high-signal.",
+      "revision_applied": "Append a sentence to R7's body articulating the per-region-threshold alternative as deferred-to-v2; also extend the interview's 'Topics not discussed' section."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "rationale": "Silent-skip is the right v1 default but the PRD should name the alternative so reviewers can see it was considered.",
+      "revision_applied": "Append a one-line note to R11 naming the alternative (louder warning) and the project-level escape hatch (`admin/environment.json.cli.codex.required` as a future config flag)."
+    },
+    "goal-r1-f1": {
+      "decision": "accept",
+      "rationale": "PRD Appendix C3.1's quality rule on the iteration log's *Why* field needs an AC to be enforceable. Coverage gap is real.",
+      "revision_applied": "Add AC-11 verifying every iteration entry has a non-empty *Why* field; cite C3.1."
+    },
+    "goal-r1-f2": {
+      "decision": "push_back",
+      "rationale": "AC-9 verifies the presence of a Codex review section with at least one finding or the no-concerns sentinel. Counting stdout findings against the log entries is implementation-level fidelity that the test plan (`specflow:test`) can exercise without an explicit AC. Adding the stdout-counting clause to AC-9 over-specifies the spec — it commits to a specific verification mechanism (parsing stdout) when other mechanisms (e.g. Codex returning a structured JSON output we can count programmatically) might be cleaner. Cited principle: Simplicity First (the AC describes the contract, not the implementation; the test plan picks the mechanism). Cited evidence: PRD Phase 1 scope item 15 — 'every skill that produces output declares verify steps inline'; the verify step lives in the SKILL.md, not the AC.",
+      "revision_applied": "none — push back; AC-9 retained as-is. The fidelity-counting concern is addressed by `specflow:test` plan generation, not by the PRD AC."
+    },
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "Cross-artefact ambiguity is real. The interview Round 6 reasoning had the right intent but the PRD lost it.",
+      "revision_applied": "Edit R11 to specify Codex reviews `proposed.html` against `current.html` (as baseline) plus the user's tone/intent. Also clarify Codex does NOT review `current.html` standalone."
+    }
+  }
+}

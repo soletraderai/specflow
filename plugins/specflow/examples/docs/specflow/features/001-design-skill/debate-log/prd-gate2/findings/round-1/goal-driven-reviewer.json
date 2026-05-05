@@ -1,0 +1,23 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "001-design-skill",
+  "findings": [
+    {
+      "id": "goal-r1-f1",
+      "severity": "concern",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:93-113 — The Acceptance criteria section covers file existence (AC-1, AC-2), invocation behaviour (AC-3, AC-4), invented-value flagging (AC-5), iteration loop convergence (AC-6, AC-7), comment-block contents (AC-8), Codex review (AC-9), and self-contained HTML (AC-10). Nothing in this list verifies the iteration log's *Why* field is populated. PRD Appendix C3.1 explicitly says 'empty *Why* fields are a verify-step failure'. The PRD requires the log (R2) and references the iteration loop (R7) but no AC enforces the decision-capture quality.",
+      "claim": "Coverage gap — a verifiable rule from the architectural appendix (C3.1) has no corresponding AC. Without an AC, a downstream `specflow:test` plan would not exercise the rule, and the design skill could ship logs with empty *Why* fields without failing acceptance (Goal-Driven Execution, line 'Every requirement is covered by at least one AC').",
+      "proposed_change": "Add an AC: '**AC-11.** Every iteration entry in `NNN-{slug}-iteration-log.md` has a non-empty *Why* field (per PRD Appendix C3.1). An entry with an empty *Why* field is a failed run; the skill must not declare done. Verifies: R2's iteration-log requirement, against the C3.1 quality rule.'"
+    },
+    {
+      "id": "goal-r1-f2",
+      "severity": "note",
+      "evidence": "features/001-design-skill/001-design-skill-prd.md:111 — AC-9 states 'iteration log includes a Codex review section with at least one finding (or \"no semantic concerns found\")'. This is binary on the *presence* of the section but not on the *fidelity* of the section: if Codex returns 5 findings, the iteration log captures 2, AC-9 still passes.",
+      "claim": "Soft fidelity check — AC-9 verifies presence, not completeness. A future skill or test could rubber-stamp this AC with a single fabricated finding line.",
+      "proposed_change": "Sharpen AC-9: 'iteration log includes a Codex review section that captures every finding Codex returned (or the literal sentinel \"no semantic concerns found\" when Codex returned no findings). Verified by counting Codex's stdout findings vs the count in the iteration-log section.'"
+    }
+  ]
+}

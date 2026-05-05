@@ -1,0 +1,1959 @@
+[{
+  "data": [
+    {
+      "start": "0.160",
+      "dur": "4.720",
+      "text": "Downloaded claw code skills are generic."
+    },
+    {
+      "start": "2.720",
+      "dur": "3.920",
+      "text": "They're bloated and they're also at the"
+    },
+    {
+      "start": "4.880",
+      "dur": "3.280",
+      "text": "same time lacking context. But that's"
+    },
+    {
+      "start": "6.640",
+      "dur": "3.680",
+      "text": "not even their biggest problem. They're"
+    },
+    {
+      "start": "8.160",
+      "dur": "4.320",
+      "text": "still built for one task at a time."
+    },
+    {
+      "start": "10.320",
+      "dur": "4.479",
+      "text": "Think copywriting, researching,"
+    },
+    {
+      "start": "12.480",
+      "dur": "4.240",
+      "text": "whatever. Whilst real businesses don't"
+    },
+    {
+      "start": "14.799",
+      "dur": "4.320",
+      "text": "operate like that at all, because real"
+    },
+    {
+      "start": "16.720",
+      "dur": "5.200",
+      "text": "work isn't one process document with"
+    },
+    {
+      "start": "19.119",
+      "dur": "4.801",
+      "text": "five different steps, it's a sequence of"
+    },
+    {
+      "start": "21.920",
+      "dur": "3.760",
+      "text": "processes that need to connect to each"
+    },
+    {
+      "start": "23.920",
+      "dur": "3.920",
+      "text": "other. So if you keep thinking of skills"
+    },
+    {
+      "start": "25.680",
+      "dur": "4.080",
+      "text": "in isolation, you'll never build out"
+    },
+    {
+      "start": "27.840",
+      "dur": "3.439",
+      "text": "systems that run end to end. So, in this"
+    },
+    {
+      "start": "29.760",
+      "dur": "4.319",
+      "text": "video, I'll show you how to turn your"
+    },
+    {
+      "start": "31.279",
+      "dur": "4.641",
+      "text": "skills into building blocks for bigger"
+    },
+    {
+      "start": "34.079",
+      "dur": "4.160",
+      "text": "workflows. This is what I call skill"
+    },
+    {
+      "start": "35.920",
+      "dur": "4.479",
+      "text": "systems so that each output feeds the"
+    },
+    {
+      "start": "38.239",
+      "dur": "4.241",
+      "text": "next and actually drives a real business"
+    },
+    {
+      "start": "40.399",
+      "dur": "3.761",
+      "text": "goal. So, let's get straight into it."
+    },
+    {
+      "start": "42.480",
+      "dur": "3.759",
+      "text": "So, here's the thing about skills."
+    },
+    {
+      "start": "44.160",
+      "dur": "3.280",
+      "text": "They're designed to do one thing really"
+    },
+    {
+      "start": "46.239",
+      "dur": "3.761",
+      "text": "well. So, if you actually read"
+    },
+    {
+      "start": "47.440",
+      "dur": "4.799",
+      "text": "Anthropic's own guidance on skills,"
+    },
+    {
+      "start": "50.000",
+      "dur": "4.800",
+      "text": "they're really clear about this. Skills"
+    },
+    {
+      "start": "52.239",
+      "dur": "4.721",
+      "text": "are supposed to be modular, composable"
+    },
+    {
+      "start": "54.800",
+      "dur": "4.480",
+      "text": "building blocks. The official line is"
+    },
+    {
+      "start": "56.960",
+      "dur": "4.720",
+      "text": "that clog can load multiple skills"
+    },
+    {
+      "start": "59.280",
+      "dur": "4.720",
+      "text": "simultaneously and your skill therefore"
+    },
+    {
+      "start": "61.680",
+      "dur": "4.080",
+      "text": "should work well alongside others. So"
+    },
+    {
+      "start": "64.000",
+      "dur": "3.439",
+      "text": "not assuming it's going to be the only"
+    },
+    {
+      "start": "65.760",
+      "dur": "4.000",
+      "text": "skill running. So skills are effectively"
+    },
+    {
+      "start": "67.439",
+      "dur": "4.561",
+      "text": "packages of instructions and context"
+    },
+    {
+      "start": "69.760",
+      "dur": "3.840",
+      "text": "with one job each built to plug into"
+    },
+    {
+      "start": "72.000",
+      "dur": "3.840",
+      "text": "bigger systems. But that's where most"
+    },
+    {
+      "start": "73.600",
+      "dur": "4.879",
+      "text": "people go wrong. They take that one job"
+    },
+    {
+      "start": "75.840",
+      "dur": "4.800",
+      "text": "rule and use it the wrong way. So two"
+    },
+    {
+      "start": "78.479",
+      "dur": "4.561",
+      "text": "things happen. The first mistake is"
+    },
+    {
+      "start": "80.640",
+      "dur": "3.920",
+      "text": "using skills in total isolation. So"
+    },
+    {
+      "start": "83.040",
+      "dur": "3.280",
+      "text": "let's say you download a copywriting"
+    },
+    {
+      "start": "84.560",
+      "dur": "3.360",
+      "text": "skill. It could be this Cory Haynes"
+    },
+    {
+      "start": "86.320",
+      "dur": "3.040",
+      "text": "copywriting skill from his marketing"
+    },
+    {
+      "start": "87.920",
+      "dur": "2.879",
+      "text": "skill pack. You want to use it to"
+    },
+    {
+      "start": "89.360",
+      "dur": "4.399",
+      "text": "improve the way you write LinkedIn"
+    },
+    {
+      "start": "90.799",
+      "dur": "4.960",
+      "text": "posts. You manually ask it to draft a"
+    },
+    {
+      "start": "93.759",
+      "dur": "4.000",
+      "text": "LinkedIn post using your copyrightiting"
+    },
+    {
+      "start": "95.759",
+      "dur": "3.601",
+      "text": "skill. It's going to output some copy."
+    },
+    {
+      "start": "97.759",
+      "dur": "3.841",
+      "text": "But what have you actually done here?"
+    },
+    {
+      "start": "99.360",
+      "dur": "3.520",
+      "text": "You've used clog code the same way in"
+    },
+    {
+      "start": "101.600",
+      "dur": "3.360",
+      "text": "which you would actually use something"
+    },
+    {
+      "start": "102.880",
+      "dur": "4.000",
+      "text": "like chat GBT. You've asked it a"
+    },
+    {
+      "start": "104.960",
+      "dur": "3.199",
+      "text": "question. It's come back with advice."
+    },
+    {
+      "start": "106.880",
+      "dur": "3.440",
+      "text": "Yes, it's written a file, but it's"
+    },
+    {
+      "start": "108.159",
+      "dur": "3.441",
+      "text": "effectively given you a single isolated"
+    },
+    {
+      "start": "110.320",
+      "dur": "3.200",
+      "text": "output. You're still going to do the"
+    },
+    {
+      "start": "111.600",
+      "dur": "4.159",
+      "text": "topic research yourself. You're still"
+    },
+    {
+      "start": "113.520",
+      "dur": "3.279",
+      "text": "scheduling this on LinkedIn manually and"
+    },
+    {
+      "start": "115.759",
+      "dur": "3.281",
+      "text": "that's because you're treating this"
+    },
+    {
+      "start": "116.799",
+      "dur": "4.161",
+      "text": "copywriting skill as the full process,"
+    },
+    {
+      "start": "119.040",
+      "dur": "3.679",
+      "text": "but it isn't the full process. Think"
+    },
+    {
+      "start": "120.960",
+      "dur": "4.080",
+      "text": "about all the other manual steps that"
+    },
+    {
+      "start": "122.719",
+      "dur": "4.080",
+      "text": "you take. You need to decide on a topic."
+    },
+    {
+      "start": "125.040",
+      "dur": "4.079",
+      "text": "You need to do research into what other"
+    },
+    {
+      "start": "126.799",
+      "dur": "4.321",
+      "text": "people have posted about that topic. You"
+    },
+    {
+      "start": "129.119",
+      "dur": "3.840",
+      "text": "then might find associated visuals to go"
+    },
+    {
+      "start": "131.120",
+      "dur": "3.440",
+      "text": "with it and then your scheduling on"
+    },
+    {
+      "start": "132.959",
+      "dur": "4.081",
+      "text": "LinkedIn. But what if you could actually"
+    },
+    {
+      "start": "134.560",
+      "dur": "3.920",
+      "text": "package all of that together into one"
+    },
+    {
+      "start": "137.040",
+      "dur": "3.199",
+      "text": "skill system? So instead of a"
+    },
+    {
+      "start": "138.480",
+      "dur": "3.759",
+      "text": "copywriting skill, it's a content"
+    },
+    {
+      "start": "140.239",
+      "dur": "4.640",
+      "text": "creation skill that embodies a"
+    },
+    {
+      "start": "142.239",
+      "dur": "4.640",
+      "text": "copywriting skill, a research skill, a"
+    },
+    {
+      "start": "144.879",
+      "dur": "4.161",
+      "text": "scheduling skill, and it runs on"
+    },
+    {
+      "start": "146.879",
+      "dur": "3.601",
+      "text": "autopilot every week without your"
+    },
+    {
+      "start": "149.040",
+      "dur": "3.279",
+      "text": "inputs. Would that be more of a"
+    },
+    {
+      "start": "150.480",
+      "dur": "4.720",
+      "text": "timesaver for you? Because that's"
+    },
+    {
+      "start": "152.319",
+      "dur": "3.920",
+      "text": "exactly what skill systems are about."
+    },
+    {
+      "start": "155.200",
+      "dur": "3.119",
+      "text": "And I'm going to show you how to"
+    },
+    {
+      "start": "156.239",
+      "dur": "4.241",
+      "text": "actually build those end to end in"
+    },
+    {
+      "start": "158.319",
+      "dur": "4.161",
+      "text": "cycllo code. And the second mistake is"
+    },
+    {
+      "start": "160.480",
+      "dur": "3.680",
+      "text": "building mega skills. So then you have"
+    },
+    {
+      "start": "162.480",
+      "dur": "3.440",
+      "text": "the opposite end of the spectrum and"
+    },
+    {
+      "start": "164.160",
+      "dur": "3.920",
+      "text": "arguably this one's worse. So people"
+    },
+    {
+      "start": "165.920",
+      "dur": "4.080",
+      "text": "feel that pain of using skills in"
+    },
+    {
+      "start": "168.080",
+      "dur": "4.000",
+      "text": "isolation. So actually end up"
+    },
+    {
+      "start": "170.000",
+      "dur": "4.080",
+      "text": "overcorrecting. They build one giant"
+    },
+    {
+      "start": "172.080",
+      "dur": "4.879",
+      "text": "skill that tries to do everything. So"
+    },
+    {
+      "start": "174.080",
+      "dur": "4.560",
+      "text": "think a 1,000line skill.mmd document."
+    },
+    {
+      "start": "176.959",
+      "dur": "3.121",
+      "text": "And this is surprisingly common"
+    },
+    {
+      "start": "178.640",
+      "dur": "3.519",
+      "text": "actually. So just check out some"
+    },
+    {
+      "start": "180.080",
+      "dur": "4.400",
+      "text": "marketplace skill.md docs. And"
+    },
+    {
+      "start": "182.159",
+      "dur": "3.841",
+      "text": "unsurprisingly most of them there are"
+    },
+    {
+      "start": "184.480",
+      "dur": "3.759",
+      "text": "built by AI and therefore they"
+    },
+    {
+      "start": "186.000",
+      "dur": "4.480",
+      "text": "overcompensate to try and niche down on"
+    },
+    {
+      "start": "188.239",
+      "dur": "4.801",
+      "text": "a specific process. So you can think of"
+    },
+    {
+      "start": "190.480",
+      "dur": "4.399",
+      "text": "this like a content creation skill that"
+    },
+    {
+      "start": "193.040",
+      "dur": "3.360",
+      "text": "is not only handling the research, it's"
+    },
+    {
+      "start": "194.879",
+      "dur": "3.921",
+      "text": "handling the writing, the repurposing,"
+    },
+    {
+      "start": "196.400",
+      "dur": "5.360",
+      "text": "the scheduling and posting, but it's all"
+    },
+    {
+      "start": "198.800",
+      "dur": "4.400",
+      "text": "condensed into one huge skill.md file."
+    },
+    {
+      "start": "201.760",
+      "dur": "2.800",
+      "text": "And this sounds really smart, but it's"
+    },
+    {
+      "start": "203.200",
+      "dur": "3.600",
+      "text": "not because you've just thrown away"
+    },
+    {
+      "start": "204.560",
+      "dur": "4.480",
+      "text": "everything that made skills useful in"
+    },
+    {
+      "start": "206.800",
+      "dur": "3.920",
+      "text": "the first place. You lose modularity."
+    },
+    {
+      "start": "209.040",
+      "dur": "3.759",
+      "text": "The copyrightiting logic inside that"
+    },
+    {
+      "start": "210.720",
+      "dur": "3.760",
+      "text": "mega skill is now locked into there and"
+    },
+    {
+      "start": "212.799",
+      "dur": "3.121",
+      "text": "you can't reuse that. So it won't go on"
+    },
+    {
+      "start": "214.480",
+      "dur": "3.119",
+      "text": "your newsletter intros or your landing"
+    },
+    {
+      "start": "215.920",
+      "dur": "4.080",
+      "text": "page unless you rewrite the skills for"
+    },
+    {
+      "start": "217.599",
+      "dur": "4.321",
+      "text": "those two. you lose maintainability. So"
+    },
+    {
+      "start": "220.000",
+      "dur": "3.760",
+      "text": "when you update it now, you're going to"
+    },
+    {
+      "start": "221.920",
+      "dur": "3.120",
+      "text": "hunt through that 1,000line skill for"
+    },
+    {
+      "start": "223.760",
+      "dur": "2.640",
+      "text": "the right lines. And every other"
+    },
+    {
+      "start": "225.040",
+      "dur": "2.880",
+      "text": "workflow that actually needs this"
+    },
+    {
+      "start": "226.400",
+      "dur": "3.600",
+      "text": "copywriting skill, you're going to have"
+    },
+    {
+      "start": "227.920",
+      "dur": "3.920",
+      "text": "to update those completely separately."
+    },
+    {
+      "start": "230.000",
+      "dur": "3.760",
+      "text": "And you also lose the inbuilt"
+    },
+    {
+      "start": "231.840",
+      "dur": "3.600",
+      "text": "progressive disclosure. So Anthropic"
+    },
+    {
+      "start": "233.760",
+      "dur": "3.520",
+      "text": "specifically designed skills to load"
+    },
+    {
+      "start": "235.440",
+      "dur": "4.079",
+      "text": "only the context that's needed. And"
+    },
+    {
+      "start": "237.280",
+      "dur": "4.239",
+      "text": "that's how they keep responses fast and"
+    },
+    {
+      "start": "239.519",
+      "dur": "3.920",
+      "text": "maintain their high quality. So a mega"
+    },
+    {
+      "start": "241.519",
+      "dur": "3.841",
+      "text": "skill in this case is going to blow that"
+    },
+    {
+      "start": "243.439",
+      "dur": "3.921",
+      "text": "all up. So everything's going to load at"
+    },
+    {
+      "start": "245.360",
+      "dur": "3.280",
+      "text": "once once the skill loads and the model"
+    },
+    {
+      "start": "247.360",
+      "dur": "2.560",
+      "text": "is going to get overwhelmed and"
+    },
+    {
+      "start": "248.640",
+      "dur": "2.640",
+      "text": "therefore the quality of output is going"
+    },
+    {
+      "start": "249.920",
+      "dur": "2.959",
+      "text": "to drop significantly. And this is"
+    },
+    {
+      "start": "251.280",
+      "dur": "3.120",
+      "text": "something that Anthropic's own teams"
+    },
+    {
+      "start": "252.879",
+      "dur": "3.920",
+      "text": "have been clear about. So their growth"
+    },
+    {
+      "start": "254.400",
+      "dur": "4.160",
+      "text": "marketing team built ad copy automations"
+    },
+    {
+      "start": "256.799",
+      "dur": "4.081",
+      "text": "and they explicitly broke them into"
+    },
+    {
+      "start": "258.560",
+      "dur": "5.040",
+      "text": "specialized sub aents. So not skills but"
+    },
+    {
+      "start": "260.880",
+      "dur": "4.640",
+      "text": "sub aents. One for headlines, one for"
+    },
+    {
+      "start": "263.600",
+      "dur": "3.520",
+      "text": "descriptions. and not because it was"
+    },
+    {
+      "start": "265.520",
+      "dur": "3.840",
+      "text": "easier to write it in that way, but"
+    },
+    {
+      "start": "267.120",
+      "dur": "4.639",
+      "text": "because in their words, it makes"
+    },
+    {
+      "start": "269.360",
+      "dur": "4.480",
+      "text": "debugging easier and improves output"
+    },
+    {
+      "start": "271.759",
+      "dur": "4.160",
+      "text": "quality when dealing with complex"
+    },
+    {
+      "start": "273.840",
+      "dur": "4.000",
+      "text": "requirements. So, if you take one giant"
+    },
+    {
+      "start": "275.919",
+      "dur": "4.321",
+      "text": "content creation skill, research,"
+    },
+    {
+      "start": "277.840",
+      "dur": "4.160",
+      "text": "writing, visuals, scheduling, what you"
+    },
+    {
+      "start": "280.240",
+      "dur": "4.239",
+      "text": "should actually do is break that down"
+    },
+    {
+      "start": "282.000",
+      "dur": "4.320",
+      "text": "into four small skills, each one doing"
+    },
+    {
+      "start": "284.479",
+      "dur": "3.761",
+      "text": "its job properly, each one can be"
+    },
+    {
+      "start": "286.320",
+      "dur": "3.599",
+      "text": "reused, and each one can be updated"
+    },
+    {
+      "start": "288.240",
+      "dur": "4.000",
+      "text": "independently. So, with skills in"
+    },
+    {
+      "start": "289.919",
+      "dur": "4.161",
+      "text": "isolation, you're still the connector"
+    },
+    {
+      "start": "292.240",
+      "dur": "4.239",
+      "text": "between them. But on the other side,"
+    },
+    {
+      "start": "294.080",
+      "dur": "4.320",
+      "text": "mega skills, you lose all the benefits"
+    },
+    {
+      "start": "296.479",
+      "dur": "3.440",
+      "text": "of the original skill design. So, both"
+    },
+    {
+      "start": "298.400",
+      "dur": "3.200",
+      "text": "aren't quite right. And the right answer"
+    },
+    {
+      "start": "299.919",
+      "dur": "4.161",
+      "text": "is actually somewhere in the middle. You"
+    },
+    {
+      "start": "301.600",
+      "dur": "5.200",
+      "text": "build small focused skills and then you"
+    },
+    {
+      "start": "304.080",
+      "dur": "5.119",
+      "text": "wire them together into something bigger"
+    },
+    {
+      "start": "306.800",
+      "dur": "4.080",
+      "text": "using one orchestrator skill. So, skills"
+    },
+    {
+      "start": "309.199",
+      "dur": "3.921",
+      "text": "are effectively treated then as"
+    },
+    {
+      "start": "310.880",
+      "dur": "3.840",
+      "text": "components of the skill system. And"
+    },
+    {
+      "start": "313.120",
+      "dur": "3.919",
+      "text": "really, what we're talking about here is"
+    },
+    {
+      "start": "314.720",
+      "dur": "4.160",
+      "text": "not novel at all. It's an automation"
+    },
+    {
+      "start": "317.039",
+      "dur": "3.841",
+      "text": "made up of multiple skills being chained"
+    },
+    {
+      "start": "318.880",
+      "dur": "4.080",
+      "text": "together in a sequence with the"
+    },
+    {
+      "start": "320.880",
+      "dur": "4.640",
+      "text": "intelligence of an LLM model to route"
+    },
+    {
+      "start": "322.960",
+      "dur": "4.720",
+      "text": "and format inputs and outputs as well as"
+    },
+    {
+      "start": "325.520",
+      "dur": "3.840",
+      "text": "check in with a human when required. And"
+    },
+    {
+      "start": "327.680",
+      "dur": "3.519",
+      "text": "it's exactly the same way that Open Claw"
+    },
+    {
+      "start": "329.360",
+      "dur": "4.160",
+      "text": "and Hermes are able to actually execute"
+    },
+    {
+      "start": "331.199",
+      "dur": "5.280",
+      "text": "tasks on your behalf. Right? So at its"
+    },
+    {
+      "start": "333.520",
+      "dur": "5.760",
+      "text": "crux, a skill system is a prompt and an"
+    },
+    {
+      "start": "336.479",
+      "dur": "5.121",
+      "text": "instruction set wired around multiple"
+    },
+    {
+      "start": "339.280",
+      "dur": "4.880",
+      "text": "skills. So the prompt kicks off and the"
+    },
+    {
+      "start": "341.600",
+      "dur": "4.800",
+      "text": "instruction set is the brain that runs"
+    },
+    {
+      "start": "344.160",
+      "dur": "4.400",
+      "text": "the chain or the sequence of multiple"
+    },
+    {
+      "start": "346.400",
+      "dur": "4.160",
+      "text": "skills. So that instruction set has to"
+    },
+    {
+      "start": "348.560",
+      "dur": "3.919",
+      "text": "understand five things fundamentally."
+    },
+    {
+      "start": "350.560",
+      "dur": "3.919",
+      "text": "One is the skill architecture. Which"
+    },
+    {
+      "start": "352.479",
+      "dur": "4.801",
+      "text": "skills are involved and in what order?"
+    },
+    {
+      "start": "354.479",
+      "dur": "4.321",
+      "text": "Two, the inputs needed for each skill."
+    },
+    {
+      "start": "357.280",
+      "dur": "3.840",
+      "text": "What does each step need to do its job"
+    },
+    {
+      "start": "358.800",
+      "dur": "4.239",
+      "text": "properly basically? Three, how outputs"
+    },
+    {
+      "start": "361.120",
+      "dur": "3.680",
+      "text": "hand off between the skills. So the"
+    },
+    {
+      "start": "363.039",
+      "dur": "3.841",
+      "text": "output of skill one has to become the"
+    },
+    {
+      "start": "364.800",
+      "dur": "3.839",
+      "text": "clean input for skill two. Four, the"
+    },
+    {
+      "start": "366.880",
+      "dur": "4.159",
+      "text": "human in the loop checkpoints. So, where"
+    },
+    {
+      "start": "368.639",
+      "dur": "3.840",
+      "text": "do you step in to approve or adjust the"
+    },
+    {
+      "start": "371.039",
+      "dur": "3.761",
+      "text": "system before it carries on? And this"
+    },
+    {
+      "start": "372.479",
+      "dur": "3.840",
+      "text": "varies from user to user. And five, how"
+    },
+    {
+      "start": "374.800",
+      "dur": "3.119",
+      "text": "visual results are actually going to get"
+    },
+    {
+      "start": "376.319",
+      "dur": "2.801",
+      "text": "displayed back to the user. So, you can"
+    },
+    {
+      "start": "377.919",
+      "dur": "2.801",
+      "text": "actually see what's happening as it"
+    },
+    {
+      "start": "379.120",
+      "dur": "3.120",
+      "text": "runs. Is it going to load up markdown"
+    },
+    {
+      "start": "380.720",
+      "dur": "4.240",
+      "text": "files and give them a link to that? Is"
+    },
+    {
+      "start": "382.240",
+      "dur": "4.640",
+      "text": "it going to be a HTML dashboard, PNGs?"
+    },
+    {
+      "start": "384.960",
+      "dur": "3.359",
+      "text": "It totally depends on what the skill is"
+    },
+    {
+      "start": "386.880",
+      "dur": "3.439",
+      "text": "actually creating. And then the wiring"
+    },
+    {
+      "start": "388.319",
+      "dur": "4.961",
+      "text": "between them and the ability to work"
+    },
+    {
+      "start": "390.319",
+      "dur": "5.281",
+      "text": "until completion with this loop here is"
+    },
+    {
+      "start": "393.280",
+      "dur": "4.160",
+      "text": "what makes it actually work end to end"
+    },
+    {
+      "start": "395.600",
+      "dur": "3.599",
+      "text": "without you sitting there copying"
+    },
+    {
+      "start": "397.440",
+      "dur": "3.360",
+      "text": "outputs and pasting them into the next"
+    },
+    {
+      "start": "399.199",
+      "dur": "3.201",
+      "text": "prompt. And this is exactly the pattern"
+    },
+    {
+      "start": "400.800",
+      "dur": "3.519",
+      "text": "that Anthropic talks about in their own"
+    },
+    {
+      "start": "402.400",
+      "dur": "4.639",
+      "text": "skills guide. They call it sequential"
+    },
+    {
+      "start": "404.319",
+      "dur": "4.801",
+      "text": "workflow orchestration which is explicit"
+    },
+    {
+      "start": "407.039",
+      "dur": "4.880",
+      "text": "step ordering, clear dependencies"
+    },
+    {
+      "start": "409.120",
+      "dur": "4.560",
+      "text": "between steps and validation at each"
+    },
+    {
+      "start": "411.919",
+      "dur": "3.761",
+      "text": "stage. So skills are effectively your"
+    },
+    {
+      "start": "413.680",
+      "dur": "4.000",
+      "text": "components and skill systems are the"
+    },
+    {
+      "start": "415.680",
+      "dur": "4.239",
+      "text": "automations that you build with them."
+    },
+    {
+      "start": "417.680",
+      "dur": "3.680",
+      "text": "It's a wrapper around skills. So let me"
+    },
+    {
+      "start": "419.919",
+      "dur": "3.361",
+      "text": "show you what one looks like in"
+    },
+    {
+      "start": "421.360",
+      "dur": "4.160",
+      "text": "practice. So here's a skill system that"
+    },
+    {
+      "start": "423.280",
+      "dur": "3.919",
+      "text": "we've just built on top of to run every"
+    },
+    {
+      "start": "425.520",
+      "dur": "3.840",
+      "text": "single week. And it basically takes one"
+    },
+    {
+      "start": "427.199",
+      "dur": "4.161",
+      "text": "long form YouTube video and produces"
+    },
+    {
+      "start": "429.360",
+      "dur": "4.399",
+      "text": "five short form clips at the end of it."
+    },
+    {
+      "start": "431.360",
+      "dur": "4.160",
+      "text": "So they're all faceted, refframed to"
+    },
+    {
+      "start": "433.759",
+      "dur": "3.840",
+      "text": "portrait mode instead of landscape,"
+    },
+    {
+      "start": "435.520",
+      "dur": "4.880",
+      "text": "captioned, illustrated, and ready to"
+    },
+    {
+      "start": "437.599",
+      "dur": "4.081",
+      "text": "post on YouTube shorts, LinkedIn X. And"
+    },
+    {
+      "start": "440.400",
+      "dur": "4.079",
+      "text": "I just want to say a massive shout out"
+    },
+    {
+      "start": "441.680",
+      "dur": "4.720",
+      "text": "to Enrique here who built V1 of this and"
+    },
+    {
+      "start": "444.479",
+      "dur": "3.601",
+      "text": "we've taken this concept and built on"
+    },
+    {
+      "start": "446.400",
+      "dur": "3.199",
+      "text": "top of that. And as you'll see, it's a"
+    },
+    {
+      "start": "448.080",
+      "dur": "3.600",
+      "text": "brilliant flow that can just run on"
+    },
+    {
+      "start": "449.599",
+      "dur": "3.761",
+      "text": "autopilot in the background. Get one of"
+    },
+    {
+      "start": "451.680",
+      "dur": "3.040",
+      "text": "your tasks done every single week"
+    },
+    {
+      "start": "453.360",
+      "dur": "3.119",
+      "text": "without touching it. Now, if you want to"
+    },
+    {
+      "start": "454.720",
+      "dur": "3.599",
+      "text": "grab this exact system, it's available"
+    },
+    {
+      "start": "456.479",
+      "dur": "3.440",
+      "text": "in the Agentic Academy in the community"
+    },
+    {
+      "start": "458.319",
+      "dur": "3.921",
+      "text": "below. And we'll be releasing more"
+    },
+    {
+      "start": "459.919",
+      "dur": "3.840",
+      "text": "systems like this in May, which we'll"
+    },
+    {
+      "start": "462.240",
+      "dur": "3.359",
+      "text": "talk about later. So, let me walk you"
+    },
+    {
+      "start": "463.759",
+      "dur": "4.000",
+      "text": "through the chain. The orchestrator"
+    },
+    {
+      "start": "465.599",
+      "dur": "3.921",
+      "text": "skill contains the prompt connecting"
+    },
+    {
+      "start": "467.759",
+      "dur": "4.880",
+      "text": "them. So, this is dead simple. It's"
+    },
+    {
+      "start": "469.520",
+      "dur": "5.200",
+      "text": "basically take this video from a URL and"
+    },
+    {
+      "start": "472.639",
+      "dur": "4.481",
+      "text": "produce five short form clips ready to"
+    },
+    {
+      "start": "474.720",
+      "dur": "4.400",
+      "text": "post. So the instruction set is then"
+    },
+    {
+      "start": "477.120",
+      "dur": "4.079",
+      "text": "basically a skill.md file that"
+    },
+    {
+      "start": "479.120",
+      "dur": "4.479",
+      "text": "orchestrates the full chain and make"
+    },
+    {
+      "start": "481.199",
+      "dur": "4.081",
+      "text": "sure the outputs go from one step to the"
+    },
+    {
+      "start": "483.599",
+      "dur": "3.040",
+      "text": "next. So in terms of the skills that"
+    },
+    {
+      "start": "485.280",
+      "dur": "3.199",
+      "text": "make this up, we've got transcript"
+    },
+    {
+      "start": "486.639",
+      "dur": "4.400",
+      "text": "extraction. So the input is the video"
+    },
+    {
+      "start": "488.479",
+      "dur": "4.160",
+      "text": "URL and the output is a word level"
+    },
+    {
+      "start": "491.039",
+      "dur": "3.280",
+      "text": "timestamped transcript. And that"
+    },
+    {
+      "start": "492.639",
+      "dur": "4.081",
+      "text": "precision really matters because later"
+    },
+    {
+      "start": "494.319",
+      "dur": "4.081",
+      "text": "we sync pop out illustrations to that"
+    },
+    {
+      "start": "496.720",
+      "dur": "3.440",
+      "text": "exact frame when somebody says a"
+    },
+    {
+      "start": "498.400",
+      "dur": "3.600",
+      "text": "keyword. For the second skill, we've got"
+    },
+    {
+      "start": "500.160",
+      "dur": "3.840",
+      "text": "clip selection or basically working out"
+    },
+    {
+      "start": "502.000",
+      "dur": "4.240",
+      "text": "what hooks we want and generating five"
+    },
+    {
+      "start": "504.000",
+      "dur": "4.080",
+      "text": "clip worthy moments each scored across"
+    },
+    {
+      "start": "506.240",
+      "dur": "3.760",
+      "text": "five different categories to work out"
+    },
+    {
+      "start": "508.080",
+      "dur": "3.920",
+      "text": "how good that clip is to actually share."
+    },
+    {
+      "start": "510.000",
+      "dur": "3.919",
+      "text": "Then we've got the reframe or clip"
+    },
+    {
+      "start": "512.000",
+      "dur": "3.680",
+      "text": "extraction. So this is where it gets a"
+    },
+    {
+      "start": "513.919",
+      "dur": "3.360",
+      "text": "bit technical, but the input is"
+    },
+    {
+      "start": "515.680",
+      "dur": "3.440",
+      "text": "effectively then those approved clips"
+    },
+    {
+      "start": "517.279",
+      "dur": "4.560",
+      "text": "from the source video. It runs face"
+    },
+    {
+      "start": "519.120",
+      "dur": "4.960",
+      "text": "detection on every sampled frame because"
+    },
+    {
+      "start": "521.839",
+      "dur": "4.000",
+      "text": "we want faces to appear in these short"
+    },
+    {
+      "start": "524.080",
+      "dur": "4.640",
+      "text": "form clips and then it's going to render"
+    },
+    {
+      "start": "525.839",
+      "dur": "4.801",
+      "text": "each clip down to that 9x6 portrait"
+    },
+    {
+      "start": "528.720",
+      "dur": "4.000",
+      "text": "mode. It's going to face track the whole"
+    },
+    {
+      "start": "530.640",
+      "dur": "3.360",
+      "text": "time. So even if the face moves across"
+    },
+    {
+      "start": "532.720",
+      "dur": "3.119",
+      "text": "the screen, it's going to track that"
+    },
+    {
+      "start": "534.000",
+      "dur": "3.839",
+      "text": "face and make sure that that is the"
+    },
+    {
+      "start": "535.839",
+      "dur": "3.680",
+      "text": "primary focus. That is my favorite thing"
+    },
+    {
+      "start": "537.839",
+      "dur": "3.361",
+      "text": "about what Enrique has built here. Then"
+    },
+    {
+      "start": "539.519",
+      "dur": "3.921",
+      "text": "we've effectively got an editing stage."
+    },
+    {
+      "start": "541.200",
+      "dur": "4.000",
+      "text": "So the input is the refframed clip plus"
+    },
+    {
+      "start": "543.440",
+      "dur": "3.920",
+      "text": "that transcript. And the output is going"
+    },
+    {
+      "start": "545.200",
+      "dur": "4.480",
+      "text": "to create pop out illustrations timed to"
+    },
+    {
+      "start": "547.360",
+      "dur": "3.440",
+      "text": "the exact frame when a keyword is spoken"
+    },
+    {
+      "start": "549.680",
+      "dur": "2.880",
+      "text": "just to make it a little bit more"
+    },
+    {
+      "start": "550.800",
+      "dur": "3.440",
+      "text": "dynamic. And it's important to note that"
+    },
+    {
+      "start": "552.560",
+      "dur": "3.360",
+      "text": "every illustration is created in"
+    },
+    {
+      "start": "554.240",
+      "dur": "3.680",
+      "text": "Remotion. So it's going to be completely"
+    },
+    {
+      "start": "555.920",
+      "dur": "3.359",
+      "text": "unique. There's no repeated visuals"
+    },
+    {
+      "start": "557.920",
+      "dur": "2.800",
+      "text": "between your videos. And that's"
+    },
+    {
+      "start": "559.279",
+      "dur": "3.680",
+      "text": "something that would often take a human"
+    },
+    {
+      "start": "560.720",
+      "dur": "4.080",
+      "text": "editor, you know, 20 30 minutes to"
+    },
+    {
+      "start": "562.959",
+      "dur": "4.241",
+      "text": "create one single animation. It's able"
+    },
+    {
+      "start": "564.800",
+      "dur": "4.320",
+      "text": "to generate these in a few minutes by"
+    },
+    {
+      "start": "567.200",
+      "dur": "4.240",
+      "text": "itself. And then skill five is when we"
+    },
+    {
+      "start": "569.120",
+      "dur": "4.719",
+      "text": "have the complete rendered clip and the"
+    },
+    {
+      "start": "571.440",
+      "dur": "4.640",
+      "text": "output is like packaging that up with a"
+    },
+    {
+      "start": "573.839",
+      "dur": "4.241",
+      "text": "thumbnail with description with title"
+    },
+    {
+      "start": "576.080",
+      "dur": "3.600",
+      "text": "and the file and getting that in a"
+    },
+    {
+      "start": "578.080",
+      "dur": "3.280",
+      "text": "position where it's ready to actually be"
+    },
+    {
+      "start": "579.680",
+      "dur": "4.080",
+      "text": "scheduled. And we use a publishing tool"
+    },
+    {
+      "start": "581.360",
+      "dur": "4.159",
+      "text": "called zioo.com to actually schedule"
+    },
+    {
+      "start": "583.760",
+      "dur": "4.079",
+      "text": "those posts on the different platforms."
+    },
+    {
+      "start": "585.519",
+      "dur": "4.961",
+      "text": "So that is a skill system. So it's five"
+    },
+    {
+      "start": "587.839",
+      "dur": "4.801",
+      "text": "skills but one automation end to end"
+    },
+    {
+      "start": "590.480",
+      "dur": "3.919",
+      "text": "with one orchestration skill wrapped"
+    },
+    {
+      "start": "592.640",
+      "dur": "3.600",
+      "text": "around it. And the whole thing is going"
+    },
+    {
+      "start": "594.399",
+      "dur": "3.681",
+      "text": "to run from a single prompt. So I kick"
+    },
+    {
+      "start": "596.240",
+      "dur": "3.520",
+      "text": "it off with a video URL and you can even"
+    },
+    {
+      "start": "598.080",
+      "dur": "3.600",
+      "text": "extend this to actually just scan a"
+    },
+    {
+      "start": "599.760",
+      "dur": "3.519",
+      "text": "folder or scan your YouTube channel for"
+    },
+    {
+      "start": "601.680",
+      "dur": "3.440",
+      "text": "latest videos and then I basically come"
+    },
+    {
+      "start": "603.279",
+      "dur": "3.841",
+      "text": "back when it pings me when it's done"
+    },
+    {
+      "start": "605.120",
+      "dur": "4.159",
+      "text": "with all the outputs just to check. So"
+    },
+    {
+      "start": "607.120",
+      "dur": "4.719",
+      "text": "when you're chaining skills like this,"
+    },
+    {
+      "start": "609.279",
+      "dur": "4.321",
+      "text": "context management becomes everything."
+    },
+    {
+      "start": "611.839",
+      "dur": "3.521",
+      "text": "Each skill in the chain gets exactly"
+    },
+    {
+      "start": "613.600",
+      "dur": "4.400",
+      "text": "what it needs to do its job. Nothing"
+    },
+    {
+      "start": "615.360",
+      "dur": "4.960",
+      "text": "more and nothing less. So we spin off"
+    },
+    {
+      "start": "618.000",
+      "dur": "4.240",
+      "text": "sub aents at relevant parts to keep the"
+    },
+    {
+      "start": "620.320",
+      "dur": "4.000",
+      "text": "context window narrow and the quality of"
+    },
+    {
+      "start": "622.240",
+      "dur": "4.080",
+      "text": "each output high before it's passed on"
+    },
+    {
+      "start": "624.320",
+      "dur": "3.759",
+      "text": "between the skills. So those skills,"
+    },
+    {
+      "start": "626.320",
+      "dur": "3.600",
+      "text": "it's important to know, aren't locked"
+    },
+    {
+      "start": "628.079",
+      "dur": "3.921",
+      "text": "into this one skill system. So once"
+    },
+    {
+      "start": "629.920",
+      "dur": "4.640",
+      "text": "you've built your skills as proper"
+    },
+    {
+      "start": "632.000",
+      "dur": "4.320",
+      "text": "modular components, they plug into other"
+    },
+    {
+      "start": "634.560",
+      "dur": "3.600",
+      "text": "skill system, too. So you have a skill"
+    },
+    {
+      "start": "636.320",
+      "dur": "4.560",
+      "text": "library, a refined library of, let's"
+    },
+    {
+      "start": "638.160",
+      "dur": "5.040",
+      "text": "say, 10 to 30 skills that you build once"
+    },
+    {
+      "start": "640.880",
+      "dur": "4.160",
+      "text": "and reuse it everywhere. So any changes"
+    },
+    {
+      "start": "643.200",
+      "dur": "4.319",
+      "text": "you make to the transcript skill will"
+    },
+    {
+      "start": "645.040",
+      "dur": "4.320",
+      "text": "automatically be ported into any skill"
+    },
+    {
+      "start": "647.519",
+      "dur": "3.361",
+      "text": "system that's using it. So in practice"
+    },
+    {
+      "start": "649.360",
+      "dur": "3.520",
+      "text": "it might look a little bit like this"
+    },
+    {
+      "start": "650.880",
+      "dur": "3.680",
+      "text": "where you have a transcript skill which"
+    },
+    {
+      "start": "652.880",
+      "dur": "3.840",
+      "text": "obviously takes a video and transcribes"
+    },
+    {
+      "start": "654.560",
+      "dur": "4.080",
+      "text": "it that feeds into our short form video"
+    },
+    {
+      "start": "656.720",
+      "dur": "4.080",
+      "text": "skill system as we saw before but we use"
+    },
+    {
+      "start": "658.640",
+      "dur": "4.000",
+      "text": "the exact same transcript skill for our"
+    },
+    {
+      "start": "660.800",
+      "dur": "3.520",
+      "text": "newsletter creation skill system. We're"
+    },
+    {
+      "start": "662.640",
+      "dur": "4.000",
+      "text": "just using it in entirely different"
+    },
+    {
+      "start": "664.320",
+      "dur": "4.639",
+      "text": "ways. So we chain that transcript skill"
+    },
+    {
+      "start": "666.640",
+      "dur": "4.879",
+      "text": "to push into a copywriting skill that"
+    },
+    {
+      "start": "668.959",
+      "dur": "4.241",
+      "text": "then generates a newsletter based on a"
+    },
+    {
+      "start": "671.519",
+      "dur": "3.361",
+      "text": "video that we've produced too. So not"
+    },
+    {
+      "start": "673.200",
+      "dur": "3.280",
+      "text": "only are we producing short form video,"
+    },
+    {
+      "start": "674.880",
+      "dur": "3.360",
+      "text": "we're producing newsletters from that"
+    },
+    {
+      "start": "676.480",
+      "dur": "3.440",
+      "text": "same transcript skill. We could also"
+    },
+    {
+      "start": "678.240",
+      "dur": "4.320",
+      "text": "then turn that into a blog post and have"
+    },
+    {
+      "start": "679.920",
+      "dur": "5.359",
+      "text": "that in the SEO content production skill"
+    },
+    {
+      "start": "682.560",
+      "dur": "4.080",
+      "text": "too. So systems you build get faster"
+    },
+    {
+      "start": "685.279",
+      "dur": "3.201",
+      "text": "because you're already most of the way"
+    },
+    {
+      "start": "686.640",
+      "dur": "4.240",
+      "text": "there. You've got a refined set of"
+    },
+    {
+      "start": "688.480",
+      "dur": "4.320",
+      "text": "skills which feed into multiple skill"
+    },
+    {
+      "start": "690.880",
+      "dur": "3.760",
+      "text": "systems. So by the time you've got 10"
+    },
+    {
+      "start": "692.800",
+      "dur": "4.320",
+      "text": "skill systems running, you might only"
+    },
+    {
+      "start": "694.640",
+      "dur": "4.240",
+      "text": "need actually 20 or 30 unique skills"
+    },
+    {
+      "start": "697.120",
+      "dur": "2.959",
+      "text": "powering all of them. And it's the exact"
+    },
+    {
+      "start": "698.880",
+      "dur": "2.959",
+      "text": "conversation we've been having inside"
+    },
+    {
+      "start": "700.079",
+      "dur": "3.681",
+      "text": "the Aentic Academy where we've recently"
+    },
+    {
+      "start": "701.839",
+      "dur": "3.361",
+      "text": "had a vote on what skill systems to"
+    },
+    {
+      "start": "703.760",
+      "dur": "2.720",
+      "text": "build out next. So you can see that"
+    },
+    {
+      "start": "705.200",
+      "dur": "3.759",
+      "text": "we're going to start working on ad"
+    },
+    {
+      "start": "706.480",
+      "dur": "4.799",
+      "text": "generation and outlier detection, SEO"
+    },
+    {
+      "start": "708.959",
+      "dur": "4.401",
+      "text": "and GEO content production like blog"
+    },
+    {
+      "start": "711.279",
+      "dur": "4.800",
+      "text": "generation and page optimization, social"
+    },
+    {
+      "start": "713.360",
+      "dur": "4.400",
+      "text": "media carousels and long- form content"
+    },
+    {
+      "start": "716.079",
+      "dur": "3.440",
+      "text": "generating those carousels and a whole"
+    },
+    {
+      "start": "717.760",
+      "dur": "3.759",
+      "text": "bunch of other stuff that we're starting"
+    },
+    {
+      "start": "719.519",
+      "dur": "4.241",
+      "text": "to actually deploy in systems that are"
+    },
+    {
+      "start": "721.519",
+      "dur": "3.841",
+      "text": "just plugandplay one-click in stores for"
+    },
+    {
+      "start": "723.760",
+      "dur": "4.160",
+      "text": "everyone inside the academy. And the"
+    },
+    {
+      "start": "725.360",
+      "dur": "4.640",
+      "text": "point is to get highquality outputs, not"
+    },
+    {
+      "start": "727.920",
+      "dur": "3.359",
+      "text": "AI slot. There's no point in doing this"
+    },
+    {
+      "start": "730.000",
+      "dur": "3.120",
+      "text": "if you're going to generate rubbish"
+    },
+    {
+      "start": "731.279",
+      "dur": "3.761",
+      "text": "outputs. So, actually just focused on"
+    },
+    {
+      "start": "733.120",
+      "dur": "4.240",
+      "text": "producing those high-quality outputs"
+    },
+    {
+      "start": "735.040",
+      "dur": "3.919",
+      "text": "that save you a ton of time on all your"
+    },
+    {
+      "start": "737.360",
+      "dur": "2.719",
+      "text": "admin tasks. So, these are the systems"
+    },
+    {
+      "start": "738.959",
+      "dur": "2.641",
+      "text": "then we're going to be shipping over the"
+    },
+    {
+      "start": "740.079",
+      "dur": "3.281",
+      "text": "next few weeks. If you want access to"
+    },
+    {
+      "start": "741.600",
+      "dur": "3.679",
+      "text": "those, then check out the link in the"
+    },
+    {
+      "start": "743.360",
+      "dur": "3.680",
+      "text": "description below. Skills aren't single"
+    },
+    {
+      "start": "745.279",
+      "dur": "4.240",
+      "text": "isolated endpoints, and they're not"
+    },
+    {
+      "start": "747.040",
+      "dur": "4.160",
+      "text": "meant to be megapiles that do everything"
+    },
+    {
+      "start": "749.519",
+      "dur": "4.560",
+      "text": "either. They're modular components"
+    },
+    {
+      "start": "751.200",
+      "dur": "4.560",
+      "text": "designed to plug into skill systems. So"
+    },
+    {
+      "start": "754.079",
+      "dur": "3.601",
+      "text": "build them small, build them really"
+    },
+    {
+      "start": "755.760",
+      "dur": "3.519",
+      "text": "focused and build them around real"
+    },
+    {
+      "start": "757.680",
+      "dur": "3.520",
+      "text": "workflows. And when you start thinking"
+    },
+    {
+      "start": "759.279",
+      "dur": "4.641",
+      "text": "about it like that, you start to design"
+    },
+    {
+      "start": "761.200",
+      "dur": "4.879",
+      "text": "every single skill for reuse from day"
+    },
+    {
+      "start": "763.920",
+      "dur": "4.800",
+      "text": "one. So next video I'm going to walk you"
+    },
+    {
+      "start": "766.079",
+      "dur": "5.121",
+      "text": "through the full Aentic OS setup to show"
+    },
+    {
+      "start": "768.720",
+      "dur": "5.440",
+      "text": "you how we inject the right context into"
+    },
+    {
+      "start": "771.200",
+      "dur": "4.400",
+      "text": "these skill systems without high effort."
+    },
+    {
+      "start": "774.160",
+      "dur": "3.600",
+      "text": "Thanks for watching. See you in the next"
+    },
+    {
+      "start": "775.600",
+      "dur": "2.160",
+      "text": "one."
+    }
+  ]
+}]

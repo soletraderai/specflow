@@ -1,664 +1,295 @@
 ---
-name: "specflow:test"
-description: >
-  Verify completed Linear tasks against their acceptance criteria, QA scenarios,
-  and definition of done using code review and Playwright browser testing.
-  Use this skill whenever the user says "verify tasks", "QA check",
-  "test completed tasks", "check done tasks", "verify done issues",
-  "run QA", or runs /specflow:test. Also trigger when a user has just
-  marked tasks as Done in Linear and wants to verify they actually meet
-  the acceptance criteria from the task review. This skill reads completed
-  Linear issues, traces them back to their task review documents, runs
-  multi-layer verification (code review, schema checks, Playwright screenshots),
-  and posts a structured QA report to Linear.
----
-
-# QA Verification
-
-Verify completed Linear tasks against their acceptance criteria, QA scenarios, and definition of done. This skill closes the specflow pipeline loop — after `specflow:prd` creates requirements, `specflow:task` breaks them into issues, `specflow:linear` exports to Linear, and developers build the work, `specflow:test` checks that the completed work actually meets what was specified.
-
-```
-specflow:prd → specflow:task → specflow:linear → [dev builds] → [marks Done] → specflow:test
-```
-
-## Process
-
-### Phase 0: System Readiness Check
-
-Before doing anything else, check all prerequisites and present a clear status summary. This runs once at the start — not per-task.
-
-#### 0a. Check All Prerequisites
-
-Run these checks in parallel:
-
-1. **Linear MCP** — call `mcp__plugin_linear_linear__list_teams` to verify the Linear MCP is accessible. If this fails, halt: "Linear MCP is not configured. Run `/specflow:setup` to set it up."
-2. **Specflow config** — read `docs/specflow/config.json` for `linear.team`. Note whether it exists.
-3. **Task review files** — glob for `docs/specflow/task/*-tasks-*.md`. If none exist, halt: "No task review files found. Run `/specflow:task` first."
-4. **Export maps** — check if any task review files contain an `## Export Map` section. Note the count.
-5. **Playwright** — run `npx playwright --version 2>/dev/null` to check if Playwright is installed. Note version or "not installed".
-6. **Environment variables** — read the `.env` file directly and parse `KEY=VALUE` lines. Check for `SPECFLOW_TEST_BASE_URL`, `SPECFLOW_TEST_EMAIL`, `SPECFLOW_TEST_PASSWORD`. Note which are present and which are missing.
-7. **Pages config** — check if `docs/specflow/pages.json` exists. Note present or missing.
-
-#### 0b. Present Readiness Summary
-
-Present the results as a status table before proceeding:
-
-```
-System Readiness Check:
-
-| Requirement                  | Status                          |
-|------------------------------|---------------------------------|
-| Linear MCP                   | Connected                       |
-| Linear team                  | Engineering (from config.json)  |
-| Task review files            | 3 found (2 with export maps)    |
-| Playwright                   | Installed (v1.59.1)             |
-| SPECFLOW_TEST_BASE_URL       | Set (http://localhost:3000)     |
-| SPECFLOW_TEST_EMAIL          | Set                             |
-| SPECFLOW_TEST_PASSWORD       | Set                             |
-| pages.json                   | Present (4 pages configured)    |
-
-Verification modes available:
-- Code review: YES
-- Visual verification (Playwright): YES
-```
-
-If any Playwright prerequisites are missing, clearly state the impact:
-
-```
-| SPECFLOW_TEST_BASE_URL       | MISSING                         |
-| SPECFLOW_TEST_EMAIL          | MISSING                         |
-| SPECFLOW_TEST_PASSWORD       | MISSING                         |
-| pages.json                   | MISSING                         |
-
-Verification modes available:
-- Code review: YES
-- Visual verification (Playwright): NO — missing .env credentials and pages.json
-
-To enable visual verification, add to .env:
-  SPECFLOW_TEST_BASE_URL=http://localhost:3000
-  SPECFLOW_TEST_EMAIL=your-test-email
-  SPECFLOW_TEST_PASSWORD=your-test-password
-And create docs/specflow/pages.json (see Phase 2d for schema).
-```
-
-#### 0c. Confirm or Abort
-
-After presenting the readiness summary, ask:
-
-- If everything is available: "All systems ready. Proceed with verification?"
-- If Playwright prerequisites are missing: "Visual verification is unavailable — verification will use code review only. Proceed, or set up the missing prerequisites first?"
-- If critical prerequisites are missing (no Linear, no task reviews): halt with a clear message about what needs to be done first.
-
-Wait for the user to confirm before proceeding to Phase 1.
+name: specflow:test
+description: Verify work against PRD acceptance criteria. Testing-as-cadence — runs iteratively throughout development, not as a terminal phase. Three-phase orchestrator — A pre-flight + read PRD/tasks/pages, B test-plan synthesis (one case per AC), C execution + artefact capture + pass/fail report. Targeted mode runs a subset; full mode runs the whole plan.
+status: v2-enhancement
+phase: 1
+requires:
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md
+  - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/manifest.md
+  - docs/specflow/admin/pages.json
+  - docs/specflow/admin/environment.json
+produces:
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-test.md
+  - docs/specflow/features/{NNN-slug}/assets/
+eval: every PRD acceptance criterion has a test case in {NNN-slug}-test.md; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact (screenshot, log line, runner output) referenced from the test plan.
 
 ---
 
-### Phase 1: Task Selection
+# specflow:test
 
-Identify completed Linear tasks that need verification.
+You are the verification cadence skill. You build the test plan from the PRD's acceptance criteria, execute it (in part or in full), and produce a pass/fail report tied back to the PRD.
 
-#### 1a. Load Configuration
+**Testing-as-cadence (Phase 1 scope item 15):** this skill runs *throughout* development, not as a terminal end-of-pipeline step. Every invocation is idempotent on the plan synthesis (re-derives from current PRD/tasks) and additive on the execution log.
 
-Use the team name already resolved in Phase 0. If `config.json` didn't have `linear.team`, ask the user: "Which Linear team should I check for completed tasks?"
-
-#### 1b. Fetch Done Tasks from Linear
-
-1. Call `mcp__plugin_linear_linear__list_issue_statuses` with the team name to get all workflow states
-2. Find the state whose name is "Done" (case-insensitive) and note its ID
-3. Call `mcp__plugin_linear_linear__list_issues` filtered by the team name
-4. Client-side filter the results to keep only issues whose state matches the Done state ID
-
-#### 1c. Build Reverse Lookup from Export Maps
-
-Build a mapping from Linear issue identifiers back to task review documents and review IDs:
-
-1. Glob for `docs/specflow/task/*-tasks-*.md`
-2. For each task review file found:
-   a. Read the file content
-   b. Look for an `## Export Map` section
-   c. Parse the Export Map table — each row has columns: `Review ID`, `Linear ID`, `Linear URL`
-   d. For each row, store in a reverse lookup: `{ Linear ID → { review_file: path, review_id: Review ID } }`
-3. Also read the YAML frontmatter of each task review to capture `prd_file` for later use
-
-This reverse lookup is the bridge between Linear and the structured QA criteria in the task review documents.
-
-#### 1d. Check Existing Verification Logs
-
-1. Glob for `docs/specflow/test/*-test-*.md`
-2. For each verification log found:
-   a. Parse the verification table rows
-   b. Extract: Linear ID, Verdict, Verified At timestamp
-3. Build a verification status map: `{ Linear ID → { verdict, verified_at } }`
-
-#### 1e. Filter and Present Tasks
-
-Cross-reference the Done tasks against the reverse lookup and verification logs:
-
-- **Skip:** Tasks with verdict PASS and a `verified_at` timestamp — already verified
-- **Re-verify:** Tasks with verdict FAIL in the log — show as "previously failed — re-verify?"
-- **Unverified:** Tasks in the Done state with no verification log entry
-- **Limited verification:** Tasks in the Done state that have NO entry in any Export Map — flag as "no structured QA criteria found" (these can still be verified using the Linear issue body, but with reduced confidence)
-
-Present a selection table to the user:
-
-```
-Done tasks available for verification:
-
-| # | Linear ID | Title | Project | Status |
-|---|-----------|-------|---------|--------|
-| 1 | CXP-42 | Widget creation API | Widget MVP | Unverified |
-| 2 | CXP-43 | Widget listing UI | Widget MVP | Previously failed |
-| 3 | CXP-45 | User settings page | Settings | Limited (no export map) |
-
-Enter "all" to verify all, or specific numbers/IDs (e.g., "1, 3" or "CXP-42, CXP-45")
-```
-
-Wait for the user to select tasks before proceeding.
-
-#### 1f. Fallback for Tasks Without Export Map
-
-For tasks flagged as "Limited verification":
-
-1. Call `mcp__plugin_linear_linear__get_issue` to fetch the full issue body
-2. Extract any structured criteria from the issue description (acceptance criteria checkboxes, QA verification scenarios, definition of done)
-3. If structured criteria are found, proceed with verification using those
-4. If no structured criteria exist, flag: "Limited verification — no structured QA criteria found. Verification will be based on issue title and description only."
+This is a **3-phase skill**. No multi-agent debate manifest in Phase 1 — Gate 6 (tests vs requirements) lands in Phase 3 alongside `/optimize` and the self-learning memory loop. The Goal-Driven Reviewer's lens governs the plan structure today; full Gate 6 manifest review comes later.
 
 ---
 
-### Phase 2: Task Context Loading
+## Inputs
 
-For each selected task, load the full context needed for verification.
+The user invokes you with one of:
 
-#### 2a. Load Linear Issue Details
+- `specflow:test {NNN-slug}` — full mode. Re-derives the plan, executes everything in scope.
+- `specflow:test {NNN-slug} --targeted T1,T3,AC-2` — targeted mode. Re-derives the plan but executes only the specified task IDs and AC IDs.
+- `specflow:test {NNN-slug} --plan-only` — re-derives the plan and writes the test file; does NOT execute. Useful for early-cadence reviews when the implementation isn't ready yet.
+- `/specflow:test` with no argument — ask the user which feature.
 
-Call `mcp__plugin_linear_linear__get_issue` with the Linear issue identifier to get:
-- Title, description, state, labels, priority
-- Any comments or attachments already on the issue
+**Resume logic.** Before starting Phase A:
 
-#### 2b. Load Task Review Details
+1. Locate `features/NNN-{slug}/`. If missing, refuse: *"Feature `{NNN-slug}` does not exist."*
+2. Verify the artefact chain:
+   - `{NNN-slug}-prd.md` exists.
+   - `{NNN-slug}-tasks.md` exists.
+   - `debate-log/tasks-gate3/manifest.md` exists with a `**passed**` or `**passed-with-escalations**` closing decision.
+   - If tasks haven't closed Gate 3, refuse: *"Tasks have not closed Gate 3 (status: `{status}`). Resolve Gate 3 before testing. Re-run `specflow:task {NNN-slug}` to resume."*
+3. Default mode is **full**. If `--targeted` or `--plan-only` is provided, set the mode accordingly.
 
-Using the reverse lookup from Phase 1c, locate the task in its review document:
-
-1. Read the task review file at the path from the reverse lookup
-2. Find the task detail section matching the review ID (e.g., `### PIU-003: [Title]`)
-3. Extract all structured fields:
-   - **Acceptance criteria** — the checkbox list under `**Acceptance criteria:**`
-   - **QA Verification** — the Given/When/Then scenarios under `**QA Verification:**`
-   - **Files to Modify** — listed under `**Files to Modify:**`
-   - **Files to Create** — listed under `**Files to Create:**`
-   - **Layers** — from the `**Layers:**` field (e.g., `[API, UI, Tests]`)
-   - **Current State / Expected State** — behavioral descriptions
-   - **Definition of Done** — checkbox list under `**Definition of Done:**`
-   - **Technical Implementation** — advisory guidance
-
-#### 2c. Load Parent PRD Context
-
-1. Read the task review file's YAML frontmatter for the `prd_file` path
-2. Read the parent PRD to get broader context: user stories, implementation decisions, scope boundaries
-3. This context helps interpret ambiguous acceptance criteria
-
-#### 2d. Resolve Frontend Verification Mode
-
-Use the results from Phase 0's readiness check — do NOT re-read `.env` or re-check Playwright.
-
-1. If Phase 0 confirmed Playwright is available (all prerequisites met):
-   - Read `docs/specflow/pages.json` and find the page entry matching this task's feature area (match by layer name, component path, or route keywords)
-   - If a matching page entry is found: Playwright verification is available for this task
-   - If no matching page entry: fall back to code review only for this task (note: "No pages.json entry matches this feature area")
-2. If Phase 0 showed Playwright as unavailable: code review only — this was already communicated to the user
-
-**`pages.json` expected structure** (referenced by Phase 0 and used here):
-
-```json
-{
-  "auth": {
-    "loginPath": "/login",
-    "emailSelector": "#email",
-    "passwordSelector": "#password",
-    "submitSelector": "button[type=submit]"
-  },
-  "pages": {
-    "feature-area-name": {
-      "path": "/dashboard/widgets",
-      "description": "Widget management page"
-    }
-  }
-}
-```
-
-**`.env` variables** (checked once in Phase 0, not per-task):
-- `SPECFLOW_TEST_BASE_URL` — the base URL for Playwright testing (e.g., `http://localhost:3000`)
-- `SPECFLOW_TEST_EMAIL` — login email for authenticated pages
-- `SPECFLOW_TEST_PASSWORD` — login password for authenticated pages
-
-#### 2e. Present Verification Plan
-
-Before executing any verification, present the plan to the user:
-
-```
-Verification plan for CXP-42: Widget creation API
-
-Layers to verify: API, Database/Schema, Tests
-Acceptance criteria: 5 items
-QA scenarios: 3 items
-Files to check: 7 (4 modified, 3 created)
-Frontend visual check: [Yes — Playwright available | No — missing credentials/pages.json | N/A — no UI layer]
-
-Proceed with verification? (yes/no)
-```
-
-The user must confirm before execution begins. In batch mode, show all plans first and get a single confirmation.
+Tell the user explicitly which mode you're running.
 
 ---
 
-### Phase 3: Multi-Layer Verification
+## Phase A — Pre-flight + read inputs
 
-Execute verification across each layer the task touches. Each sub-phase produces evidence: code snippets, schema excerpts, or screenshots with pass/fail per criterion.
+### A.1 Read inputs in parallel
 
-#### 3a. Database Layer
+Use Read in parallel on:
+- `features/NNN-{slug}/{NNN-slug}-prd.md`
+- `features/NNN-{slug}/{NNN-slug}-tasks.md`
+- `features/NNN-{slug}/debate-log/tasks-gate3/manifest.md`
+- `admin/pages.json` (UI navigation map; if missing, surface a one-line warning and continue with non-UI tests only)
+- `admin/environment.json` (Playwright availability, test-runner detection)
 
-**Trigger:** Layers includes "Database/Schema" OR any file in Files to Modify/Create references `prisma/`
+### A.2 Extract the testable surface
 
-Steps:
-1. Read `prisma/schema.prisma`
-2. For each acceptance criterion related to database/schema:
-   - Verify the model exists with the correct name
-   - Verify fields exist with correct types, defaults, and constraints
-   - Verify relations are correctly defined (foreign keys, relation types)
-   - Verify indexes and unique constraints match requirements
-3. If the task mentions migrations, check for migration files in `prisma/migrations/` — verify a migration exists that corresponds to the schema changes
-4. Record evidence: schema snippets showing the relevant models/fields, with PASS/FAIL per criterion
+Build three lists:
+- **Acceptance criteria** — every `AC-N` from the PRD with the requirement IDs it verifies.
+- **Tasks** — every `T-N` from `tasks.md` with its acceptance line.
+- **Pages** — every page entry from `pages.json` that the feature touches (match by slug, by tag, or by path overlap with the tasks' Scope lines).
 
-#### 3b. Backend Layer
+If `--targeted` was provided, filter the lists to the specified IDs. Refuse if any specified ID doesn't exist.
 
-**Trigger:** Layers includes "API" OR files reference backend paths (e.g., `src/server/`, `src/api/`, `apps/api/`, `packages/api/`)
+### A.3 Detect the test execution surface
 
-Steps:
-1. Read each file listed in Files to Modify and Files to Create
-2. For each acceptance criterion related to backend behavior:
-   - Verify the endpoint/handler/service exists and is wired up
-   - Verify the implementation matches the Expected State description
-   - Check that input validation, error handling, and response shapes match criteria
-   - Verify DTOs, API client types, or tRPC routers if mentioned in the task
-3. Check architectural conventions from `config.json` constitution (if it exists):
-   - Does the implementation follow stated coding principles?
-   - Are architectural boundaries respected?
-4. Record evidence: code snippets showing relevant implementations, with PASS/FAIL per criterion
+From `admin/environment.json`:
+- **UI tests** — Playwright is hard-required by Phase 1 setup; assume available unless `environment.json` says otherwise.
+- **Unit/integration runners** — read the detected stack (e.g. `vitest`, `jest`, `pytest`, `go test`). If detected, the test plan can include runner invocations; if not, surface in chat: *"No unit/integration runner detected. Test plan will cover UI scenarios only."*
+- **Backend integration** — if the feature touches API routes (read `tasks.md` Scope lines), the plan can include `curl`/HTTP calls.
 
-#### 3c. Frontend Layer
+### A.4 Surface the plan-mode decision
 
-**Trigger:** Layers includes "UI" OR files reference frontend paths (e.g., `src/components/`, `src/app/`, `apps/web/`, `src/pages/`)
-
-##### Step 1: Code Review
-
-1. Read each frontend file listed in Files to Modify and Files to Create
-2. Verify:
-   - Component logic, props, and state management match acceptance criteria
-   - UI renders the expected elements described in Expected State
-   - Event handlers and user interactions are wired correctly
-   - Styling/layout matches requirements (if specified)
-3. Record evidence: code snippets with PASS/FAIL per criterion
-
-##### Step 2: Playwright Visual Verification
-
-**Prerequisites — ALL must be true to proceed:**
-- `.env` has `SPECFLOW_TEST_BASE_URL`, `SPECFLOW_TEST_EMAIL`, and `SPECFLOW_TEST_PASSWORD`
-- `docs/specflow/pages.json` exists and has a matching page entry for the feature area
-- Node.js is available on the system
-
-If any prerequisite is missing, skip Playwright and note: "Visual verification skipped — [reason]. Proceeding with code review only."
-
-**Playwright installation (global, one-time):**
-
-1. Check if Playwright is available: run `npx playwright --version`
-2. If not available:
-   a. Install globally: `npm install -g playwright`
-   b. Install the Chromium browser binary: `npx playwright install chromium`
-3. If global install fails (permissions, no Node), degrade to code review only and note in the report: "Playwright installation failed — visual verification skipped."
-
-**Verification script:**
-
-1. Generate a temporary Node.js script at `/tmp/specflow-verify-{LINEAR_ID}.js`
-2. The script resolves the global Playwright install and uses the library API:
-   ```javascript
-   // Resolve global playwright — handles varying global node_modules paths
-   const globalRoot = require('child_process')
-     .execSync('npm root -g').toString().trim();
-   const { chromium } = require(globalRoot + '/playwright');
-
-   (async () => {
-     const browser = await chromium.launch();
-     const context = await browser.newContext();
-     const page = await context.newPage();
-     // Login using selectors from pages.json auth config
-     await page.goto(BASE_URL + LOGIN_PATH);
-     await page.fill(EMAIL_SELECTOR, EMAIL);
-     await page.fill(PASSWORD_SELECTOR, PASSWORD);
-     await page.click(SUBMIT_SELECTOR);
-     await page.waitForNavigation();
-     // Navigate to the target page (resolved from pages.json by feature area)
-     await page.goto(BASE_URL + TARGET_PATH);
-     await page.waitForLoadState('networkidle');
-     // Screenshot
-     await page.screenshot({ path: SCREENSHOT_PATH, fullPage: true });
-     // Optional: check for specific selectors from acceptance criteria
-     // const element = await page.$(EXPECTED_SELECTOR);
-     // console.log(JSON.stringify({ selectorFound: !!element }));
-     await browser.close();
-   })();
-   ```
-3. Execute with `node /tmp/specflow-verify-{LINEAR_ID}.js`
-4. Save screenshot to `docs/specflow/test/assets/{LINEAR_ID}-{slug}.png`
-5. Read the screenshot file to visually verify the page matches Expected State
-6. Upload the screenshot to Linear via `mcp__plugin_linear_linear__create_attachment` on the issue
-7. Clean up the temp script: delete `/tmp/specflow-verify-{LINEAR_ID}.js`
-
-Record evidence: screenshot reference + any selector check results + PASS/FAIL
-
-#### 3d. Mobile Layer
-
-**Trigger:** Files reference `apps/expo/`, React Native paths, or `*.native.tsx` patterns
-
-Steps:
-1. Code review ONLY — Playwright does not apply to mobile
-2. Read each mobile file listed in Files to Modify and Files to Create
-3. Verify:
-   - NativeWind/styling patterns follow project conventions
-   - React Native component structure matches acceptance criteria
-   - Navigation and screen setup are correct
-   - Platform-specific handling (if any) is implemented
-4. Flag in the report: "Code review only — manual device testing required for mobile layer"
-5. Record evidence: code snippets with PASS/FAIL per criterion
-
-#### 3e. Test Layer
-
-**Trigger:** Layers includes "Tests" OR Files to Modify/Create reference test files (`*.test.*`, `*.spec.*`, `__tests__/`)
-
-Steps:
-1. Read each test file listed in the task
-2. Verify:
-   - Tests exist for the functionality described in acceptance criteria
-   - Test coverage matches what the Definition of Done requires
-   - Test assertions align with the Expected State
-3. Record evidence: test snippets with PASS/FAIL
+Tell the user: *"Generating test plan for {feature}. Coverage target: {N} acceptance criteria across {M} tasks. Execution mode: {full | targeted | plan-only}. Test surfaces detected: {Playwright UI, vitest unit, …}."*
 
 ---
 
-### Phase 4: QA Scenario Execution
+## Phase B — Test-plan synthesis
 
-For each Given/When/Then scenario from the task review's QA Verification section, map it to the appropriate verification method and execute.
+### B.1 Derive test cases
 
-#### 4a. Scenario Mapping
+For each acceptance criterion, derive one or more test cases. A test case:
+- **Cites** the AC ID it verifies (single source of truth for traceability).
+- **Names the task(s)** it exercises (so partial-feature runs can target the right cases).
+- **Specifies the surface** (UI scenario / unit test / integration test / manual smoke).
+- **Has binary pass/fail** — could a fresh agent run this and report unambiguously?
+- **Names its artefact** — what gets captured when the test runs (screenshot path, runner output snippet, log line).
 
-For each scenario, determine the verification method based on its content:
+Sizing heuristic: one AC → one test case is the default. An AC like *"login flow handles six edge cases"* can become six test cases — that's correct decomposition, not over-decomposition.
 
-| Scenario mentions | Method |
-|---|---|
-| API, endpoint, route, request, response, Swagger | Backend code review (Phase 3b) |
-| UI, page, navigation, "I am on", component, button, form | Playwright (if available) or frontend code review (Phase 3c) |
-| Database, schema, model, records, migration | Prisma schema check (Phase 3a) |
-| Pure logic, calculation, validation rule | Code path analysis of the relevant module |
+### B.2 Build the coverage matrix
 
-#### 4b. Scenario Execution
+Cross-tabulate AC IDs against test cases. Two checks:
+- **Forward coverage** — every AC has ≥1 test case.
+- **Reverse traceability** — every test case cites ≥1 AC.
 
-For each scenario:
+If forward coverage fails, you missed an AC; go back to B.1. If reverse traceability fails, you derived a test case from somewhere other than the PRD — drop it OR (if load-bearing) surface to the user as a proposed AC addition: *"Test case TC-{N} doesn't trace to any AC. Either drop it or run `specflow:scope-change` to add the AC it implies."*
 
-1. Parse the Given/When/Then structure
-2. Execute using the mapped Phase 3 method:
-   - **Given** — verify the precondition exists or can exist (e.g., "Given a user is logged in" → check auth is implemented)
-   - **When** — verify the action is implemented (e.g., "When they submit the form" → check form handler exists and processes input)
-   - **Then** — verify the expected outcome occurs (e.g., "Then they see a success message" → check the success state is rendered)
-3. Record the result with one of four statuses:
-   - **PASS** — the scenario is met with clear evidence (cite specific file:line)
-   - **FAIL** — the scenario is definitively not met, with evidence showing what's missing or wrong
-   - **SKIP** — cannot verify automatically (explain why, e.g., "requires running server" or "depends on third-party service")
-   - **WARN** — partially met or ambiguous (explain what's uncertain and why human review is needed)
+### B.3 Write `{NNN-slug}-test.md`
 
----
-
-### Phase 5: Devil's Advocate Self-Review
-
-This phase is **mandatory** — never skip it, even if all results are PASS.
-
-Re-read ALL collected evidence from Phases 3 and 4, then challenge every finding.
-
-#### 5a. Challenge Every PASS
-
-For each PASS verdict, ask:
-
-- "Am I sure this is actually implemented, or am I just seeing the file exists?"
-- "Does the code actually handle the edge case described in the criterion?"
-- "Could there be a runtime failure that static review wouldn't catch?"
-- "Am I reading the correct version of the code, or could this be on an unmerged branch?"
-- "Does the implementation achieve the specific behavior described, or just something superficially similar?"
-
-If any challenge raises doubt, downgrade to WARN with an explanation.
-
-#### 5b. Challenge Every FAIL
-
-For each FAIL verdict, ask:
-
-- "Am I reading the code correctly? Could the implementation be in a different file?"
-- "Is the acceptance criterion perhaps outdated — was the task descoped during development?"
-- "Am I being too strict? Does the implementation achieve the spirit of the criterion even if not the letter?"
-- "Could the feature be implemented via a different pattern than what I expected?"
-
-If any challenge reveals a misreading, upgrade to PASS or WARN with an explanation.
-
-#### 5c. Check for Uncovered Concerns
-
-Look for things the acceptance criteria might have missed:
-
-- **Error handling** — are error states handled, or does the code only cover the happy path?
-- **Security** — any obvious vulnerabilities (unsanitized input, missing auth checks, exposed secrets)?
-- **Performance** — any N+1 queries, unbounded loops, or missing pagination?
-- **Accessibility** — if UI work, are aria labels, keyboard navigation, and screen reader support present?
-
-These observations go in the "Additional Observations" section of the report — they don't change verdicts on existing criteria but flag potential issues.
-
-#### 5d. Document Adjustments
-
-Record every verdict change made during devil's advocate review:
-
-```
-Devil's advocate adjustment: Criterion 3 changed PASS → WARN
-Reason: Code exists but error handling for network timeout is not implemented.
-The criterion says "handles all error states" but only 400/401/500 are caught.
-
-Devil's advocate adjustment: Scenario 2 changed FAIL → PASS
-Reason: Implementation uses a different component name than expected,
-but the behavior matches the scenario exactly. Found at src/components/WidgetForm.tsx:47.
-```
-
----
-
-### Phase 6: Post Verdict to Linear
-
-#### 6a. Determine Overall Verdict
-
-Based on all criteria, scenarios, and devil's advocate adjustments:
-
-- **PASS** — All acceptance criteria and QA scenarios pass (including after devil's advocate review). Minor observations from Phase 5c (uncovered concerns) do not block PASS — they go in the Additional Observations section as informational notes. WARN results from devil's advocate adjustments DO block PASS only if they relate to a specific acceptance criterion or QA scenario. A general observation like "could add more error handling" is an observation, not a WARN.
-- **FAIL** — One or more acceptance criteria are definitively not met, with clear evidence showing what's missing or wrong.
-- **NEEDS REVIEW** — Any of: a specific acceptance criterion or QA scenario was downgraded to WARN by devil's advocate (partially met but uncertain), criteria couldn't be verified automatically (SKIP with no alternative evidence), or devil's advocate raised a concern that directly contradicts a stated criterion.
-
-#### 6b. Post Structured Comment
-
-Use `mcp__plugin_linear_linear__save_comment` on the Linear issue with this template:
-
-<comment-template>
-## Specflow QA Verification Report
-
-**Verdict: [PASS|FAIL|NEEDS REVIEW]**
-**Verified at:** [ISO 8601 timestamp, e.g., 2026-04-09T14:30:00Z]
-**Layers reviewed:** [comma-separated list, e.g., Database/Schema, API, UI, Tests]
-
----
-
-### Acceptance Criteria
-
-- [x] Criterion 1 — **PASS** Evidence: `src/server/api/widgets.ts:23` implements the creation endpoint with validation
-- [ ] Criterion 2 — **FAIL** Missing: No input sanitization found. Expected in `src/server/api/widgets.ts` based on task spec.
-- [ ] Criterion 3 — **WARN** Partial: Component renders but loading state not implemented. See `src/components/Widget.tsx:45`
-
-### QA Scenarios
-
-- [x] Given a user is logged in, When they create a widget, Then it appears in the list — **PASS** Verified via code review of `src/server/api/widgets.ts` and `src/components/WidgetList.tsx`
-- [ ] Given invalid input, When they submit, Then they see validation errors — **FAIL** No client-side validation found in `src/components/WidgetForm.tsx`
-- [ ] Given the API is down, When they submit, Then they see an error message — **SKIP** Requires running server to verify error handling behavior
-
-### Screenshots
-
-[If Playwright was used:]
-- `CXP-42-widget-creation.png` — Widget creation page after login (attached)
-
-[If Playwright was not used:]
-- No screenshots — visual verification was not available ([reason])
-
-### Devil's Advocate Notes
-
-[List all adjustments, or "No adjustments needed — all findings confirmed on review."]
-
-### Additional Observations
-
-[Anything the acceptance criteria didn't explicitly cover but is worth noting:]
-- Error handling: [observation]
-- Security: [observation]
-- Performance: [observation]
-- [Or: "No additional concerns identified."]
-
----
-
-> This report was generated by Specflow QA — an automated verification system.
-</comment-template>
-
-#### 6c. Upload Screenshots
-
-If Playwright produced screenshots:
-
-1. For each screenshot file in `docs/specflow/test/assets/`:
-   a. Use `mcp__plugin_linear_linear__create_attachment` with:
-      - **issueId**: The Linear issue identifier
-      - **title**: `{LINEAR_ID}-{slug}.png`
-      - **url**: The local file path (or upload URL if Linear requires remote URLs)
-   b. Reference the attachment in the comment
-
-#### 6d. Apply QA Label to Linear Issue
-
-After posting the comment, apply the appropriate QA label to the Linear issue using `mcp__plugin_linear_linear__save_issue`. The label group is **Specflow QA** with three child labels:
-
-| Verdict | Label to Apply |
-|---------|---------------|
-| PASS | `QA Pass` |
-| FAIL | `QA Fail` |
-| NEEDS REVIEW | `QA Need Review` |
-
-Steps:
-1. Read the issue's existing labels from the Linear issue data (fetched in Phase 2a)
-2. Build the updated labels array: keep all existing labels, remove any previous QA labels (`QA Pass`, `QA Fail`, `QA Need Review`), and add the new verdict label
-3. Call `mcp__plugin_linear_linear__save_issue` with:
-   - **id**: The Linear issue identifier
-   - **labels**: The updated labels array (existing labels + new QA label)
-
-This ensures:
-- Previous QA labels are replaced (e.g., a re-verified task moves from `QA Fail` to `QA Pass`)
-- Existing non-QA labels (e.g., `Feature`, `Bug`) are preserved
-- The team can filter Done issues by QA status at a glance
-
----
-
-### Phase 7: Verification Tracking
-
-Maintain a local verification log so future runs can skip already-verified tasks.
-
-#### 7a. Determine Log File
-
-The log filename mirrors the task review naming convention:
-- Pattern: `{NNN}-test-{project-slug}.md`
-- The `{NNN}` prefix inherits from the parent task review's number
-- Example: If the task review is `001-tasks-widget-mvp.md`, the log is `001-test-widget-mvp.md`
-
-#### 7b. Create Directories
-
-Create the following directories if they don't exist (silently, without asking):
-- `docs/specflow/test/`
-- `docs/specflow/test/assets/`
-
-#### 7c. Create or Update Log File
-
-**If the log file does not exist**, create it with this format:
+Use Write tool to create `features/NNN-{slug}/{NNN-slug}-test.md`:
 
 ```markdown
 ---
-project: "[Project Name]"
-task_review: "docs/specflow/task/{NNN}-tasks-{slug}.md"
-last_run: YYYY-MM-DD
+feature: NNN-slug
+status: draft
+created: {YYYY-MM-DD}
+prd: ./{NNN-slug}-prd.md
+tasks: ./{NNN-slug}-tasks.md
 ---
 
-# Verification Log: [Project Name]
+# Test plan — {Feature title}
 
-| Linear ID | Title | Verdict | Verified At | Report |
-|-----------|-------|---------|-------------|--------|
-| CXP-42 | Widget creation API | PASS | 2026-04-09T14:30:00Z | [Linear comment](url) |
+## Coverage matrix
+
+| AC | Verified by |
+|---|---|
+| AC-1 | TC-1 |
+| AC-2 | TC-2, TC-3 |
+| AC-3 | TC-4 |
+
+## Test cases
+
+### TC-1 — {short title}
+- **Verifies:** AC-1 (PRD R1)
+- **Exercises tasks:** T1, T3
+- **Surface:** Playwright UI scenario
+- **Pages used:** `home`, `notifications-popover` (from `pages.json`)
+- **Steps:**
+  1. Navigate to `/` (page `home`).
+  2. Trigger {action}.
+  3. Assert {observable}.
+- **Pass criterion:** {binary check, e.g. "popover renders with badge count = 3"}.
+- **Artefact on run:** `assets/TC-1-popover-render.png` (screenshot at the assert step).
+
+### TC-2 — {short title}
+- **Verifies:** AC-2
+- **Surface:** vitest unit
+- **Test file:** `__tests__/notifications.spec.ts:42` (existing) OR `[to author]` (new)
+- **Pass criterion:** runner exits with `0` for the named test.
+- **Artefact on run:** `assets/TC-2-runner-output.txt`.
+
+(continue for every test case)
+
+## Execution log
+
+(Phase C appends here on every run — most recent at the top.)
+
+## See also
+
+- PRD: [`./{NNN-slug}-prd.md`](./{NNN-slug}-prd.md)
+- Tasks: [`./{NNN-slug}-tasks.md`](./{NNN-slug}-tasks.md)
 ```
 
-**If the log file exists**, update it:
+### B.4 Self-check before execution
 
-1. Read the existing file
-2. Parse the verification table
-3. For the current task:
-   - If the Linear ID already has a row (previously failed), update the Verdict, Verified At, and Report columns. The old Linear comment is preserved for audit trail — this row now links to the new comment.
-   - If the Linear ID has no row, append a new row
-4. Update `last_run` in the YAML frontmatter to today's date
-5. Save the updated file
+Before running tests (or, in `--plan-only` mode, before reporting):
+1. **Forward coverage holds** — every PRD AC appears in the matrix.
+2. **Reverse traceability holds** — every test case cites at least one AC.
+3. **Pass criteria are binary** — re-walk; if any read "looks correct" / "appears to work" / "should be fine", sharpen.
+4. **Artefact paths are concrete** — no `assets/TBD.png` placeholders.
 
-#### 7d. Batch Mode Behavior
+If any check fails, fix the test plan before proceeding.
 
-When verifying multiple tasks:
-- Process tasks one at a time — complete all phases (2-6) for one task before starting the next
-- Show the verdict for each task before moving to the next: "CXP-42: PASS. Moving to CXP-43..."
-- If one task fails verification, continue with the remaining tasks — do not halt
-- Update the verification log after each task (not all at once at the end)
-- After all tasks are processed, show a summary:
+If mode is `--plan-only`, skip Phase C and report: *"Test plan synthesised. {N} test cases covering all {M} ACs. Execution skipped (plan-only mode). Run `specflow:test {NNN-slug}` to execute."*
+
+---
+
+## Phase C — Execution + artefact capture + report
+
+### C.1 Ensure the assets folder exists
+
+```bash
+mkdir -p docs/specflow/features/NNN-{slug}/assets
+```
+
+### C.2 Execute test cases
+
+For each test case in scope (full or targeted):
+
+**UI scenarios (Playwright):**
+1. Boot the dev server if needed (or use a recorded screenshot if the dev server isn't available).
+2. Use Playwright to drive the steps in the test plan.
+3. At the assert step, capture a screenshot to the artefact path.
+4. Compare the assert against the pass criterion.
+5. Record pass/fail.
+
+**Unit / integration tests (runner-based):**
+1. Invoke the runner via Bash with the test file/name from the plan.
+2. Capture the runner's stdout/stderr to the artefact path.
+3. Pass = runner exit code 0 for the named test.
+
+**Manual smokes:**
+1. Print the steps to the user.
+2. Ask: *"Did this pass? (yes / no / N/A)"*
+3. Record the user's answer + capture any user-supplied artefact path.
+
+### C.3 Append the execution log
+
+After every test case, append (do not overwrite) to the *Execution log* section of `{NNN-slug}-test.md`:
+
+```markdown
+
+## Run — {YYYY-MM-DD HH:MM} — {full | targeted: T1,T3,AC-2 | plan-only}
+
+| Test case | Status | Artefact | Notes |
+|---|---|---|---|
+| TC-1 | ✅ pass | [`assets/TC-1-popover-render.png`](./assets/TC-1-popover-render.png) | — |
+| TC-2 | ❌ fail | [`assets/TC-2-runner-output.txt`](./assets/TC-2-runner-output.txt) | Expected `200`, got `404`. |
+| TC-3 | ⏭ skipped | — | Out of targeted scope. |
+
+**Summary:** {N} pass · {M} fail · {K} skipped.
+
+**Failures (need attention):**
+- TC-2: {one-line description of the failure mode}.
+```
+
+### C.4 Report to the user
+
+After execution finishes, surface in chat:
 
 ```
-Verification complete:
+Test run complete.
+- Mode: {full | targeted: ... | plan-only}
+- Pass: {N} / Fail: {M} / Skipped: {K}
+- Plan: features/NNN-{slug}/{NNN-slug}-test.md
+- Artefacts: features/NNN-{slug}/assets/
 
-| Linear ID | Title | Verdict |
-|-----------|-------|---------|
-| CXP-42 | Widget creation API | PASS |
-| CXP-43 | Widget listing UI | FAIL |
-| CXP-45 | User settings page | NEEDS REVIEW |
+Failures:
+- TC-2 (AC-2 verifying R3) — {one-liner}. Artefact: assets/TC-2-runner-output.txt
+- ...
 
-Results: 1 PASS, 1 FAIL, 1 NEEDS REVIEW
-All reports posted to Linear. Verification log updated: docs/specflow/test/001-test-widget-mvp.md
-
-For FAIL/NEEDS REVIEW tasks: fix the issues and re-run /specflow:test to re-verify.
+Next step: {if any failures} fix the failing tasks and re-run `specflow:test {NNN-slug} --targeted TC-2`.
+{else} Coverage holds; PRD acceptance verified for the targeted scope.
 ```
 
 ---
 
-## Guidance
+## Iteration model (testing-as-cadence)
 
-- **Read-only verification.** NEVER modify source code, schema files, test files, or any project files other than the verification log in `docs/specflow/test/`. This skill is strictly an observer.
-- **Degrade gracefully.** If `config.json` is missing, prompt for the Linear team name manually. If Playwright isn't installed, skip visual verification. If `.env` credentials are missing, skip Playwright. If `pages.json` is missing, fall back to code review only for frontend. Never halt the entire verification because one capability is unavailable.
-- **Always run devil's advocate.** Phase 5 is mandatory for every verification, even if all criteria pass. The goal is honest assessment, not rubber-stamping.
-- **Create directories silently.** `docs/specflow/test/` and `docs/specflow/test/assets/` should be created without asking the user.
-- **Screenshots go two places.** When Playwright runs, screenshots are saved locally to `docs/specflow/test/assets/` AND uploaded to Linear as attachments. Both are mandatory.
-- **Process one task at a time in batch mode.** Complete all phases for one task before starting the next. Show results between tasks so the user can see progress.
-- **Respect the Export Map as source of truth.** The reverse lookup from Linear ID to review document is built from Export Maps. If a task has no Export Map entry, it gets limited verification — flag this clearly.
-- **Evidence over opinion.** Every PASS and FAIL must cite specific `file:line` references. "Looks correct" is not acceptable evidence. "Implemented at `src/api/widgets.ts:47` with input validation matching criterion 2" is.
-- **Do NOT modify the parent PRD or task review documents.** Only the verification log in `docs/specflow/test/` is written by this skill.
+This skill is designed to be invoked **many times** over the life of a feature, not once. Typical cadence:
 
-## Error Handling
+- **First invocation** — `--plan-only` right after `specflow:task` closes Gate 3. Generates the plan; surfaces gaps before any code lands.
+- **During development** — `--targeted` per task as it lands. Each task's tests run before the next task starts.
+- **Pre-merge** — `full` to confirm everything is green.
+- **Post-merge** — optional `full` re-run on the merged branch (useful for `specflow:complete` Phase 3 retros).
 
-- **Site unreachable during Playwright:** Skip Playwright for that task, continue with code review, note in the report: "Visual verification skipped — site unreachable at [URL]."
-- **Login fails during Playwright:** Report credentials issue, skip Playwright, continue with code review, note: "Visual verification skipped — login failed. Check SPECFLOW_TEST_EMAIL and SPECFLOW_TEST_PASSWORD in .env."
-- **Files listed in task no longer exist:** Don't auto-fail. Search the codebase for the content/patterns that should be in those files (files may have been renamed or moved). Note the discrepancy in the report. If the content is found elsewhere, verify against it. If truly missing, flag as FAIL with explanation.
-- **Task was descoped during development:** If the Linear issue or review document shows signs of descoping (comments mentioning scope reduction, criteria that don't match the implementation), flag as NEEDS REVIEW rather than FAIL. Note: "Implementation may reflect descoped requirements — human review recommended."
-- **Code not merged to main:** Check if the implementation exists on the current branch. If not, check if a feature branch exists (look for branch names matching the Linear ID or task title). If code is on an unmerged branch, flag as NEEDS REVIEW with: "Code may not be merged yet — found on branch [name]" or "Code not found on current branch."
-- **Linear API failures:** Save all results to the local verification log. Offer to retry the Linear comment posting: "Verification complete but Linear comment failed to post. Results saved locally. Retry posting to Linear?"
-- **Playwright install fails:** Skip visual verification entirely. Note in the report: "Playwright not available — visual verification skipped. Install with `npm install -g playwright && npx playwright install chromium`."
-- **Playwright not installed and global install not possible:** Degrade to code-review-only for all frontend verification. Document in report: "Visual verification unavailable — Playwright could not be installed."
-- **General principle:** The skill must always run to completion for every selected task. Degrade gracefully — verify what you can, skip what you can't, and document all limitations in the report rather than halting.
+The plan section is **idempotent on synthesis** — re-running re-derives from the PRD/tasks. The execution log section is **append-only** — every run leaves a dated entry.
+
+If a re-derivation drops a test case (because an AC was removed via `specflow:scope-change`), the dropped test case stays in the *Execution log* of past runs but is not rewritten in the *Test cases* section. The history is preserved without confusing the active plan.
+
+---
+
+## What you MUST NOT do
+
+- **Do not skip the chain check.** Tasks that haven't closed Gate 3 are not finished; testing them is premature.
+- **Do not claim "tests pass" without an artefact.** Every pass row in the execution log must reference a concrete artefact (screenshot, runner output, log line). "It worked" without an artefact is a fabricated pass.
+- **Do not write soft pass criteria.** Every pass criterion is binary. The Goal-Driven Reviewer would flag soft criteria at Gate 6 (Phase 3); flag them now and pre-empt.
+- **Do not overwrite the execution log.** Append-only — past runs are the audit trail.
+- **Do not invent ACs.** If a test case doesn't trace to a PRD AC, surface it as a `specflow:scope-change` candidate; do not invent an AC inline.
+- **Do not invoke `specflow:scope-change` automatically.** PRD changes are user-driven decisions.
+- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the test plan, the execution log, or the runner output cited in artefacts. Per the project's CLAUDE.md, this is non-negotiable.
+
+---
+
+## Verify before declaring done
+
+Before returning to the user:
+
+1. `features/NNN-{slug}/{NNN-slug}-test.md` exists with frontmatter, coverage matrix, test cases, and (if execution ran) at least one Run entry in the execution log.
+2. Forward coverage holds — every PRD AC appears in the matrix.
+3. Reverse traceability holds — every test case cites at least one AC.
+4. Every pass criterion is binary.
+5. (If execution ran) every pass row in the latest Run cites a concrete artefact path that exists on disk.
+6. (If execution ran) the failure list in the chat report matches the failures in the execution log.
+
+If any verify step fails, fix it before returning.
+
+---
+
+## Reference
+
+- `docs/PRD.md` Phase 1 scope item 15 — testing as cadence.
+- `docs/PRD.md` Appendix G — test asset support.
+- `docs/PRD.md` Appendix N1 (Gate 6) — Phase 3 multi-agent debate manifest for tests vs requirements; this skill pre-empts Gate 6 findings by enforcing binary pass criteria today.
+- `templates/agents/standard/principles/goal-driven-reviewer.md` — primary lens for the test plan today; full Gate 6 manifest review lands in Phase 3.
+- `skills/task/SKILL.md` — sister skill; same coverage-matrix discipline, different artefact (tasks vs tests).
+- `skills/develop/SKILL.md` (Phase 2) — primary consumer of `--targeted` mode during the implementation loop.
