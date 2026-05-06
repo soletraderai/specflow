@@ -281,19 +281,28 @@ These were locked in during the 2.0 → 2.2 ship cycle (2026-05-06). Each carrie
 - **Two-pass deterministic clustering for `/insights`** (2026-05-06, v2.3.0-staged) — Pass 1: field-shape exact-match grouping; Pass 2: token-frequency n-grams with case-folding + Unicode NFC normalisation + fixed stop-word list, no stemming. `semantic` cluster-source label reserved for v2 embedding-clustering. Promotion threshold: `len(unique_contributing_ids) >= 3`.
 - **Per-surface staleness boundaries for `/prune`** (2026-05-06, v2.3.0-staged) — decision-log: age > 4Q AND no reference in 2Q. Non-negotiable rules: superseded-citation only. Guidelines: superseded-citation OR zero references in 4Q. Agent snapshots: persistent orphan/drift across two consecutive runs. Task-history: age > 4Q AND `superseded_by_retro: true` AND no addenda in 2Q. Archive append-only; skill never modifies its own archive. Byte-identical round-trip restoration is the binary eval property.
 - **Frontmatter shape across SKILL.md** (2026-05-06, v2.3.0-staged) — every SKILL.md carries `name`, `description`, `status`, `phase`, `requires`, `produces`, `eval`. `status:` ∈ `shipped | v2-enhancement | v2-new`; `phase:` ∈ `1 | 2 | 3`. Bare-name skills (`/X` style — `panic`, `simplify`, `confidence-check`, `feedback-loop-audit`, `grill`, `optimize`, `prune`, `insights`) use bare names in the frontmatter; `specflow:X` skills use the prefixed form.
-- **Six-skill verifiable-skill set for `/optimize`** (2026-05-06, v2.3.0-staged) — initial targets: `release-version-check`, `simplify`, `format`, `tdd-cadence`, `init`, `feedback-loop-audit`. Per-target weekly budget cap default $10 (configurable via `config.json.optimize.weeklyBudgetPerTarget`); aggregate envelope $60/week implicit. Decline-streak governance: 7-day operator-avoid window AND 30-day target-skip window after consecutive `merge_decision: declined` outcomes; manual override requires `--override-decline {reason}`.
+- **Six-skill verifiable-skill set for `/optimize`** (2026-05-06, v2.3.0) — initial targets: `release-version-check`, `simplify`, `format`, `tdd-cadence`, `init`, `feedback-loop-audit`. Per-target weekly budget cap default $10 (configurable via `config.json.optimize.targetCapUsd`); aggregate envelope $60/week implicit. Decline-streak governance: 7-day operator-avoid window AND 30-day target-skip window after consecutive `merge_decision: closed-without-merge` outcomes (windows hardcoded; not config knobs). Budget override path: `--override-budget {reason}` extends the target's cap for one run; decline-streak has no override flag — manual invocation simply proceeds with the chat-line warning.
 
 ## Open questions
 
-1. **Rule registry starter set** — what ships in the initial `non-negotiable.md`? Candidates: no hardcoded values unless necessary, no comments unless WHY non-obvious, never bypass auth checks, protected paths require Red lane. User confirms list at setup.
-2. **`pages.json` ownership** — manual, setup-generated, or own skill (`specflow:pages`)?
-3. **Misc task rotation** — single rolling file vs periodic.
-4. **Retro trigger (Phase 3)** — manual `/specflow:complete` vs Linear webhook.
-5. **Task history privacy** — committed vs gitignored. Default: committed.
-6. **Agent snapshot refresh strategy** + cross-marketplace name collisions.
-7. **Design mockup readback** — should later skills (PRD, task) consume design HTML as context?
-8. **Rendered PRD commit policy** — commit `NNN-{slug}-prd.html` alongside the markdown, or gitignore as a derived artefact? Default recommendation: committed (see Appendix P7).
-9. **Render parity for tasks/tests/interview** — should `NNN-{slug}-tasks.md`, `NNN-{slug}-test.md`, or `NNN-{slug}-interview.md` also render to HTML? Current decision: PRD only. Defer the rest until Phase 1 ships PRD rendering and we see whether the readability complaint extends.
+After the v2.3.0 ship, six of the original nine are resolved (see § Resolved decisions for the inline closures). The genuinely-open list is below.
+
+### Still open
+
+1. **`pages.json` ownership** — currently a setup-time stub (template-seeded with placeholder routes); the PRD's setup spec mentions a future `specflow:pages` skill that would inventory live routes from the project's router config (Next.js / Remix / Express / etc.). Decide if `specflow:pages` is worth shipping in v2.4 or if the manual-stub-plus-test-time-population approach (`specflow:test` updates pages.json on first UI run) is enough.
+
+2. **Design mockup readback** — should `specflow:prd` Phase A (codebase context gathering) or `specflow:task` Phase B (synthesis) consume the design folder's `current.html` / `proposed.html` / `iteration-log.md` as context? Currently no skill reads design output downstream. Two surfaces where this could matter: (a) PRD synthesis on a feature with an existing design — the proposed.html's component decisions ought to constrain the requirements; (b) task synthesis on a feature whose design has post-PRD iteration log entries — the iteration log captures decisions the PRD body might not yet reflect.
+
+3. **`brief.html` commit policy** — the brief composes PRD + interview + manifests into a single self-contained HTML. Default recommendation: committed (the diffable surface for review); but for projects sensitive to repo size, gitignored-as-derived is defensible since `specflow:brief --all` regenerates from sources. Surface the choice as a setup-time prompt or `config.json.brief.commitPolicy`?
+
+### Resolved during the v2.x ship cycle
+
+4. ~~Rule registry starter set~~ — RESOLVED (v2.0.0). Non-negotiable.md template ships with the four starter rules (no hardcoded values, no comments unless WHY, never bypass auth, protected paths get Red lane); user accepts/edits at setup.
+5. ~~Misc task rotation~~ — RESOLVED (v2.0.0). Single-rolling-file at `docs/specflow/misc-task/000-tasks-misc-tasks.md`; append-only with auto-allocated MISC-NNN ids.
+6. ~~Retro trigger~~ — RESOLVED (v2.1.0). `specflow:complete` supports three trigger paths: manual `/specflow:complete {task-id}`, auto-fire from `specflow:develop` Phase F when a task closes, optional Linear webhook integration.
+7. ~~Task history privacy~~ — RESOLVED (v2.0.0). Committed by default (the corpus must be diffable + greppable for `/insights` consumption); projects with sensitive surfaces can manually gitignore specific entries via per-entry markers.
+8. ~~Agent snapshot refresh + cross-marketplace name collisions~~ — RESOLVED (v2.1.0). `specflow:agent refresh` produces a drift report without auto-overwriting; user re-snapshots per agent on confirmation. Name collisions across plugins require `--source {plugin-name}` to disambiguate; the index records the source.
+9. ~~Rendered PRD commit policy / render parity~~ — SUPERSEDED (v2.2.0). `specflow:render` removed; `specflow:brief` composes PRD + interview + gate manifests into one self-contained HTML. The composition source widening eliminates the per-artefact render-parity question. Brief commit policy is the residual open question (#3 above).
 
 ---
 
