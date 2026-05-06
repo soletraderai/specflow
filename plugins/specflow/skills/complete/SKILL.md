@@ -68,6 +68,8 @@ Check for an existing lock file at `admin/scratch/complete-{task-id}.lock`:
   Where `{timestamp}` is read from the lock file body. Exit without writing. Do NOT remove the lock (the in-flight path owns it).
 - **Lock present, age ≥ 30 minutes** → treat as stale (covers crashed-orchestration cleanup). Overwrite the lock with a fresh timestamp and proceed to A.4. Surface the chat-line: *"[stale lock detected for `{task-id}` — proceeding]"*.
 
+The 30-minute threshold is hard-coded for v1; it is calibrated for typical retro Q&A duration (auto-mode synthesis lands within a minute; manual mode rarely exceeds 15 minutes; 30 covers a tabbed-away user with margin). **v2 candidate (E8 from 003 dogfood):** surface as `config.json.complete.staleLockMinutes` so projects with longer retros (e.g. multi-hour debugging post-mortems) can tune. Track in MIGRATIONS.md when promoted; until then the literal 30 is correct.
+
 The lock is released atomically at the END of Phase H on every exit path (successful write, refused exit, schema-validation failure). A path that completes without removing its own lock is a failed run.
 
 ### A.4 Tell the user what you're doing

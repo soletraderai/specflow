@@ -84,7 +84,7 @@ Use Read tool in parallel on:
 Inspect `admin/environment.json` for the soft-dependency surface:
 - **`plugins.agent-teams`** — present → Phase B can dispatch Green/Yellow batches via `team-spawn`. Absent → Phase D degrades to sequential single-specialist invocation; warn the user once at this point: *"agent-teams plugin not detected — implementation will run via sequential single-specialist invocation. Throughput is reduced; functionality is preserved."*
 - **`mcp.linear.available`** — true → Phase A.4 fires "Backlog/Todo → In Progress" transition; Phase F fires "In Progress → In Review" on PR open. False → both fall back to chat-only status lines.
-- **`cli.codex.available`** — true → Phase E Gate 5 invokes Codex as a sixth reviewer. False → Phase E manifest writes the literal sentinel *"Codex not detected — same-provider review only. Cross-provider findings may be missed; install Codex CLI for full Gate 5 coverage."* and runs Gate 5 with the standard five reviewers.
+- **`cli.codex.available`** — true → Phase E Gate 5 invokes Codex as a sixth reviewer. False → Phase E manifest writes the literal sentinel *"Codex not detected — same-provider review only. Cross-provider findings may be missed; install Codex CLI for full Gate 5 coverage."* and runs Gate 5 with the standard five reviewers. **Lens-overlap note:** Codex's correctness-and-cross-skill lens overlaps with Goal-Driven Reviewer's reverse-traceability lens at Gate 5; treat Codex as the primary cross-provider check on schema validation, contract semantics, and cross-skill state assumptions, while Goal-Driven retains forward + reverse coverage of R-IDs to ACs to code surfaces. Findings that both fire are not duplicates — they're independent confirmations.
 
 Record the detected surface to `admin/scratch/{NNN-slug}-develop/environment-snapshot.json` (orchestrator-pattern: scratch directory per orchestration). Phase B reads this to make the team-spawn decision; Phase E reads this to write the Codex section.
 
@@ -232,10 +232,35 @@ If any downgrade fired, re-emit the per-task plan with the corrected lane (re-ru
 
 ### B.1.4 Verify
 
-Before handing off to Phase C, verify:
+Before handing off to B.1.5, verify:
 - Every task has a `lane-recheck-{task-id}.json` file (one per task; missing any is a failed run).
 - Every plan whose lane was downgraded has been re-emitted.
 - `lane-assignments.json` reflects the final post-recheck lane.
+
+### B.1.5 Aggregate-outcome record
+
+Write `admin/scratch/{NNN-slug}-develop/lane-assignments.json`'s `b1_recheck` field as a structured aggregate (not free-form prose). Reviewers and downstream phases consume this surface:
+
+```json
+"b1_recheck": {
+  "ran_at": "{YYYY-MM-DD HH:MM}",
+  "tasks_checked": N,
+  "lane_changes": [
+    { "task_id": "T{N}", "before": "green", "after": "yellow", "reason": "file_count_ratio | new_modules | confidential_path" }
+  ],
+  "batch_shape_at_default_cap": {
+    "greenBatchCap": N,
+    "green_task_count": N,
+    "batches": [["T1","T2","T3"], ["T4","T5","T6"], ["T7"]],
+    "boundary_warnings": []
+  },
+  "summary": "no upgrades triggered | N upgrades triggered (see lane_changes)"
+}
+```
+
+The `batch_shape_at_default_cap` field surfaces the green-batch shape as it would be cut at the project's `config.json.develop.greenBatchCap`. `boundary_warnings` flags batches that split a `Depends on:` chain across batch edges (the dependency is satisfied but the reviewer sees only one half — a calibration risk worth surfacing). Empty array when no boundary issues.
+
+Gate 4 reviewers read this aggregate (per C.2 input contract) to evaluate whether the batch cadence is healthy without re-deriving it.
 
 ---
 
@@ -500,11 +525,26 @@ Fork a Verifier sub-agent. Pass it:
 
 The Verifier checks each acceptance clause against the diff's observable behaviour. It returns one of:
 - `pass` — every acceptance clause verified.
+- `conditional-pass` — every acceptance clause verified, but at least one clause cited a cross-skill or downstream-PRD dependency that the Verifier could not directly close. The condition is named in the Verifier outcome with a concrete reference to the dependency.
 - `reject` — at least one acceptance clause failed; structured failure payload follows.
 
 ### F.2 On Verifier pass
 
 Proceed to PR open (F.4).
+
+### F.2.1 On Verifier conditional-pass — escalation contract
+
+When Verifier returns `conditional-pass`, write the condition into `admin/scratch/{NNN-slug}-develop/verifier-outcome.json`'s `task_outcomes[].result: "conditional-pass"` with the `evidence` field naming the dependency (e.g. *"depends on `specflow:develop` Phase F.5 default-flag emission — verified at SKILL.md:B.3 prerequisite clause"*). Then surface a two-option prompt to the user:
+
+1. **Accept and proceed.** The conditional dependency is documented and accepted as load-bearing on a future change. Phase F continues to F.4 (PR open). The PR description body MUST include a `Conditional acceptance:` section citing the dependency verbatim. Downstream `specflow:complete` reads the conditional flag and surfaces it in the retro entry's `addenda` (kind: `escaped-issue` if the dependency is bug-shaped, `note` otherwise).
+2. **Defer.** The user wants the cross-skill dependency resolved before this task ships. Phase F halts; surface the dependency as a follow-up task via `specflow:misc --auto` with a structured payload citing the AC, the dependency, and the Verifier outcome path. The original task remains open in the tasks file; Linear status reverts to In Progress (or stays In Progress if it was never moved). The user picks up the dependency PR first; this task re-runs `specflow:develop` from Phase A once the dependency lands.
+
+The two-option prompt is the only path from `conditional-pass` to either F.4 or follow-up. **No third "force-pass" option** — Goal-Driven discipline requires the dependency to be either accepted as documented technical debt OR resolved before ship.
+
+Verify after the user responds:
+- `admin/scratch/{NNN-slug}-develop/verifier-outcome.json` has the conditional-pass entry with non-empty `evidence`.
+- If accepted: PR description includes the `Conditional acceptance:` section.
+- If deferred: a `misc-task` entry exists in `docs/specflow/misc-task/000-tasks-misc-tasks.md` referencing the AC and dependency.
 
 ### F.3 On Verifier reject — structured failure payload + four user options
 

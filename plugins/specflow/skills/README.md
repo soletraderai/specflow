@@ -12,7 +12,7 @@ skills/
 ├── setup/SKILL.md             # specflow:setup
 ├── prime/SKILL.md             # specflow:prime
 ├── prd/SKILL.md               # specflow:prd
-├── render/SKILL.md            # specflow:render
+├── brief/SKILL.md             # specflow:brief
 ├── task/SKILL.md              # specflow:task
 ├── test/SKILL.md              # specflow:test
 ├── design/SKILL.md            # specflow:design

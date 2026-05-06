@@ -72,7 +72,7 @@ The intended lifecycle of a feature, from blank slate to verified delivery:
 
 1. `specflow:setup` — once per project. Creates `docs/specflow/admin/`, runs profile interview, seeds rules, inventories environment.
 2. `specflow:prime` — primes the codebase context for a piece of work.
-3. `specflow:prd` — user-facing entry point. Multi-phase: writes interview preamble → invokes `/grill` (one question at a time, re-evaluating after each answer, appending to `NNN-{slug}-interview.md`) → synthesises `NNN-{slug}-prd.md` from resolved assumptions → auto-renders `NNN-{slug}-prd.html` → fires Gate 2 multi-agent debate manifest into `features/NNN-{slug}/debate-log/prd-gate2/`.
+3. `specflow:prd` — user-facing entry point. Multi-phase: writes interview preamble → invokes `/grill` (one question at a time, re-evaluating after each answer, appending to `NNN-{slug}-interview.md`) → synthesises `NNN-{slug}-prd.md` from resolved assumptions → fires Gate 2 multi-agent debate manifest into `features/NNN-{slug}/debate-log/prd-gate2/` → invokes `specflow:brief` to compose `NNN-{slug}-brief.html` (visual abstract + PRD body + interview + agent reviews) and offer to open it in the browser.
 4. `specflow:task` — generates `NNN-{slug}-tasks.md` with a coverage matrix and Gate 3 adversarial review.
 5. `specflow:design` (optional) — produces `current.html` + `proposed.html` mockups under the feature folder, grounded in the live codebase.
 6. `specflow:linear` — exports tasks to Linear with bidirectional sync.
@@ -88,7 +88,7 @@ Cross-feature workflows: `specflow:misc` for one-off bugs/fixes, `specflow:upgra
 
 The full v2 scope is split across three phases. See [`SKILLS.md`](./SKILLS.md) for which skills land in which phase.
 
-- **Phase 1 — Foundation.** The substrate. Folders, examples, `specflow:upgrade`, `specflow:design`, the rules registry, the four principles, the adversarial review chain (Gates 1-3), trust-ladder primitives, PRD HTML rendering, `simplify` autoresearch loop, `SKILLS.md` glossary discipline.
+- **Phase 1 — Foundation.** The substrate. Folders, examples, `specflow:upgrade`, `specflow:design`, the rules registry, the four principles, the adversarial review chain (Gates 1-3), trust-ladder primitives, feature brief composition (`specflow:brief`), `simplify` autoresearch loop, `SKILLS.md` glossary discipline.
 - **Phase 2 — Development.** `specflow:develop` with green/yellow/red lane execution. Agent indexing, agent teams, specialised agent matching, Gates 4-5 of the adversarial chain.
 - **Phase 3 — Memory.** Self-learning loop closes. `task-history.json` / `decision-log.md` populated; `/optimize` runs across the verifiable-skill set; rules registry self-evolves; Gate 6 of the adversarial chain.
 

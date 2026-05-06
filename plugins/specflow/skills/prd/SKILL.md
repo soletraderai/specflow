@@ -1,6 +1,6 @@
 ---
 name: specflow:prd
-description: User-facing entry point for PRD creation. Five-phase orchestrator — A preamble + goal confirmation, B grilling (invokes /grill), C PRD body synthesis, D HTML render (invokes specflow:render), E Gate 2 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature.
+description: User-facing entry point for PRD creation. Five-phase orchestrator — A preamble + goal confirmation, B grilling (invokes /grill), C PRD body synthesis, D Gate 2 multi-agent debate manifest, E Brief (invokes specflow:brief). Resumes intelligently if invoked on an in-flight feature.
 status: v2-enhancement
 phase: 1
 requires:
@@ -13,17 +13,17 @@ requires:
 produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-interview.md
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.html
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest.md
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/findings/
-eval: Goal confirmed before grilling; interview signed off; PRD body has Vision (traces to Goal), every requirement traces to a Resolved line AND serves the goal, every AC is binary; HTML renders with working interview link; Gate 2 manifest closes with Orchestrator sign-off entry.
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html
+eval: Goal confirmed before grilling; interview signed off; PRD body has Vision (traces to Goal), every requirement traces to a Resolved line AND serves the goal, every AC is binary; Gate 2 manifest closes with Orchestrator sign-off entry; brief composes from PRD + interview + Gate 2 manifest with working sidebar TOC.
 ---
 
 # specflow:prd
 
 You are the user-facing entry point for PRD creation. You own the full flow from "I want to build X" to "PRD reviewed and signed off."
 
-This is a **5-phase orchestrator**. You delegate the grilling to `/grill` and the rendering to `specflow:render`; both run as forked sub-skills per the orchestrator pattern (see `templates/orchestrator-pattern.md`). Your parent context never accumulates the sub-skills' raw work.
+This is a **5-phase orchestrator**. You delegate the grilling to `/grill` and the brief composition to `specflow:brief`; both run as forked sub-skills per the orchestrator pattern (see `templates/orchestrator-pattern.md`). Your parent context never accumulates the sub-skills' raw work.
 
 ---
 
@@ -41,9 +41,9 @@ The user invokes you with one of:
    - **Interview exists, no Goal section confirmed** → resume Phase A (continue goal articulation).
    - **Goal confirmed, no rounds or rounds without sign-off** → resume Phase B (continue grilling).
    - **Interview signed off, no PRD body** → skip to Phase C.
-   - **PRD body exists, no HTML or HTML stale** → skip to Phase D.
-   - **PRD + HTML exist, no Gate 2 manifest** → skip to Phase E.
-   - **Everything complete** → ask the user: *"This feature appears complete (interview signed off, PRD synthesised, HTML rendered, Gate 2 closed). What do you want to do? (1) re-render only, (2) re-run Gate 2, (3) `specflow:scope-change` to revise."*
+   - **PRD body exists, no Gate 2 manifest** → skip to Phase D.
+   - **Gate 2 closed, no brief or brief stale** → skip to Phase E.
+   - **Everything complete** → ask the user: *"This feature appears complete (interview signed off, PRD synthesised, Gate 2 closed, brief generated). What do you want to do? (1) re-compose the brief only, (2) re-run Gate 2, (3) `specflow:scope-change` to revise."*
 
 Tell the user explicitly which phase you're starting at.
 
@@ -303,43 +303,21 @@ entry: question + what's needed to resolve it + when we plan to resolve it.}
 
 ### C.3 Self-check before saving
 
-Before invoking the render in Phase D, verify:
+Before handing off to Phase D (Gate 2), verify:
 
 1. **Vision traces to Goal.** Re-read the interview's Goal section and the PRD's Vision. The Vision should be the prose form of the Goal — same Outcome, same Audience, same Driving value. If they diverge, fix the Vision.
 2. **Every requirement has a Trace + Serves-goal pair.** No requirements that don't trace to a Resolved line. No requirements that don't serve at least one goal field.
 3. **Every AC verifies a requirement.** No orphan ACs. No requirements without coverage.
 4. **No requirement contradicts the goal's Out-of-scope-at-goal-level.** Cross-check.
-5. **ACs cross-checked against Phase 1 skill schemas they depend on.** For every AC that names another specflow skill (e.g. `specflow:misc --auto`, `specflow:linear`, `specflow:render`), open that skill's SKILL.md and verify the AC's named fields exist in the documented payload schema. If the AC references fields the schema doesn't include, EITHER edit the AC to use only existing fields OR add an explicit "Schema dependency" note naming the schema gap and the enhancement PRD that must land first. Don't smuggle a Phase 1 schema change into a downstream PRD's AC.
+5. **ACs cross-checked against Phase 1 skill schemas they depend on.** For every AC that names another specflow skill (e.g. `specflow:misc --auto`, `specflow:linear`, `specflow:brief`), open that skill's SKILL.md and verify the AC's named fields exist in the documented payload schema. If the AC references fields the schema doesn't include, EITHER edit the AC to use only existing fields OR add an explicit "Schema dependency" note naming the schema gap and the enhancement PRD that must land first. Don't smuggle a Phase 1 schema change into a downstream PRD's AC.
 
 If any check fails, fix the PRD before proceeding.
 
 ---
 
-## Phase D — Render
+## Phase D — Gate 2 multi-agent debate manifest
 
-### D.1 Invoke specflow:render
-
-Use the Skill tool:
-
-```
-Skill: specflow:render {NNN-slug}
-```
-
-It produces `features/NNN-{slug}/NNN-{slug}-prd.html` with a header link to the sibling interview file.
-
-### D.2 Verify render
-
-Read the HTML file's first 50 lines. Verify:
-- File exists.
-- Header strip includes the feature ID + slug.
-- Header includes a link to `./NNN-{slug}-interview.md`.
-- No drift banner (if there is one, the markdown is newer than the HTML — re-invoke render).
-
----
-
-## Phase E — Gate 2 multi-agent debate manifest
-
-### E.1 Set up the debate folder
+### D.1 Set up the debate folder
 
 Use Bash:
 
@@ -349,7 +327,7 @@ mkdir -p docs/specflow/features/NNN-{slug}/debate-log/prd-gate2/raw
 touch docs/specflow/features/NNN-{slug}/debate-log/prd-gate2/manifest.md
 ```
 
-### E.2 Identify reviewers
+### D.2 Identify reviewers
 
 From `docs/specflow/admin/agents/standard/`, the standing reviewer set is:
 - `lifecycle/devils-advocate.md` — always present.
@@ -360,7 +338,7 @@ From `docs/specflow/admin/agents/standard/`, the standing reviewer set is:
 
 Plus, if `admin/environment.json` has `cli.codex.available: true`, include Codex as a sixth reviewer.
 
-### E.3 Round 1 — parallel finding fire
+### D.3 Round 1 — parallel finding fire
 
 For each reviewer, dispatch a forked sub-agent (use the Agent tool with the reviewer's role definition as system context, or invoke the Skill tool if reviewers become invokable skills in a later phase). Pass each reviewer:
 - The PRD path (`features/NNN-{slug}/NNN-{slug}-prd.md`).
@@ -390,7 +368,7 @@ The Round-1 finding JSON shape:
 
 Wait for all reviewers to return their finding paths.
 
-### E.4 Round 2 — AI responds
+### D.4 Round 2 — AI responds
 
 In your own forked context (a new Task or Agent invocation if needed to keep the parent clean), read every Round-1 finding via command substitution. For each finding, write a structured response to `debate-log/prd-gate2/findings/round-2/responses.json`:
 
@@ -410,7 +388,7 @@ In your own forked context (a new Task or Agent invocation if needed to keep the
 
 If accepting: actually edit `NNN-{slug}-prd.md` to apply the revision.
 
-### E.5 Round 3 — Reviewers sharpen or accept
+### D.5 Round 3 — Reviewers sharpen or accept
 
 Re-dispatch each reviewer (fresh forked context) with their Round-1 finding + the Round-2 response. Each writes to `debate-log/prd-gate2/findings/round-3/{reviewer-name}.json`:
 
@@ -429,7 +407,7 @@ Re-dispatch each reviewer (fresh forked context) with their Round-1 finding + th
 
 If any sharpen: re-edit the PRD one more time and record the revision in `debate-log/prd-gate2/findings/round-3/ai-revision.md`.
 
-### E.6 Closer — Orchestrator collates
+### D.6 Closer — Orchestrator collates
 
 Now act as the Orchestrator. Read all findings + responses across all three rounds. Write the human-readable `debate-log/prd-gate2/manifest.md`:
 
@@ -473,13 +451,50 @@ If failed: list the blocking findings and what must change.}
 — Orchestrator, {YYYY-MM-DD}
 ```
 
-### E.7 Final disposition
+### D.7 Gate 2 disposition
 
-If Gate 2 status is **passed**, **passed-with-revisions**, or **passed-with-escalations**: tell the user *"PRD synthesised and Gate 2 review complete. Status: {status}. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready."*
+If Gate 2 status is **failed**: tell the user *"PRD failed Gate 2 review. Blocking findings:\n{list}\n\nReview the manifest at `debate-log/prd-gate2/manifest.md` and either revise the PRD or adjust the interview's Resolved lines, then re-run `specflow:prd {NNN-slug}` to resume from Phase C."* Do NOT proceed to Phase E.
 
-If escalations exist, list them in your response so the user sees them without opening the manifest.
+If Gate 2 status is **passed**, **passed-with-revisions**, or **passed-with-escalations**: proceed to Phase E.
 
-If Gate 2 status is **failed**: tell the user *"PRD failed Gate 2 review. Blocking findings:\n{list}\n\nReview the manifest at `debate-log/prd-gate2/manifest.md` and either revise the PRD or adjust the interview's Resolved lines, then re-run `specflow:prd {NNN-slug}` to resume from Phase C."*
+---
+
+## Phase E — Brief
+
+### E.1 Invoke specflow:brief
+
+Use the Skill tool:
+
+```
+Skill: specflow:brief {NNN-slug}
+```
+
+It produces `features/NNN-{slug}/NNN-{slug}-brief.html` by composing the PRD body, the interview transcript, and the Gate 2 manifest into one self-contained HTML file with a visual abstract section at the top (compiled from any `:::flow|comparison|scope|tree` blocks the PRD contains).
+
+`specflow:brief` does NOT auto-open the browser when invoked as a sub-skill — the parent decides.
+
+### E.2 Verify brief
+
+Read the brief HTML's first 50 lines. Verify:
+- File exists at `features/NNN-{slug}/NNN-{slug}-brief.html`.
+- Source strip includes the feature ID + slug.
+- Sidebar shows "Feature brief" subtitle.
+- No drift banner (if there is one, a source file is newer than the brief — re-invoke `specflow:brief`).
+
+### E.3 Offer to open in browser
+
+Ask the user: *"Brief generated at `{path}`. Would you like me to open it in your browser?"*
+
+- **Yes** → run `open "{path}"` (macOS), `xdg-open "{path}"` (Linux if available), or print the path on Windows / unknown platforms.
+- **No** → continue to E.4 without opening.
+
+### E.4 Final disposition
+
+Tell the user:
+
+*"PRD complete. Status: {gate2_status}. Brief at `features/NNN-{slug}/NNN-{slug}-brief.html`. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready."*
+
+If Gate 2 produced escalations, list them in your response so the user sees them without opening the manifest.
 
 ---
 
@@ -502,9 +517,9 @@ Before returning to the user with "PRD complete":
 1. `features/NNN-{slug}/NNN-{slug}-interview.md` exists with confirmed Goal + at least one round + sign-off line.
 2. `features/NNN-{slug}/NNN-{slug}-prd.md` exists with all required sections (Vision, Problem, Goals, Non-goals, Users, Requirements, AC, Open questions, See also).
 3. Vision traces to Goal; every requirement traces to a Resolved line AND serves a goal field; every AC is binary and verifies a requirement; no requirements contradict Out-of-scope-at-goal-level.
-4. `features/NNN-{slug}/NNN-{slug}-prd.html` exists; header link to interview works.
-5. `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with closing decision entry signed by the Orchestrator.
-6. Gate 2 status is recorded (passed / passed-with-escalations / failed) and surfaced to the user.
+4. `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with closing decision entry signed by the Orchestrator.
+5. Gate 2 status is recorded (passed / passed-with-revisions / passed-with-escalations / failed) and surfaced to the user.
+6. `features/NNN-{slug}/NNN-{slug}-brief.html` exists; sidebar TOC links resolve; source strip references both the PRD and the interview.
 
 If any verify step fails, fix it before returning.
 
@@ -514,9 +529,9 @@ If any verify step fails, fix it before returning.
 
 - `docs/PRD.md` Appendix Q — interview file structure spec.
 - `docs/PRD.md` Appendix N — multi-agent debate manifest spec.
-- `docs/PRD.md` Appendix P — PRD HTML rendering spec.
+- `docs/PRD.md` Appendix P — feature brief composition spec.
 - `templates/orchestrator-pattern.md` — fork / file handoff / command substitution conventions.
 - `skills/grill/SKILL.md` — the sub-skill invoked in Phase B.
-- `skills/render/SKILL.md` — the sub-skill invoked in Phase D.
+- `skills/brief/SKILL.md` — the sub-skill invoked in Phase E.
 - `templates/agents/standard/lifecycle/{orchestrator,devils-advocate,verifier}.md` — reviewer prompts for Gate 2.
 - `templates/agents/standard/principles/*.md` — principle-reviewer prompts for Gate 2.

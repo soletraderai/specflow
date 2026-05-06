@@ -17,7 +17,7 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ## v1.x → v2.0
 
-The foundation migration. Establishes the substrate every later phase depends on: feature-grouped layout, `admin/` folder, rules registry, environment inventory, standard agents, and PRD HTML rendering.
+The foundation migration. Establishes the substrate every later phase depends on: feature-grouped layout, `admin/` folder, rules registry, environment inventory, standard agents, and per-feature brief composition.
 
 ### Scope
 
@@ -54,7 +54,7 @@ The foundation migration. Establishes the substrate every later phase depends on
 - `admin/agents/index.json` — built from the agent index scan
 
 **Per-feature derived artefact:**
-- `features/NNN-{slug}/NNN-{slug}-prd.html` — rendered for every relocated PRD via `specflow:render --all`.
+- `features/NNN-{slug}/NNN-{slug}-brief.html` — composed for every relocated PRD via `specflow:brief --all`.
 
 **Per-feature retroactive interview file:**
 - For every relocated PRD, the v1→v2 migration creates a stub `features/NNN-{slug}/NNN-{slug}-interview.md` containing:
@@ -78,7 +78,7 @@ The foundation migration. Establishes the substrate every later phase depends on
 2. **Move config.** Relocate `config.json` and `pages.json` into `admin/`.
 3. **Consolidate features.** For each existing PRD `NNN-{slug}.md`, create `features/NNN-{slug}/`. Move the PRD, the matching task file, the matching test file, and rehome the test's assets into the new feature folder. Rename to `prd.md` / `tasks.md` / `test.md`.
 4. **Seed admin folder.** Create `admin/` subfolders. Copy standard agent templates. Seed rules registry. Run profile interview. Run environment inventory.
-5. **Render.** Invoke `specflow:render --all` so every relocated PRD gets a sibling `prd.html`.
+5. **Compose briefs.** Invoke `specflow:brief --all` so every relocated PRD gets a sibling `{NNN-slug}-brief.html` (composed from PRD + retroactive interview stub).
 6. **Stamp version.** Write `2.0.0` to `admin/config.json.specflowVersion`.
 7. **Verify.** Run `specflow:doctor`. Surface any failures and pause for user resolution before declaring success.
 
@@ -90,7 +90,7 @@ Backups (`.bak`) are written for every modified file before the migration starts
 
 - `docs/specflow/admin/config.json` exists; `specflowVersion === "2.0.0"`.
 - `docs/specflow/features/` contains one subdirectory per existing PRD.
-- Every feature folder contains `prd.md`, `tasks.md` (if the feature had tasks), `test.md` (if the feature had tests), and `prd.html`.
+- Every feature folder contains `prd.md`, `tasks.md` (if the feature had tasks), `test.md` (if the feature had tests), and `brief.html`.
 - `docs/specflow/admin/agents/standard/` contains Orchestrator, Devil's Advocate, Verifier.
 - `docs/specflow/admin/rules/non-negotiable.md` contains the starter set.
 - `docs/specflow/admin/environment.json` is populated and Playwright is detected.
@@ -100,8 +100,54 @@ Backups (`.bak`) are written for every modified file before the migration starts
 
 - **Conflicting feature slug.** If two features share an `NNN-{slug}` shape (shouldn't happen — IDs are unique), abort and ask the user to resolve.
 - **Missing Playwright.** Hard requirement at v2 — abort migration, prompt user to install before retrying.
-- **PRD render failure.** Migration continues; failed renders logged. User can re-run `specflow:render --all` after fixing.
+- **Brief composition failure.** Migration continues; failed compositions logged. User can re-run `specflow:brief --all` after fixing.
 - **Codex absent.** Soft requirement — migration completes; adversarial-review degraded mode flagged in the summary.
+
+---
+
+## v2.1 → v2.2
+
+The brief release. Replaces the per-PRD HTML render (`specflow:render` → `{NNN-slug}-prd.html`) with a richer feature brief (`specflow:brief` → `{NNN-slug}-brief.html`) that composes the PRD body, interview transcript, and Gate 2 / Gate 3 manifests into a single self-contained HTML document with a Visual abstract section at the top.
+
+### Scope
+
+**Skill changes:**
+- `specflow:render` removed. Its responsibility is fully absorbed by `specflow:brief`.
+- `specflow:brief` added. Composes `{NNN-slug}-brief.html` from `{NNN-slug}-prd.md` + `{NNN-slug}-interview.md` + (optional) gate manifests. Supports a structured-block vocabulary (`:::flow`, `:::comparison`, `:::scope`, `:::tree`) for visualising flows, mode comparisons, scope, and decision trees deterministically.
+- `specflow:prd` Phase D and Phase E swapped: Gate 2 is now Phase D; Brief is now Phase E. Phase E asks the user whether to open the brief in their browser, then opens it on confirmation.
+- `specflow:doctor` `features.{NNN-slug}.html_drift` check renamed to `features.{NNN-slug}.brief_drift`. The check now compares the brief mtime against the latest of PRD / interview / gate-manifest mtimes, not just the PRD.
+- `specflow:upgrade` step 10 (`specflow:render --all`) replaced with `specflow:brief --all`. The migration also deletes `{NNN-slug}-prd.html` files after a successful brief is written for the same feature.
+
+**Per-feature artefact:**
+- New: `features/NNN-{slug}/NNN-{slug}-brief.html`. Composed for every feature with both a PRD and an interview file present.
+- Removed: `features/NNN-{slug}/NNN-{slug}-prd.html`. Deleted once the sibling brief is written. The brief supersedes it.
+
+**No schema changes.** No config keys added or removed. No agent-set changes. The migration is purely the artefact rename + composition source widening.
+
+### Steps
+
+1. **Backup.** Copy every existing `{NNN-slug}-prd.html` to `{NNN-slug}-prd.html.bak` before deletion.
+2. **Compose briefs.** Run `specflow:brief --all` across every feature folder containing both `{NNN-slug}-prd.md` and `{NNN-slug}-interview.md`. Brief composition failures abort the migration; surface failures and pause for resolution.
+3. **Remove old prd.html.** For each feature where the brief was successfully written, delete `{NNN-slug}-prd.html`. Leave the `.bak` in place per backup discipline.
+4. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.2.0`.
+5. **Verify.** Run `specflow:doctor`. Every feature should report `brief_drift` PASS (or be absent if no brief is needed).
+
+### Reversibility
+
+- `.bak` files retained until the next successful upgrade or explicit `/specflow:upgrade --clean-backups`. To roll back, restore each `{NNN-slug}-prd.html.bak` to `{NNN-slug}-prd.html`, delete the new `{NNN-slug}-brief.html`, and downgrade the plugin version.
+- No source markdown is modified by this migration. The PRD body, interview, and manifests are untouched.
+
+### Verify
+
+- For every feature with a PRD + interview: `features/NNN-{slug}/NNN-{slug}-brief.html` exists and opens in a browser.
+- No `features/NNN-{slug}/NNN-{slug}-prd.html` files remain.
+- `admin/config.json.specflowVersion === "2.2.0"`.
+- `specflow:doctor` passes; `brief_drift` is PASS for every feature.
+
+### Failure modes
+
+- **Brief composition fails on a feature.** The migration aborts before deleting any `prd.html`. Resolve the failure (typically: an unclosed `:::` visual block, or an unsupported block kind), then re-run upgrade — the migration resumes from the failing feature.
+- **Pre-2.2.0 PRD has no interview file.** This indicates a partial install. The migration can't compose a brief without the interview. Surface to the user; offer to either run `specflow:upgrade` (which seeds a retroactive interview stub) or skip the feature with a warning. Default: skip with warning, continue with other features.
 
 ---
 

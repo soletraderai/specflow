@@ -121,7 +121,7 @@ For each `features/NNN-{slug}/` folder:
 
 - **`features.{NNN-slug}.interview_exists`** — `{NNN-slug}-interview.md` exists. Missing = FAIL with fix `PRD exists without an interview file; the install is partial. Run /specflow:upgrade or recreate via specflow:prd {NNN-slug}.`
 
-- **`features.{NNN-slug}.html_drift`** — if `{NNN-slug}-prd.html` exists, its mtime is no older than `{NNN-slug}-prd.md`'s mtime. Older = WARN with fix `Run /specflow:render {NNN-slug} — the HTML render is stale.`
+- **`features.{NNN-slug}.brief_drift`** — if `{NNN-slug}-brief.html` exists, its mtime is no older than the latest mtime across `{NNN-slug}-prd.md`, `{NNN-slug}-interview.md`, and any `debate-log/*/manifest.md`. Older = WARN with fix `Run /specflow:brief {NNN-slug} — the brief is stale relative to its sources.`
 
 - **`features.{NNN-slug}.gate2_closed`** — if a `debate-log/prd-gate2/manifest.md` exists, it has a `Gate 2 status: **passed**` or `**passed-with-escalations**` line. Other status = WARN, missing manifest = WARN. Fix: `Re-run specflow:prd {NNN-slug} — Gate 2 is incomplete.`
 
@@ -165,8 +165,8 @@ Run at {YYYY-MM-DD HH:MM}.
 ### Features
 - ✅ features.001-design-skill.prd_exists
 - ✅ features.001-design-skill.interview_exists
-- ⚠️ features.001-design-skill.html_drift → prd.html is 6 days older than prd.md
-  Fix: Run /specflow:render 001-design-skill.
+- ⚠️ features.001-design-skill.brief_drift → brief.html is 6 days older than prd.md
+  Fix: Run /specflow:brief 001-design-skill.
 - ✅ features.001-design-skill.gate2_closed → passed
 - ⏭ features.001-design-skill.gate3_closed → tasks file absent (skip)
 
@@ -185,7 +185,7 @@ Run at {YYYY-MM-DD HH:MM}.
 
 ⚠️ 3 warnings (non-blocking):
 - install.scratch_clean
-- features.001-design-skill.html_drift
+- features.001-design-skill.brief_drift
 - environment.codex
 
 Overall status: **FAIL** (run /specflow:upgrade and re-check).

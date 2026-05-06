@@ -297,18 +297,21 @@ test -f "docs/specflow/features/NNN-{slug}/NNN-{slug}-interview.md"
 grep -q "retroactive migration" "docs/specflow/features/NNN-{slug}/NNN-{slug}-interview.md"
 ```
 
-### 10. Render all relocated PRDs
+### 10. Compose briefs for all relocated PRDs
 
-Run `specflow:render --all` after PRDs are in feature folders. Rendering failures do not stamp the version; surface failures and pause for resolution.
+Run `specflow:brief --all` after PRDs are in feature folders. Brief composition failures do not stamp the version; surface failures and pause for resolution.
+
+If existing `{NNN-slug}-prd.html` files are present from pre-2.2.0 installations, delete each one **only after** the sibling `{NNN-slug}-brief.html` has been written successfully for the same feature. The brief supersedes the prd.html artefact.
 
 Verify:
 
 ```sh
 find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-prd.md' -print | sort
-find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-prd.html' -print | sort
+find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-brief.html' -print | sort
+find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-prd.html' -print
 ```
 
-Each PRD must have a sibling HTML file before continuing.
+Each PRD must have a sibling brief HTML before continuing. The third find should return no results (all `-prd.html` files removed); if it returns paths, those features failed brief composition and must be resolved before proceeding.
 
 ### 11. Stamp version
 
@@ -388,6 +391,6 @@ test -d docs/specflow/admin/rules
 test -f docs/specflow/admin/environment.json
 grep -q '"specflowVersion"[[:space:]]*:[[:space:]]*"2.0.0"' docs/specflow/admin/config.json
 find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-prd.md' -print | sort
-find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-prd.html' -print | sort
+find docs/specflow/features -path '*/[0-9][0-9][0-9]-*-brief.html' -print | sort
 find docs/specflow -name '*.bak' -print
 ```

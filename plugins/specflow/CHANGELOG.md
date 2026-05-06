@@ -4,7 +4,52 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_The dogfood pass for 003-complete-skill produced E6-E10 prompt-edit recommendations (DOGFOOD-DEBRIEF). Apply in the next session, then build out the remaining Phase 3 skills (`specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`) using the chain. Phase 3 PRD specs for `decision` and `scope-change` are pre-drafted at `examples/.../features/{004-decision-skill,005-scope-change-skill}/`._
+_Phase 3 still-partial: `/insights`, `/prune`, `/optimize` ship as frontmatter-only stubs. No PRD anchors yet — next session drafts those via the recursive-bootstrap chain, then builds their bodies. The v2.3.0 cut waits on the full Phase 3 set landing._
+
+## [2.2.0] — 2026-05-06
+
+The brief release. Replaces per-PRD HTML rendering with a richer feature brief that composes PRD + interview + gate manifests into a single self-contained HTML document; lands two more Phase 3 skills (`specflow:decision`, `specflow:scope-change`); applies the E6-E10 prompt-edit recommendations from the 003-complete-skill dogfood.
+
+### Added
+
+**Brief skill (replaces render):**
+
+- `specflow:brief` (520-line skill body) — composes `{NNN-slug}-brief.html` from `{NNN-slug}-prd.md` + `{NNN-slug}-interview.md` + (optional) Gate 2 / Gate 3 manifests. Self-contained HTML with sidebar TOC and a Visual abstract section at the top. Supports a structured-block vocabulary (`:::flow`, `:::comparison`, `:::scope`, `:::tree`) for visualising flows, mode comparisons, scope, and decision trees deterministically.
+- `specflow:prd` Phase E — Brief — added; invokes `specflow:brief` after Gate 2 closes and asks the user whether to open the resulting brief in their browser.
+
+**Phase 3 skills (operational):**
+
+- `specflow:decision` (38-line stub → 280 lines, 6 phases A-F) — interactive decision-log writer. Pre-flight + tail-parse, title prompt with duplicate-title resolution, schema-drift warning + body capture, append-only write with read-back, two-stage chat-line user-surface contract. Implements all 11 R-IDs from `004-decision-skill-prd.md`.
+- `specflow:scope-change` (35-line stub → 436 lines, 8 phases A-H) — mid-development scope-change capture. Pre-flight + routing, drift articulation, `/grill` extend-mode with strikethrough markup for superseded resolved-lines, surgical PRD synthesis + Gate 2 re-fire, delta task regeneration + Gate 3 re-fire, four-source impact list, `specflow:decision` invocation with `id_prefix: "SC"`, final disposition with best-effort Linear sync. Implements all 12 R-IDs from `005-scope-change-skill-prd.md`.
+
+### Changed
+
+**Render → Brief:**
+
+- `specflow:render` removed. Its responsibility is fully absorbed by `specflow:brief`.
+- `specflow:doctor`'s `features.{NNN-slug}.html_drift` check renamed to `brief_drift`; now compares brief mtime against the latest of PRD / interview / gate-manifest mtimes.
+- `specflow:upgrade` step 10 (`specflow:render --all`) replaced with `specflow:brief --all`; deletes superseded `{NNN-slug}-prd.html` after the brief is written.
+
+**Per-feature artefact:**
+
+- New: `features/NNN-{slug}/NNN-{slug}-brief.html` (composed for every feature with both a PRD and an interview file present).
+- Removed: `features/NNN-{slug}/NNN-{slug}-prd.html` (deleted once the sibling brief is written; the brief supersedes it).
+
+**E6-E10 prompt edits applied** (from `examples/.../features/003-complete-skill/DOGFOOD-DEBRIEF.md`):
+
+- E6 `skills/develop/SKILL.md` Phase A.2 — Codex availability check carries a lens-overlap note distinguishing Codex's correctness lens from Goal-Driven's reverse-traceability lens at Gate 5; both firing on the same finding is independent confirmation, not duplication.
+- E7 `skills/develop/SKILL.md` new Phase B.1.5 — formalises `b1_recheck` aggregate-outcome schema with `batch_shape_at_default_cap` field.
+- E8 `skills/complete/SKILL.md` Phase A.3 — captures the 30-min stale-lock heuristic as a v2 candidate for promotion to `config.json.complete.staleLockMinutes`. Literal 30 retained for v1.
+- E9 `templates/agents/standard/principles/goal-driven-reviewer.md` — orphan-phase reverse-traceability lens added; extends the orphan-AC pattern from PRD/tasks gates to code-review gates.
+- E10 `skills/develop/SKILL.md` new Phase F.2.1 — conditional-pass escalation contract (two-option user prompt: accept-and-proceed with documented condition vs defer with `specflow:misc --auto` follow-up; no third "force-pass" path).
+
+### Migrations
+
+- `MIGRATIONS.md` v2.1 → v2.2 entry. Composition source widening (PRD + interview + gates) replacing the prior PRD-only render. Migration is artefact rename + deletion of superseded `prd.html` files; no schema changes; backups retained.
+
+### Phase 3 still-stubbed in 2.2.0
+
+`/insights`, `/prune`, `/optimize` ship as frontmatter-only stubs. PRDs land in v2.3.0.
 
 ## [2.1.0] — 2026-05-06
 

@@ -35,18 +35,18 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition · �
 - **Blocks:** refuses to start if Goal section is unconfirmed; blocks `specflow:prd` Phase C (synthesis) until interview is signed off.
 
 ### `specflow:prd` 🔧
-- **Purpose:** user-facing entry point for PRD creation. Multi-phase orchestrator: writes interview preamble, **articulates and confirms the goal with the user** (the precedent everything else anchors to), invokes `/grill` for the grilling phase, synthesises the PRD body from the goal + resolved assumptions, auto-renders the HTML, fires Gate 2 multi-agent debate manifest.
+- **Purpose:** user-facing entry point for PRD creation. Multi-phase orchestrator: writes interview preamble, **articulates and confirms the goal with the user** (the precedent everything else anchors to), invokes `/grill` for the grilling phase, synthesises the PRD body from the goal + resolved assumptions, fires Gate 2 multi-agent debate manifest, then composes the feature brief via `specflow:brief`.
 - **Triggers:** "create a PRD for X", "/specflow:prd", overview of what you want to achieve.
-- **Produces:** `features/NNN-{slug}/NNN-{slug}-interview.md` (with confirmed Goal section) + `NNN-{slug}-prd.md` + `NNN-{slug}-prd.html` + `debate-log/prd-gate2/manifest.md`.
+- **Produces:** `features/NNN-{slug}/NNN-{slug}-interview.md` (with confirmed Goal section) + `NNN-{slug}-prd.md` + `debate-log/prd-gate2/manifest.md` + `NNN-{slug}-brief.html`.
 - **Requires:** `admin/profiles.json`, `admin/CONTEXT.md`, `admin/decision-log.md`, `admin/rules/`; optional research files in `features/NNN-{slug}/docs/` and `docs/specflow/docs/`.
-- **Eval:** Goal confirmed before grilling; interview signed off; PRD body has no orphan requirements and every requirement serves the goal; HTML renders with working interview link; Gate 2 manifest closes with Orchestrator sign-off.
+- **Eval:** Goal confirmed before grilling; interview signed off; PRD body has no orphan requirements and every requirement serves the goal; Gate 2 manifest closes with Orchestrator sign-off; brief composes from PRD + interview + Gate 2 manifest with a working sidebar TOC.
 
-### `specflow:render` 🆕
-- **Purpose:** render `NNN-{slug}-prd.md` to a self-contained, browser-readable `NNN-{slug}-prd.html` for human review. Header links to the sibling interview file.
-- **Triggers:** auto-fires after `specflow:prd` writes/updates a PRD; "/specflow:render {feature-id}" manually; "/specflow:render --all" for bulk re-render (used by upgrade migration).
-- **Produces:** `features/NNN-{slug}/NNN-{slug}-prd.html` — inline CSS, no JS, deterministic output. Interview file is NOT rendered (markdown only).
-- **Requires:** `prd.md` exists.
-- **Eval:** `prd.html` opens cleanly in a browser; deterministic re-render produces byte-identical output for unchanged input.
+### `specflow:brief` 🆕
+- **Purpose:** compose a self-contained, browser-readable feature brief by combining the PRD body, the interview transcript, and (when present) the Gate 2 / Gate 3 manifests into one HTML file. Includes a Visual abstract section at the top compiled from `:::flow|comparison|scope|tree` blocks in the PRD markdown.
+- **Triggers:** auto-fires after `specflow:prd` Phase E (Gate 2 closes); "/specflow:brief {feature-id}" manually; "/specflow:brief --all" for bulk re-compose (used by upgrade migration).
+- **Produces:** `features/NNN-{slug}/NNN-{slug}-brief.html` — inline CSS, no JS, deterministic output. PRD prose, interview Q&A, and manifest content appear verbatim; only the structured visual blocks are interpreted.
+- **Requires:** `NNN-{slug}-prd.md` and `NNN-{slug}-interview.md` both exist. Gate 2 / Gate 3 manifests are optional inputs.
+- **Eval:** `NNN-{slug}-brief.html` opens cleanly in a browser; deterministic re-compose produces byte-identical output for unchanged inputs; sidebar TOC links resolve.
 
 ### `specflow:task` 🔧
 - **Purpose:** user-facing entry point for task generation. 5-phase orchestrator: read PRD/interview/Gate-2 manifest → synthesise tasks with forward + reverse coverage → surface 3-5 intent summaries in chat → capture user overrides to `task-history.json` → fire Gate 3 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature.
