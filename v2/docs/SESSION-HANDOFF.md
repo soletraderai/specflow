@@ -1,20 +1,51 @@
-# Session handoff — specflow Phase 3 complete (v2.3.0 staged)
+# Session handoff — specflow v2.3.0 shipped; three PRD questions open
 
 **Date:** 2026-05-06
 **Prior sessions:** earlier handoffs archived as `SESSION-HANDOFF-2026-04-30-codex-review.md`. This file is the current snapshot.
-**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 + the brief skill landed as **v2.2.0**; Phase 3 is now **fully operational**. All six Phase 3 skills have operational bodies: `specflow:complete` (472 lines), `specflow:decision` (280 lines), `specflow:scope-change` (436 lines), `specflow:insights` (450 lines), `specflow:prune` (316 lines), `specflow:optimize` (510 lines). Phase 3 PRD anchors at `examples/.../features/{003-008}-*-skill/` all closed Gate 2 `passed-with-revisions`. The v2.3.0 cut packages this set.
-**Next session goal:** cut v2.3.0 (versions, CHANGELOG, MIGRATIONS, push); then real consumer-project dogfood is the only remaining major work item.
+**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 + the brief skill landed as **v2.2.0**; Phase 3 is now **fully operational** and packaged as **v2.3.0** (committed locally; not pushed). All six Phase 3 skills have operational bodies: `specflow:complete` (472 lines), `specflow:decision` (280 lines), `specflow:scope-change` (436 lines), `specflow:insights` (450 lines), `specflow:prune` (316 lines), `specflow:optimize` (510 lines). The v2 architectural arc per `v2/docs/PRD.md` is feature-complete.
+
+---
+
+## ⭐ START HERE — three open PRD questions to take up next session
+
+`v2/docs/PRD.md` § "Open questions" closed six of the original nine through shipped 2.0-2.3 work; three remain genuinely open. **These are the live agenda for the next session** — pick one (or all) and run the chain on each. None blocks any operational skill; they're refinements.
+
+### 1. `pages.json` ownership
+
+**Question.** Currently a setup-time stub (template-seeded with placeholder routes). The PRD's setup spec mentions a future `specflow:pages` skill that would inventory live routes from the project's router config (Next.js / Remix / Express / etc.). Decide whether to ship `specflow:pages` in v2.4 or accept the manual-stub-plus-test-time-population approach (`specflow:test` updates `pages.json` on first UI run) as enough.
+
+**What to read first:** `plugins/specflow/skills/setup/SKILL.md:340` (the placeholder), `plugins/specflow/examples/docs/specflow/admin/pages.json` (the example shape), `plugins/specflow/skills/test/SKILL.md` (the populator candidate).
+
+**Decision shape.** Either (a) draft `009-pages-skill` PRD via `specflow:prd` and run the chain; or (b) decide-and-document at the PRD level that `pages.json` stays manual + lazy-populated, and remove the "future skill" reference.
+
+### 2. Design mockup readback
+
+**Question.** No skill currently consumes the design folder's `current.html` / `proposed.html` / `iteration-log.md` as downstream context. Two surfaces where this could matter: (a) `specflow:prd` Phase A on a feature with existing design — the proposed.html's component decisions ought to constrain the requirements; (b) `specflow:task` Phase B on a feature whose iteration log carries post-PRD decisions — those decisions should shape task synthesis.
+
+**What to read first:** `plugins/specflow/skills/design/SKILL.md` (the producer), `plugins/specflow/skills/prd/SKILL.md` Phase A.3 (codebase context gathering — the readback target), `plugins/specflow/skills/task/SKILL.md` Phase A (PRD-extract step — second readback target).
+
+**Decision shape.** Either (a) extend Phase A.3 of `specflow:prd` and Phase A.2 of `specflow:task` to ingest the design folder when present (and document that pattern as a v2.4 enhancement), or (b) declare at the PRD level that design is alignment-only (not load-bearing on downstream skills) and close the question.
+
+### 3. `brief.html` commit policy
+
+**Question.** The brief composes PRD + interview + manifests into a single self-contained HTML. Default recommendation is committed (diffable for review). Projects with sensitive surfaces or repo-size pressure may prefer gitignored-as-derived. Should the choice surface as a setup-time prompt or a `config.json.brief.commitPolicy` knob?
+
+**What to read first:** `plugins/specflow/skills/brief/SKILL.md` (the producer + its current commit assumption), `plugins/specflow/skills/setup/SKILL.md` Phase A (where a setup-time prompt would land), `plugins/specflow/MIGRATIONS.md` (template for any v2.3 → v2.4 entry covering a new config knob).
+
+**Decision shape.** Either (a) add a `config.json.brief.commitPolicy` knob (default `"committed"`, alternative `"derived"`) with a `.gitignore` snippet for the derived case, plus a setup-time prompt; or (b) lock the default at committed-only and document the gitignored alternative in `CONTEXT.md` recipes for projects that need it.
+
+The full text of each question (with closure citations for the six already-resolved questions) lives at `v2/docs/PRD.md` § "Open questions".
 
 ---
 
 ## TL;DR — How to resume in 60 seconds
 
-1. Glance at `plugins/specflow/CHANGELOG.md` — 2.0.0 + 2.1.0 + 2.2.0 release entries plus an `[Unreleased]` block flagging Phase 3 complete.
-2. Read this handoff (you're here).
-3. **All six Phase 3 skills are now operational** at `plugins/specflow/skills/{complete,decision,scope-change,insights,prune,optimize}/SKILL.md`. PRD anchors at `examples/docs/specflow/features/{003-008}-*-skill/` all closed Gate 2 `passed-with-revisions`.
-4. v2 architecture per `v2/docs/PRD.md` is now feature-complete. Remaining work: (a) cut v2.3.0; (b) real consumer-project dogfood; (c) any incremental prompt-edit recommendations from the next dogfood pass.
+1. Read § "⭐ START HERE" above — three live PRD questions for next session to act on.
+2. Glance at `plugins/specflow/CHANGELOG.md` — 2.0.0 / 2.1.0 / 2.2.0 / 2.3.0 release entries.
+3. **All six Phase 3 skills are operational** at `plugins/specflow/skills/{complete,decision,scope-change,insights,prune,optimize}/SKILL.md`. PRD anchors at `examples/docs/specflow/features/{003-008}-*-skill/` all closed Gate 2 `passed-with-revisions`.
+4. v2 architecture per `v2/docs/PRD.md` is feature-complete. The three open questions are refinements, not architectural blockers.
 
-If you only have 5 minutes, jump to §"Next up" — it's the priority-ordered punch list.
+If you only have 5 minutes, the START HERE section is the agenda; § "Next up" expands into priority order.
 
 ---
 
