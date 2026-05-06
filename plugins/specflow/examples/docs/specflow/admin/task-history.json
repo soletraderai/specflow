@@ -8,9 +8,9 @@
       "ai_assistance_level": "yellow",
       "completed_date": "2026-01-22",
       "what_worked": "Migrating service-by-service with the orders-service first as the reference implementation. Each migration was reviewable in isolation; the test suite caught two real behaviour drifts at the audit-trail boundary.",
-      "what_didnt": "Initial estimate (2 engineer-days) under-shot the billing-service migration by half a day because billing's BaseService overrides had silent dependencies on the parent class's retry behaviour. Decision-log entry was written after the fact rather than at the time of the call — added 2026-01-08 retroactively.",
       "blast_radius_outcome": "Touched 14 files across src/services/. No production incidents in the four weeks following deployment. One follow-up bug (orders-service-T1-followup) caught at code review, not in production.",
-      "prd_anchor": "No formal PRD — predates specflow adoption. Decision-log entry 2026-01-08 is the anchor."
+      "prd_anchor": "No formal PRD \u2014 predates specflow adoption. Decision-log entry 2026-01-08 is the anchor.",
+      "what_didnt_work": "Initial estimate (2 engineer-days) under-shot the billing-service migration by half a day because billing's BaseService overrides had silent dependencies on the parent class's retry behaviour. Decision-log entry was written after the fact rather than at the time of the call \u2014 added 2026-01-08 retroactively."
     },
     {
       "id": "T-2026-02-T1",
@@ -19,10 +19,10 @@
       "scope": "Migrate top-level tests/ tree to sibling __tests__/ directories alongside source modules. Update vitest config and CI to discover tests under the new convention.",
       "ai_assistance_level": "green",
       "completed_date": "2026-02-15",
-      "what_worked": "One-shot scripted migration ran cleanly. The script was deleted after the migration — no need to keep a one-time tool around. Vitest's auto-discovery picked up the new layout without configuration changes.",
-      "what_didnt": "One module (src/audit/) had its tests under both conventions during a long-running branch. The merge required manual reconciliation — five minutes, not a real cost, but worth noting.",
+      "what_worked": "One-shot scripted migration ran cleanly. The script was deleted after the migration \u2014 no need to keep a one-time tool around. Vitest's auto-discovery picked up the new layout without configuration changes.",
       "blast_radius_outcome": "Touched ~80 test files. CI ran green on first attempt. No bugs introduced.",
-      "prd_anchor": "Decision-log entry 2026-02-14."
+      "prd_anchor": "Decision-log entry 2026-02-14.",
+      "what_didnt_work": "One module (src/audit/) had its tests under both conventions during a long-running branch. The merge required manual reconciliation \u2014 five minutes, not a real cost, but worth noting."
     },
     {
       "id": "T-2026-04-T1",
@@ -31,34 +31,34 @@
       "scope": "Install specflow plugin, run specflow:setup, populate admin/CONTEXT.md, profiles.json, pages.json, environment.json, rules/, decision-log.md from existing project context.",
       "ai_assistance_level": "yellow",
       "completed_date": "2026-04-12",
-      "what_worked": "feedback-loop-audit produced a strong starter draft of CONTEXT.md from the codebase scan — about 70% reusable as-is. The setup skill detected Playwright, Codex, and gh on the first run.",
-      "what_didnt": "Profile drafting required two passes — the auto-generated personas were too generic. Real value came from rewriting them against the specific operator + warehouse + support archetypes the team actually serves. Lesson: profiles are the artefact most worth hand-tuning post-setup.",
+      "what_worked": "feedback-loop-audit produced a strong starter draft of CONTEXT.md from the codebase scan \u2014 about 70% reusable as-is. The setup skill detected Playwright, Codex, and gh on the first run.",
       "blast_radius_outcome": "Created docs/specflow/ tree; no source changes. No incidents.",
-      "prd_anchor": "Decision-log entry 2026-04-12."
+      "prd_anchor": "Decision-log entry 2026-04-12.",
+      "what_didnt_work": "Profile drafting required two passes \u2014 the auto-generated personas were too generic. Real value came from rewriting them against the specific operator + warehouse + support archetypes the team actually serves. Lesson: profiles are the artefact most worth hand-tuning post-setup."
     },
     {
       "id": "T-001-design-skill-T1",
       "feature_id": "001-design-skill",
       "task_id": "T1",
-      "scope": "Build the specflow:design skill — codebase-truth HTML/CSS mockup generator with Playwright iteration loop, Codex review hand-off, and mandatory comment block citing extracted source values.",
+      "scope": "Build the specflow:design skill \u2014 codebase-truth HTML/CSS mockup generator with Playwright iteration loop, Codex review hand-off, and mandatory comment block citing extracted source values.",
       "ai_assistance_level": "yellow",
       "completed_date": "2026-05-04",
-      "what_worked": "The Gate 2 debate manifest caught two speculative configurability findings (per-region threshold knobs without a concrete second consumer) before they hardened into the implementation. Goal-Driven Reviewer's binary verify-step requirement forced the convergence threshold to be explicit — 5% per-pixel diff measured by Playwright's matcher, configurable in admin/config.json — rather than left as 'looks fine'. Codex hand-off worked cleanly because environment.json detection had it flagged.",
-      "what_didnt": "Round 1 of the manifest produced 7 findings; some overlap between Devil's Advocate and Simplicity Reviewer (both flagged the same speculative config knob). Not a blocker — the closing entry deduplicated — but suggests the reviewer dispatch could be smarter about complementary lenses. Recorded as a Phase 3 pattern note.",
+      "what_worked": "The Gate 2 debate manifest caught two speculative configurability findings (per-region threshold knobs without a concrete second consumer) before they hardened into the implementation. Goal-Driven Reviewer's binary verify-step requirement forced the convergence threshold to be explicit \u2014 5% per-pixel diff measured by Playwright's matcher, configurable in admin/config.json \u2014 rather than left as 'looks fine'. Codex hand-off worked cleanly because environment.json detection had it flagged.",
       "blast_radius_outcome": "New skill in plugins/specflow/skills/design/. Two new commands (/specflow:design). No changes to existing skills; no migrations. Zero production touch.",
-      "prd_anchor": "features/001-design-skill/001-design-skill-prd.md (post-Gate-2 amended version)."
+      "prd_anchor": "features/001-design-skill/001-design-skill-prd.md (post-Gate-2 amended version).",
+      "what_didnt_work": "Round 1 of the manifest produced 7 findings; some overlap between Devil's Advocate and Simplicity Reviewer (both flagged the same speculative config knob). Not a blocker \u2014 the closing entry deduplicated \u2014 but suggests the reviewer dispatch could be smarter about complementary lenses. Recorded as a Phase 3 pattern note."
     },
     {
       "id": "T-2026-04-T2",
       "feature_id": "orders-list-bulk-actions",
       "task_id": "T1",
-      "scope": "Add multi-row selection and a floating action bar to /orders. Bulk actions: assign, mark reviewed, change status. Keyboard navigation preserved — bulk-select with Shift+Click, Cmd+A select-all, Esc to clear.",
+      "scope": "Add multi-row selection and a floating action bar to /orders. Bulk actions: assign, mark reviewed, change status. Keyboard navigation preserved \u2014 bulk-select with Shift+Click, Cmd+A select-all, Esc to clear.",
       "ai_assistance_level": "green",
       "completed_date": "2026-04-19",
-      "what_worked": "Power users adopted the bulk-select within a day; first-time-visitor support tickets started referencing the action bar within a week (positive signal — they discovered it without help). The Surgical Reviewer caught one adjacent-fix attempt (a refactor of the orders table's column-resize handler) and routed it to a misc-task instead of inlining it.",
-      "what_didnt": "Initial design draft tried to put bulk actions in a per-row menu; first-time-visitor profile review surfaced that this was less discoverable than the floating bar. Switched late in the design phase — added a half-day to the schedule.",
+      "what_worked": "Power users adopted the bulk-select within a day; first-time-visitor support tickets started referencing the action bar within a week (positive signal \u2014 they discovered it without help). The Surgical Reviewer caught one adjacent-fix attempt (a refactor of the orders table's column-resize handler) and routed it to a misc-task instead of inlining it.",
       "blast_radius_outcome": "Touched 6 files in app/orders/ and packages/ui/src/components/action-bar/. New component documented in packages/ui/src/components/action-bar/README.md. No incidents; no follow-up bugs in the two weeks since ship.",
-      "prd_anchor": "features/002-orders-bulk-actions/002-orders-bulk-actions-prd.md."
+      "prd_anchor": "features/002-orders-bulk-actions/002-orders-bulk-actions-prd.md.",
+      "what_didnt_work": "Initial design draft tried to put bulk actions in a per-row menu; first-time-visitor profile review surfaced that this was less discoverable than the floating bar. Switched late in the design phase \u2014 added a half-day to the schedule."
     }
   ]
 }

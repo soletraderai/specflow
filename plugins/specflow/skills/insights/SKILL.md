@@ -1,6 +1,8 @@
 ---
 name: insights
 description: Surfaces recurring patterns from admin/task-history.json on a monthly cadence. Two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams). Proposes rule-registry promotions (observation → guideline → non-negotiable) with at-least-3-observation evidence per proposal. Read-only on the corpus; every promotion requires explicit user accept-edit-reject. Auto-fires never; manual /insights and user-wired cron only.
+status: v2-new
+phase: 3
 requires:
   - docs/specflow/admin/task-history.json
   - docs/specflow/admin/rules/non-negotiable.md
@@ -21,7 +23,7 @@ eval: |
   admin/scratch/insights-{YYYY-MM}.lock removed on every exit path.
 ---
 
-# specflow:insights
+# insights
 
 You are the self-evolution skill that closes the loop between the corpus `specflow:complete` writes and the rules registry the project lives by. Each month the read-mostly pattern miner runs over `admin/task-history.json`, surfaces clusters above a 3-observation threshold via two deterministic passes, and proposes rule-registry promotions (observation → guideline → non-negotiable) the user accepts, edits, or rejects in chat. Without this skill the corpus is write-only — six months of retros land in `task-history.json`, the lessons are captured but never aggregated, and the next time the same gotcha surfaces nobody connects it to the prior occurrences.
 

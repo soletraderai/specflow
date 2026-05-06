@@ -4,21 +4,51 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-**Phase 3 complete.** All six target skills now operational (no remaining stubs in the Phase 3 substrate). The v2.3.0 cut packages this set.
+_Phase 3 substrate now fully operational; v2 architectural arc per `v2/docs/PRD.md` is feature-complete. Next milestone tracks real consumer-project dogfood + any incremental tuning surfaced from it._
 
-**Phase 3 PRD anchors drafted via the recursive-bootstrap chain** — three new feature folders, all Gate-2-closed `passed-with-revisions`:
+## [2.3.0] — 2026-05-06
 
-- `examples/.../features/006-insights-skill/` — 15 R / 16 AC. Two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams); ≥3-observation promotion threshold; `semantic` cluster-source label reserved for v2 embedding-clustering.
-- `examples/.../features/007-prune-skill/` — 11 R / 11 AC. Per-surface staleness boundaries (decision-log, rules, agent snapshots, task-history); byte-identical round-trip restoration as the binary eval property.
-- `examples/.../features/008-optimize-skill/` — 17 R / 16 AC. Six structured mutation operators (`tighten` / `consolidate` / `clarify` / `deduplicate` / `reorder` / `split-by-phase`); per-target weekly budget cap; decline-streak governance; structurally enforced no-LLM-as-judge.
+The Phase 3 memory-and-discipline release. All six target skills (`complete`, `decision`, `scope-change`, `insights`, `prune`, `optimize`) now have operational bodies. Closes the v2 architectural arc.
 
-**Phase 3 skill bodies:**
+### Added
 
-- `specflow:insights` (stub → 450 lines, 7 phases A-G) — read-only mining of `task-history.json` for cross-task patterns; produces `admin/insights/{YYYY-MM}-report.md` + interactive promotion review against the rules registry; uses `specflow:decision` for audit-trail entries on accepted promotions.
-- `specflow:prune` (stub → 316 lines, 8 phases A-H + standalone `restore` verb) — quarterly pruning with per-surface staleness detection, two-stage archive-then-remove flow, byte-identical round-trip restoration. Append-only archive; skill never modifies its own archive.
-- `specflow:optimize` (stub → 510 lines, 9 phases A-I) — generalises `simplify`'s discipline across the verifiable-skill set. Sequential variant generation via the six operators; per-variant evaluation via the target's machine eval only; three independent auto-merge guardrails (HTML comment, no `--auto` call, GH Action human-actor check).
+**Phase 3 skills (operational):**
 
-Phase 3 substrate now fully operational. Phase 3 completes the full v2 architectural arc per `v2/docs/PRD.md`.
+- `specflow:insights` (stub → 450 lines, 7 phases A-G) — read-only mining of `task-history.json` for cross-task patterns. Two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams); ≥3-observation promotion threshold; produces `admin/insights/{YYYY-MM}-report.md` (replaced-in-place on within-month re-runs) + `{YYYY-MM}-runs.jsonl` (append-only execution log); uses `specflow:decision` for audit-trail entries on accepted promotions.
+- `specflow:prune` (stub → 316 lines, 8 phases A-H + standalone `restore` verb) — quarterly pruning with per-surface staleness detection (decision-log, rules, agent snapshots, task-history). Two-stage archive-then-remove flow with byte-identical round-trip restoration as the binary eval property. Append-only archive at `admin/archive/{YYYY-Q}-prune.md`; skill never modifies its own archive.
+- `specflow:optimize` (stub → 510 lines, 9 phases A-I) — generalises `simplify`'s discipline across the verifiable-skill set. Six structured mutation operators (`tighten` / `consolidate` / `clarify` / `deduplicate` / `reorder` / `split-by-phase`); per-variant evaluation via the target's machine eval only (no LLM-as-judge inside the loop); three independent auto-merge guardrails (HTML comment in PR body, no `--auto` call in CI, GH Action human-actor check). Initial six targets: `release-version-check`, `simplify`, `format`, `tdd-cadence`, `init`, `feedback-loop-audit`.
+
+**Phase 3 PRD anchors (recursive-bootstrap chain via `specflow:prd`):**
+
+- `examples/.../features/006-insights-skill/` — 15 R / 16 AC, Gate 2 closed `passed-with-revisions`, 7 findings (2 blocks resolved), 2 push-backs defended.
+- `examples/.../features/007-prune-skill/` — 11 R / 11 AC, Gate 2 `passed-with-revisions`, 5 findings (2 blocks resolved), 1 push-back with concession.
+- `examples/.../features/008-optimize-skill/` — 17 R / 16 AC, Gate 2 `passed-with-revisions`, 7 findings (2 blocks resolved → R17 score-direction + R13 decline-streak semantics).
+
+### Changed
+
+**Frontmatter shape standardised across all 25 SKILL.mds:** every SKILL.md carries `name`, `description`, `status`, `phase`, `requires`, `produces`, `eval`. `status:` ∈ `shipped | v2-enhancement | v2-new`; `phase:` ∈ `1 | 2 | 3`. Bare-name skills (`/X` style — `panic`, `simplify`, `confidence-check`, `feedback-loop-audit`, `grill`, `optimize`, `prune`, `insights`) use bare names; `specflow:X` skills use the prefixed form.
+
+**`SKILLS.md` glossary refreshed:** every operational skill now carries the `🆕`/`🔧`/`✅` marker; legacy `⏳`/`⏳⏳` (Phase 2/3 stub) markers removed. Listed inventory matches disk 1:1.
+
+**`task-history.json` schema field naming aligned:** the retro field is `what_didnt_work` (not bare `what_didnt`). Worked-example admin tree migrated; eval blocks updated.
+
+**Cross-skill reference graph audited:** every `specflow:X` and bare-name reference inside SKILL.md bodies resolves to a real skill directory. H1 headings match `name:` frontmatter convention. One vendor-name guard rewritten to vendor-neutral phrasing per CLAUDE.md.
+
+### Migrations
+
+`MIGRATIONS.md` v2.2 → v2.3 entry. Adds:
+
+- `config.json.insights.{minCorpusSize default 10, cadence default "monthly"}`.
+- `config.json.prune.thresholds.{decisionLog.{ageDays 365, dormancyDays 182}, guidelines.dormancyDays 365, taskHistory.{ageDays 365, dormancyDays 182}}`.
+- `config.json.optimize.{targetCapUsd default $10, judgementWords default ["appropriately","adequately","cleanly","concrete signals","coverage","idiomatic","well","properly","correctly"]}`.
+
+Migration is purely additive — no file relocations, no schema rewrites, no destructive operations. New on-demand directories: `admin/insights/`, `admin/archive/`, `admin/scratch/optimize-{target}-{run-ts}/`. New append-only files: `admin/optimize-runs.jsonl`, `admin/scratch/prune-history.json`. Backups retained until next successful upgrade or `/specflow:upgrade --clean-backups`.
+
+The decline-streak windows (7-day operator-avoid, 30-day target-skip per `008-optimize-skill` PRD R13) and the unique-id promotion threshold (3 per `006-insights-skill` PRD R2) are intentionally hardcoded in v1 — the discipline-installer contract; surfacing as knobs would invite Goodharting.
+
+### PRD § Resolved decisions extended
+
+`v2/docs/PRD.md` § "Resolved decisions" gains 16 new entries dated 2026-05-06 covering E1-E10 prompt edits, brief replacing render, Codex sixth-reviewer at Gate 5, B.1 mechanical recheck, conditional-pass escalation, two-pass deterministic clustering for `/insights`, six-operator variant generation for `/optimize`, per-surface staleness boundaries for `/prune`, and the frontmatter shape standardisation.
 
 ## [2.2.0] — 2026-05-06
 

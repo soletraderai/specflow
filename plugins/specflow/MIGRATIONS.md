@@ -201,8 +201,73 @@ The brief release. Replaces the per-PRD HTML render (`specflow:render` → `{NNN
 
 ---
 
+## v2.2 → v2.3
+
+The Phase 3 memory-and-discipline release. Adds the `insights`, `prune`, and `optimize` config blocks; introduces three append-only data surfaces (`admin/insights/`, `admin/archive/`, `admin/optimize-runs.jsonl`); seeds default values for the per-skill thresholds with user confirmation at first invocation. Migration is purely additive — no file relocations, no schema rewrites, no destructive operations.
+
+### Scope
+
+**New config keys:**
+- `admin/config.json.insights.minCorpusSize` — integer, default `10`. Refusal threshold for `/insights` clustering — corpus below this size produces no proposals (registry-stable signal, not failure). Per `006-insights-skill` PRD R10.
+- `admin/config.json.insights.cadence` — string, default `"monthly"`, accepts `"weekly" | "monthly" | "quarterly" | "manual-only"`. Informational knob: the skill emits a chat-line on every successful run naming the next-suggested-run date computed from `last_successful_run_at + cadence_interval`; users wire their own scheduler. Per `006-insights-skill` PRD R6.
+- `admin/config.json.prune.thresholds.decisionLog.ageDays` — integer, default `365` (1 year / 4Q). Decision-log entries older than this AND with no reference in the dormancy window are prune candidates. Per `007-prune-skill` PRD R2.
+- `admin/config.json.prune.thresholds.decisionLog.dormancyDays` — integer, default `182` (~2Q). Reference-window for the decision-log staleness check.
+- `admin/config.json.prune.thresholds.guidelines.dormancyDays` — integer, default `365` (4Q). Guidelines with zero references in this window become prune candidates (or guidelines whose cited rules are superseded — whichever fires first). Per `007-prune-skill` PRD R3.
+- `admin/config.json.prune.thresholds.taskHistory.ageDays` — integer, default `365`. Task-history entries older than this AND with `superseded_by_retro: true` AND no addenda within the dormancy window are prune candidates. Per `007-prune-skill` PRD R5.
+- `admin/config.json.prune.thresholds.taskHistory.dormancyDays` — integer, default `182` (~2Q). Addenda window for the task-history staleness check.
+- `admin/config.json.optimize.targetCapUsd` — number (USD), default `10`. Per-target weekly spend cap for `/optimize` runs. Aggregate envelope across all targets is implicit at $60/week (six initial targets × $10); no aggregate cap is enforced. Override via `--override-budget {reason}` extends only that target's cap for the current run; the override reason is recorded to `admin/optimize-runs.jsonl`. Per `008-optimize-skill` PRD R7.
+- `admin/config.json.optimize.judgementWords` — array of strings, default `["appropriately", "adequately", "cleanly", "concrete signals", "coverage", "idiomatic", "well", "properly", "correctly"]`. Eligibility pre-flight rejects targets whose `eval:` field contains any of these words (the eval must be machine-checkable, not opinion). The default list is hard-coded; project-level entries extend it (do not replace). Per `008-optimize-skill` PRD R1.
+
+The decline-streak windows (7-day operator-avoid, 30-day target-skip) and unique-id promotion threshold (3 contributing ids per cluster) are intentionally hard-coded in v1 — not configurable surfaces. Per the PRDs, those values are the discipline-installer contract; surfacing them as knobs would invite Goodharting on the values themselves.
+
+**New folders + files (created on demand, not at migration time):**
+- `admin/insights/` — created on first `/insights` run. Contains `{YYYY-MM}-report.md` (replaced-in-place on within-month re-runs — represents current state of the month's pattern detection) and `{YYYY-MM}-runs.jsonl` (append-only execution log; one JSON object per line per run). Cross-month rollover writes fresh files; prior-month files are never touched.
+- `admin/scratch/insights-{YYYY-MM}.lock` — created during an `/insights` run; deleted on every exit path. Per-month concurrency lock between manual and cron paths.
+- `admin/archive/` — created on first `/prune` run. Contains `{YYYY-Q}-prune.md` files (one per quarterly run, append-only). The `prune` skill never modifies its own archive.
+- `admin/scratch/prune-{YYYY-Q}.lock` — created during a prune run; deleted on completion. Concurrency lock.
+- `admin/scratch/prune-history.json` — append-only run record + drift-continuity tracking across consecutive prune runs.
+- `admin/scratch/optimize-{target}-{run-ts}/` — per-run scratch directory with variants, eval logs, scoring outputs.
+- `admin/scratch/optimize.lock` — created during an optimize run.
+- `admin/optimize-runs.jsonl` — append-only run history with `merge_decision` field updated through human review.
+
+**No schema changes to existing files.** Migration does not modify `task-history.json`, `decision-log.md`, `rules/*`, `agents/index.json`, or any other pre-existing surface. The existing schemas are forward-compatible with the new consumer skills.
+
+**Convention additions (no schema change but enforced by skills):**
+- `/insights` mints promotion proposals by appending to the rules registry through `specflow:decision`'s mirror schema (audit-trail entry per accepted promotion).
+- `/prune` archive entries follow the decision-log entry shape (Title / Context / Decision / Rationale / Date / Related) so a restoration round-trip is byte-identical.
+- `/optimize` PR descriptions MUST include the literal "Human merge owns taste" footer linking to `CORE_PRINCIPLES.md`. Auto-merge is structurally impossible (no `--auto` call in CI; HTML comment guard; GH Action human-actor check).
+
+### Steps
+
+1. **Backup.** Copy `admin/config.json` to `admin/config.json.bak` before modifying.
+2. **Add config keys.** Insert the `insights`, `prune`, and `optimize` blocks under the top level of `config.json` with the defaults listed above. Pause and ask the user to confirm or edit the per-target budget cap and the prune thresholds before writing — those are project-taste, not auto-imposed. The `insights.cadence` and `optimize.judgementWords` defaults can be accepted or edited inline; the hardcoded thresholds (3-observation promotion, 7/30-day decline windows) are not surfaced as knobs.
+3. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.3.0`.
+4. **Verify.** Run `specflow:doctor`. Confirm the new config keys exist with the expected types; confirm `specflowVersion` is stamped; confirm the existing surfaces (`task-history.json`, `decision-log.md`, `rules/*`, `agents/index.json`) are untouched.
+
+### Reversibility
+
+- `config.json.bak` retained until the next successful upgrade or explicit `/specflow:upgrade --clean-backups`. To roll back: restore the `.bak`, downgrade the plugin version. The new on-demand directories (`admin/insights/`, `admin/archive/`) can be deleted manually if no run has populated them.
+- No source markdown is modified by this migration. The PRD bodies, interviews, manifests, and registry files are untouched.
+
+### Verify
+
+- `admin/config.json.insights.minCorpusSize` (integer) and `insights.cadence` (string ∈ four documented values) exist.
+- `admin/config.json.prune.thresholds.{decisionLog,guidelines,taskHistory}` blocks exist with the expected sub-keys.
+- `admin/config.json.optimize.{targetCapUsd, judgementWords}` exist with the expected types.
+- `admin/config.json.specflowVersion === "2.3.0"`.
+- `specflow:doctor` passes; new config blocks validate; existing surfaces report no drift.
+
+### Failure modes
+
+- **User declines `optimize.targetCapUsd` default.** Pause the migration; let the user enter a value. Refuse zero (an `/optimize` run with budget 0 is structurally a no-op and would surface as misleading).
+- **User declines all `prune.thresholds` defaults.** Pause; let the user edit each. The defaults are calibrated for projects with quarterly cadences; projects on monthly cadences may want shorter windows.
+- **Pre-2.3.0 project has no `/insights`/`/prune`/`/optimize` runs.** Expected — the on-demand directories don't exist yet. Migration succeeds; first run of each skill creates its directories.
+- **`specflow:doctor` reports drift.** Migration succeeds the file-write step but surfaces the doctor report; user resolves before declaring the migration complete.
+
+---
+
 ## Future entries
 
 Future versions append below. Format above. Newest at top.
 
-<!-- v2.x → v2.y entries land here as Phase 2 and Phase 3 ship breaking changes. -->
+<!-- v2.x → v2.y entries land here as Phase 4+ ships breaking changes. -->

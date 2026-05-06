@@ -6,7 +6,7 @@ New skills cannot ship without an entry in this file. Same rule for standard age
 
 Every skill's SKILL.md frontmatter declares **`requires:`** and **`produces:`** as file-path lists — the lightweight contract orchestrators use to validate handoff between skills. See [`skills/README.md`](./skills/README.md#field-semantics) for the field semantics.
 
-Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition · ⏳ phase 2 · ⏳⏳ phase 3
+Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (operational across Phases 1-3)
 
 ---
 
@@ -136,14 +136,14 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition · �
 
 ## Phase 2 — Development
 
-### `specflow:develop` ⏳
+### `specflow:develop` 🆕
 - **Purpose:** orchestrate implementation of tasks generated from a PRD. Lane-based execution (green/yellow/red); integrates agent teams; runs Gates 4 and 5.
 - **Triggers:** "develop {task-id}", "/specflow:develop", Linear status change to "In Progress".
 - **Produces:** code changes, PR, plan-vs-PRD anchor commentary, debate transcripts for Gates 4 and 5.
 - **Requires:** Phase 1 substrate; agent indexing; standard agents available.
 - **Eval:** Verifier confirms task acceptance criteria pass; Gate 5 (Codex code review) signs off.
 
-### `specflow:agent` ⏳
+### `specflow:agent` 🆕
 - **Purpose:** manage the per-repo agent registry — `add`, `remove`, `list`, `refresh`.
 - **Triggers:** "/specflow:agent {verb} {agent}".
 - **Produces:** snapshot files in `admin/agents/specialised/`; updated `index.json`.
@@ -154,42 +154,42 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition · �
 
 ## Phase 3 — Memory
 
-### `specflow:complete` ⏳⏳
+### `specflow:complete` 🆕
 - **Purpose:** retro skill — captures task outcome at completion; feeds the self-learning loop.
 - **Triggers:** "/specflow:complete {task-id}", invoked manually or via Linear webhook.
 - **Produces:** entry in `task-history.json`; significant patterns appended to `decision-log.md`.
 - **Requires:** completed task with PRD anchor.
 - **Eval:** entry has all required fields (id, scope, AI assistance level, what worked, what didn't, blast-radius outcome).
 
-### `specflow:decision` ⏳⏳
+### `specflow:decision` 🆕
 - **Purpose:** lightweight skill for users to manually log a decision out-of-band.
 - **Triggers:** "/specflow:decision".
 - **Produces:** entry in `decision-log.md`.
 - **Requires:** none.
 - **Eval:** entry has title, context, decision, rationale, date, related files/tasks.
 
-### `specflow:scope-change` ⏳⏳
+### `specflow:scope-change` 🆕
 - **Purpose:** capture mid-development scope changes — *why* the intent changed, what the PRD now needs to say, which tasks regenerate, what in-flight work is impacted.
 - **Triggers:** "/specflow:scope-change", auto-suggested by `specflow:develop` on detected drift.
 - **Produces:** updated PRD; regenerated affected tasks; impact list for in-flight work; `decision-log.md` entry.
 - **Requires:** active feature with existing PRD/tasks.
 - **Eval:** PRD diff is reviewable; affected tasks have updated coverage; impact list cites every in-flight artefact.
 
-### `/insights` ⏳⏳
+### `/insights` 🆕
 - **Purpose:** surface recurring patterns from `task-history.json` (monthly cadence).
 - **Triggers:** "/insights", scheduled cron.
 - **Produces:** report; suggested rule registry promotions (observation → guideline → non-negotiable).
 - **Requires:** populated `task-history.json`.
 - **Eval:** suggestions cite at least three observations per promotion.
 
-### `/prune` ⏳⏳
+### `/prune` 🆕
 - **Purpose:** prune stale rules, decisions, and snapshots (quarterly cadence).
 - **Triggers:** "/prune", scheduled cron.
 - **Produces:** archive of pruned items; updated registry.
 - **Requires:** registry with at-least-one-quarter age.
 - **Eval:** pruning is reversible (archive retained); user signs off before delete.
 
-### `/optimize` ⏳⏳
+### `/optimize` 🆕
 - **Purpose:** autoresearch loop across the verifiable-skill set (~6 initial targets: `release-version-check`, `simplify`, `format`, `tdd-cadence`, `init`, `feedback-loop-audit`).
 - **Triggers:** "/optimize", overnight GH Actions.
 - **Produces:** PR with optimised prompt for one skill; eval results; review summary.

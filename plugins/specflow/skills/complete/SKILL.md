@@ -1,6 +1,8 @@
 ---
-name: complete
+name: specflow:complete
 description: Retro skill — captures task outcome at completion; appends a structured entry to admin/task-history.json; elevates significant patterns to admin/decision-log.md. Auto-invoked by specflow:develop Phase F when a task closes; manually invoked via /specflow:complete {task-id}.
+status: v2-new
+phase: 3
 requires:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md
@@ -10,7 +12,7 @@ produces:
   - docs/specflow/admin/decision-log.md (elevated significant pattern, optional)
 eval: |
   appended task-history.json entry validates against the schema (id, scope, ai_assistance_level, completed_date,
-  what_worked, what_didnt, blast_radius_outcome, prd_anchor populated); idempotent re-invocation skips append; if
+  what_worked, what_didnt_work, blast_radius_outcome, prd_anchor populated); idempotent re-invocation skips append; if
   elevation fired, decision-log.md has a corresponding entry citing task_id.
 ---
 

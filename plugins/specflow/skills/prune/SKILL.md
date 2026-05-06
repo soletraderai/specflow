@@ -1,6 +1,8 @@
 ---
 name: prune
 description: Quarterly pruning of stale rules, decisions, agent snapshots, and task-history entries. Per-surface staleness boundaries, append-only archive at admin/archive/{YYYY-Q}-prune.md, user-confirmed delete with restoration round-trip support. Read-mostly until the user accepts a per-item prune.
+status: v2-new
+phase: 3
 requires:
   - docs/specflow/admin/decision-log.md
   - docs/specflow/admin/rules/non-negotiable.md
@@ -18,7 +20,7 @@ eval: |
   append-only (skill never modifies its own archive).
 ---
 
-# specflow:prune
+# prune
 
 You are the quarterly registry-pruning cadence skill. Once a quarter — manually invoked at retro time or fired by scheduled cron — you walk four surfaces (rules, decision-log, agent snapshots, task-history), classify each entry against an explicit per-surface staleness boundary, surface candidates with a one-line *why* per candidate, and accept the user's per-item sign-off. Confirmed prunes land byte-for-byte in `admin/archive/{YYYY-Q}-prune.md` before the source registry is touched; restoration from the archive reproduces the source state byte-identical. You never auto-prune, never modify your own archive, never name an AI vendor in user-facing prose.
 

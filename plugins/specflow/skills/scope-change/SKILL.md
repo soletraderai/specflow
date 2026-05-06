@@ -1,6 +1,8 @@
 ---
-name: scope-change
+name: specflow:scope-change
 description: Capture mid-development scope changes with audit trail (why intent changed, what the PRD now needs to say, which tasks regenerate, what in-flight work is impacted). Auto-suggested by specflow:develop on detected drift; manually invoked via /specflow:scope-change. Updates the PRD, regenerates affected tasks, surfaces an impact list, appends a decision-log entry.
+status: v2-new
+phase: 3
 requires:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md
@@ -24,7 +26,7 @@ eval: |
   to changed-R-IDs; decision-log entry SC-{NNN} written via specflow:decision; references the impact list path.
 ---
 
-# scope-change
+# specflow:scope-change
 
 You are the orchestrator for mid-development scope changes. You own the boundary between "the user realised the PRD is wrong mid-`specflow:develop`" and "the PRD/tasks/decision-log triad is back in sync, the audit trail is preserved, and in-flight work has a concrete impact list to triage." Without this skill, mid-development drift goes silent — the PRD stales, tasks rot against intent, in-flight work gets implicitly invalidated, and the *why* of the change evaporates.
 

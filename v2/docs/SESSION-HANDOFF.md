@@ -72,16 +72,13 @@ E6-E10 prompt edits remain applied (from prior session): `skills/develop/SKILL.m
 
 ```
 plugins/specflow/                                # THE PLUGIN — released as v2.1.0
-├── .claude-plugin/plugin.json                   # version: 2.1.0
+├── .claude-plugin/plugin.json                   # version: 2.3.0
 ├── README.md                                    # plugin operational entry point
 ├── CHANGELOG.md                                 # 2.0.0 + 2.1.0 release entries
 ├── CORE_PRINCIPLES.md
 ├── SKILLS.md                                    # skill glossary
 ├── MIGRATIONS.md                                # v1.x → v2.0 + v2.0 → v2.1
-├── skills/                                      # 22 skills:
-│   │                                              ✦ 18 operational (Phase 1's 15 + develop, agent, complete)
-│   │                                              ✦ 4 stubbed (decision, scope-change, /insights, /prune)
-│   │                                              (/optimize is also a stub — 22 total)
+├── skills/                                      # 25 skills, all operational
 │   └── …
 ├── templates/                                    # orchestrator-pattern.md + admin/ + agents/standard/
 └── examples/
@@ -99,7 +96,7 @@ v2/docs/                                         # planning + architectural trut
 ├── SESSION-HANDOFF.md                           # this file
 └── …
 
-.claude-plugin/marketplace.json                  # version: 2.1.0; description synced
+.claude-plugin/marketplace.json                  # version: 2.3.0; description synced
 ```
 
 ---
@@ -197,7 +194,7 @@ The v2 architecture per `v2/docs/PRD.md` is feature-complete. Future work is inc
 grep version plugins/specflow/.claude-plugin/plugin.json .claude-plugin/marketplace.json
 
 # Plugin layout intact
-ls plugins/specflow/skills/*/SKILL.md                                              # 22 skills
+ls plugins/specflow/skills/*/SKILL.md                                              # 25 skills
 wc -l plugins/specflow/skills/{develop,agent,complete}/SKILL.md                    # 649, 232, 472
 
 # Worked examples

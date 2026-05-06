@@ -1,6 +1,8 @@
 ---
-name: decision
+name: specflow:decision
 description: Lightweight skill to log a decision out-of-band. Interactive prompt walking the user through title / context / decision / rationale / related; appends a structured entry to admin/decision-log.md. Complement to specflow:complete which captures task-completion retros — decision is for noteworthy moments not tied to a closing task.
+status: v2-new
+phase: 3
 requires:
   - docs/specflow/admin/decision-log.md (created if missing)
 produces:

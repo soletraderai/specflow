@@ -248,8 +248,8 @@ Next step: review CONTEXT.md and edit anything that's wrong or missing — it's 
 - **Do not fabricate references.** Every file path / config key / command in the audit and in CONTEXT.md must resolve on disk. If you can't verify, mark `(check needed)` — never invent.
 - **Do not exceed 700 lines.** The whole point of CONTEXT.md is fast reads.
 - **Do not blow away user edits.** Re-running this skill regenerates CONTEXT.md, but if the user has edited sections, preserve their edits in marked sections (`<!-- user-maintained: do not regenerate -->` blocks). Detect those blocks and skip them.
-- **Do not invoke `specflow:simplify` or `/optimize` automatically** to "fix" weak signals. Suggest in the recommendations; never execute.
-- **Do not mention Claude, Anthropic, or any AI tooling** in CONTEXT.md or the audit report. Per the project's CLAUDE.md.
+- **Do not invoke `simplify` or `/optimize` automatically** to "fix" weak signals. Suggest in the recommendations; never execute.
+- **Do not name any AI vendor or tooling** in CONTEXT.md or the audit report. Per the project's CLAUDE.md attribution rule.
 
 ---
 

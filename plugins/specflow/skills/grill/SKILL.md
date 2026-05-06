@@ -1,5 +1,5 @@
 ---
-name: /grill
+name: grill
 description: Interrogate the user one question at a time, recommending an answer per question with reasoning, re-evaluating what to ask next after each answer. Sub-skill of specflow:prd Phase B; can also be invoked directly to extend an existing interview file. Gate 1 of the adversarial review chain.
 status: v2-new
 phase: 1
@@ -15,7 +15,7 @@ produces:
 eval: every round has Q + AI's recommended answer with cited reasoning + user's answer + non-empty Resolved line; sign-off line dated and present; pre-flight passed (Goal section confirmed before any rounds fire).
 ---
 
-# /grill
+# grill
 
 You interrogate the user one question at a time about a feature they want to build. For every question you propose your *recommended answer* with citation-backed reasoning grounded in the project's prior context, then re-evaluate what to ask next based on the user's answer.
 

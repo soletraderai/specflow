@@ -1,6 +1,8 @@
 ---
-name: agent
+name: specflow:agent
 description: Per-repo agent registry — add, remove, list, or refresh agents in admin/agents/. Standard agents (lifecycle + principles) ship with the plugin; specialised agents are matched to the project's stack and snapshotted in-repo for review.
+status: v2-new
+phase: 2
 requires:
   - docs/specflow/admin/agents/index.json
   - docs/specflow/admin/environment.json
@@ -40,23 +42,23 @@ Auto-invocations:
 
 ```json
 {
-  "schema_version": 1,
-  "agents": [
+  "generatedAt": "2026-05-06T09:14:00Z",
+  "standard": [
     {
       "name": "orchestrator",
       "category": "lifecycle",
       "source": "specflow",
       "version": "2.0.0",
-      "path": "admin/agents/standard/lifecycle/orchestrator.md",
-      "snapshot_date": "2026-05-06",
-      "upstream_path": "templates/agents/standard/lifecycle/orchestrator.md"
-    },
+      "path": "agents/standard/lifecycle/orchestrator.md"
+    }
+  ],
+  "specialised": [
     {
       "name": "frontend-developer",
       "category": "specialised",
       "source": "frontend-mobile-development",
       "version": "1.4.2",
-      "path": "admin/agents/specialised/frontend-developer.md",
+      "path": "agents/specialised/frontend-developer.md",
       "snapshot_date": "2026-04-12",
       "upstream_path": "~/.claude/plugins/frontend-mobile-development/agents/frontend-developer.md",
       "stack_match_reason": "Detected React + TypeScript stack via environment.json"
@@ -65,7 +67,7 @@ Auto-invocations:
 }
 ```
 
-`category` is one of `lifecycle`, `principles`, `specialised`. Lifecycle and principles together form the "standard" set; they live under `admin/agents/standard/{lifecycle|principles}/`. Specialised agents live under `admin/agents/specialised/`.
+`category` is one of `lifecycle`, `principles`, `specialised`. Lifecycle and principles together form the "standard" set; they live under `admin/agents/standard/{lifecycle|principles}/` and are listed under `standard:`. Specialised agents live under `admin/agents/specialised/` and are listed under `specialised:`. The `stack_match_reason` field is optional on specialised entries — newly added v2.1+ but existing entries without it remain valid.
 
 ---
 
@@ -178,7 +180,7 @@ Re-scan installed plugins; refresh the global agent index that `setup` builds; s
 **Outputs:** updated `admin/environment.json` agents section; updated `admin/agents/index.json`; possibly new files under `admin/agents/standard/`; drift report at `admin/scratch/agent-refresh-{timestamp}.md`.
 
 **Verify:**
-1. `index.json` `schema_version` unchanged (`1`).
+1. `index.json` retains its top-level shape (`generatedAt`, `standard`, `specialised`).
 2. Every previously-listed standard agent is still listed (or upgraded with bumped `version`).
 3. Drift report exists at `admin/scratch/agent-refresh-{timestamp}.md` if any specialised agents diverged from upstream.
 4. Every standard agent file in the plugin's `templates/agents/standard/` has a corresponding entry in `index.json`.
