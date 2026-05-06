@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "003-complete-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI's option (b) (drop the orphan-clause from AC-6's verification surface; let the corpus-signal contract live in `/insights`'s own PRD scope) is the right call. The architectural intent (lane-vs-outcome divergence is a corpus signal, not per-task elevation) is preserved by the schema appendix's inclusion of `lane_assigned` + `blast_radius_outcome` fields; the prose phrase remains as descriptive context noting where the corpus signal lives, without claiming AC-6 verifies it. Reverse traceability is now clean \u2014 AC-6 verifies the firing-condition contract exhaustively, and the corpus-signal capture is implicit in the schema rather than an orphan AC clause. Downstream `specflow:test` building a test plan against this PRD now binds the lane-vs-outcome non-firing case to the schema appendix (a bindable surface), not to a sentence floating inside AC-6 (an unbindable surface). Block resolved. The cleaner alternative (option (a) \u2014 add a new R) would have introduced corpus-signal capture as a per-task R-level requirement, which would expand the Phase 3 PRD's scope into `/insights`-PRD territory; option (b) is the surgical edit that respects boundary."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI's defence holds. The five-field listing in AC-7 (Title, Context, Decision, Rationale, Related) is the set the retro skill COMPOSES from retro fields; Date is auto-populated by `specflow:decision`'s write-helper at write-time, not composed by `specflow:complete` from retro state. PRD `See also` (line 188) confirms the sister-skill mirror pattern \u2014 `specflow:complete` reuses `specflow:decision`'s write contract for elevation entries. Adding Date to AC-7's listed fields would imply `specflow:complete` is responsible for date-composition, which contradicts the mirror pattern and would create a duplicate verification surface (this AC + `specflow:decision`'s own AC both checking Date). The canonical six-field shape is verified at the sister-skill boundary, not at AC-7. Concern resolved \u2014 a malformed entry missing Date is correctly the responsibility of `specflow:decision`'s ACs to catch, not this PRD's. Reverse traceability remains clean."
+    }
+  }
+}

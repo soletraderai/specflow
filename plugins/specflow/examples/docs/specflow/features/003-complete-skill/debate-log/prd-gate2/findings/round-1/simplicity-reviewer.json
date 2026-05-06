@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/003-complete-skill/003-complete-skill-prd.md:R10 + R7 — R10 (amend-mode) introduces an `addenda` array whose elements carry a `kind` taxonomy (`escaped-issue | note`). R7 (elevation review) tracks three new flag fields on the retro entry (`elevation_offered`, `elevation_fired_by`, `elevation_outcome`). Interview Round 5 documents `escaped-issue` as the consumer-asked addendum kind (the user explicitly named `--escaped-issue` as the amend invocation shape); `note` has no documented consumer ask in any grilling round — it was added by AI synthesis as a 'might be useful' kind. The triple-flag tracking on the retro entry similarly extends the schema with three fields where one would suffice (a single `elevation_outcome` enum covers `not-offered | offered-cancelled | offered-written | offered-not-fired`).",
+      "claim": "Speculative configurability — R10's `addenda.kind: 'note'` and R7's three-field elevation-flag triple are introduced without a documented consumer ask. CORE_PRINCIPLES.md Simplicity First sub-clause: 'Do not introduce config knobs without a concrete second consumer demanding them. Do not generalise on the first instance. Wait for the second.' Both additions generalise on the first instance; both can land later when a real second consumer surfaces.",
+      "proposed_change": "Two edits. (a) R10 + AC-10: drop `addenda.kind: 'note'` from the v1 schema; the only documented kind is `escaped-issue`, so the `kind` field can be hard-coded to that string in v1 (or dropped entirely — a single-kind array doesn't need a taxonomy). (b) R7 + AC-7: collapse the triple-flag tracking (`elevation_offered`, `elevation_fired_by`, `elevation_outcome`) into a single `elevation_outcome` enum with values `not-offered | offered-cancelled | offered-written-user-flag | offered-written-escaped-issue`. The two firing conditions and the cancellation outcome are all expressible in one enum; the triple is over-instrumentation for a Phase 3 retro skill that does not run a debate manifest. Both edits reduce the v1 schema surface; both can expand later when consumers surface real asks."
+    }
+  ]
+}

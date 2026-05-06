@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "plugins/specflow/skills/complete/SKILL.md:336 — Phase F.5 reads `admin/decision-log.md` and writes new entries via 'the same write-helper conventions `specflow:decision` uses (mirror schema per PRD R7 + Cross-skill integration)'. The cross-skill integration section at line 457 reinforces this: 'both skills write to `admin/decision-log.md`; F.5 uses the same write-helper conventions / mirror schema.' But `skills/decision/SKILL.md` does not yet exist (it's a sibling Phase 3 skill, listed in Reference at line 469 as future). The SKILL body asserts a write-helper convention contract against an artefact that has not yet been written. If `specflow:decision`'s eventual write-helper diverges from the format the SKILL body assumes (`Title as ## heading; **Date:**, **Context:**, **Decision:**, **Rationale:**, **Related:** lines, separated by ---`), `specflow:complete` ships a contract its sister cannot honour.",
+      "claim": "Cross-skill scope creep / forward-binding to an unwritten skill — F.5 binds the decision-log entry format to a sister Phase 3 skill that does not yet exist. The Surgical Changes principle bites because the SKILL body commits the write format on behalf of `specflow:decision`. The R7 mirror-schema clause is interview-grounded, but the format specifics (line 336's bullet list) are SKILL-author-stated, not PRD-stated. The Gate 4 da-r1-f1 partial-state-recovery concern noted similar cross-cutting risk; this is the Phase 3 sibling-of-an-unwritten-skill version of the same concern.",
+      "proposed_change": "Either (a) reframe F.5's format prescription as 'tentative — to be confirmed when `specflow:decision` SKILL.md ships; if the formats diverge, treat `specflow:decision`'s write-helper as authoritative and revise this skill's F.5 via PRD scope-change'; OR (b) add an explicit cross-skill ordering note at the SKILL header naming `specflow:decision` as a v1-blocker (do not ship `specflow:complete` v1 before `specflow:decision` lands its write-helper). Option (a) is surgical (defers binding); option (b) sequences the skill releases. Preference: (a), since R10's amend mode and R12's accept-and-ship linkage already work on the existing `decision-log.md` format that the calibration anchor (`002-develop-skill/.../decision-log.md` if any exists) sets — i.e. the format is observable from existing artefacts even before `specflow:decision` ships."
+    }
+  ]
+}

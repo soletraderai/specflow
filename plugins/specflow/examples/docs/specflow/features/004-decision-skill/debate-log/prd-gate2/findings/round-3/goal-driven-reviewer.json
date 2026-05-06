@@ -1,0 +1,13 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "004-decision-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Reverse-traceability gap closed. R11 (line 88) now names Stage 2 as an R-level contract explicitly — *'Stage 1 is the binary verify step; Stage 2 is the binary user-surface contract.'* — and the trace line at line 89 documents the Gate 2 refinement: *'the chat-line shape is now an R-level contract (not just a verify step), so AC-9's chat-line check has an R to verify against.'* AC-10 (line 112) verifies R11 by literal-text match against the chat-line shape, and the contract is now the requirement, not the verify mechanism. A fresh agent implementing R11 reads the chat line as the user-surface contract being established, not as a verification mechanism that could be rephrased. Option (b) (the smaller surgical edit) was applied and the orphan-AC gap is resolved."
+    }
+  }
+}

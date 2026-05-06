@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "003-complete-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Cross-skill dependency is now named, not buried. R4's revised Trace line ('Extended at Gate 2 per surgical-r1-f1: explicit cross-skill schema dependency call-out for the `superseded_by_retro` default flag') and AC-4's matching Schema dependency clause make the dependency loud at both R-level and AC-level. A reviewer reading R4 + AC-4 can now tell whether the supersede-flag schema is a `specflow:complete` concern or a `specflow:develop` concern; the answer is 'both, sequenced \u2014 `specflow:develop` ships the default flag first, then `specflow:complete` flips it.' This mirrors the 002-develop-skill AC-10 precedent (specflow:misc --auto payload schema dependency) and resolves the surgical-changes concern. Phase 3 PRD scope is preserved; Phase 2 cross-skill creep is converted into a named dependency the implementation can sequence around. Concern resolved."
+    }
+  }
+}

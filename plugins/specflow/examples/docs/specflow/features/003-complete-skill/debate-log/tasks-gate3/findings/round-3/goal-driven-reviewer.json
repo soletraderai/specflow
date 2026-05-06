@@ -1,0 +1,16 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "round": 3,
+  "gate": "tasks-gate3",
+  "feature": "003-complete-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "rationale": "Revision applied. T15's coverage-matrix row now explicitly documents the goal-anchored exception ('AC-15 / Goal Outcome surfaces (c)+(d) — anchored to goal Outcome (c) chat-line summary citing the new entry's id + (d) zero silent failures, not to an R; documented exception per Gate 3 finding goal-r1-f1'); the matrix reader can now distinguish a goal-anchored AC from an unstated-contract AC. The PRD line 135 citation in the AI's Round-2 rationale (PRD AC-15 explicitly verifying goal Outcome surfaces (c) and (d)) is the right grounding — AC-15 is not orphan, it is goal-anchored, and the matrix now surfaces that. Reverse traceability under E4 holds: every AC traces to either ≥1 R OR (in this documented exception) the goal Outcome surfaces named in the PRD."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "rationale": "Revision applied. T9's acceptance now binds 'existing retro' to the single boolean `superseded_by_retro: true`; the values-that-look-like-defaults boundary (where `actual_hours: 0`, `regressions_caught: {count:0, descriptions:[]}`, `escaped_issues: {count:0, descriptions:[], blast_radii:[]}` could observationally match either populated-with-zeros or never-written-defaults) is closed. The single-boolean signal is provably toggled by T4's supersede-write only — a fresh agent reading the entry can pass/fail the existence-check unambiguously. The acceptance is now binary on a value the retro write controls, not on field-value heuristics."
+    }
+  }
+}

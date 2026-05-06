@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/003-complete-skill/003-complete-skill-tasks.md:T15 — T15 ('Chat-line summary on every successful retro write; structured failure on every refused exit') is a separate task entry covering the chat-line summary surface AC-15 verifies. The acceptance reads 'On every successful retro write ... the skill emits the literal chat line ...' — the surface is a single emit-after-write call site, not a separate code path. T15 lists Depends-on `T1, T2, T4, T9, T10, T13, T14` (seven tasks), which is the strongest possible signal that T15 is touching the same code surface as those tasks — every retro write site and every refusal site emits its line at exit. From the simplicity lens, this looks like over-decomposition: the chat-line summary belongs in T1/T2's acceptance lines (success path) and the four refusal lines belong in T4/T9/T13/T14's acceptance lines (refusal paths) directly. A single task tracking the cross-cutting summary-emission contract creates bookkeeping overhead with no shippable surface that the others do not already cover.",
+      "claim": "Possible over-decomposition — T15 tracks a cross-cutting emit-on-exit contract that belongs inside the seven tasks it depends on (Simplicity First, 'Minimum surface that solves the problem'; applied at task-list level: minimum tasks that cover the requirements without creating bookkeeping overhead). The chat-line summary is one line per code path, written at the exit of each path; folding into the per-path tasks aligns surface-to-task and removes a task that exists only to remind the reader the rule applies everywhere.",
+      "proposed_change": "Drop T15. Add to T1's acceptance: 'On successful auto-fire write, the skill emits the literal chat line ...{summary line per AC-15}.' Add to T2's acceptance the equivalent for manual-cli writes. Add to T10's acceptance the equivalent for amend writes. Add to T4/T9/T13/T14 the four refusal-line sentinels in their respective refused-exit clauses (some are already there). Update the coverage matrix to note 'AC-15 / Goal Outcome surfaces (c)+(d) — verified across T1, T2, T4, T9, T10, T13, T14 (chat-line summary at every exit surface).' This tightens the task layer to one-task-per-surface without losing the AC-15 verification."
+    }
+  ]
+}

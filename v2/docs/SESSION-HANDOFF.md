@@ -1,228 +1,218 @@
-# Session handoff — specflow v2.0.0 shipped + Phase 2 staged
+# Session handoff — specflow v2.1.0 shipped
 
 **Date:** 2026-05-06
 **Prior sessions:** earlier handoffs archived as `SESSION-HANDOFF-2026-04-30-codex-review.md`. This file is the current snapshot.
-**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 build is staged at `plugins/specflow/skills/{develop,agent}/SKILL.md` with the dogfood-produced 002-develop-skill PRD now implemented end-to-end (19 tasks, Gate 3 closed `passed-with-revisions`). Prompt edits E1-E5 applied. v2.0 → v2.1 migration entry written. Awaiting real dogfood of Phase 2 in a consumer project before cutting v2.1.0.
-**Next session goal:** dogfood `specflow:develop` on a real Phase 2 task in a consumer project (or recursive bootstrap on a Phase 3 skill spec); then bump to v2.1.0.
+**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 shipped as **v2.1.0** with the chain dogfooded end-to-end through all six gates on the Phase 3 retro skill (`specflow:complete`). `specflow:complete` itself ships as the lane-execution byproduct (472 lines, 8 phases). Phase 3 PRD specs are pre-drafted for `specflow:decision` (004) and `specflow:scope-change` (005). E6-E10 prompt-edit recommendations from the 003 dogfood debrief await next-session application.
+**Next session goal:** apply E6-E10 prompt edits, then build out the remaining Phase 3 skills (`specflow:scope-change`, `specflow:decision`, `/insights`, `/prune`, `/optimize`).
 
 ---
 
 ## TL;DR — How to resume in 60 seconds
 
-1. Glance at `plugins/specflow/CHANGELOG.md` — the 2.0.0 release entry lists what shipped; the Unreleased section documents the Phase 2 staging.
+1. Glance at `plugins/specflow/CHANGELOG.md` — 2.0.0 + 2.1.0 release entries list what shipped at each cut.
 2. Read this handoff (you're here).
-3. Read `plugins/specflow/examples/docs/specflow/features/002-develop-skill/DOGFOOD-DEBRIEF.md` — the dogfood pass surfaced 2 `block` findings and 5 prompt-edit recommendations (E1-E5). All five are now applied.
-4. Look at `plugins/specflow/skills/develop/SKILL.md` (649 lines, 6 phases) and `plugins/specflow/skills/agent/SKILL.md` (232 lines, 4 verbs) — these are the Phase 2 skill bodies, ready for dogfood. The 002-develop-skill tasks file + Gate 3 manifest in `examples/docs/specflow/features/002-develop-skill/` shows the chain handled the develop spec end-to-end.
+3. Read `plugins/specflow/examples/docs/specflow/features/003-complete-skill/DOGFOOD-DEBRIEF.md` — the 003 dogfood surfaced 5 prompt-edit recommendations (E6-E10) with file:line citations. None blocked the 2.1.0 release; all are incremental tuning.
+4. Look at `plugins/specflow/skills/complete/SKILL.md` (472 lines, 8 phases) — the first Phase 3 skill, produced by running `specflow:develop` on its own PRD.
+5. The Phase 3 PRD anchors at `examples/.../features/{004-decision-skill,005-scope-change-skill}/` are ready for the next chain run.
 
 If you only have 5 minutes, jump to §"Next up" — it's the priority-ordered punch list.
 
 ---
 
-## What shipped in 2.0.0
+## What shipped in 2.1.0
 
-### Skills (15 operational + 2 v1-shipped/v2-aligned)
+### Phase 2 skills (operational)
 
-| Spine (5) | Workflow (5) | Trust ladder (2) | Telemetry + discipline (3) | v1-shipped (2) |
-|-----------|--------------|------------------|---------------------------|---------------|
-| `specflow:setup` (9 phases) | `specflow:task` (5 phases, Gate 3) | `panic` | `specflow:budget` | `specflow:prime` |
-| `specflow:prd` (5 phases, Gate 2) | `specflow:test` (3 phases) | `confidence-check` | `specflow:feedback-loop-audit` | `specflow:linear` |
-| `/grill` (Goal-pre-flight + adaptive loop) | `specflow:misc` (interactive + auto) | | `simplify` | |
-| `specflow:render` (markdown→HTML) | `specflow:design` (5 phases, decision-capture iteration log) | | | |
-| `specflow:upgrade` (resumable v1→v2) | `specflow:doctor` (5-category check) | | | |
+- **`specflow:develop`** — 649-line orchestrator at `plugins/specflow/skills/develop/SKILL.md`. 6 phases: pre-flight + plugin/CLI/MCP detection; lane triage with rule-based confidentiality classification; mechanical pre-Gate-4 lane recheck (R5.1); Gate 4 plan-vs-PRD debate manifest; lane execution (green batched / yellow HITL / red human-led); Gate 5 code-vs-plan with Codex degradation; Verifier + PR + task-history. Implements the dogfooded 002-develop-skill PRD.
+- **`specflow:agent`** — 232-line per-repo registry at `plugins/specflow/skills/agent/SKILL.md`. 4 verbs: `list | add | remove | refresh`. Snapshots specialised agents; surfaces drift on refresh; refuses removal of standard agents.
 
-### Standard agents (7 operational)
+### Phase 3 skill (operational by dogfood byproduct)
 
-- **Lifecycle:** `orchestrator` (closer collation logic + PASS/FAIL/HUMAN-DECISION-NEEDED rules), `devils-advocate` (parallel reviewer covering cross-cutting concerns), `verifier` (operational verification.md schema).
-- **Principle reviewers:** `simplicity-reviewer`, `surgical-reviewer`, `think-before-coding-reviewer`, `goal-driven-reviewer` — each with explicit input contracts (command-substitution paths), output JSON schema, Round-1 + Round-3 behaviour, severity calibration, forking discipline.
+- **`specflow:complete`** — 472-line orchestrator at `plugins/specflow/skills/complete/SKILL.md`. 8 phases A-H produced by running `specflow:develop` on its own PRD. Idempotency, race-protection via lock file, schema-validated `task-history.json` writes, optional elevation to `decision-log.md` with triple-flag tracking, Linear sync.
 
-### Worked examples (two, both fully populated)
+### Worked examples added
 
-- **`001-design-skill/`** — full PRD-through-Gate-3 lifecycle. Interview + PRD + Gate 2 manifest (passed) + 13 tasks + Gate 3 manifest (passed). Calibration anchor for healthy multi-gate flow.
-- **`002-develop-skill/`** — recursive-bootstrap dogfood artefact. Interview + PRD + Gate 2 manifest (passed after PRD revisions for 2 `block` findings) + `DOGFOOD-DEBRIEF.md` capturing friction surfaced and 5 prompt-edit recommendations. **This is the Phase 2 PRD anchor.**
+- **`features/003-complete-skill/`** — full lifecycle: interview + PRD (14 R / 15 AC) + Gate 2 (passed-with-revisions, 7 findings, 2 push-backs defended) + 15 tasks + Gate 3 (passed-with-revisions, 6 findings) + Gate 4 (passed-with-revisions, 6 findings) + Gate 5 with Codex (passed-with-revisions, 8 findings; Codex contributed 2/8 including a real correctness defect) + Verifier outcome (`verified-with-conditions`: 14 pass + 1 conditional) + DOGFOOD-DEBRIEF with E6-E10.
+- **`features/004-decision-skill/`** — Phase 3 PRD spec for `specflow:decision`: interview + PRD + Gate 2 manifest passed-with-revisions. Ready for next-session implementation.
+- **`features/005-scope-change-skill/`** — Phase 3 PRD spec for `specflow:scope-change`: interview + PRD + Gate 2 manifest passed-with-revisions. Ready for next-session implementation.
 
-### Worked-example admin tree
+### Prompt edits applied
 
-`plugins/specflow/examples/docs/specflow/admin/` is now populated for a hypothetical SaaS product (Northwind Orders, internal order-management dashboard). Demonstrates `config.json`, `pages.json`, `profiles.json` (5 personas), `environment.json`, `CONTEXT.md`, `decision-log.md` (5 entries), `task-history.json` (5 entries), the rules registry (with 4 illustrative project guidelines), and the agents index. Cross-references between files are internally consistent.
+- **E1** `skills/prd/SKILL.md` — Vision verbatim-vs-paraphrase contract codified.
+- **E2** `skills/prd/SKILL.md` — Phase C.3 self-check now cross-references ACs against Phase 1 skill schemas.
+- **E3** `skills/prd/SKILL.md` — Gate 2 status taxonomy extended with `passed-with-revisions`.
+- **E4** `templates/agents/standard/principles/goal-driven-reviewer.md` — orphan-AC reverse-traceability lens.
+- **E5** `skills/task/SKILL.md` — Phase A.2 surfaces Gate 2 block-finding resolutions.
 
-### Phase 2 build (staged, awaiting dogfood)
+### Migrations
 
-- **`specflow:develop`** — operational at `plugins/specflow/skills/develop/SKILL.md` (649 lines, 6 phases: pre-flight, lane triage, mechanical pre-Gate-4 lane recheck, Gate 4 plan-vs-PRD debate, lane execution, Gate 5 code-vs-plan with Codex degradation). Implements the full 002-develop-skill PRD (R1-R17 plus R5.1).
-- **`specflow:agent`** — operational at `plugins/specflow/skills/agent/SKILL.md` (232 lines, 4 verbs: `add | remove | list | refresh`).
-- **MIGRATIONS v2.0 → v2.1** — written; introduces `config.json.develop.{greenBatchCap, codexAtGate5}` (defaults 3 and env-derived), the optional `stack_match_reason` field on `agents/index.json`, and on-demand `develop-gate4/` / `develop-gate5/` debate-log subdirectories.
-- **E1-E5 prompt edits** — all five applied to `skills/prd/SKILL.md` (3), `skills/task/SKILL.md` (1), and `templates/agents/standard/principles/goal-driven-reviewer.md` (1).
+- `MIGRATIONS.md` v2.0 → v2.1 entry: introduces `config.json.develop.{greenBatchCap default 3, codexAtGate5 env-derived}`, optional `stack_match_reason` on `agents/index.json`, on-demand `develop-gate4/` and `develop-gate5/` debate-log subdirectories. Additive; backups retained.
 
-### Stubbed by design (not yet operational)
+### Phase 3 still-stubbed
 
-- **Phase 3:** `specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`. Specs not yet drafted.
+- `specflow:scope-change`, `specflow:decision`, `/optimize`, `/insights`, `/prune` ship as frontmatter-only stubs. PRD anchors exist for 004 and 005 (chain ready); 006-009 not yet drafted.
 
 ---
 
 ## Where everything lives
 
 ```
-plugins/specflow/                                # THE PLUGIN — released as v2.0.0
-├── .claude-plugin/plugin.json                   # version: 2.0.0
+plugins/specflow/                                # THE PLUGIN — released as v2.1.0
+├── .claude-plugin/plugin.json                   # version: 2.1.0
 ├── README.md                                    # plugin operational entry point
-├── CHANGELOG.md                                 # release history
-├── CORE_PRINCIPLES.md                           # the four behavioral principles
-├── SKILLS.md                                    # skill glossary — every skill has an entry
-├── MIGRATIONS.md                                # v1→v2 migration plan (consumed by specflow:upgrade)
-├── skills/                                      # 22 skills, 15 operational, 7 stubbed by design
-├── templates/
-│   ├── orchestrator-pattern.md                  # MUST-READ before building any orchestrator skill
-│   ├── profile-examples.json                    # 8 starter profiles
-│   ├── admin/                                   # CONTEXT.md template, rules registry seeds
-│   └── agents/standard/
-│       ├── lifecycle/                           # Orchestrator, Devil's Advocate, Verifier — all operational
-│       └── principles/                          # 4 principle reviewers — all operational
+├── CHANGELOG.md                                 # 2.0.0 + 2.1.0 release entries
+├── CORE_PRINCIPLES.md
+├── SKILLS.md                                    # skill glossary
+├── MIGRATIONS.md                                # v1.x → v2.0 + v2.0 → v2.1
+├── skills/                                      # 22 skills:
+│   │                                              ✦ 18 operational (Phase 1's 15 + develop, agent, complete)
+│   │                                              ✦ 4 stubbed (decision, scope-change, /insights, /prune)
+│   │                                              (/optimize is also a stub — 22 total)
+│   └── …
+├── templates/                                    # orchestrator-pattern.md + admin/ + agents/standard/
 └── examples/
     └── docs/specflow/
-        ├── admin/                               # ✅ NEW: populated reference tree (Northwind Orders)
+        ├── admin/                               # populated reference tree (Northwind Orders)
         └── features/
-            ├── 001-design-skill/                # ✅ full lifecycle (Gates 2 + 3 passed)
-            └── 002-develop-skill/               # ✅ NEW: dogfood artefact + Phase 2 PRD anchor
+            ├── 001-design-skill/                # full lifecycle (Gates 2+3 passed)
+            ├── 002-develop-skill/               # Phase 2 dogfood (Gates 2+3 passed) → drove 2.1.0
+            ├── 003-complete-skill/              # Phase 3 dogfood (Gates 2/3/4/5 passed-with-revisions, Verifier verified-with-conditions) → drove 2.1.0
+            ├── 004-decision-skill/              # Phase 3 PRD spec (Gate 2 passed-with-revisions); chain-ready
+            └── 005-scope-change-skill/          # Phase 3 PRD spec (Gate 2 passed-with-revisions); chain-ready
 
-v2/docs/                                         # planning + architectural truth (kept post-ship)
-├── PRD.md                                       # the architectural spec (source of truth)
+v2/docs/                                         # planning + architectural truth
+├── PRD.md                                       # the architectural spec
 ├── SESSION-HANDOFF.md                           # this file
-├── SESSION-HANDOFF-2026-04-30-codex-review.md   # archived
-├── specflow-overview.html                       # visual overview — open in browser
-├── codex-prd-feedback.md                        # earlier review feedback
-└── knowledge/                                   # research inputs (historical)
+└── …
 
-.claude-plugin/marketplace.json                  # version: 2.0.0; description synced with plugin.json
+.claude-plugin/marketplace.json                  # version: 2.1.0; description synced
 ```
-
-`v2/specflow/` no longer exists — its contents were moved to `plugins/specflow/` during the 2.0.0 cut. `v2/docs/` is retained as the architectural reference.
 
 ---
 
 ## Architectural decisions — locked in (DO NOT re-litigate)
 
-These are settled. Re-opening them costs hours and the original reasoning is durable.
+These are settled:
 
-1. **Goal-confirmation step.** `specflow:prd` Phase A articulates a Goal (Outcome / Audience / Success-looks-like / Driving value / Out-of-scope-at-goal-level) and gets explicit user confirmation **before** grilling starts. The goal is the precedent every downstream artefact anchors to. `/grill` refuses to run if the Goal section is unconfirmed.
-
-2. **Interview file replaces `discoveries.md`.** Per-feature `NNN-{slug}-interview.md` is the audit trail. Markdown only (no HTML render). The PRD body references the interview by relative path; the PRD's HTML header links to it.
-
-3. **`/grill` is a sub-skill of `specflow:prd`.** Auto-invoked in Phase B. Re-evaluates the next question after every answer. Can also be invoked manually to extend an existing interview.
-
-4. **Multi-agent debate manifest.** N principle-aligned reviewers + Devil's Advocate (+ Codex when available) fire findings in parallel into a manifest. AI responds Round 2; reviewers sharpen-or-accept Round 3; Orchestrator writes the closing decision entry. Manifests live inside the feature folder (`features/NNN-{slug}/debate-log/{gate}/`).
-
-5. **Principle reviewer category.** New agent category alongside lifecycle. One reviewer per core principle. Set scales 1:1 with `CORE_PRINCIPLES.md`.
-
-6. **Orchestrator pattern.** First-class operational doc at `templates/orchestrator-pattern.md`. Three primitives: forked sub-agent contexts, file handoff between steps, command substitution. Every orchestrator skill MUST follow this pattern. Calibration anchor: 51K tokens (V1 leak) → ~5K tokens (V2 with pattern).
-
-7. **Skill contracts.** Every SKILL.md has `requires:` and `produces:` frontmatter. File-level only (no JSON schemas — Simplicity First).
-
-8. **Per-skill token consumption tracking.** `specflow:budget` tracks parent-context delta per skill invocation via append-only `skill-invocations.jsonl`. Trending-up Δ tokens are the early-warning signal for orchestrator-pattern violations.
-
-9. **File naming convention.** Top-level feature files keep the `NNN-{slug}-` prefix on every filename so multiple PRDs are distinguishable in editor tabs and search. Folder-level uniqueness alone isn't enough.
-
-10. **Directory split.** `v2/docs/` (planning + architectural truth) is separated from the released plugin at `plugins/specflow/`.
-
-11. **Design iteration log captures decisions, not just diffs.** Every change to `design/{slug}-{current|proposed}.html` must land an entry in `design/{slug}-iteration-log.md` with the *Why* field populated. Append-only; reversals are new entries citing the original iteration. Defined in PRD Appendix C3.1. Empty *Why* is a verify-step failure.
+1. **Goal-confirmation step** before grilling.
+2. **Interview file is the audit trail** (markdown only, no HTML render).
+3. **`/grill` is a sub-skill of `specflow:prd`**.
+4. **Multi-agent debate manifest** at every adversarial-review gate.
+5. **Principle reviewer category** alongside lifecycle agents.
+6. **Orchestrator pattern** is mandatory (`templates/orchestrator-pattern.md`).
+7. **Skill contracts** via `requires:`/`produces:` frontmatter.
+8. **Per-skill token tracking** via `skill-invocations.jsonl`.
+9. **`NNN-{slug}-` filename prefix** preserved on top-level feature files.
+10. **Directory split** `v2/docs/` vs `plugins/specflow/`.
+11. **Design iteration log** captures decisions, not just diffs.
+12. **Gate status taxonomy** (E3): `passed | passed-with-revisions | passed-with-escalations | failed`. Used uniformly across Gates 2-5.
+13. **Codex is the sixth Gate 5 reviewer** when detected; degradation is graceful when absent (manifest header records `codex: unavailable`).
+14. **Lane triage tuple** is verifiability + blast radius + dependency state + confidentiality. Confidentiality is rule-based via `confidentialPaths`, not AI-rated.
+15. **B.1 mechanical lane recheck** runs after triage and before Gate 4 — file-count + module + path-glob — and records outcome even when no upgrades trigger.
+16. **PRD-anchor format on every plan** (R17 of `specflow:develop`): `"We're doing X because of PRD requirement Y. This aligns with goal field Z."`
 
 ### What NOT to do
 
 - ❌ Don't merge interview into PRD body.
-- ❌ Don't add HTML render for interview (PRD-only).
+- ❌ Don't add HTML render for interview, tasks, or test plan.
 - ❌ Don't expand lifecycle agents beyond Orchestrator/Devil's Advocate/Verifier.
-- ❌ Don't elevate "Explicit beats clever" or "Local reasoning beats cross-file elegance" to top-level principles (sub-clauses under Simplicity First).
+- ❌ Don't elevate "Explicit beats clever" or "Local reasoning" to top-level principles.
 - ❌ Don't drop `/grill` as a skill.
 - ❌ Don't relocate per-feature debate logs to `admin/`.
-- ❌ Don't drop the `NNN-{slug}-` filename prefix on top-level feature files.
-- ❌ Don't add `--no-verify` shortcuts, mock-the-database tests, or feature flags for "later" (CORE_PRINCIPLES).
-- ❌ Don't mention Claude, Anthropic, or any AI tooling in user-facing output, commits, PRs, code, or docs (CLAUDE.md).
+- ❌ Don't drop the `NNN-{slug}-` filename prefix.
+- ❌ Don't add `--no-verify` shortcuts, mock-the-database tests, or feature flags for "later".
+- ❌ Don't mention Claude, Anthropic, or any AI tooling in user-facing output, commits, PRs, code, or docs (CLAUDE.md). Technical filesystem path references (e.g. `~/.claude/plugins/`) are exempt where the path is the literal install location the skill must operate on.
 
 ---
 
 ## Next up — priority-ordered
 
-### Priority 1 — Real dogfood pass for Phase 2 (`specflow:develop`)
+### Priority 1 — Apply E6-E10 prompt edits
 
-**Why first:** Phase 2 skill bodies are written but only exercised against the synthetic 002-develop-skill PRD (which the chain itself produced). The skills haven't been run on actual implementation work. Real dogfood means: pick a small implementable feature in a consumer project (or recursively bootstrap a Phase 3 skill spec); run `specflow:develop` on its tasks; observe lane triage, B.1 mechanical recheck, Gate 4 + 5 debate manifests, and Verifier behaviour against real changes.
+**Why first:** the 003 dogfood surfaced 5 incremental edits with file:line citations and replacement text. Apply before any Phase 3 chain runs so downstream artefacts inherit the tighter prompts.
 
-**Options:**
-- **Option A (recommended):** recursive bootstrap on a Phase 3 skill (e.g. `specflow:complete`). Low blast radius — failures land in a new feature folder, not a real codebase. Generates a useful Phase 3 PRD as a byproduct, same shape as the 001/002 examples.
-- **Option B:** a small actual implementation feature in a consumer project — bigger blast radius but closer to real conditions.
+**Edits** (full text in `plugins/specflow/examples/docs/specflow/features/003-complete-skill/DOGFOOD-DEBRIEF.md`):
 
-**Watch for:**
-- Lane triage misclassifying a clearly-confidential path (rule-based check failing) → R5 in PRD: confidentiality classification is rule-based; failures here are bug-shaped.
-- B.1 mechanical recheck not catching a task that picks up new modules at execution time → R5.1 was added by Gate 2 because reviewer-driven re-lane (R5) couldn't catch this; if B.1 misses it too, the recheck logic needs sharpening.
-- Gate 4 reviewers rubber-stamping the lane plan → prompt teeth need sharpening; or all-finding-rejecting → too aggressive.
-- Codex absent + Gate 5 manifest still recording Codex findings → the degradation path is broken.
+- **E6** `skills/develop/SKILL.md` Phase A.2 — surface Codex availability check at A.1 with lens-overlap note.
+- **E7** `skills/develop/SKILL.md` Phase B.1.5 (new) — formalise `b1_recheck` aggregate-outcome schema with `batch_shape_at_default_cap` field.
+- **E8** `skills/complete/SKILL.md` Phase A.3 — surface 30-min stale-lock heuristic as `config.json.complete.staleLockMinutes` (deferred for v2 per Simplicity-First; capture as v2-candidate note for now).
+- **E9** `templates/agents/standard/principles/goal-driven-reviewer.md` — codify orphan-phase reverse-traceability lens for code-review gates (currently documented for PRD/tasks gates only).
+- **E10** `skills/develop/SKILL.md` Phase F.1.5 (new) — define conditional-pass escalation contract with two-option user prompt.
 
-**Estimated effort:** one focused session.
+**Estimated effort:** one focused half-session.
 
 ---
 
-### Priority 2 — Cut v2.1.0
+### Priority 2 — Phase 3 build (skill bodies for `decision`, `scope-change`)
 
-**Why:** once dogfood passes, the Phase 2 work is shippable. Same release discipline as v2.0.0:
+**Why next:** PRD anchors already exist at `004-decision-skill/` and `005-scope-change-skill/` (both Gate 2 closed). The chain is `specflow:task` → `specflow:develop` → lane execution = SKILL body.
 
-1. Bump `plugins/specflow/.claude-plugin/plugin.json` from 2.0.0 to 2.1.0.
-2. Bump `.claude-plugin/marketplace.json` (metadata.version + plugins[0].version) to 2.1.0; sync description if changed.
-3. Move the Phase 2 entry in `CHANGELOG.md` from `[Unreleased]` to `[2.1.0] — {date}`.
-4. Cut a GitHub release tagged `2.1.0`.
+**Sequence:**
 
-**Don't start until:** Priority 1 dogfood passes cleanly OR surfaces only fixable issues fixed before promotion.
+1. Run `specflow:task` against `004-decision-skill-prd.md`. Produces tasks + Gate 3 manifest.
+2. Run `specflow:develop` against the 004 tasks. Lane plan → Gate 4 → lane execution = `skills/decision/SKILL.md` → Gate 5 → Verifier. Same shape as the 003 dogfood; should run cleanly with E6-E10 applied.
+3. Repeat for 005-scope-change-skill.
+4. Update MIGRATIONS.md if any new schema additions land (e.g. config keys for these skills).
+
+**Don't start until:** Priority 1 (E6-E10) applied.
 
 ---
 
-### Priority 3 — Phase 3 build
+### Priority 3 — Phase 3 PRD specs for the remaining three skills
 
-**Scope:** `specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/insights`, `/prune`, `/optimize`. Self-learning memory loop closes here. Gate 6 of the adversarial chain.
+**Scope:** `/insights`, `/prune`, `/optimize`. The autoresearch-loop and memory-cadence skills. Same shape as 003/004/005 — recursive-bootstrap PRDs via `specflow:prd`.
 
-**Don't start until:** Phase 2 is shipped (Priorities 1 + 2) and dogfooded.
+**Don't start until:** Priority 2 ships the previous three Phase 3 skill bodies (proves the chain handles the full Phase 3 surface area).
+
+---
+
+### Priority 4 — Real consumer-project dogfood
+
+**Why eventually:** the recursive-bootstrap dogfoods exercise the chain end-to-end on synthetic targets. A real consumer-project run (small implementation feature in ClaimXPro or another live repo) is the next discipline test. Watch for friction the synthetic worked examples didn't surface.
+
+**Don't start until:** Phase 3 skill set is complete (Priorities 2 + 3).
 
 ---
 
 ## Open questions to revisit
 
-These are deferred — not decided, but not blocking. Address when the relevant context arrives.
-
-- **Render parity for tasks/tests/interview.** Should `NNN-{slug}-tasks.md`, `NNN-{slug}-test.md`, or `NNN-{slug}-interview.md` also render to HTML? Current decision: PRD only. Defer until consumers report a readability complaint that extends past PRDs.
-- **Rendered PRD commit policy.** Commit `NNN-{slug}-prd.html` alongside markdown, or gitignore as derived? Recommend committed (small, diffable, lets reviewers click through PRs without running render locally). User hasn't explicitly decided.
-- **Reviewer permission to amend the interview during debate.** Likely yes — a reviewer flagging an unflagged intentional-silence is itself a finding. Implementation TBD.
-- **`/insights` and `/prune` cadence.** Phase 3 — monthly + quarterly. Decide when Phase 3 lands.
-- **Mobile viewport defaults for `specflow:design`.** Specified in worked example as iPhone 15 Pro / Pixel 8. Implementer can confirm.
-- **Codex integration scope for upgrade migrations.** Not yet specified. Likely surface in v2.x → v2.y migration entries when those exist.
-- **Per-region drift thresholds for `specflow:design`.** Recorded in worked-example interview's "Topics not discussed" as a v2 candidate. Surface if consumers report drift-blindness on specific UI surfaces.
+- **Render parity for tasks/tests/interview.** Current decision: PRD only.
+- **Rendered PRD commit policy.** Recommend committed (small, diffable).
+- **Reviewer permission to amend the interview during debate.** Likely yes; implementation TBD.
+- **`/insights` and `/prune` cadence.** Decide when those skills land.
+- **Mobile viewport defaults for `specflow:design`.** Worked example specifies iPhone 15 Pro / Pixel 8.
+- **Codex integration scope for upgrade migrations.** Likely surfaces in v2.x → v2.y migration entries.
+- **Per-region drift thresholds for `specflow:design`.** Recorded in 001's "Topics not discussed".
+- **`config.json.complete.staleLockMinutes`** (E8) — surface as a config knob? Currently 30-min hard-coded in `skills/complete/SKILL.md`.
 
 ---
 
 ## How to validate the work survived this session
 
-After clearing context and re-loading:
-
 ```bash
-# Plugin layout intact at the released location
-ls -lh plugins/specflow/.claude-plugin/plugin.json                                 # version: 2.0.0
-ls -lh plugins/specflow/CHANGELOG.md                                               # 2.0.0 entry dated 2026-05-06
-ls plugins/specflow/skills/*/SKILL.md                                              # 22 skills, all should exist
-ls plugins/specflow/templates/agents/standard/lifecycle/                           # orchestrator, devils-advocate, verifier
-ls plugins/specflow/templates/agents/standard/principles/                          # 4 principle reviewers
+# Versions all on 2.1.0
+grep version plugins/specflow/.claude-plugin/plugin.json .claude-plugin/marketplace.json
 
-# Marketplace + plugin manifests in sync
-grep version plugins/specflow/.claude-plugin/plugin.json .claude-plugin/marketplace.json     # all 2.0.0
+# Plugin layout intact
+ls plugins/specflow/skills/*/SKILL.md                                              # 22 skills
+wc -l plugins/specflow/skills/{develop,agent,complete}/SKILL.md                    # 649, 232, 472
 
 # Worked examples
-ls plugins/specflow/examples/docs/specflow/admin/                                  # populated reference tree
-ls plugins/specflow/examples/docs/specflow/features/001-design-skill/              # full lifecycle through Gate 3
-ls plugins/specflow/examples/docs/specflow/features/002-develop-skill/             # dogfood artefact + Phase 2 anchor
-cat plugins/specflow/examples/docs/specflow/features/002-develop-skill/DOGFOOD-DEBRIEF.md   # E1-E5 prompt edits
+ls plugins/specflow/examples/docs/specflow/features/                               # 001..005 directories
+cat plugins/specflow/examples/docs/specflow/features/003-complete-skill/DOGFOOD-DEBRIEF.md | head -20
 
-# Architectural reference still intact
-ls -lh v2/docs/PRD.md v2/docs/SESSION-HANDOFF.md                                   # source of truth + this file
+# JSON parses cleanly across all gates
+find plugins/specflow/examples/docs/specflow/features -name "*.json" | xargs -L1 python3 -c "import json,sys; json.load(open(sys.argv[1]))"
 ```
 
 ---
 
 ## One last thing
 
-The Phase 1 ship is the discipline test, not the destination. The 2.0.0 release proves the chain end-to-end on two features: a synthetic worked example (`001`) hand-iterated for calibration cleanliness, and a dogfood artefact (`002`) that surfaced authentic friction (2 `block` findings, 1 split push-back, 5 prompt-edit recommendations). Both gates passed cleanly in both features after the chain handled them.
+The 2.1.0 release proves the chain handles a complete Phase 3 spec end-to-end through every gate. Of the 35 findings across 4 gates of the 003 dogfood (Gate 2 + Gate 3 + Gate 4 + Gate 5):
 
-Phase 2 builds on this substrate. The `002-develop-skill` PRD is not just an artefact — it's the spec the Phase 2 build implements against. Every Phase 2 task should trace back to a numbered requirement in that PRD. If a build decision can't cite an R, either the PRD is missing a requirement (run `specflow:scope-change` when that ships, or amend manually for now) or the build is exceeding scope.
+- 0 blocks landed at any gate (the chain caught architectural ambiguity earlier; the design discipline scales).
+- 4 push-backs from the AI; 1 sharpened by Codex (the lone non-trivial sharpen across all gates) — proving Codex earned its sixth-reviewer slot.
+- 1 conditional-pass at Verifier — the only non-clean Verifier outcome — and it cites a concrete cross-skill schema dependency rather than ambiguous failure.
 
-The architecture survived the dogfood. Apply E1-E5, then ship Phase 2.
+The architecture is healthy. Phase 3 build picks up cleanly from here.

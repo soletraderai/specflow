@@ -4,18 +4,54 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-**Phase 2 build staged.** `specflow:develop` (649-line orchestrator with Phases A-F: pre-flight, lane triage, mechanical pre-Gate-4 lane recheck, Gate 4 plan-vs-PRD debate, lane execution green/yellow/red, Gate 5 code-vs-plan with Codex degradation) and `specflow:agent` (232-line per-repo registry with `add | remove | list | refresh` verbs) now have operational bodies. The 002-develop-skill PRD is implemented end-to-end against 19 tasks (Gate 3 closed, status `passed-with-revisions`, 6 findings all `concern`, 1 push-back defended on the R5/R5.1 lane-recheck split).
+_The dogfood pass for 003-complete-skill produced E6-E10 prompt-edit recommendations (DOGFOOD-DEBRIEF). Apply in the next session, then build out the remaining Phase 3 skills (`specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`) using the chain. Phase 3 PRD specs for `decision` and `scope-change` are pre-drafted at `examples/.../features/{004-decision-skill,005-scope-change-skill}/`._
 
-The Phase 1 prompt-edit recommendations from the dogfood debrief (E1-E5) are now applied:
-- E1: `skills/prd/SKILL.md` — Vision verbatim-vs-paraphrase contract codified for Gate 2 trace integrity.
-- E2: `skills/prd/SKILL.md` — Phase C.3 self-check now cross-references ACs against Phase 1 skill schemas.
-- E3: `skills/prd/SKILL.md` — Gate 2 status taxonomy extended with `passed-with-revisions` (distinguishing clean pass from revision-and-pass).
-- E4: `templates/agents/standard/principles/goal-driven-reviewer.md` — reverse-traceability lens (orphan AC) added to anti-patterns.
-- E5: `skills/task/SKILL.md` — Phase A.2 surfaces Gate 2 block-finding resolutions before extraction.
+## [2.1.0] — 2026-05-06
 
-`MIGRATIONS.md` carries the v2.0 → v2.1 entry: introduces `config.json.develop.{greenBatchCap, codexAtGate5}` (defaults `3` and env-derived), the optional `stack_match_reason` field on `agents/index.json`, and the on-demand `develop-gate4/` / `develop-gate5/` debate-log subdirectories. Migration is additive; backups retained until next successful upgrade.
+The development-layer release. Phase 2 ships; the chain has been dogfooded end-to-end through all six gates on a Phase 3 retro skill (`specflow:complete`); `specflow:complete` itself ships as the lane-execution byproduct.
 
-The 2.1.0 cut waits on real dogfood — running `specflow:develop` on an actual Phase 2 task in a consumer project to surface friction the synthetic worked example didn't. Phase 3 (`specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`) remains stubbed.
+### Added
+
+**Phase 2 skills:**
+- `specflow:develop` (649-line orchestrator, 6 phases: pre-flight + plugin/CLI/MCP detection; lane triage with rule-based confidentiality classification; mechanical pre-Gate-4 lane recheck per R5.1; Gate 4 plan-vs-PRD debate manifest; lane execution green/yellow/red; Gate 5 code-vs-plan with Codex degradation; Verifier + PR + task-history). Implements the dogfooded 002-develop-skill PRD (R1-R17 plus R5.1).
+- `specflow:agent` (232-line per-repo registry, 4 verbs: `list | add | remove | refresh`; snapshots specialised agents; surfaces drift on refresh; refuses removal of standard agents).
+
+**Phase 3 skills (operational by dogfood byproduct):**
+- `specflow:complete` (472-line orchestrator, 8 phases A-H: pre-flight + invocation routing + lock acquisition; idempotency check; interactive Q&A or auto-mode synthesis; significance elevation evaluation with triple-flag tracking; append-only `task-history.json` write with schema validation; optional `decision-log.md` elevation; Linear status sync; lock release + chat-line summary). Produced by the lane-execution dogfood on 003-complete-skill.
+
+**Worked examples:**
+- `features/003-complete-skill/` — full Phase 3 retro-skill specification: interview + PRD (14 R, 15 AC) + Gate 2 (passed-with-revisions, 7 findings, 2 push-backs defended) + 15 tasks + Gate 3 (passed-with-revisions, 6 findings) + Gate 4 plan-vs-PRD (passed-with-revisions, 6 findings) + Gate 5 code-vs-plan including Codex (passed-with-revisions, 8 findings; Codex contributed 2/8 including a real correctness defect on schema validation under-check) + Verifier outcome (`verified-with-conditions`: 14 pass + 1 conditional) + DOGFOOD-DEBRIEF surfacing E6-E10 prompt edits.
+- `features/004-decision-skill/` — Phase 3 PRD spec for `specflow:decision` (interview + PRD + Gate 2 manifest passed-with-revisions; ready for Phase 3 implementation).
+- `features/005-scope-change-skill/` — Phase 3 PRD spec for `specflow:scope-change` (interview + PRD + Gate 2 manifest passed-with-revisions).
+
+**Six-reviewer Gate 5 with Codex:** The `develop-gate5` debate manifest fires Codex as the sixth parallel reviewer when detected in `environment.json`; when absent, the manifest header records `codex: unavailable` and reviewers proceed without it. The 003 dogfood demonstrates Codex catching a load-bearing correctness defect that same-provider reviewers missed.
+
+**Lane-plan artefact:** `admin/scratch/{NNN-slug}-develop/lane-assignments.json` records lane triage outcome including the four-axis triage tuple per task, B.1 mechanical recheck outcome, and lane summary. Read by Gate 4 reviewers; consumed by Phase D execution.
+
+**Verifier-outcome artefact:** `admin/scratch/{NNN-slug}-develop/verifier-outcome.json` records pass / conditional-pass / fail per task with evidence cited at file:line. Read by `specflow:complete` Phase A.2 (acceptance check) and by Phase F final disposition.
+
+### Changed
+
+- `skills/prd/SKILL.md` — applied E1-E3 prompt edits (Vision verbatim-vs-paraphrase contract; Phase C.3 cross-checks ACs against Phase 1 skill schemas; Gate 2 status taxonomy extended with `passed-with-revisions`).
+- `skills/task/SKILL.md` — applied E5 prompt edit (Phase A.2 surfaces Gate 2 block-finding resolutions before extraction; numbering shifted A.2→A.3, A.3→A.4).
+- `templates/agents/standard/principles/goal-driven-reviewer.md` — applied E4 prompt edit (orphan-AC reverse-traceability lens).
+- Gate-2/3/4/5 status taxonomy now uniformly: `passed | passed-with-revisions | passed-with-escalations | failed`. The 003-complete-skill dogfood ran every gate at `passed-with-revisions`.
+
+### Migrations
+
+- `MIGRATIONS.md` v2.0 → v2.1 entry. Adds `config.json.develop.{greenBatchCap default 3, codexAtGate5 env-derived}`, optional `stack_match_reason` field on `agents/index.json` (additive — existing entries valid without it), and on-demand `develop-gate4/` / `develop-gate5/` debate-log subdirectories. Migration backs up `config.json` before writing; user confirms `greenBatchCap` default at next `specflow:develop` invocation.
+
+### Dogfood debrief
+
+The 003-complete-skill dogfood validates the Phase 2 chain end-to-end:
+
+- **Lane triage** classified 13/2/0 (Green/Yellow/Red) with rule-based confidentiality matching zero confidential paths.
+- **B.1 mechanical recheck** ran across all 15 tasks (file-count, module, path-glob), no upgrades triggered, outcome recorded.
+- **Gate 4** (plan-vs-PRD) closed `passed-with-revisions` with 6 concerns and 1 defended push-back; 5 plan revisions applied.
+- **Lane execution** produced the 472-line `skills/complete/SKILL.md` honouring all Gate 4 revisions and prior Gate 2 push-backs.
+- **Gate 5** (code-vs-plan) closed `passed-with-revisions` with 8 findings; Codex contributed 2/8 including a load-bearing correctness defect on schema validation (`required = present, possibly with default` rather than `required ⇒ rejects extraneous`).
+- **Verifier** returned `verified-with-conditions` with 14/15 pass + 1 conditional-pass on T4 (cross-skill schema dependency on `specflow:develop` Phase F.5 default-flag emission).
+- E6-E10 prompt-edit recommendations captured in `features/003-complete-skill/DOGFOOD-DEBRIEF.md` for next-session application.
 
 ## [2.0.0] — 2026-05-06
 

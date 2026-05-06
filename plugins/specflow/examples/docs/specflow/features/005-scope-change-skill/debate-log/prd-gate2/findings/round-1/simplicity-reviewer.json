@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "005-scope-change-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/005-scope-change-skill/005-scope-change-skill-prd.md:R8 — 'Linear (when `admin/environment.json.mcp.linear.available` is true) — every issue where the issue's `feature` field == `{NNN-slug}` AND `status` ∈ {`In Progress`, `In Review`} AND the issue's Anchor R-ID is in the changed-R-ID set (Backlog excluded by default to avoid surfacing every queued ticket; user can opt in via `--include-backlog` flag)'. The PRD introduces a new `--include-backlog` flag for v1 of a skill that hasn't shipped yet. The user's interview Round 4 answer specifies Backlog excluded by default to avoid surfacing every queued ticket — that's the consumer ask for the *default behaviour*, but it's NOT a documented consumer ask for the *override flag*. The override flag is AI-introduced configurability; no use case in the interview surfaces a consumer who wants to include Backlog tickets in the impact list. The CORE_PRINCIPLES.md Simplicity First sub-clause is explicit: 'Do not introduce config knobs without a concrete second consumer demanding them.'",
+      "claim": "Speculative configurability — the `--include-backlog` flag was AI-introduced without a documented consumer ask. The interview surfaces 'Backlog excluded by default' as the design choice but never names a use case where a consumer would want to opt back in. Shipping the flag in v1 is the speculative-configurability trap; the v1 default-exclude behaviour is sufficient, and the flag can land in v2 if consumers report friction.",
+      "proposed_change": "Drop the `--include-backlog` flag from R8 and AC-8. Hard-code the v1 behaviour: 'Backlog tickets are excluded from the in-flight impact list. v1 ships with this hard-coded; consumers who want Backlog tickets surfaced can request the flag as a v2 enhancement when the use case surfaces.' Update AC-8 to drop the conditional second clause about `--include-backlog`. The default-exclude design is the load-bearing decision; the flag is speculation."
+    }
+  ]
+}

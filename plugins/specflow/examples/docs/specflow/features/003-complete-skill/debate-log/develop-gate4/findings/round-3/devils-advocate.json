@@ -1,0 +1,13 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "develop-gate4",
+  "feature": "003-complete-skill",
+  "responses": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (b) — surfacing the partial-state-recovery concern as a procedural pre-Phase-D announcement. The orchestrator's existing dependency-aware batcher mechanically ensures T15 lands in the final batch (T15 has 7 upstream dependencies including T1, T2, T4, T9, T10, T13, T14 — the dependency closure forces T15 into the last batch regardless of greenBatchCap). The procedural announcement now surfaces the batch-5-abort-leaves-12-tasks-unenforced risk to the user before Phase D begins, with the user given the chance to confirm. Adding a `batch_priority` per-task field per option (a) would have introduced redundant ordering metadata derivable from `depends_on` mechanically — Simplicity's flagging of speculative configurability applies at that level. The procedural addition is the surgical resolution; the user-visibility loop on partial-state risk is now closed. Cross-cutting partial-state recovery ambiguity resolved."
+    }
+  }
+}

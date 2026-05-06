@@ -1,0 +1,16 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "tbc-r1-f1",
+      "severity": "concern",
+      "evidence": "features/003-complete-skill/003-complete-skill-tasks.md:T13 — T13's acceptance handles three branches of the scope-changed-task case: (a) `decision-log.md` contains entries citing the task-id → `scope_change_log` populated chronologically; (b) `decision-log.md` contains zero entries citing the task-id → `scope_change_log: []`; (c) `tasks.md` no longer contains an entry for the task-id → structured failure refusal with sentinel chat line. Branch (c) introduces a runtime case (task dropped by scope-change) NOT named in the PRD AC-13; the PRD's R13 says 'tasks touched by `specflow:scope-change` mid-execution record the FINAL post-scope-change task definition' — but it does not specify what happens when the final state of the task is 'dropped'. T13's branch (c) makes an unstated implementation assumption: 'a dropped task SHOULD have a retro skipped rather than a stub retro recorded.' That assumption is defensible (a dropped task did not close — the retro skill exists for closed tasks), but the assumption is implicit in T13's acceptance rather than explicit. A reader implementing T13 with a different reasonable interpretation ('dropped task gets a stub retro recording the drop') would produce a different shape than T13 envisions.",
+      "claim": "Unstated assumption — T13's branch (c) (task dropped by scope-change → retro skipped with structured failure) embeds an implementation assumption not explicit in PRD R13 or AC-13 (Think Before Coding, 'Surface ordering and existence assumptions'). The PRD's Trace + Serves-goal pair for R13 names 'audit trail intact via cited decision-log entries' but does not name the dropped-task case; the task list inherits the gap and resolves it via an implementation choice in the acceptance.",
+      "proposed_change": "Sharpen T13 Notes line to surface the assumption explicitly: 'Branch (c) (task dropped by scope-change) is an implementation choice not directly named in PRD R13/AC-13; the choice is `retro skipped + structured failure line` rather than `stub retro recording the drop`. Rationale: a dropped task did not close, and `specflow:complete` exists to capture closure-time lessons; a stub retro would create a corpus entry that does not represent a closed unit of work. Surface this choice to the user at implementation; if the assumption breaks (a downstream consumer wants the stub-retro shape), revise via PRD scope-change.' This makes the assumption explicit at the task layer; if the choice is wrong, a downstream reader catches it before implementation."
+    }
+  ]
+}

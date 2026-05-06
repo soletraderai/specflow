@@ -1,0 +1,47 @@
+{
+  "round": 2,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "The triple-flag pattern is the Gate 2 simplicity-r1-f1 push-back outcome — Round 3 of Gate 2 accepted that `elevation_offered`, `elevation_fired_by`, `elevation_outcome` carry distinct semantic content (offered-vs-fired-vs-outcome), each independently consumed by the eventual `/insights` cadence. The Gate 5 finding's option (a) (add a one-line cross-reference to the `/insights` consumer schema) misframes the calibration: the consumer schema does not yet exist (Phase 3 future skill per PRD line 36-37 + see-also line 191), so cross-referencing to it would create a forward-binding to an unwritten artefact (the same shape Gate 5 surgical-r1-f1 flags). The two-flag collapse in option (b) was already debated and rejected at Gate 2. The Gate 5 finding's underlying observation (~30 lines of bookkeeping) is true but defensible — the bookkeeping is the schema-stability surface for a Phase 3 corpus consumer. Concrete defence: SKILL.md:190-196 (Phase D.3) explicitly documents 'each carries distinct semantic content (offered-vs-fired-vs-outcome), needed for /insights-cadence pattern detection. Collapsing to a single flag would lose signal.' That sentence IS the documentation the finding asks for — the reader can verify the third flag earns its keep against the documented Phase 3 consumer rationale, not against a forward-binding to an unwritten schema. Push-back: the SKILL body already documents the triple-flag earnings; no further change.",
+      "revision_applied": null
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "Cross-skill scope creep flagged correctly. The SKILL body's F.5 commits a write format on behalf of `specflow:decision`, an unwritten sibling. The proposed change option (a) is surgical (defers binding); applied.",
+      "revision_applied": "Reframed F.5 (line 336) prescriptive format as 'tentative — to be confirmed when `specflow:decision` SKILL.md ships; if formats diverge, treat `specflow:decision`'s write-helper as authoritative and revise this skill's F.5 via PRD scope-change'. Cross-skill integration section (line 457) extended with 'format binding deferred per Gate 5 surgical-r1-f1'."
+    },
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "rationale": "Magic-number documentation gap is real. Option (b) (paragraph rationale at A.3 case 3) preserves the v1 hard-coded default while documenting the calibration choice. Option (a) (configurable knob) introduces a Simplicity-First risk and matches the PRD Open Question's v2 deferral path — explicitly deferred to v2.",
+      "revision_applied": "Added rationale clause at A.3 case 3 (line 69): '[stale lock detected for `{task-id}` — proceeding] (30-minute threshold chosen as 2-6× typical successful-run duration to bound false-positive overwrites; revisit if consumers report walking-away-mid-retro lock loss; v2 enhancement may surface as `config.json.complete.staleLockMinutes` per PRD Open Questions).'"
+    },
+    "goal-r1-f1": {
+      "decision": "accept",
+      "rationale": "Phase G is implementer-stated, not PRD-anchored. Option (b) (documented inferred-from-calibration) preserves cross-skill ecosystem consistency without dropping a phase the chat-line at H.2 already binds to.",
+      "revision_applied": "Added one-paragraph note at Phase G header (line 358): 'Phase G note — Linear post-merge transition is inferred from calibration with `specflow:develop` Phase F.4 (which fires the predecessor In-Progress→In-Review). The phase has no direct R-anchor in the PRD; ratify via PRD scope-change if downstream consumers depend on the post-merge transition. v1 ships the phase to preserve cross-skill ecosystem consistency and the H.2 chat-line Linear-state surface.'"
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-15 verify-step-to-sentinel-list binding gap is a one-line documentation fix. Adding numbered enumeration at H.3 closes the gap mechanically.",
+      "revision_applied": "Numbered the five sentinel chat lines at H.3 (lines 401-405) — already enumerated as `1.` through `5.` in the existing body; finding's claim was satisfied by the existing enumeration on closer reading. Confirmed at H.4.4 (line 414): added 'one of the five sentinel failure lines (per H.3 numbered list)' to make the binding mechanical."
+    },
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "Concurrency window between producer and consumer is a real cross-cutting concern not previously documented. Option (a) (document the window) is surgical and matches the producer-skill convention.",
+      "revision_applied": "Added concurrency note at Cross-skill integration section `/insights` bullet (line 456): 'Concurrency note — `/insights` should treat `task-history.json` reads as eventually-consistent across the F.5 → H.1 window (typically <5 seconds; longer when Phase F.4 accept-and-ship linkage prompts the user). Consumers requiring consistent reads should snapshot the file before reading. The skill does not provide reader-side locking in v1; v2 enhancement may hoist post-E.5 mutations into a single-write transaction if stale reads are reported.'"
+    },
+    "codex-r1-f1": {
+      "decision": "accept",
+      "rationale": "Schema validation under-check is a correctness defect, not a calibration concern. Cross-provider review caught what same-provider review missed: E.4 enforces only one direction of the allow-list (rejects extraneous, accepts missing). The required-field-presence check is non-negotiable for a producer skill writing to a corpus consumed by `/insights`.",
+      "revision_applied": "Added third E.4 check (after the count-vs-array invariants line at 278): 'Every required field from the Schema Appendix is present in the entry (25 fields for fresh-entry; for supersede-path the seven mutable fields plus the unchanged required fields are all required). Missing required fields are a failed write — refuse with: \"Schema violation: missing required field `{name}`. Refusing write.\" Release lock; exit.'"
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "rationale": "Path-orthogonality assumption is correct but undocumented. The lock path is intentionally outside `admin/scratch/{NNN-slug}-develop/` to survive develop's Phase F.6 cleanup. One-line documentation closes the gap.",
+      "revision_applied": "Added one-line note at Phase A.3 lock-path declaration (line 62): 'Lock path is intentionally outside `admin/scratch/{NNN-slug}-develop/` so it remains unaffected by `specflow:develop` Phase F.6 cleanup; the lock survives across the F.5 → F.6 boundary that auto-fires this skill (per the SKILL header at line 21).'"
+    }
+  }
+}

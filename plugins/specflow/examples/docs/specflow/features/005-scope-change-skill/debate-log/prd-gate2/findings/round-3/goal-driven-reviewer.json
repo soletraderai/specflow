@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "005-scope-change-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI accepted the sharpen and applied both boundary clauses to AC-8. Draft PRs are now explicitly INCLUDED with a `(draft)` annotation per entry — a fresh agent compiling the impact list can apply the rule without judgement. Linear custom intermediate statuses (Blocked, On Hold, etc.) are now explicitly EXCLUDED with a chat-line surfacing the count of skipped tickets — the user knows the boundary was applied without the impact list silently dropping them. The lens question now resolves binary: 'Could a fresh agent run the impact-list compilation in isolation and report pass/fail unambiguously on whether the list is complete?' — yes, with the explicit boundary clauses. Block resolved."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI's push-back is defensible on close re-read. R12 binds to `templates/orchestrator-pattern.md` by reference, and the 25K/2K numbers in AC-13 are explicitly framed as scope-change-specific calibrations of that template's general target ('tighter than `specflow:develop`'s 30K because scope-change has fewer sub-skill steps'). The orphan-AC heuristic mis-fires here because the binding-by-reference IS the R-level expression — the template the R cites is canonical. Compare to 002-develop-skill's goal-r1-f1 (PRD-anchor format) where the architectural rule had no template reference within the R, and a new R was needed to make the rule R-level enforceable; here R12 already does that work via reference. AI's clarification of AC-13's `Verifies:` line to make the binding-by-reference explicit is the right surgical move — preserves the existing structure, names the dependency chain. Defence holds; no new R needed. The orphan-AC reverse-trace lens correctly fires when the AC's contract has no R-level expression anywhere in scope; here it has expression via a referenced template, which counts."
+    }
+  }
+}

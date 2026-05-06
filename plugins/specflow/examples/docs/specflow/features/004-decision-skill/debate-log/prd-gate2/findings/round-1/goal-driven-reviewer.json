@@ -1,0 +1,16 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "004-decision-skill",
+  "findings": [
+    {
+      "id": "goal-r1-f1",
+      "severity": "block",
+      "evidence": "features/004-decision-skill/004-decision-skill-prd.md:AC-10 — 'After a successful Stage-1 pass, the skill (Stage 2) emits exactly one chat line of the shape *\"Logged decision `{title}` to `docs/specflow/admin/decision-log.md`. Date: {YYYY-MM-DD}. Related: {comma-separated list, or the literal text \"none\"}.\"*'. AC-10 verifies a precise chat-line shape (literal text format, four named fields). Walking the Requirements section, R11 says 'the skill returns one chat line to the user: *\"Logged decision...\"*' as part of the verification description, but R11 is framed as a verification step (Stage 2 of post-write verification), not as an output-shape requirement. The chat line is also named in the goal's Success-looks-like as a success surface ('returns one chat line confirming the entry's title and the file path'). AC-10's literal-text verification has no R-level requirement establishing the chat-line shape as a contract — it sits inside R11 as a verification mechanism, not as the contract being verified. This is a reverse-traceability gap: AC-10 verifies a contract no R names as a contract.",
+      "claim": "Orphan AC (reverse-traceability gap) — AC-10's literal chat-line shape is a contract the PRD verifies but does not establish. R11 names the chat-line text inside the verify-step description ('Stage 2 — chat confirmation'), but verify steps are mechanisms for confirming requirements, not requirements themselves. The chat line is a user-facing success surface (per the goal's Success-looks-like), so its shape should be an R-level contract, not a verify-step note. A fresh agent implementing R11 might rephrase the chat line ('Decision logged: {title}, written to {path}, dated {date}') because the requirement reads as 'verification mechanism' not 'output contract' — and AC-10's literal-text check would then fail on a perfectly correct implementation.",
+      "proposed_change": "Promote the chat-line shape from a verify-step note to an R-level contract. Either (a) split R11 into two requirements — R11 (post-write read-back, Stage 1) verifying the file landed correctly, and a new R12 (chat confirmation surface) establishing the literal chat-line shape as the user-facing output contract; OR (b) keep R11 as-is but explicitly call out the chat line as an R-level contract within R11 with phrasing that names it as a contract: 'Stage 2 (chat confirmation) is the binary user-surface contract: the skill returns exactly one line of the shape...'. AC-10 then verifies R11 (Stage 2 contract) by literal-text match. Option (b) is the smaller surgical edit; option (a) is cleaner. Either closes the orphan-AC gap."
+    }
+  ]
+}

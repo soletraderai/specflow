@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "004-decision-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/004-decision-skill/004-decision-skill-prd.md:R7 — 'Before writing, the skill checks `admin/task-history.json`'s `mtime`. If the file's `mtime` is within the last 60 minutes (3600 seconds), the skill surfaces a soft prompt...'. R7 introduces an mtime-based heuristic with a hard-coded 60-minute window for an informational-only prompt that the goal's Out-of-scope-at-goal-level says is owned by `specflow:complete`'s lane. The 60-minute number is a magic constant; the file-system mtime check is itself a piece of mechanism the rest of the skill does not need (the skill is otherwise stateless w.r.t. the harness — read decision-log.md, write decision-log.md, return). Simplicity First sub-clause: 'No flexibility or configurability that wasn't requested.' The whole boundary-prompt mechanism was AI-recommended; if the duplicate-title check (R6) already prevents the most likely overlap (same titled decision logged twice), the soft prompt could be dropped from v1 and added when consumers report friction.",
+      "claim": "Speculative mechanism — R7's mtime-based soft prompt is a piece of state-aware machinery built around an informational-only prompt the skill could ship without. The duplicate-title check (R6) is the load-bearing safety net for the overlap concern; the mtime prompt is a second-order nudge that adds (a) a hard-coded constant (60 minutes), (b) a filesystem read of `admin/task-history.json` the skill otherwise doesn't need, and (c) a prompt the user has to dismiss in the common case where they did NOT run `specflow:complete` recently. v1 of a lightweight skill should err on the side of fewer prompts.",
+      "proposed_change": "Drop R7 and AC-6 from v1. Rely on R6's duplicate-title detection as the sole safety net for the `specflow:complete` overlap concern. If consumers report that decisions tied to recently-closed tasks are being logged out-of-band when they should have gone through `specflow:complete`, add the mtime prompt as a v2 enhancement at that point — driven by a real consumer ask, not a Round-4 AI recommendation. The Out-of-scope-at-goal-level line about `specflow:complete` owning task-derived decisions is sufficient documentation; a runtime nudge is not the documentation surface for that boundary."
+    }
+  ]
+}

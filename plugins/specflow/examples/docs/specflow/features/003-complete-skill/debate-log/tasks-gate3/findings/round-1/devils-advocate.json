@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "features/003-complete-skill/003-complete-skill-tasks.md:T10,T11,T12 — T10 (`--amend` mode) handles the addendum-driven elevation when an addendum has `kind: escaped-issue` AND `blast_radius: medium|high` (R6's elevation rule fires from the addendum). T11 + T12 handle accept-and-ship retros: when `accepted_with_failure: true`, the elevation prompt fires UNCONDITIONALLY at the retro-write time (per T12's acceptance). The cross-product case is unhandled: a `--amend` invocation on a task whose original retro entry has `accepted_with_failure: true` AND the amend adds a `kind: note` addendum (not an escaped-issue). Does T12's unconditional-elevation-prompt fire AGAIN on the amend? Or does T10's amend path fire elevation only when the addendum is an escaped-issue medium-or-high? T10's acceptance fires elevation only on the `kind: escaped-issue + blast_radius medium-or-high` branch (per R6 + the explicit rule in T10's acceptance). T12's unconditional firing applies to 'when `accepted_with_failure: true` is set' but doesn't say whether it fires once at original-retro-time only or every time the entry is touched (i.e. on every amend too). A reader implementing T10 + T12 could ship two reasonable but incompatible behaviours: (a) amend on accept-and-ship task with kind:note → no elevation prompt (T10 logic dominates); (b) amend on accept-and-ship task with kind:note → unconditional elevation prompt fires (T12 logic dominates). The signal source for the firing decision (read original entry's flag? read the addendum's kind?) is implementer-dependent.",
+      "claim": "Cross-product branch ambiguity — the (accept-and-ship + amend with kind:note) case is unhandled by T10 and T12 together; the trigger logic (T12 unconditional vs T10 conditional) collides on this branch and the task list does not pin which dominates (Devil's Advocate cross-cutting lens). The collision is observable: an amend with kind:note on an accept-and-ship retro could either prompt the user for elevation again (annoying, possibly correct) or skip the prompt (silent, possibly correct).",
+      "proposed_change": "Sharpen T10's acceptance to explicitly carve out the accept-and-ship interaction: 'On amend invocations where the existing entry has `accepted_with_failure: true`, T12's unconditional-elevation-prompt does NOT re-fire — T12's prompt fires once at the original retro-write time only; subsequent amends follow R6's two-condition rule (per T10 logic). The retro entry's `decision_log_links` field already captured the Phase F.3 entry at original-retro-time; an amend adds linkage only if R6 conditions fire on the addendum.' Sharpen T12's Notes line: 'The unconditional elevation prompt fires exactly once per retro entry — at original retro-write time. Subsequent amends (per T10) follow R6's two-condition rule; T12's unconditional logic does NOT re-fire on amends.' This pins the cross-product to a single deterministic behaviour."
+    }
+  ]
+}

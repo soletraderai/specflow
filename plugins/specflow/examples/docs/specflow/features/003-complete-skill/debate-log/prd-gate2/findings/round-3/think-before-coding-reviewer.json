@@ -1,0 +1,17 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "003-complete-skill",
+  "responses": {
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "reasoning": "The AI's option (b) (Note in PRD body articulating the load-bearing assumption) is the right calibration. Option (a) (`escaped_issues_capture_state` enum field) would have expanded the v1 schema beyond the documented consumer ask \u2014 no interview round surfaced a need for mechanical capture-state distinction; the user's Round 2 resolution (line 43) only named the read-discipline consumers should follow. Documenting the assumption explicitly in R3's prose (canonical default = 0; AMEND path is primary capture surface; consumers should treat retro-time 0 as 'unknown' until addenda confirm zero) makes the assumption observable to downstream readers without expanding the schema. Block resolved \u2014 the load-bearing assumption is no longer hidden in the PRD's prose. The Open Questions section's `actual_hours` declined-to-estimate sentinel question remains as the adjacent capture-state nuance for v2 follow-up."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "reasoning": "R4's tradeoff articulation now makes the elimination defensible. The new rationale (replace-in-place chosen for entry-shape simplicity; Phase-F-vs-retro divergence signal explicitly named as the cost; v2 can preserve via `phase_f_*` mirror fields if `/insights` surfaces a real divergence-signal consumer) is the multi-interpretation framing the principle's 'Present multiple interpretations when ambiguity exists' guidance requires. No schema change in v1; just the rationale. Concern resolved. The pattern is the same as Phase 2 `specflow:develop`'s tbc-r1-f2 outcome (rationale rewrite without behaviour change) \u2014 Think Before Coding bites on rationale precision, not implementation churn."
+    }
+  }
+}

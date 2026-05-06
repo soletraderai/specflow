@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "004-decision-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "features/004-decision-skill/004-decision-skill-prd.md:R7 + AC-6 — R7 says 'Before writing, the skill checks `admin/task-history.json`'s `mtime`. If the file's `mtime` is within the last 60 minutes (3600 seconds), the skill surfaces a soft prompt...'. AC-6 says 'When `admin/task-history.json` exists AND its `mtime` is within the last 3600 seconds (60 minutes), the skill surfaces exactly one prompt of the shape...'. The contract assumes `admin/task-history.json` exists. The Phase 1 sister `specflow:setup` creates the file with an empty template (per `docs/PRD.md` § Phase 1 scope item I7), but a project that ran an older version of `specflow:setup` before `task-history.json` was added — or a project that has the file but it's empty (no entries yet because no tasks have completed) — could still hit R7's check. AC-6's 'exists AND mtime within window' covers the existence case at AC level, but R7's prose does not name the file-missing case explicitly, leaving the requirement-level intent ambiguous. The empty-but-recent-mtime case (file freshly created by setup but no tasks closed) would also fire the prompt incorrectly — the user has not closed a task in the last 60 minutes; setup just touched the file.",
+      "claim": "Coverage gap — R7's mtime check has two unaddressed cases: (i) `task-history.json` does not exist (fresh project before setup, or older specflow installation that predates the file), and (ii) `task-history.json` exists with a recent `mtime` but contains no entries (e.g. setup just ran). Case (i) is not named in R7's prose (only AC-6 covers it implicitly via 'AND'). Case (ii) would fire the soft prompt incorrectly — the user has not closed a task; setup or upgrade just touched the file. The prompt would be wrong-context and the user would have to dismiss it on first decision-log entry of every fresh project.",
+      "proposed_change": "Extend R7 with explicit handling for both edge cases: 'When `admin/task-history.json` does not exist (fresh project, or pre-feature-flag installation), the soft prompt does not fire — the skill proceeds directly to the write step.' For the empty-file case: 'When `admin/task-history.json` exists but contains zero task entries (e.g. setup or upgrade just touched the file), the soft prompt does not fire either — an empty task-history means no recent task was actually closed, regardless of mtime.' Update AC-6's branch list to: 'When `admin/task-history.json` does not exist, OR exists but contains zero entries, OR exists with mtime older than 3600 seconds — the prompt does not fire.' This closes both edge cases at both R and AC level."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "plugins/specflow/skills/complete/SKILL.md:170-205 — Phase D maintains a triple-flag (`elevation_offered`, `elevation_fired_by`, `elevation_outcome`) on every retro entry. The Gate 2 simplicity-r1-f1 push-back defended the triple-flag as carrying distinct semantic content needed for `/insights` consumption (offered-vs-fired-vs-outcome), but the SKILL body materialises this as three separate working-memory tracking points (D.3) plus three top-level entry fields (E.1) plus three downstream consumers (F.1, F.5, F.6). For a Phase 3 retro skill of 472 lines, that's ~30 lines (6.4% of the body) spent on flag bookkeeping where two flags (fired_by + outcome with `outcome: 'not-offered'` carrying offered=false implicitly) could carry the same signal.",
+      "claim": "Defensible bloat — the SKILL body is 472 lines for a Phase 3 retro skill with no multi-agent orchestration. The triple-flag pattern (Gate 2 defended) materialises across four phases of the body and is the single largest semantic surface the skill carries. Simplicity-First sub-clause: 'two fields where one will do is over-instrumentation'. The Gate 2 defence stands on `/insights`-consumer grounds, but the SKILL body did not document the consumer schema, so the reader cannot verify the third flag earns its keep against consumer evidence — it earns its keep against a consumer that does not yet exist. The premature-abstraction risk is real even if the Gate 2 calibration was correct.",
+      "proposed_change": "Either (a) accept the triple-flag and add a one-line cross-reference at D.3 to the `/insights` (Phase 3 future skill) consumer schema that names the three signals the flag separates — making the consumer visible in the SKILL body so a reader can verify the third flag is non-speculative; OR (b) collapse to two flags (`elevation_fired_by`, `elevation_outcome`) and derive `elevation_offered` mechanically from `elevation_outcome != 'not-offered'`. Option (a) is the surgical defence (preserves Gate 2 outcome, closes the documentation gap). Option (b) would re-open Gate 2 — not recommended."
+    }
+  ]
+}

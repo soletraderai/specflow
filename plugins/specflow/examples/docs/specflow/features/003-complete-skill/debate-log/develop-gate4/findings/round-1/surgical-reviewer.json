@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "develop-gate4",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "admin/scratch/003-complete-skill-develop/lane-assignments.json:tasks[0].files_touched — T1's `files_touched` array lists both `plugins/specflow/skills/complete/SKILL.md` AND `plugins/specflow/skills/develop/SKILL.md`. Cross-referencing against `003-complete-skill-tasks.md:T1` Scope line: 'skills/complete/SKILL.md Phase A trigger-detection step; skills/develop/SKILL.md Phase F.5 → F.6 boundary hook (invoke specflow:complete per-task before scratch-cleanup); triggered_by field writer on the retro entry.' The tasks-file Scope explicitly names `skills/develop/SKILL.md` Phase F.5 → F.6 hook as a code surface T1 touches. However, Gate 3 surgical-r1-f1 (manifest line 28-30 + 39) accepted the finding that T4's parallel cross-skill surface (`skills/develop/SKILL.md` Phase F.5 emitting `superseded_by_retro: false` default) belongs in a separate `specflow:develop` enhancement PRD — and T4's Scope was tightened accordingly, with the cross-skill prerequisite confined to a runtime detection check inside `specflow:complete`. T1's symmetrical cross-skill surface (the auto-fire hook in develop's SKILL.md F.5 → F.6 boundary) was NOT tightened by Gate 3; T1's Scope still names develop's SKILL.md as a code-edit surface. The asymmetry surfaces as scope drift on T1 relative to T4's Gate 3 resolution.",
+      "claim": "Symmetric scope drift — Gate 3 surgical-r1-f1 tightened T4 to remove `skills/develop/SKILL.md` as a code surface and confined the cross-skill dependency to runtime detection inside `specflow:complete`. T1's auto-fire hook is a structurally identical cross-skill code-edit surface (it requires editing `skills/develop/SKILL.md` Phase F.5 → F.6 to invoke `specflow:complete` per-task), but T1's Scope was not tightened in the same way. Surgical Changes principle: 'Touch only what you must.' If T4's cross-skill surface belongs in a `specflow:develop` enhancement PRD, T1's parallel cross-skill surface (the F.5 → F.6 hook itself) belongs in the same enhancement PRD — the asymmetric treatment is the surgical drift.",
+      "proposed_change": "Either (a) tighten T1's Scope to drop `skills/develop/SKILL.md` Phase F.5 → F.6 hook from the code-edit surface AND add a Notes-line clause naming the `specflow:develop` Phase F.5 → F.6 hook as a cross-skill prerequisite to be shipped via the same `specflow:develop` enhancement PRD that T4's `superseded_by_retro: false` default depends on (mirroring T4's Gate 3 resolution); the lane-assignments.json `files_touched` for T1 then drops `skills/develop/SKILL.md` and lane re-resolves to `green` (blast=low, all axes Green-qualifying). OR (b) defend T1's cross-skill scope as in-scope for `specflow:complete` v1 (auto-fire integration cannot be split from the producer-skill landing) AND raise the Gate-3-revision asymmetry as a known-and-accepted tradeoff in the Gate 4 manifest. Option (a) is the surgical-changes-compliant resolution; option (b) preserves T1's broader scope but documents the asymmetric tradeoff."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "decisions": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "Revision applied at F.5 (tentative-format clause) and Cross-skill integration (format-binding-deferred clause). The tentative-binding shape is the surgical fix — it preserves the existing decision-log format observable from prior artefacts while flagging that `specflow:decision`'s eventual write-helper is the authoritative source. Future revision via PRD scope-change is the right escape hatch. The Phase 3 sibling-of-an-unwritten-skill pattern is now documented; future Phase 3 skills can reuse the deferred-binding shape."
+    }
+  }
+}

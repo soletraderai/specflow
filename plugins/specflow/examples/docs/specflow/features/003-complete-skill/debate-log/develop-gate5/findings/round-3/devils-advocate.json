@@ -1,0 +1,13 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "decisions": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "Revision applied at Cross-skill integration `/insights` bullet (concurrency note documenting eventually-consistent read window with consumer-side snapshot recommendation). The producer-skill-documents-the-window approach is surgical and matches the v1 simplicity envelope. v2 deferral to single-write-transaction is conditioned on consumer reports of stale reads — the right calibration for a window the SKILL body cannot eliminate without restructuring Phase F. Cross-cutting concern surface explicitly named; future Phase 3 producer skills (`specflow:decision`, `specflow:scope-change`) should adopt the same documented-window pattern."
+    }
+  }
+}

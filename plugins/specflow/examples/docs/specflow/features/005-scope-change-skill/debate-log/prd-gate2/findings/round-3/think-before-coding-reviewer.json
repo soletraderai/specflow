@@ -1,0 +1,13 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "005-scope-change-skill",
+  "responses": {
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI accepted the sharpen and applied both halves cleanly. R4 now names the `~~text~~` strikethrough markup paired with the `(superseded by Scope change {YYYY-MM-DD})` parenthetical as the canonical machine-readable signal — the parser-contract assumption is now stated, not buried. R10.1's `superseded_resolved_lines` shape changed from line-numbers to round+anchor-text, which is drift-resistant because the wrapped characters are byte-stable across the strikethrough edit. AC-4's new clause (every `~~...~~` run must have a matching supersession note within the same line) gives a fresh agent a binary check for the markup discipline. The unstated load-bearing assumption is now stated; the tradeoff between human-readable inline markup and machine-parseable structured signal is articulated and the chosen path (inline strikethrough as the canonical contract) is named. Resolved."
+    }
+  }
+}

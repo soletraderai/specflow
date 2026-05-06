@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "005-scope-change-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/005-scope-change-skill/005-scope-change-skill-prd.md:R10 + R10.1 — R10 invokes `specflow:decision` as a sub-skill with a payload using the standard schema (title, context, decision, rationale, date, references). R10.1 specifies 'three scope-change-specific keys EMBEDDED inside the references block' (`affected_r_ids`, `superseded_resolved_lines`, `impact_list_path`) AND specifies the entry's `id` follows the convention `SC-{NNN}` with a 'separate counter from `specflow:decision`'s default counter, so scope-change entries are filterable by id-prefix in `/insights` queries.' The PRD assumes `specflow:decision` accepts (a) arbitrary keyed-blocks within `references` AND (b) an `id_prefix` parameter that overrides the default counter. Neither is documented as part of `specflow:decision`'s payload schema in the SKILLS.md entry (which only names 'title, context, decision, rationale, date, related files/tasks' — no `id_prefix`, no arbitrary references-block extensibility). Implementing R10.1 as written would require modifying `specflow:decision`'s payload schema to add those affordances. That's a Phase 3 sister-skill schema change smuggled into this PRD.",
+      "claim": "Cross-skill creep — R10.1 implicitly modifies `specflow:decision`'s payload schema to add arbitrary keyed-blocks within `references` AND an `id_prefix` parameter, neither of which the current Phase 3 schema documents. Surgical Changes principle: 'Touch only what you must.' If `specflow:scope-change` needs those affordances in the decision-log entry, the schema change should land as a separate `specflow:decision` PRD revision (or a misc-task referencing the schema gap), not be assumed inside this PRD. A Phase 3 reviewer reading R10.1 cannot tell whether the `specflow:decision` schema affordance is a `specflow:scope-change` concern or a `specflow:decision` concern.",
+      "proposed_change": "Sharpen R10.1 + AC-10 to either (a) drop the scope-change-specific fields and use only the standard `specflow:decision` schema (write `affected_r_ids` etc. as free-text inside the `references` field), OR (b) explicitly call out the schema dependency: 'Schema dependency: R10.1 depends on `specflow:decision` accepting an arbitrary keyed-block within `references` AND accepting an `id_prefix: \"SC\"` parameter on invocation. If the current Phase 3 schema (per `skills/decision/SKILL.md`) does not include these, ship them via a separate `specflow:decision` enhancement PRD before `specflow:scope-change` v1 lands.' Option (a) constrains the entry's information value (loses the structured filterability `/insights` would benefit from); option (b) preserves the structured fields and names the dependency explicitly. Option (b) is the surgical-changes-compliant path — make the cross-skill dependency loud, not buried."
+    }
+  ]
+}

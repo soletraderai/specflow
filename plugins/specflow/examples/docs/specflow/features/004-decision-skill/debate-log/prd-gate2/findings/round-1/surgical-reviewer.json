@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "004-decision-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/004-decision-skill/004-decision-skill-prd.md:R8 + AC-7 — 'When `admin/decision-log.md` does not exist, the skill creates the file with the standard preamble copied verbatim from the worked-example file's preamble (file purpose statement + format-per-entry list + `---` separator), then appends the new entry per R4. The standard preamble is part of the skill's prompt body — the skill carries the canonical preamble text and writes it on first creation...'. The skill's Phase 1 sister `specflow:setup` is the canonical owner of `admin/` folder seeding (per `docs/PRD.md` § Phase 1 scope item I7: '`specflow:setup` — creates `admin/` and seeds `decision-log.md` and `task-history.json` with empty templates'). If `specflow:setup` shipped first, the file already exists with its preamble at the time `specflow:decision` runs. R8's file-missing path is correct as a degraded mode, but having `specflow:decision` carry its own copy of the canonical preamble means there are now TWO source-of-truth locations for the preamble text: `specflow:setup`'s seed template AND `specflow:decision`'s prompt body. That's cross-skill creep — modifying the preamble (e.g. adding a sentence) requires editing both skills.",
+      "claim": "Cross-skill duplication of canonical content — R8 has `specflow:decision` carry its own copy of the preamble text as the source-of-truth-on-file-missing, but `specflow:setup` already owns this content. Surgical Changes principle: 'Touch only what you must.' The skill should reference the seeding source (e.g. by reading the template file `specflow:setup` would have used) instead of carrying its own copy. Alternatively, the file-missing path should be a hard error — 'run `specflow:setup` first' — since `admin/decision-log.md` missing means the project hasn't been initialised, and the user should not get past that without running setup.",
+      "proposed_change": "Pick one of two clean shapes: (a) Refuse on file-missing — change R8 to 'When `admin/decision-log.md` does not exist, the skill refuses to run with the message *\"`admin/decision-log.md` does not exist. Run `specflow:setup` to initialise the project's admin folder first, then re-run `specflow:decision`.\"*'. This eliminates the duplication — `specflow:setup` is the only source of the preamble; `specflow:decision` is a writer, not a seeder. (b) Read the canonical preamble from a shared template at write time — change R8 to 'On file-missing, the skill reads the canonical preamble from `plugins/specflow/templates/decision-log-preamble.md` (a shared template `specflow:setup` also reads at seed time) and writes the file with that preamble + the new entry.'. This keeps the file-missing recovery path but eliminates the duplication. Either option fixes the cross-skill creep."
+    }
+  ]
+}

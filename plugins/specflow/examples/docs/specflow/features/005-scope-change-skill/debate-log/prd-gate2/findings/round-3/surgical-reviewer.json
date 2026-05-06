@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "005-scope-change-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (b) — the explicit cross-skill schema dependency is now named in both R10.1 and AC-10. The dependency clause matches the precedent set by 002-develop-skill's surgical-r1-f1 (where AC-10 named the `specflow:misc --auto` payload schema dependency). A Phase 3 reviewer reading R10.1 can now tell unambiguously that the `specflow:decision` schema affordance is a dependency, not an embedded assumption. The structured-fields information value (filterability for `/insights` cross-feature queries) is preserved. Cross-skill creep resolved by making it loud, not buried."
+    }
+  }
+}

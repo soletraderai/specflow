@@ -1,0 +1,16 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 1,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "tbc-r1-f1",
+      "severity": "concern",
+      "evidence": "plugins/specflow/skills/complete/SKILL.md:60-71 — Phase A.3's stale-lock heuristic uses a hard-coded 30-minute threshold to distinguish a fresh in-flight lock from a crashed-orchestration leftover. The PRD R14 + AC-14 carry the same 30-minute number (the SKILL body inherited it), but neither the PRD nor the SKILL body cites calibration evidence: why 30 minutes and not 10 or 60? A typical retro Q&A flow (Phase C interactive) is documented at line 129 as 'short — 5 questions plus the elevation prompt'; assuming 1-2 minutes per question and some thinking time, a manual retro completes in 5-15 minutes. Auto-fire mode synthesises (C.2) in seconds. So 30 minutes is 2-6× a typical successful run, which sounds defensive — but a user who walks away mid-retro (lunch break, meeting interrupt) could legitimately exceed 30 minutes and have their lock overwritten as 'stale' while they're still working. The PRD Open Questions explicitly flagged this (line 180 of PRD): 'should the skill ship a `/specflow:complete --clear-stale-locks` admin verb? Recommend the time-based heuristic for v1; revisit if consumers report stale-lock false-positives.' The SKILL body inherited the heuristic without surfacing the tradeoff — a reader cannot tell whether 30 was chosen to bound false-positive lock-overwrites or to bound false-negative orphan-locks.",
+      "claim": "Unstated assumption + missing tradeoff documentation — the 30-minute stale-lock threshold is a tunable that ships hard-coded without explaining the calibration choice. Think-Before-Coding sub-clause: 'when a magic number ships, name the assumption that picked the number'. The PRD's Open Questions surfaced the issue but the SKILL body did not propagate it as a documented assumption. A future maintainer adjusting the threshold cannot tell from the SKILL body whether the chosen value was reasoned or arbitrary.",
+      "proposed_change": "Either (a) surface the 30-minute heuristic as a `config.json.complete.staleLockMinutes` configurable, defaulted to 30, so projects with longer typical retro durations (large red-lane retros, multi-tasking workflows) can tune up — making the magic number explicitly tunable; OR (b) add a one-paragraph rationale clause at A.3 case 3 documenting why 30 minutes (e.g. 'chosen as 2-6× typical successful run duration to bound false-positive overwrites; revisit if consumers report walking-away-mid-retro lock loss'). Option (a) introduces a knob (Simplicity-First risk); option (b) preserves the hard-coded default but documents the calibration. Preference: (b) for v1, with (a) deferred to v2 alongside the PRD-Open-Questions `--clear-stale-locks` admin verb."
+    }
+  ]
+}

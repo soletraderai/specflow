@@ -1,0 +1,12 @@
+{
+  "reviewer": "devils-advocate",
+  "round": 3,
+  "gate": "tasks-gate3",
+  "feature": "003-complete-skill",
+  "responses": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "Revision applied. T10's acceptance now carries an explicit accept-and-ship-interaction clause pinning T12's unconditional-elevation-prompt to once-per-original-retro-only firing; subsequent amends follow R6's two-condition rule via T10 logic. T12's Notes line carries the matching clarification. The cross-product (accept-and-ship + amend with kind:note) is now deterministic — no re-prompting on every amend, original `decision_log_links` capture intact, R6 still fires on subsequent amends if their addendum is escaped-issue medium-or-high. The implementer-dependent collision is resolved."
+    }
+  }
+}

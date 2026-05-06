@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/003-complete-skill/003-complete-skill-tasks.md:T4 — T4's Scope line includes '`skills/develop/SKILL.md` Phase F.5 task-history.json initial-write addition (default `superseded_by_retro: false`)'. T4 is anchored to PRD R4 ('Retro supersedes Phase F placeholders') in the `specflow:complete` PRD, but the Scope line names a code surface in a different skill (`specflow:develop` Phase F.5). The PRD R4 Trace explicitly says: 'If the current `specflow:develop` SKILL.md doesn't include this default flag, ship the addition as a `specflow:develop` enhancement PRD before `specflow:complete` v1 lands.' That is the cross-skill enhancement PRD path. T4's Scope line, by including the `specflow:develop` Phase F.5 surface, conflates two scopes: (a) `specflow:complete`'s own work (the supersede write + the runtime detection of the absent flag), AND (b) `specflow:develop`'s enhancement work (adding the default flag in F.5's initial write). Surgical changes principle: stay in the smallest blast radius; flag any required cross-cutting work as a misc-task or separate PRD. The T4 acceptance handles the runtime-detection branch correctly via the structured refusal sentinel, but the Scope conflation invites an implementer to edit `skills/develop/SKILL.md` from this task — exactly what the PRD said should be a separate enhancement PRD.",
+      "claim": "Cross-skill scope drift — T4's Scope line names a code surface (`skills/develop/SKILL.md` Phase F.5) that PRD R4 explicitly defers to a separate enhancement PRD (Surgical Changes, 'Stay in the smallest blast radius; flag any required cross-cutting work as a misc-task'). The runtime-branch refusal in T4's acceptance is correct surgical-changes-compliant work. The Scope line should not include the cross-skill enhancement surface.",
+      "proposed_change": "Remove '`skills/develop/SKILL.md` Phase F.5 task-history.json initial-write addition (default `superseded_by_retro: false`)' from T4's Scope line. Add a Notes-line clause to T4: 'The cross-skill prerequisite (adding `superseded_by_retro: false` as default in `specflow:develop` Phase F.5) is out of scope for this task and out of scope for `specflow:complete` v1; ship it via a separate `specflow:develop` enhancement PRD per PRD R4. T4's runtime-branch refusal is the surgical-changes-compliant handling of the absent-field case in the meantime.' This separates `specflow:complete`'s own surface from the cross-skill prerequisite and matches the 002-develop-skill pattern (Gate 2 surgical-r1-f1) where the cross-skill dependency is named at PRD level but the task-level scope stays in the producing skill."
+    }
+  ]
+}

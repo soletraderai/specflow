@@ -1,0 +1,13 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "003-complete-skill",
+  "responses": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "reasoning": "R14 + AC-14 close the TOCTOU window R9's existence-check left open. The lock-file pattern at `admin/scratch/complete-{task-id}.lock` matches Phase 1's per-task scratch convention; the 30-minute stale-lock heuristic covers the crashed-orchestration cleanup case the original finding flagged as a concern (the proposed change deliberately included this clause because lock-files without stale handling become their own failure mode). The structured chat-line refusal honours the goal's surface (d) (zero silent failures) \u2014 the race surfaces explicitly with a timestamped in-flight notification and a route to the legitimate amend path. AC-14's create/remove discipline + stale-lock verification gives `specflow:test` a bindable surface for the concurrency contract. Concern resolved. The Open Questions section's `--clear-stale-locks` admin verb question is the right v2 follow-up shape \u2014 the time-based heuristic is sufficient for v1 unless real consumers report stale-lock false-positives."
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "develop-gate4",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "admin/scratch/003-complete-skill-develop/lane-assignments.json:b1_recheck — the lane plan ships a `b1_recheck.lane_changes: []` empty-array placeholder field even though zero downgrades fired this run. The schema's `lane_changes` shape (an array of upgrade-record objects) was carried in from the lane-assignment template without a documented consumer reading it — `/insights` Phase 3 reads `task-history.json`, not the per-feature lane-recheck scratch artefact, and Phase D consumers (lane execution) read `lane` directly off each task entry, not the recheck audit log. The empty-array field is shape-without-content this run; if no consumer reads it, the field is speculative configurability of the recheck-record format. Combined with the 13-Green tasks forced into 5 batches at `greenBatchCap=3` (4+3+3+3 batches if T1/T13 Yellow run first, plus the trailing remainder), the lane plan ships a multi-batch flow when a single `greenBatchCap=13` would be one batch — defensible only if there's a documented PR-review-fatigue consumer asking for batches of 3.",
+      "claim": "Possible speculative configurability — the `b1_recheck.lane_changes` array is empty this run AND has no documented consumer in the lane plan (no Phase D or Phase F field reads from it; no `/insights` Phase 3 consumer reads the scratch directory). The Simplicity First sub-clause is explicit: 'Do not introduce config knobs without a concrete second consumer demanding them.' The `lane_changes` field is a record-shape knob (list-of-upgrade-records) that no downstream reader exercises in v1; shipping it empty in the recheck record is shape-without-content. Separately, the 5-batch split for 13 Green tasks at cap=3 is the user-edited interview-grounded cap from 002-develop-skill Round 2 line 78 (PR-review-fatigue use case named) — that part is NOT speculative. The concern fires on `lane_changes` field shape only.",
+      "proposed_change": "Either (a) drop the `b1_recheck.lane_changes` field from the lane-assignments.json schema for v1 and re-add when a consumer surfaces, replacing it with a single `summary` string (which already exists in the current shape), OR (b) cite the documented consumer reading `lane_changes` (e.g. a Phase 3 `/insights` cadence reading the scratch audit log post-feature-close, or a Phase F `task-history.json` writer that copies `lane_changes` into the development-time-fields entry) so the field's presence is grounded. Option (a) is the surgical drop; option (b) preserves the field with explicit grounding."
+    }
+  ]
+}

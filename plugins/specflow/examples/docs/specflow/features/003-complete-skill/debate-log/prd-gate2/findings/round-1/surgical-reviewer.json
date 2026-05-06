@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/003-complete-skill/003-complete-skill-prd.md:R4 + AC-4 — R4 says 'The retro write SUPERSEDES the Phase F write's `what_worked`, `what_didnt_work`, and `ai_assistance_level` values ... The supersede is a write-in-place on the existing entry, explicitly recorded in the entry's `superseded_by_retro: true` flag so a downstream reader can tell the field's lineage.' AC-4 enforces this: 'When the retro fires on a task whose `task-history.json` entry already has Phase F.5's [three fields] populated, the retro write replaces those values in place AND sets `superseded_by_retro: true` on the entry.' Cross-checking against `skills/develop/SKILL.md` Phase F.5 (lines 546-563) — the current `specflow:develop` write captures six fields (`lane_assigned`, `ai_assistance_level`, `elapsed_minutes`, `what_worked`, `what_didnt_work`, `blast_radius_outcome`) but does NOT include `superseded_by_retro: false` as a default flag in the initial write. AC-4 (and R4) implicitly requires a Phase 1 / Phase 2 schema change — the `superseded_by_retro` field must exist on the entry before `specflow:complete` can flip it from `false` to `true`. That's a `specflow:develop` SKILL.md surface change smuggled into a Phase 3 PRD.",
+      "claim": "In-scope action that smells like Phase 2 cross-skill creep — AC-4 implicitly modifies `specflow:develop` Phase F.5's task-history.json write schema (a Phase 2 skill) to add a new default field. Surgical Changes principle: 'Touch only what you must.' If `specflow:complete` needs the `superseded_by_retro` flag in the entry, the schema change should land as a separate `specflow:develop` enhancement PRD (or be cited as an explicit cross-skill schema dependency in this PRD), not be assumed inside the Phase 3 PRD's R4 / AC-4. A reviewer reading AC-4 cannot tell whether the supersede-flag schema is a `specflow:complete` concern or a `specflow:develop` concern.",
+      "proposed_change": "Sharpen R4 + AC-4 to add an explicit cross-skill schema dependency clause: 'AC-4 depends on `specflow:develop` Phase F.5 including the `superseded_by_retro: false` default flag in its initial task-history.json write. If the current `specflow:develop` SKILL.md does not include this default flag, ship the addition as a separate `specflow:develop` enhancement PRD before `specflow:complete` v1 lands.' Mirrors the 002-develop-skill AC-10 cross-skill schema-dependency pattern (specflow:misc --auto payload schema). Either fixes the cross-skill creep — option (a) move the schema change to `specflow:develop`'s PRD where it belongs, option (b) call it out as a named dependency. Either resolves the surgical-changes concern."
+    }
+  ]
+}

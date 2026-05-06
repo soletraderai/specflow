@@ -1,0 +1,14 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "004-decision-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "sharpen",
+      "reasoning": "AI's Round-2 disposition was `accept` with a stated revision rewriting R8 to refuse on file-missing (option (a)) and rewriting AC-7 to verify the refusal path. The disposition was correct in shape — the cross-skill duplication is real and option (a) is the cleaner surgical fix. However, the PRD body as-on-disk still carries the original R8 shape verbatim: line 76 reads *'the skill creates the file with the standard preamble copied verbatim from the worked-example file's preamble... The standard preamble is part of the skill's prompt body — the skill carries the canonical preamble text and writes it on first creation'*, and AC-7 (line 106) still verifies the create-on-missing path, not a refusal path. The accepted revision did not land in the PRD. Sharpening to make the unapplied edit concrete and unambiguous so the next iteration does not lose it.",
+      "sharpened_claim": "The agreed Round-2 fix for surgical-r1-f1 (refuse on file-missing) is unapplied in the PRD body. R8 must be rewritten to: *'When `admin/decision-log.md` does not exist, the skill refuses to run with the message \"`admin/decision-log.md` does not exist. Run `specflow:setup` to initialise the project's admin folder first, then re-run `specflow:decision`.\" The skill never seeds the file itself; `specflow:setup` is the canonical owner of admin-folder seeding.'* AC-7 must be rewritten to verify the refusal path: *'When `admin/decision-log.md` does not exist at the start of the run, the skill refuses to write and emits the literal error message above. No new entry is written; no scratch file is created. (Verifies R8.)'* Two downstream edits follow: (i) AC-10's Stage-1 read-back clause referencing 'the file's preamble (file-missing path)' must drop the file-missing branch — there is no file-missing write path post-revision; (ii) the goal bullet under Goals naming 'file missing → create with the standard preamble + new entry' must be rewritten to 'file missing → refuse and point at `specflow:setup`'. Without these edits, the cross-skill duplication remains in the PRD and the surgical principle's bite is lost."
+    }
+  }
+}

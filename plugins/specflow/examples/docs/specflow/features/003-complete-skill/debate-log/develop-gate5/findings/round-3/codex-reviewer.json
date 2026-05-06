@@ -1,0 +1,19 @@
+{
+  "reviewer": "codex-reviewer",
+  "concern": "semantic-correctness",
+  "round": 3,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "provider": "cross-provider",
+  "codex_version": "0.18.0",
+  "decisions": {
+    "codex-r1-f1": {
+      "decision": "sharpen",
+      "rationale": "Revision applied at E.4 (third check — required-field-presence). Sharpening: the revision text says 'for supersede-path the seven mutable fields plus the unchanged required fields are all required' but does not enumerate which of the 25 fields are NOT required (i.e. optional with default). Specifically: `addenda` is documented to default to `[]` on fresh-entry (E.1 line 240); `decision_log_links` and `scope_change_log` similarly default to `[]`. If the validator treats these as required-and-non-null, an entry that legitimately has empty arrays would still pass (since `[]` is non-null). But if a future maintainer interprets 'required' as 'must have a non-default value', the validation becomes over-strict. Sharpen: clarify in E.4 that 'required' means 'present in the entry, possibly with default value (empty array, false boolean, zero number) per the Schema Appendix's documented defaults'. This pins the semantic so future maintainers do not over-tighten the check."
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "rationale": "Revision applied at A.3 lock-path declaration. Path-orthogonality is now documented; future skill authors will not move the lock path inside the develop-scratch directory pattern. The cross-skill F.5 → F.6 boundary survival is observable from the SKILL body itself."
+    }
+  }
+}

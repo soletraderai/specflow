@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "develop-gate4",
+  "feature": "003-complete-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI's option (b) defence (T1's auto-fire hook is the producer-skill landing surface and cannot be split from `specflow:complete` v1) is structurally correct — R1's per-task firing contract requires the `specflow:develop` Phase F.5 → F.6 boundary to invoke `specflow:complete`, and that invocation point IS code in develop's SKILL.md. T4's `superseded_by_retro: false` default flag is structurally separable (data-default vs invocation-point); T1's hook is not separable in the same way. The asymmetric tradeoff between T1 (cross-skill code-edit retained) and T4 (cross-skill code-edit removed, runtime detection only) is now defensible per the data-vs-invocation distinction. The lane plan retaining T1 as Yellow on the medium-blast axis is the correct triage outcome (T1's cross-skill touch is what makes blast=medium). Manifest-side documentation of the asymmetry as a known-and-accepted tradeoff is sufficient; no plan revision needed. Surgical concern resolved with documented tradeoff."
+    }
+  }
+}

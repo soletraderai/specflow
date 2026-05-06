@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "develop-gate5",
+  "feature": "003-complete-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "plugins/specflow/skills/complete/SKILL.md:454-458 — The Cross-skill integration section names `/insights` (Phase 3 future skill) as the consumer reading `task-history.json` for cross-task patterns. Phase E.5 (lines 281-288) describes a supersede-write that mutates an existing entry's seven mutable fields in place. Phase H.1 (line 384) releases the lock atomically at end. There is a window between the Phase E.5 disk write and the Phase H.1 lock release (Phases F + G run between them — F.5's elevation re-write at line 341 plus G.2's Linear transition fire) during which `/insights` (running on its own monthly cadence) could read `task-history.json` and observe the entry mid-mutation: `superseded_by_retro: true` AND `decision_log_links: [...]` re-written but `elevation_outcome` still holding the F.5 value pre-F.6 cancel-path overwrite. The lock at `admin/scratch/complete-{task-id}.lock` is per-task and per-skill; it does not exclude `/insights` because `/insights` does not check for it.",
+      "claim": "Cross-cutting concurrency window — `/insights` consumes `task-history.json` while `specflow:complete` writes; the per-task lock the SKILL body owns does not protect against the concurrent reader. The SKILL body does not mention this window or its protection (or absence). For a Phase 3 retro skill where the explicit goal is 'feed `/insights`-cadence pattern detection,' a concurrency window between the producer and the consumer that the producer does not document is a real risk. The window is small (seconds between E.5 and H.1) but `/insights` is described as 'monthly cadence' in the PRD — so a stale read returns a half-mutated entry only on the rare day a monthly job races a retro write, but when it does, the consumer reads inconsistent data.",
+      "proposed_change": "Either (a) document the window explicitly in Cross-skill integration: 'Concurrency note — `/insights` should treat `task-history.json` reads as eventually-consistent across the F.5 → H.1 window. Consumers requiring consistent reads should snapshot the file (e.g. `cp` to a scratch location) before reading. The skill does not provide reader-side locking in v1.' This documents the assumption without adding code. OR (b) collapse the post-E.5 mutation surface: F.5's elevation re-write (line 341) and F.6's cancel-path re-write (line 345) could be hoisted into E.5's single-write transaction by deferring the disk write until after Phase F resolves. This adds complexity (E.5 becomes a compose-not-write step; the actual write moves later) but eliminates the window. Preference: (a) for v1 — the document-the-window approach is surgical and matches the producer-skill convention. (b) is a v2 enhancement if `/insights` consumers report stale reads."
+    }
+  ]
+}
