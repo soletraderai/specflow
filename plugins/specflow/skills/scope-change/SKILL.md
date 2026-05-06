@@ -9,7 +9,7 @@ requires:
 produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-interview.md (extended; new "Scope change" section appended)
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md (surgically updated; sibling .bak preserved)
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.html (re-rendered)
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html (re-composed)
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md (delta-regenerated; sibling .bak preserved)
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest-scope-change-{SC-NNN}.md
   - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/manifest-scope-change-{SC-NNN}.md
@@ -183,23 +183,23 @@ Synthesis constraint (load-bearing per Surgical Changes principle): only require
 
 After synthesis lands, append a `last_scope_change: SC-{NNN}` line to the PRD frontmatter (downstream skills detect the most recent revision via this field). The PRD's frontmatter `status` field stays `draft`.
 
-### D.3 Re-fire `specflow:render` to refresh the HTML (R5)
+### D.3 Re-fire `specflow:brief` to refresh the brief (R5)
 
-Invoke `specflow:render {NNN-slug}` as a forked sub-skill. The sibling `prd.html` regenerates; byte-stable except for regions corresponding to the changed R/ACs and the new frontmatter line.
+Invoke `specflow:brief {NNN-slug}` as a forked sub-skill **after** D.4 completes (Gate 2 re-fire) so the new manifest is included in the brief composition. The sibling `{NNN-slug}-brief.html` regenerates; byte-stable except for regions corresponding to the changed R/ACs, the new frontmatter line, and the appended Gate 2 manifest entry.
 
-### D.4 Re-fire `specflow:prd` Phase E Gate 2 manifest (R6, step iii)
+### D.4 Re-fire `specflow:prd` Phase D Gate 2 manifest (R6, step iii)
 
 Fork a Gate 2 multi-agent debate sub-orchestration per `specflow:prd` Phase E. The standard five reviewers fire (Devil's Advocate, Simplicity, Surgical, Think-Before-Coding, Goal-Driven); Codex joins as a sixth when `cli.codex.available: true`.
 
 Write the new manifest to `features/{NNN-slug}/debate-log/prd-gate2/manifest-scope-change-{SC-NNN}.md`. The original `manifest.md` is NEVER modified — append-only across scope-change events.
 
-If the new manifest's closing decision is `failed`: halt the flow with the same surface `specflow:prd` Phase E.7 uses (surface blocking findings; refuse to proceed to Phase E). Mark `step-3-status.json` as `failed` with the manifest path; the user resolves the findings (manual edit or another scope-change cycle) and re-invokes — this skill resumes at step (iii) on re-invocation.
+If the new manifest's closing decision is `failed`: halt the flow with the same surface `specflow:prd` Phase D.7 uses (surface blocking findings; refuse to proceed to Phase E). Mark `step-3-status.json` as `failed` with the manifest path; the user resolves the findings (manual edit or another scope-change cycle) and re-invokes — this skill resumes at step (iii) on re-invocation.
 
 ### D.5 Verify before continuing (AC-5, AC-6)
 
 - `features/{NNN-slug}/{NNN-slug}-prd.md.bak` exists; PRD diff shows changes ONLY to (a) R/ACs whose Trace line references a scope-change round OR a strikethrough'd prior Resolved line, (b) the frontmatter `last_scope_change: SC-{NNN}` line.
 - R/ACs whose Trace line references unchanged original rounds are byte-identical to the `.bak`.
-- `prd.html` byte-stable except for regions corresponding to the changed R/ACs.
+- `{NNN-slug}-brief.html` byte-stable except for regions corresponding to the changed R/ACs and the appended Gate 2 manifest entry.
 - `manifest-scope-change-{SC-NNN}.md` exists at `debate-log/prd-gate2/`; original `manifest.md` is byte-identical to its pre-scope-change content.
 - New manifest closing decision in {`passed`, `passed-with-revisions`, `passed-with-escalations`}.
 - `step-2-status.json` and `step-3-status.json` both set to `done`.
@@ -403,7 +403,7 @@ Each maps to a documented user-elected response or a sentinel refusal exit; neve
 - **`specflow:develop`** Phase F.3 + Phase A + Phase B.5 emit the three drift-trigger chat lines; lifecycle handoff sets `task-history.json.status = aborted_for_scope_change` (Gate 2 da-r1-f1).
 - **`specflow:prd`** Phase C synthesis re-fired with surgical constraint (D.2); Phase E Gate 2 re-fired (D.4).
 - **`/grill`** extend-mode invoked in C.2 (append-only `## Scope change — {date}` section).
-- **`specflow:render`** invoked in D.3 to refresh the sibling `prd.html`.
+- **`specflow:brief`** invoked in D.3 to refresh the sibling `{NNN-slug}-brief.html`.
 - **`specflow:task`** Phase B synthesis re-fired in delta mode (E.5); Phase E Gate 3 re-fired against the delta (E.6).
 - **`specflow:decision`** invoked in G.3 with `id_prefix: "SC"` + arbitrary keyed-block within `references`. Cross-skill schema affordances are non-negotiable per R10.1.
 - **`specflow:complete`** reads `superseded_by` chain in `task-history.json` to surface supersession history in retros.
@@ -433,4 +433,4 @@ If any verify step fails, surface the failure and refuse to claim success.
 - `docs/specflow/features/005-scope-change-skill/{prd,interview}.md` and `debate-log/prd-gate2/manifest.md` — full R1-R12 + AC-1 to AC-13; Gate 2 closing decision.
 - `templates/orchestrator-pattern.md` — three primitives load-bearing per R12.
 - `CORE_PRINCIPLES.md` — Surgical Changes load-bearing here.
-- `skills/develop/SKILL.md` Phase F.3 + A + B.5; `skills/prd/SKILL.md` Phase C + E; `skills/task/SKILL.md` Phase B + E; `skills/grill/SKILL.md` extend-mode; `skills/decision/SKILL.md` schema affordances; `skills/render/SKILL.md`; `skills/linear/SKILL.md`; `skills/complete/SKILL.md`; `skills/budget/SKILL.md`.
+- `skills/develop/SKILL.md` Phase F.3 + A + B.5; `skills/prd/SKILL.md` Phase C + E; `skills/task/SKILL.md` Phase B + E; `skills/grill/SKILL.md` extend-mode; `skills/decision/SKILL.md` schema affordances; `skills/brief/SKILL.md`; `skills/linear/SKILL.md`; `skills/complete/SKILL.md`; `skills/budget/SKILL.md`.

@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "007-prune-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Asymmetric mutation surface is collapsed correctly. R12 Stage 2 now applies uniform read-only treatment to three of four surfaces (decision-log, rules, task-history) — the live source registry stays unmodified at Stage 2; the archive file is the single source of truth for archive state across these surfaces; Phase 3 consumers cross-reference the archive file. Stage 2 retains bespoke mutation for agent snapshots only (move file + drop index entry), and the AI's Round-2 caveat is the right structural rationale: the live agent registry IS the runtime surface — every skill that uses an agent loads it from `admin/agents/specialised/{name}.md` at runtime, so a read-only Stage 2 here would mean a 'pruned' agent stays active, defeating the prune. The asymmetry is structural (one runtime-surface registry vs three read-by-Phase-3-consumer registries), not bespoke per surface; it's documented once with the rationale named. AC-11 is updated to match — Stage 2 read-only verification on three surfaces (re-read confirms byte-identical pre-Stage-2 state) plus bespoke mutation verification on agent snapshots (index entry no longer present + archive-agents file exists + non-empty body). The round-trip restoration property (added per goal-r1-f1) extends correctly: for the three read-only surfaces, restoration is purely additive into a registry that never lost the entry on disk; for agent snapshots, restoration is two-step (copy the file back + re-add the index entry from the archive block's JSON). Surgical scope creep — the PR-level surface area of bespoke per-surface mutations — is collapsed from four shapes to two (one uniform read-only treatment + one structural exception with named rationale). The principle's bite landed cleanly."
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "accept",
+      "reasoning": "The AI's defence holds. The `semantic` cluster-source reservation is interview-grounded — Round 1's resolution (line 39 of `006-insights-skill-interview.md`) is verbatim: 'embedding-based clustering deferred to v2 with a `semantic` cluster-source label reserved in the report schema.' The user explicitly confirmed the reservation as part of the v1 design. The Simplicity sub-clause's anti-pattern targets speculative configurability (knobs introduced without a documented consumer ask); the reservation isn't a config knob, it's a schema-shape decision the user signed off on. The downstream consumer (v2 embedding-based clustering) is documented in the goal's Out-of-scope-at-goal-level (item 3) as the v2 enhancement path with a named consumer surface. The runs.jsonl `semantic_clusters: 0` counter is the additivity surface — without it, the v2 PR adding embedding clustering becomes a breaking schema revision (every prior month's runs.jsonl needs migration to add the field). The pattern matches the 003-complete-skill simplicity-r1-f1 push-back outcome where the elevation triple-flag's defence held on identical grounds: each flag carries distinct semantic content needed for a downstream consumer (`/insights`-cadence pattern detection in that case; v2 embedding clustering here). Defence holds; no sharpening needed. The principle bites where speculation isn't anchored, releases where the second-consumer evidence is documented in the interview + goal."
+    }
+  }
+}

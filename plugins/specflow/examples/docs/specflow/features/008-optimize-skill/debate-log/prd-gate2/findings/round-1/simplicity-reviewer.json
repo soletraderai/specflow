@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "008-optimize-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/008-optimize-skill/008-optimize-skill-prd.md:R1 + AC-2 — R1 introduces a `config.json.optimize.judgementWords` knob that extends the default judgement-word list (`appropriately`, `adequately`, `cleanly`, `concrete signals`, `coverage`, `idiomatic`, `well`, `properly`, `correctly`). AC-2 verifies that a project-specific list (e.g. `[\"publishable\"]`) extends the default. The PRD ships a new `config.json.optimize.*` config knob for v1 of a skill that hasn't shipped yet, ostensibly for projects whose stack-specific judgement words aren't in the default. Interview Round 1's user edit names exactly one hypothetical use case (a publishing-stack project's `publishable` word) — that's an AI-recommended-then-user-confirmed extension, not a documented second-consumer ask. The default list is plenty broad for v1; consumers can request additions as a v2 enhancement when a real domain surfaces a real word.",
+      "claim": "Speculative configurability — the PRD ships a new `config.json.optimize.judgementWords` knob without a concrete second consumer demanding it. CORE_PRINCIPLES.md Simplicity First sub-clause: 'Do not introduce config knobs without a concrete second consumer demanding them.' The knob was introduced by user-edit in interview Round 1, but the example use case (`publishable` in a publishing-stack project) is hypothetical, not a documented consumer ask from a project actually running specflow. Hard-coding the default list in v1 is the simpler primitive; configurability lands later when a real consumer reports a real false-positive on a real eval.",
+      "proposed_change": "Rewrite R1 to drop the configurable extension and ship a hard-coded v1 default list: 'no clause uses a judgement word from the hard-coded list: `appropriately`, `adequately`, `cleanly`, `concrete signals`, `coverage`, `idiomatic`, `well`, `properly`, `correctly`. v1 ships with this list hard-coded; consumers reporting domain-specific judgement-word collisions can request the configurable extension as a v2 enhancement when the use case surfaces.' Drop AC-2 entirely — without the configurability there's nothing to verify beyond AC-1's coverage of the default list. Net speculative-knob count drops from 1 to 0, which is the simplicity win the principle was protecting."
+    }
+  ]
+}

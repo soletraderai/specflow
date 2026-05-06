@@ -1,18 +1,18 @@
-# Session handoff — specflow v2.1.0 shipped + Phase 3 partial
+# Session handoff — specflow Phase 3 complete (v2.3.0 staged)
 
 **Date:** 2026-05-06
 **Prior sessions:** earlier handoffs archived as `SESSION-HANDOFF-2026-04-30-codex-review.md`. This file is the current snapshot.
-**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 shipped as **v2.1.0** with the chain dogfooded end-to-end through all six gates on `specflow:complete`. **Phase 3 build is now ~50% complete**: `specflow:complete` (472 lines), `specflow:decision` (280 lines), and `specflow:scope-change` (436 lines) are operational. E6-E10 prompt edits applied. `/insights`, `/prune`, `/optimize` remain stubs (no PRDs yet). All work post-2.1.0 sits in `[Unreleased]`; cut to v2.2.0 when remaining Phase 3 skills land.
-**Next session goal:** draft PRDs for the remaining three Phase 3 skills (`/insights`, `/prune`, `/optimize`) via the recursive-bootstrap chain, then build their bodies.
+**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 + the brief skill landed as **v2.2.0**; Phase 3 is now **fully operational**. All six Phase 3 skills have operational bodies: `specflow:complete` (472 lines), `specflow:decision` (280 lines), `specflow:scope-change` (436 lines), `specflow:insights` (450 lines), `specflow:prune` (316 lines), `specflow:optimize` (510 lines). Phase 3 PRD anchors at `examples/.../features/{003-008}-*-skill/` all closed Gate 2 `passed-with-revisions`. The v2.3.0 cut packages this set.
+**Next session goal:** cut v2.3.0 (versions, CHANGELOG, MIGRATIONS, push); then real consumer-project dogfood is the only remaining major work item.
 
 ---
 
 ## TL;DR — How to resume in 60 seconds
 
-1. Glance at `plugins/specflow/CHANGELOG.md` — 2.0.0 + 2.1.0 release entries plus an `[Unreleased]` block with the post-2.1.0 Phase 3 build progress.
+1. Glance at `plugins/specflow/CHANGELOG.md` — 2.0.0 + 2.1.0 + 2.2.0 release entries plus an `[Unreleased]` block flagging Phase 3 complete.
 2. Read this handoff (you're here).
-3. Three Phase 3 skills are now operational at `plugins/specflow/skills/{complete,decision,scope-change}/SKILL.md`. The 003-complete-skill DOGFOOD-DEBRIEF (E6-E10) has been applied across `skills/develop/SKILL.md`, `skills/complete/SKILL.md`, and `templates/agents/standard/principles/goal-driven-reviewer.md`.
-4. Three Phase 3 skills remain stubbed: `/insights`, `/prune`, `/optimize`. No PRD anchors exist for them yet — the next session drafts those via the recursive-bootstrap chain.
+3. **All six Phase 3 skills are now operational** at `plugins/specflow/skills/{complete,decision,scope-change,insights,prune,optimize}/SKILL.md`. PRD anchors at `examples/docs/specflow/features/{003-008}-*-skill/` all closed Gate 2 `passed-with-revisions`.
+4. v2 architecture per `v2/docs/PRD.md` is now feature-complete. Remaining work: (a) cut v2.3.0; (b) real consumer-project dogfood; (c) any incremental prompt-edit recommendations from the next dogfood pass.
 
 If you only have 5 minutes, jump to §"Next up" — it's the priority-ordered punch list.
 
@@ -47,15 +47,24 @@ If you only have 5 minutes, jump to §"Next up" — it's the priority-ordered pu
 
 - `MIGRATIONS.md` v2.0 → v2.1 entry: introduces `config.json.develop.{greenBatchCap default 3, codexAtGate5 env-derived}`, optional `stack_match_reason` on `agents/index.json`, on-demand `develop-gate4/` and `develop-gate5/` debate-log subdirectories. Additive; backups retained.
 
-### Phase 3 partial (post-2.1.0, in `[Unreleased]`)
+### Phase 3 (now fully operational; in `[Unreleased]` pending v2.3.0 cut)
 
-- **`specflow:decision`** — operational at `plugins/specflow/skills/decision/SKILL.md` (280 lines, 6 phases A-F). Implements `004-decision-skill-prd.md` end-to-end via the abbreviated chain (PRD → SKILL body without per-skill Gate 3/4/5 ceremony, since 003 dogfood proved the full chain).
-- **`specflow:scope-change`** — operational at `plugins/specflow/skills/scope-change/SKILL.md` (436 lines, 8 phases A-H). Implements `005-scope-change-skill-prd.md`.
-- **E6-E10 prompt edits applied** — `skills/develop/SKILL.md` (E6 lens-overlap note, E7 `b1_recheck` aggregate-outcome schema with `batch_shape_at_default_cap`, E10 conditional-pass escalation contract); `skills/complete/SKILL.md` (E8 v2-candidate note for `staleLockMinutes`); `templates/agents/standard/principles/goal-driven-reviewer.md` (E9 orphan-phase reverse-traceability lens).
+| Skill | Lines | Phases | PRD anchor (R / AC) | Source |
+|-------|-------|--------|---------------------|--------|
+| `specflow:complete` | 472 | A-H (8) | 14 / 15 | 003-complete-skill |
+| `specflow:decision` | 280 | A-F (6) | 11 / 11 | 004-decision-skill |
+| `specflow:scope-change` | 436 | A-H (8) | 12 / 13 | 005-scope-change-skill |
+| `specflow:insights` | 450 | A-G (7) | 15 / 16 | 006-insights-skill |
+| `specflow:prune` | 316 | A-H + restore | 11 / 11 | 007-prune-skill |
+| `specflow:optimize` | 510 | A-I (9) | 17 / 16 | 008-optimize-skill |
 
-### Phase 3 still-stubbed
+All six Phase 3 PRD anchors closed Gate 2 `passed-with-revisions`. Notable architectural commitments per skill:
 
-- `/insights`, `/prune`, `/optimize` ship as frontmatter-only stubs. No PRD anchors yet.
+- **`/insights`** — two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams); ≥3-observation promotion threshold; `semantic` cluster-source label reserved for v2 embedding-clustering; refuses below `minCorpusSize` (default 10).
+- **`/prune`** — per-surface staleness boundaries (decision-log, rules, agent snapshots, task-history); two-stage archive-then-remove flow; byte-identical round-trip restoration as the binary eval; append-only archive (skill never modifies its own archive).
+- **`/optimize`** — generalises `simplify`'s discipline across the verifiable-skill set; six structured mutation operators; per-target weekly budget cap (default $10); decline-streak governance; three independent auto-merge guardrails (HTML comment, no `--auto` call, GH Action human-actor check); structurally enforced no-LLM-as-judge inside the loop.
+
+E6-E10 prompt edits remain applied (from prior session): `skills/develop/SKILL.md` Phase A.2 lens-overlap note, B.1.5 `b1_recheck` aggregate schema, F.2.1 conditional-pass escalation contract; `skills/complete/SKILL.md` Phase A.3 staleLockMinutes v2-candidate note; `goal-driven-reviewer.md` orphan-phase reverse-traceability lens.
 
 ---
 
@@ -132,49 +141,39 @@ These are settled:
 
 ## Next up — priority-ordered
 
-### Priority 1 — Phase 3 PRD specs for the remaining three skills
+### Priority 1 — Cut v2.3.0
 
-**Why first:** `/insights`, `/prune`, `/optimize` are the autoresearch-loop and memory-cadence skills. They have no PRD anchors yet — same recursive-bootstrap shape as 003/004/005 produced. Each gets its own feature folder (006/007/008), interview, PRD, and Gate 2 manifest.
+**Why first:** Phase 3 is feature-complete. The release packages the three new operational skills (`/insights`, `/prune`, `/optimize`) plus their PRD anchors. Same release discipline as 2.0.0 / 2.1.0 / 2.2.0:
 
-**Sequence:**
+1. Bump `plugins/specflow/.claude-plugin/plugin.json` to 2.3.0.
+2. Bump `.claude-plugin/marketplace.json` (metadata.version + plugins[0].version) to 2.3.0; sync description.
+3. Move CHANGELOG `[Unreleased]` block to `[2.3.0] — {date}` with the full Phase 3 inventory.
+4. Add `MIGRATIONS.md` v2.2 → v2.3 entry covering any new config keys introduced (e.g. `config.json.insights.{minCorpusSize, thresholds}`, `config.json.prune.thresholds.{decisionLog,guidelines,taskHistory}`, `config.json.optimize.{weeklyBudgetPerTarget, judgementWords, declineStreak}`).
+5. Local commit. Push to remote + cut GitHub release `2.3.0` is your call (public-facing action).
 
-1. Recursive bootstrap PRDs via the `specflow:prd` chain on each:
-   - `006-insights-skill` — surface recurring patterns from `task-history.json` (monthly cadence). Suggested rule registry promotions (observation → guideline → non-negotiable).
-   - `007-prune-skill` — prune stale rules, decisions, and snapshots (quarterly cadence). Reversible via archive.
-   - `008-optimize-skill` — autoresearch loop across the verifiable-skill set (~6 initial targets). Single-skill PR per run; human merge owns taste.
-2. Each PRD passes Gate 2 (allow `passed-with-revisions`; authentic dogfood discipline holds — push back on at least one finding per skill).
-
-**Estimated effort:** one focused session per skill, possibly parallel agents (one per skill).
+**Estimated effort:** one focused half-session.
 
 ---
 
-### Priority 2 — Phase 3 skill bodies for the remaining three
+### Priority 2 — Real consumer-project dogfood
 
-**Why next:** with PRDs anchored, the abbreviated-chain pattern proven in this session can apply directly — read PRD, write SKILL body to spec. The 003 chain demonstrated the full ceremony; subsequent Phase 3 builds can use the abbreviated pattern unless they're architecturally novel.
+**Why next:** the recursive-bootstrap dogfoods exercise the chain end-to-end on synthetic targets (the 003-complete-skill dogfood validated all six gates). A real consumer-project run (small implementation feature in ClaimXPro or another live repo) is the next discipline test. Watch for friction the synthetic worked examples didn't surface — particularly around `specflow:develop` lane execution against actual code, and `/insights` clustering on a real `task-history.json`.
 
-**Note on `008-optimize-skill`:** this skill's body is non-trivial — it orchestrates a bounded autoresearch loop across multiple verifiable skills. It will likely be the largest of the remaining three. Consider running the full chain (Gate 4 + Gate 5 + Verifier) on `008-optimize` rather than the abbreviated path.
-
----
-
-### Priority 3 — Cut v2.2.0
-
-**Why:** all six Phase 3 skills will be operational. Same release discipline as v2.1.0:
-
-1. Bump `plugins/specflow/.claude-plugin/plugin.json` to 2.2.0.
-2. Bump `.claude-plugin/marketplace.json` (metadata.version + plugins[0].version) to 2.2.0.
-3. Move CHANGELOG `[Unreleased]` to `[2.2.0] — {date}` with the full Phase 3 inventory.
-4. Cut a GitHub release tagged `2.2.0`.
-5. Update `MIGRATIONS.md` v2.1 → v2.2 if any new schema additions land (e.g. autoresearch-eval config for `/optimize`).
-
-**Don't start until:** Priorities 1 + 2 are both shipped.
+**Estimated effort:** one focused session, ideally on a feature with a small blast radius.
 
 ---
 
-### Priority 4 — Real consumer-project dogfood
+### Priority 3 — Optional next-wave dogfood debriefs
 
-**Why eventually:** the recursive-bootstrap dogfoods exercise the chain end-to-end on synthetic targets. A real consumer-project run (small implementation feature in ClaimXPro or another live repo) is the next discipline test. Watch for friction the synthetic worked examples didn't surface.
+**Why eventually:** the 002 dogfood produced E1-E5; the 003 dogfood produced E6-E10. The new Phase 3 builds (006/007/008) didn't run a full dogfood (abbreviated chain). If real-project dogfood (Priority 2) surfaces friction in `/insights` / `/prune` / `/optimize`, capture it in DOGFOOD-DEBRIEF files for those features and apply E11-E15+ in a subsequent session.
 
-**Don't start until:** Phase 3 skill set is complete (Priorities 1 + 2 + 3).
+**Don't start until:** Priority 2 surfaces friction worth codifying.
+
+---
+
+### Priority 4 — Architectural rework (deferred)
+
+The v2 architecture per `v2/docs/PRD.md` is feature-complete. Future work is incremental tuning, not architectural rework. If something larger emerges (e.g. a v3 narrative around cross-project memory or hosted state), it's a fresh PRD, not a Phase 4.
 
 ---
 

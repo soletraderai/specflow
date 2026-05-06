@@ -1,0 +1,13 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "responses": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "reasoning": "R15 + AC-15 close the TOCTOU window R6's dual-trigger-path contract left open. The lock-file pattern at `admin/scratch/insights-{YYYY-MM}.lock` matches the Phase 1 + Phase 3 scratch convention; the 60-minute stale-lock heuristic is calibrated longer than `specflow:complete`'s 30-minute threshold because /insights's interactive surface is potentially longer (many promotion proposals to walk through). The structured chat-line refusal honours the goal's surface (d) (zero silent failures) — the race surfaces explicitly with a timestamped in-flight notification. R11's replace-in-place semantic is now safe: only one path per month can be in-flight at a time; the second-to-start path refuses cleanly without writing. The Open Questions section's stale-lock-knob question is the right v2 follow-up shape — the 60-minute heuristic is sufficient for v1 unless real consumers report stale-lock false-positives on long deliberation sessions. AC-15's create/remove discipline + stale-lock verification gives `specflow:test` a bindable surface for the concurrency contract. Concern resolved."
+    }
+  }
+}

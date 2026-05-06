@@ -1,0 +1,13 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "007-prune-skill",
+  "responses": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Coverage gap on R8's edge cases is closed at both R and AC level. R8 now extends the lock-concurrency machinery with two explicit handlers: **(i) Implausible-timestamp refusal** — lock-body timestamps more than 24 hours in the past or more than 1 hour in the future are treated as corrupt; the skill refuses with a structured sentinel naming the implausible timestamp and the current time, pointing at `--force-unlock` as the remediation. The 24-hour-past bound covers the battery-failed-clock case; the 1-hour-future bound covers the misconfigured-timezone-offset case. The bounds are far enough from the 60-second NTP-drift tolerance that the two handlers don't collide. **(ii) Force-unlock unlock-marker priority window** — after force-unlock removes the lock, the skill writes `admin/scratch/prune-{YYYY-Q}.unlock-marker` with the unlock timestamp and emits a chat-line naming the 5-minute re-invoke window. The next manual `/prune` invocation reads the marker; if within 5 minutes, manual has priority and any concurrent cron path defers with a documented sentinel. The marker is consumed by the next manual invocation OR auto-expires after 5 minutes. AC-8 enumerates both handlers — the implausible-timestamp gate fires before the three-case nominal flow; the unlock-marker priority window applies to the next-invocation handshake after force-unlock. Both edge cases the original finding flagged are now deterministic at the R and AC level. The 5-minute window for the unlock-marker is calibrated to typical user re-invoke latency (the user runs force-unlock in one terminal session, switches windows, types the next invocation) without being so long that it permanently locks out cron. Nice landing on a real-world edge case the original PRD silently assumed away."
+    }
+  }
+}

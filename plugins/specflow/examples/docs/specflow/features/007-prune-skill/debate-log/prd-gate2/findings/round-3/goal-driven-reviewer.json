@@ -1,0 +1,13 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "007-prune-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Reverse-traceability gap closed. R12 now names the round-trip restoration property as an R-level contract explicitly: 'Round-trip restoration: a future user pasting a single archive block's `Original entry` content back into the source surface MUST reproduce the source registry's pre-archive state byte-for-byte for that entry — the byte-identical capture at Stage 1 is the surface that makes restoration deterministic.' The contract distinguishes between the three read-only Stage-2 surfaces (decision-log, rules, task-history) where restoration is paste-back into a registry whose live bytes never changed, and the agent-snapshot Stage-2 surface where restoration is two-step (copy the file back + re-add the index entry from the archive block's JSON). The trace line at R12 cites Gate 2 goal-r1-f1 grounding (round-trip-restoration is an R-level contract) and surgical-r1-f1 grounding (the read-only-vs-bespoke split). AC-11 verifies the round-trip restoration property by literal restoration test (capture pre-archive bytes, run prune, run restoration via paste-back, diff against pre-archive bytes — diff is empty for the restored entry on every surface). A fresh agent implementing R12 now reads round-trip restoration as the contract being established, not as an emergent property of byte-identical capture; the orphan-AC gap is closed. Option (b) (the smaller surgical edit — keep R12 as a single requirement with the restoration contract named inline) was applied correctly; the goal-eval contract from SKILLS.md line 190 ('pruning is reversible (archive retained)') is now traced to an R-level requirement and an AC-level binary verification test."
+    }
+  }
+}

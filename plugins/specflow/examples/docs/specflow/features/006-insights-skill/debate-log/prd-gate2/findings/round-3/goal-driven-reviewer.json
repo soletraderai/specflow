@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Orphan-AC clause is removed cleanly. AC-16's chat-line tokens reduced to five (N, C, P, A, R) — the deferred token is gone; the runs.jsonl Schema Appendix dropped the `promotions_deferred: 0` line. Reverse traceability is now clean: every counter in the runs.jsonl traces to an R8-defined user choice (accept-and-write, edit-and-write, reject). Option (b) (drop the deferred counter entirely) was the right surgical edit — option (a) would have required a fourth user-prompt option, expanding R8's binary-prompt contract without a documented consumer ask. The within-month re-run replace-the-active-report semantic per R11 already lets users defer implicitly by NOT running the report-render loop until ready; an explicit deferral mechanism duplicates that path. `specflow:test` building a test plan against this PRD now binds AC-16's tokens directly to R8's three-option prompt outcomes — no orphan counter, no missing R-level expression. Block resolved."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "Empty-cluster handling is now binary. AC-1's extended wording explicitly names the empty-cluster sentinel: 'when zero clusters meet the threshold for a section, the section's body contains the literal sentinel: \"No clusters above the 3-observation threshold this run.\" Sections are always present (even when empty); a report missing either section header is a failed render.' A fresh agent verifying AC-1 against an empty-cluster report can now tell pass/fail unambiguously — section header present + sentinel body OR section header present + cluster list both pass; missing section header fails. The binary test holds. Concern resolved."
+    }
+  }
+}

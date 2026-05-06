@@ -1,0 +1,17 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "008-optimize-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI added new requirement R17 codifying the structured score-block format (`score: { signal: \"...\", direction: \"maximize|minimize\" }`) AND naming the cross-skill schema dependency explicitly: every initial-six target skill needs the structured score block before `/optimize` v1 can run on them, shipped via separate per-target enhancement PRDs. R11 was simplified to delegate the direction-handling mechanism to R17. AC-10's `Verifies:` line was updated to cite both R11 and R17. The orphan-AC gap is closed (AC-10 now traces to a stated R-level mechanism), AND the cross-skill schema dependency is named at the PRD level rather than smuggled into implementation. The precedent matches 002-develop-skill AC-10's `specflow:misc --auto` schema dependency call-out — when a Phase-3 PRD requires changes to existing Phase-1 skills' contract surfaces, naming the dependency is the right calibration. Block resolved."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI extended AC-15 with the four corpus-integrity sub-clauses (id uniqueness, winner_operator preservation on declined records, target+refuse_reason preservation on refused records, JSONL line-parseability under concurrency). The goal Outcome surface naming Phase 3 corpus-mining as a success criterion now has AC-level enforcement of the integrity invariants Phase 3 mining relies on. No new R-level requirement was added — R16 already establishes the corpus shape, and the AC-level sub-clauses are sufficient to bind the skill to the integrity contract. The lockfile in R14 is correctly named as the load-bearing mechanism preventing concurrent writes (sub-clause d). Concern resolved."
+    }
+  }
+}

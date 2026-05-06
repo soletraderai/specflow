@@ -1,0 +1,13 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "007-prune-skill",
+  "responses": {
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Block resolved. R3 now names the citation-resolution strategy explicitly — the *Why* section may cite a `decision-log.md` entry by title (quoted) OR by date (`YYYY-MM-DD`); the citation-resolution helper extracts both forms; for date citations, the resolution looks up the matching `**Date:**` field; once resolved to a title, supersession detection is title-based per `specflow:decision`'s R6 + AC-5. The trace line at R3 now cites Gate 2 tbc-r1-f1 grounding ('citation-resolution helper extracts both title and date forms; the existing rules in the worked example cite by date, so date-citation tolerance is non-optional') with the worked-example evidence preserved (PREFER_LOCAL_TESTS cites 2026-02-14; PREFER_COMPOSITION_OVER_INHERITANCE cites 2026-01-08). AC-3 inherits the citation-resolution helper's two extraction patterns and explicitly names the fall-through cases — guideline rules without extractable citations fall through to the dormancy clause; non-negotiable rules without resolvable citations are never candidates. A fresh agent implementing R3 now has one canonical interpretation of citation extraction (both forms, with the resolution-to-title bridge named); the unstated-assumption gap is closed. The bridge between the existing date-based convention and the title-based supersede-link signal is the citation-resolution step; that step is the load-bearing piece the original PRD silently elided. Nice landing — option (a) accommodates the existing convention without forcing a corpus-wide migration."
+    }
+  }
+}

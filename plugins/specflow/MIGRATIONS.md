@@ -105,52 +105,6 @@ Backups (`.bak`) are written for every modified file before the migration starts
 
 ---
 
-## v2.1 → v2.2
-
-The brief release. Replaces the per-PRD HTML render (`specflow:render` → `{NNN-slug}-prd.html`) with a richer feature brief (`specflow:brief` → `{NNN-slug}-brief.html`) that composes the PRD body, interview transcript, and Gate 2 / Gate 3 manifests into a single self-contained HTML document with a Visual abstract section at the top.
-
-### Scope
-
-**Skill changes:**
-- `specflow:render` removed. Its responsibility is fully absorbed by `specflow:brief`.
-- `specflow:brief` added. Composes `{NNN-slug}-brief.html` from `{NNN-slug}-prd.md` + `{NNN-slug}-interview.md` + (optional) gate manifests. Supports a structured-block vocabulary (`:::flow`, `:::comparison`, `:::scope`, `:::tree`) for visualising flows, mode comparisons, scope, and decision trees deterministically.
-- `specflow:prd` Phase D and Phase E swapped: Gate 2 is now Phase D; Brief is now Phase E. Phase E asks the user whether to open the brief in their browser, then opens it on confirmation.
-- `specflow:doctor` `features.{NNN-slug}.html_drift` check renamed to `features.{NNN-slug}.brief_drift`. The check now compares the brief mtime against the latest of PRD / interview / gate-manifest mtimes, not just the PRD.
-- `specflow:upgrade` step 10 (`specflow:render --all`) replaced with `specflow:brief --all`. The migration also deletes `{NNN-slug}-prd.html` files after a successful brief is written for the same feature.
-
-**Per-feature artefact:**
-- New: `features/NNN-{slug}/NNN-{slug}-brief.html`. Composed for every feature with both a PRD and an interview file present.
-- Removed: `features/NNN-{slug}/NNN-{slug}-prd.html`. Deleted once the sibling brief is written. The brief supersedes it.
-
-**No schema changes.** No config keys added or removed. No agent-set changes. The migration is purely the artefact rename + composition source widening.
-
-### Steps
-
-1. **Backup.** Copy every existing `{NNN-slug}-prd.html` to `{NNN-slug}-prd.html.bak` before deletion.
-2. **Compose briefs.** Run `specflow:brief --all` across every feature folder containing both `{NNN-slug}-prd.md` and `{NNN-slug}-interview.md`. Brief composition failures abort the migration; surface failures and pause for resolution.
-3. **Remove old prd.html.** For each feature where the brief was successfully written, delete `{NNN-slug}-prd.html`. Leave the `.bak` in place per backup discipline.
-4. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.2.0`.
-5. **Verify.** Run `specflow:doctor`. Every feature should report `brief_drift` PASS (or be absent if no brief is needed).
-
-### Reversibility
-
-- `.bak` files retained until the next successful upgrade or explicit `/specflow:upgrade --clean-backups`. To roll back, restore each `{NNN-slug}-prd.html.bak` to `{NNN-slug}-prd.html`, delete the new `{NNN-slug}-brief.html`, and downgrade the plugin version.
-- No source markdown is modified by this migration. The PRD body, interview, and manifests are untouched.
-
-### Verify
-
-- For every feature with a PRD + interview: `features/NNN-{slug}/NNN-{slug}-brief.html` exists and opens in a browser.
-- No `features/NNN-{slug}/NNN-{slug}-prd.html` files remain.
-- `admin/config.json.specflowVersion === "2.2.0"`.
-- `specflow:doctor` passes; `brief_drift` is PASS for every feature.
-
-### Failure modes
-
-- **Brief composition fails on a feature.** The migration aborts before deleting any `prd.html`. Resolve the failure (typically: an unclosed `:::` visual block, or an unsupported block kind), then re-run upgrade — the migration resumes from the failing feature.
-- **Pre-2.2.0 PRD has no interview file.** This indicates a partial install. The migration can't compose a brief without the interview. Surface to the user; offer to either run `specflow:upgrade` (which seeds a retroactive interview stub) or skip the feature with a warning. Default: skip with warning, continue with other features.
-
----
-
 ## v2.0 → v2.1
 
 The Phase 2 development-layer migration. Adds the `develop` config block, surfaces specialised-agent drift via `specflow:agent refresh`, and introduces the per-feature `develop-gate4/` and `develop-gate5/` debate-log subdirectories.
@@ -198,6 +152,52 @@ The Phase 2 development-layer migration. Adds the `develop` config block, surfac
 - **User declines greenBatchCap default.** Pause the migration; let user enter a value. Refuse default below 1.
 - **environment.json missing codex section.** Default `codexAtGate5: false`; warn user that Gate 5 will run without Codex; no migration failure.
 - **`specflow:agent refresh` reports orphaned specialised agents.** Surface to user; offer `specflow:agent remove {name} --keep-snapshot` if the open question from agent skill is implemented, else `specflow:agent remove {name}`. Migration succeeds either way.
+
+---
+
+## v2.1 → v2.2
+
+The brief release. Replaces the per-PRD HTML render (`specflow:render` → `{NNN-slug}-prd.html`) with a richer feature brief (`specflow:brief` → `{NNN-slug}-brief.html`) that composes the PRD body, interview transcript, and Gate 2 / Gate 3 manifests into a single self-contained HTML document with a Visual abstract section at the top. Lands alongside the Phase 3 skill additions (`specflow:decision`, `specflow:scope-change`) — see the CHANGELOG 2.2.0 entry for the full release scope.
+
+### Scope
+
+**Skill changes:**
+- `specflow:render` removed. Its responsibility is fully absorbed by `specflow:brief`.
+- `specflow:brief` added. Composes `{NNN-slug}-brief.html` from `{NNN-slug}-prd.md` + `{NNN-slug}-interview.md` + (optional) gate manifests. Supports a structured-block vocabulary (`:::flow`, `:::comparison`, `:::scope`, `:::tree`) for visualising flows, mode comparisons, scope, and decision trees deterministically.
+- `specflow:prd` Phase D and Phase E swapped: Gate 2 is now Phase D; Brief is now Phase E. Phase E asks the user whether to open the brief in their browser, then opens it on confirmation.
+- `specflow:doctor` `features.{NNN-slug}.html_drift` check renamed to `features.{NNN-slug}.brief_drift`. The check now compares the brief mtime against the latest of PRD / interview / gate-manifest mtimes, not just the PRD.
+- `specflow:upgrade` step 10 (`specflow:render --all`) replaced with `specflow:brief --all`. The migration also deletes `{NNN-slug}-prd.html` files after a successful brief is written for the same feature.
+
+**Per-feature artefact:**
+- New: `features/NNN-{slug}/NNN-{slug}-brief.html`. Composed for every feature with both a PRD and an interview file present.
+- Removed: `features/NNN-{slug}/NNN-{slug}-prd.html`. Deleted once the sibling brief is written. The brief supersedes it.
+
+**No schema changes.** No config keys added or removed. No agent-set changes. The migration is purely the artefact rename + composition source widening.
+
+### Steps
+
+1. **Backup.** Copy every existing `{NNN-slug}-prd.html` to `{NNN-slug}-prd.html.bak` before deletion.
+2. **Compose briefs.** Run `specflow:brief --all` across every feature folder containing both `{NNN-slug}-prd.md` and `{NNN-slug}-interview.md`. Brief composition failures abort the migration; surface failures and pause for resolution.
+3. **Remove old prd.html.** For each feature where the brief was successfully written, delete `{NNN-slug}-prd.html`. Leave the `.bak` in place per backup discipline.
+4. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.2.0`.
+5. **Verify.** Run `specflow:doctor`. Every feature should report `brief_drift` PASS (or be absent if no brief is needed).
+
+### Reversibility
+
+- `.bak` files retained until the next successful upgrade or explicit `/specflow:upgrade --clean-backups`. To roll back, restore each `{NNN-slug}-prd.html.bak` to `{NNN-slug}-prd.html`, delete the new `{NNN-slug}-brief.html`, and downgrade the plugin version.
+- No source markdown is modified by this migration. The PRD body, interview, and manifests are untouched.
+
+### Verify
+
+- For every feature with a PRD + interview: `features/NNN-{slug}/NNN-{slug}-brief.html` exists and opens in a browser.
+- No `features/NNN-{slug}/NNN-{slug}-prd.html` files remain.
+- `admin/config.json.specflowVersion === "2.2.0"`.
+- `specflow:doctor` passes; `brief_drift` is PASS for every feature.
+
+### Failure modes
+
+- **Brief composition fails on a feature.** The migration aborts before deleting any `prd.html`. Resolve the failure (typically: an unclosed `:::` visual block, or an unsupported block kind), then re-run upgrade — the migration resumes from the failing feature.
+- **Pre-2.2.0 PRD has no interview file.** This indicates a partial install. The migration can't compose a brief without the interview. Surface to the user; offer to either run `specflow:upgrade` (which seeds a retroactive interview stub) or skip the feature with a warning. Default: skip with warning, continue with other features.
 
 ---
 

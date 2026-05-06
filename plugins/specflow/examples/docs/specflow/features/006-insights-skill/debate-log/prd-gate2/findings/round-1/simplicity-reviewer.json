@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/006-insights-skill/006-insights-skill-prd.md:R3 + Schema Appendix — R3 says 'v1 does NOT ship embedding-based clustering. The report schema reserves a `semantic` cluster-source label (alongside `field-shape` and `token-ngram`) so a v2 embedding pass can land additively without breaking the v1 report shape.' The Schema Appendix's cluster-object shape includes `cluster_source: \"field-shape\" | \"token-ngram\" | \"semantic\" # semantic reserved for v2` and the runs.jsonl shape ships a `semantic_clusters: 0` counter. AC-3 enforces the v1 ban: 'A v1 run that emits a cluster with `cluster_source: \"semantic\"` is a failed run.' The interview's Round 1 resolution names embedding-based clustering as v2-deferred; no v2 PRD exists yet; no documented consumer has asked for the semantic source. Reserving the schema slot for an unrequested v2 capability is the textbook shape of speculative configurability — the v1 schema carries a v2 hook before any v2 user has surfaced.",
+      "claim": "Speculative configurability — R3 + Schema Appendix reserve a `semantic` cluster-source label and a `semantic_clusters` runs.jsonl counter for a v2 capability that no documented consumer has asked for. CORE_PRINCIPLES.md Simplicity First sub-clause: 'Do not introduce config knobs without a concrete second consumer demanding them. Do not generalise on the first instance. Wait for the second.' The semantic-label reservation generalises on the first instance (v1's two cluster sources). Adding the third source later when a real consumer surfaces is a single schema-revision PR; reserving the slot now adds surface area for zero current value.",
+      "proposed_change": "Drop the `semantic` cluster-source label and the `semantic_clusters` runs.jsonl counter from the v1 Schema Appendix. The cluster-object shape becomes `cluster_source: \"field-shape\" | \"token-ngram\"`; the runs.jsonl shape drops the `semantic_clusters: 0` line. AC-3 simplifies to: 'Every cluster object emitted by v1 has `cluster_source ∈ {\"field-shape\", \"token-ngram\"}`; no other source is permitted.' R3 retains the v2-deferral language but drops the schema-reservation clause. When v2 ships embedding-based clustering, the schema gets a coordinated revision (one-line additions to the cluster-object enum + runs.jsonl counter); the cost of that revision is single-digit minutes against the cost of carrying a never-fires schema slot for the entire v1 lifetime."
+    }
+  ]
+}

@@ -4,7 +4,21 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_Phase 3 still-partial: `/insights`, `/prune`, `/optimize` ship as frontmatter-only stubs. No PRD anchors yet — next session drafts those via the recursive-bootstrap chain, then builds their bodies. The v2.3.0 cut waits on the full Phase 3 set landing._
+**Phase 3 complete.** All six target skills now operational (no remaining stubs in the Phase 3 substrate). The v2.3.0 cut packages this set.
+
+**Phase 3 PRD anchors drafted via the recursive-bootstrap chain** — three new feature folders, all Gate-2-closed `passed-with-revisions`:
+
+- `examples/.../features/006-insights-skill/` — 15 R / 16 AC. Two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams); ≥3-observation promotion threshold; `semantic` cluster-source label reserved for v2 embedding-clustering.
+- `examples/.../features/007-prune-skill/` — 11 R / 11 AC. Per-surface staleness boundaries (decision-log, rules, agent snapshots, task-history); byte-identical round-trip restoration as the binary eval property.
+- `examples/.../features/008-optimize-skill/` — 17 R / 16 AC. Six structured mutation operators (`tighten` / `consolidate` / `clarify` / `deduplicate` / `reorder` / `split-by-phase`); per-target weekly budget cap; decline-streak governance; structurally enforced no-LLM-as-judge.
+
+**Phase 3 skill bodies:**
+
+- `specflow:insights` (stub → 450 lines, 7 phases A-G) — read-only mining of `task-history.json` for cross-task patterns; produces `admin/insights/{YYYY-MM}-report.md` + interactive promotion review against the rules registry; uses `specflow:decision` for audit-trail entries on accepted promotions.
+- `specflow:prune` (stub → 316 lines, 8 phases A-H + standalone `restore` verb) — quarterly pruning with per-surface staleness detection, two-stage archive-then-remove flow, byte-identical round-trip restoration. Append-only archive; skill never modifies its own archive.
+- `specflow:optimize` (stub → 510 lines, 9 phases A-I) — generalises `simplify`'s discipline across the verifiable-skill set. Sequential variant generation via the six operators; per-variant evaluation via the target's machine eval only; three independent auto-merge guardrails (HTML comment, no `--auto` call, GH Action human-actor check).
+
+Phase 3 substrate now fully operational. Phase 3 completes the full v2 architectural arc per `v2/docs/PRD.md`.
 
 ## [2.2.0] — 2026-05-06
 

@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "007-prune-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/007-prune-skill/007-prune-skill-prd.md:R12 Stage 2 — the source-registry mutation step has FOUR distinct mutation shapes, one per surface: (i) decision-log entries stay in `decision-log.md` unmarked; (ii) rules have their full block (frontmatter + body) removed from `admin/rules/{tier}.md`; (iii) agent snapshot files are moved from `admin/agents/specialised/{name}.md` to `admin/archive/agents/{YYYY-Q}/{name}.md` AND the entry is removed from `agents/index.json`; (iv) task-history entries set `archived_at: {YYYY-MM-DD}` and stay in the array. Four surfaces, four different mutation strategies, four different post-mutation invariants to verify. The Round 6 user-edit landed the 'archive file is single source of truth' principle for decision-log specifically, but the OTHER three surfaces still mutate the source. That's an asymmetric contract — decision-log gets the cleanest treatment (read-only at Stage 2; the archive file is the only signal); rules / agents / task-history each get bespoke mutations. Surgical Changes principle: 'touch only what you must.' Three of the four surfaces touch the source registry when one of them (decision-log) demonstrates the pattern doesn't have to.",
+      "claim": "Asymmetric mutation surface — four surfaces, four different Stage-2 mutation shapes, with decision-log already showing the cleanest pattern (don't touch the source; the archive file is single source of truth). The other three surfaces could follow the same pattern: leave the source registry untouched at Stage 2; Phase 3 consumers (`/insights`, `specflow:prd`, `specflow:task`) cross-reference the archive file to know which entries are pruned. The asymmetry creates four post-mutation invariants to verify, four Stage-2 read-back checks, four cross-skill integration paths to keep in sync. Surgical scope creep — a uniform 'archive file is single source of truth' contract across all four surfaces would shrink R12 substantially and remove the bespoke per-surface mutation logic.",
+      "proposed_change": "Pick one of two clean shapes: (a) **Uniform Stage-2 read-only.** Apply the decision-log treatment to all four surfaces — Stage 2 is a no-op write to the source registry; the archive file is the single source of truth for archive state across all surfaces; Phase 3 consumers cross-reference the archive file. The cost is that consumers (`/insights`, `specflow:prd`, etc.) must learn to read the archive file as a filter, but they already need to do so for the decision-log surface, so the contract is uniform rather than bespoke. (b) **Uniform Stage-2 mutate.** Apply the rules/agents/task-history pattern to decision-log too — annotate or mark the source. The cost is reverting the Round 6 user-edit and re-introducing in-source clutter. Option (a) is the surgical choice — it preserves the user's Round 6 intent and extends the cleanest pattern. Option (b) regresses the user-edit. Either fix would reduce R12's surface; the asymmetry is the bug."
+    }
+  ]
+}

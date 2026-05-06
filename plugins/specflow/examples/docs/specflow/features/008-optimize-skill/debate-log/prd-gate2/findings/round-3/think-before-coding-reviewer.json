@@ -1,0 +1,17 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "008-optimize-skill",
+  "responses": {
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (a) — extended R13 with explicit semantics for both 'consecutive decline' and '7 days have passed.' The streak counter walks corpus records filtered to `merge_decision IN (closed-without-merge, merged)` only — refused-run records are skipped, neither resetting the streak nor counting toward it. The 7-day comparison is anchored to wall-clock time minus `ended_at` of the prior decline. AC-12 was extended with two sub-clauses verifying both directions: refused runs don't reset, merged runs do reset. The decline-feedback mechanism is now implementable without invented comparison logic — two implementations following R13 + AC-12 will produce identical counter values for the same corpus. The Goodharting-detection signal R13 promises now fires reliably. Block resolved."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "reasoning": "AI accepted the strict `eval_reads ⊂ produces:` contract and added it to R10 explicitly. The pre-flight check is now structured: parse the `eval:` field for file references, verify each appears in `produces:`, refuse with a structured message naming the offending file. AC-9 was extended with sub-clause (d) verifying the check fires correctly. The unstated assumption (eval reads being a subset of produces) is now stated AND enforced. Targets like `feedback-loop-audit` whose eval references files (CONTEXT.md) that are in `produces:` pass the check; targets whose eval reads working-tree state outside `produces:` refuse — which is the right calibration because such targets cannot be redirected to per-variant scratch (R10's load-bearing requirement). Concern resolved."
+    }
+  }
+}

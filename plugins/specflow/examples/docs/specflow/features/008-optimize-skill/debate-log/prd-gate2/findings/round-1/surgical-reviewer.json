@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "008-optimize-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/008-optimize-skill/008-optimize-skill-prd.md:R12(c) + AC-11(c) — R12(c) specifies 'a separate pre-merge GH Action (shipped with `/optimize`) blocks merge on PRs whose head branch matches `optimize/*` until a `human-approved` label is applied by a real user.' AC-11(c) confirms 'the pre-merge GH Action (shipped at `.github/workflows/optimize-merge-gate.yml`) is configured to block merge.' This is a NEW workflow file shipped at a path outside the plugin's `produces:` surface — `/optimize`'s frontmatter `produces:` will list `optimize-runs.jsonl`, the per-run scratch dir, and the PR (the branch+commit+PR triad), but NOT a workflow file at `.github/workflows/optimize-merge-gate.yml`. That workflow file lives in the *consumer's* repo, not the plugin's repo, and is shipped via a separate mechanism (presumably `specflow:setup` writes it on install? Or `specflow:upgrade`? Or `/optimize` writes it on first run?). The PRD does not specify the mechanism, the install path, or which skill owns the workflow file's lifecycle. A reviewer reading R12 + AC-11 cannot tell whether `/optimize` is the owner of `.github/workflows/optimize-merge-gate.yml` or whether a sister skill is. Implementing AC-11(c) as written would force `/optimize` to write a file outside its declared `produces:` surface — that's the smuggled refactor pattern Surgical was built to flag.",
+      "claim": "In-scope action that smells like cross-skill creep — R12(c) + AC-11(c) require a workflow file at `.github/workflows/optimize-merge-gate.yml` whose ownership and install mechanism are unspecified. Surgical Changes principle: 'Touch only what you must.' If `/optimize` ships the workflow file, the workflow file must be in `/optimize`'s `produces:` and the install path must be specified; if a sister skill (`specflow:setup`?) ships it, the dependency must be named explicitly so a reviewer can audit the cross-skill coupling. As written, AC-11(c) verifies a contract whose owner is unstated.",
+      "proposed_change": "Sharpen R12 + AC-11 to either (a) name `/optimize` as the workflow file's owner and add `.github/workflows/optimize-merge-gate.yml` to `/optimize`'s `produces:` frontmatter (the skill writes the file on first run if missing — analogous to `specflow:setup`'s `admin/` scaffolding), with an AC verifying the file's presence after first run; OR (b) delegate the workflow file to `specflow:setup`'s install scaffolding via a separate cross-skill schema dependency call-out: 'AC-11(c) depends on `specflow:setup` shipping `.github/workflows/optimize-merge-gate.yml` as part of project scaffolding. If the current Phase 1 setup scaffolding does not include this, ship it via a separate `specflow:setup` enhancement PRD before `/optimize` v1 lands.' Option (a) is the simpler v1 ship (single skill owns its workflow); option (b) preserves separation of concerns. Either fixes the unowned cross-skill coupling."
+    }
+  ]
+}

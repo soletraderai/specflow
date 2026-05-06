@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "007-prune-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/007-prune-skill/007-prune-skill-prd.md:R2 + R3 + R5 + R7 — R2 names `prune.thresholds.decisionLog.{ageDays, dormancyDays}` with defaults 365 / 182. R3 names `prune.thresholds.guidelines.dormancyDays` default 365. R5 names `prune.thresholds.taskHistory.{ageDays, dormancyDays}` defaults 365 / 182. R7 names `prune.archiveRetention` slot accepting only `\"forever\"` in v1 with a refusal message naming the v1 contract. R8 also names `prune.staleLockMinutes` as a v2 promotion candidate. That's five configuration knobs introduced for a v1 lightweight cadence skill. Simplicity First sub-clause: 'No flexibility or configurability that wasn't requested.' The five knobs are introduced by AI inference about projects-on-different-cadences-might-want-to-tune; no documented consumer is asking for any of them. The `prune.archiveRetention` knob is particularly stark — it accepts only one value AND has a refusal message naming the v1 contract, which means the knob exists purely to surface a v2 enhancement path. That is speculative configurability with extra steps: a knob whose v1 surface is a refusal message.",
+      "claim": "Speculative configurability — five `admin/config.json` knobs introduced in v1 for a cadence skill with one documented invocation pattern. The dormancy/age thresholds in R2/R3/R5 could be hard-coded constants (the defaults named are themselves the most-common-case values; project tuning is hypothetical, not requested). `prune.archiveRetention` is the most extreme case — the knob exists to refuse, which is configurability without a consumer. `prune.staleLockMinutes` (R8) is named as a v2-promotion-candidate, which is the right shape; the others should follow that pattern (hard-code v1, promote to config in v2 if a real consumer ask appears).",
+      "proposed_change": "Drop all five config knobs from v1 R-level contracts. Hard-code the threshold values as named in the requirements (365 / 182 days) directly. Drop `prune.archiveRetention` entirely — the v1 contract is forever-by-default; a v1 user setting any other value would be configuring a behaviour the skill doesn't support, which is itself the bug. Move `prune.staleLockMinutes` (R8) and the five knob slots to a single Open Question naming all of them as v2 promotion candidates IF a project's real cadence experience surfaces the need. Keep the hard-coded defaults; lose the surface area. The cadence skill's value is correctness, not flexibility — every knob is a maintenance and validation surface that adds zero v1 user-visible value."
+    }
+  ]
+}

@@ -517,4 +517,4 @@ find features -path 'features/[0-9][0-9][0-9]-*/[0-9][0-9][0-9]-*-brief.html' -p
 - `skills/prd/SKILL.md` Phase E — invokes this skill after Gate 2 closes.
 - `skills/doctor/SKILL.md` `features.{NNN-slug}.brief_drift` — checks freshness of the brief file.
 - `skills/upgrade/SKILL.md` step 10 — bulk regenerates briefs after PRD relocation.
-- `MIGRATIONS.md` v2.1.0 → v2.2.0 — replaces the per-feature `-prd.html` with `-brief.html`.
+- `MIGRATIONS.md` v2.1 → v2.2 — replaces the per-feature `-prd.html` with `-brief.html`.

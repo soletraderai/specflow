@@ -43,7 +43,7 @@ The user invokes you with one of:
 Every specflow skill writes one line to this file when its invocation finishes (success or fail). Standard entry shape:
 
 ```json
-{"skill": "specflow:prd", "invocation_id": "{uuid}", "started_at": "2026-05-05T14:32:18Z", "ended_at": "2026-05-05T14:38:42Z", "status": "ok|aborted|error", "tool_calls": 47, "scratch_files_written": 3, "sub_skills": ["grill", "specflow:render"], "feature": "001-design-skill", "self_reported_delta_tokens": 850, "notes": ""}
+{"skill": "specflow:prd", "invocation_id": "{uuid}", "started_at": "2026-05-05T14:32:18Z", "ended_at": "2026-05-05T14:38:42Z", "status": "ok|aborted|error", "tool_calls": 47, "scratch_files_written": 3, "sub_skills": ["grill", "specflow:brief"], "feature": "001-design-skill", "self_reported_delta_tokens": 850, "notes": ""}
 ```
 
 `self_reported_delta_tokens` is the skill's best estimate of how many tokens it added to the parent context. Skills that follow the orchestrator pattern (forked sub-agents + scratch handoff + command substitution) report low single-digit-K values; skills that leak report higher.
@@ -95,7 +95,7 @@ Write the structured aggregation to `admin/budget/per-skill-tokens.json`:
       "delta_tokens": {"min": 600, "max": 1200, "avg": 800, "total": 4000},
       "tool_calls_total": 235,
       "scratch_files_total": 15,
-      "sub_skills_seen": ["grill", "specflow:render"],
+      "sub_skills_seen": ["grill", "specflow:brief"],
       "trend": "stable",
       "leak_signals": []
     },
@@ -156,7 +156,7 @@ Generated: {YYYY-MM-DD HH:MM}
 | Skill | Invocations | Avg Δ tokens | Min | Max | Total Δ | Trend |
 |-------|-------------|--------------|-----|-----|---------|-------|
 | specflow:prd | 5 | 800 | 600 | 1200 | 4K | stable |
-| specflow:render | 5 | 50 | 40 | 60 | 0.25K | stable |
+| specflow:brief | 5 | 90 | 70 | 110 | 0.45K | stable |
 | specflow:task | 5 | 1100 | 900 | 1500 | 5.5K | stable |
 | specflow:develop | 12 | 2400 | 1800 | 3200 | 28.8K | ⚠️ **rising** |
 |   └─ via gate-4 | 12 | 1800 | 1400 | 2100 | 21.6K | stable |

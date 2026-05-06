@@ -50,7 +50,7 @@ eval: <binary success check — what the verifier reads to confirm the skill pro
 ### Field semantics
 
 - **`requires:`** — file paths (with `{slug}` / `{NNN}` placeholders allowed) the skill reads as input. Used by orchestrators to validate handoff before invoking the skill. Empty list (`[]`) is valid for skills that take no file input.
-- **`produces:`** — file paths the skill writes as output. Used by orchestrators to know what's available for downstream skills. Empty list (`[]`) is valid for skills whose output is in-context only (e.g. `prime`, `confidence-check`). Side effects on derived artefacts (like `prd.html` re-rendered after `prd.md` changes) belong here too.
+- **`produces:`** — file paths the skill writes as output. Used by orchestrators to know what's available for downstream skills. Empty list (`[]`) is valid for skills whose output is in-context only (e.g. `prime`, `confidence-check`). Side effects on derived artefacts (like `brief.html` re-composed after `prd.md` changes) belong here too.
 - **`eval:`** — non-negotiable for any skill that produces output. Strong success criteria let the AI iterate independently; weak ones force constant clarification.
 
 ### Why `requires:` and `produces:` are file-level, not schema-level

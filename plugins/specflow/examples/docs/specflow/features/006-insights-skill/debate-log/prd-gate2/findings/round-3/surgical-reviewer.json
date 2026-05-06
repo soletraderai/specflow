@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Cross-skill schema dependency is now named at both R-level (R14) and AC-level (AC-14) rather than implicit. The structured chat-line refusal cites the missing field name and points the user back to `003-complete-skill-prd.md`'s Schema Appendix as the authoritative contract — surfacing the dependency at the failure boundary, not buried in implementation. The pattern mirrors the 003-complete-skill AC-4 cross-skill schema-dependency precedent (where `specflow:develop` Phase F.5's `superseded_by_retro: false` default flag was the implicit dependency). The lockstep-revision clause in R14 ('if that schema evolves, this PRD's R14 + the v1 contract field-set list must be revised in lockstep') closes the maintenance-drift loop. The Phase 3 PRD's scope stays clean — no smuggled cross-skill schema changes; the dependency is a named contract. Concern resolved."
+    }
+  }
+}

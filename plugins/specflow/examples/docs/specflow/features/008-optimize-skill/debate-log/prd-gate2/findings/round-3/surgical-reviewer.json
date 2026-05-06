@@ -1,0 +1,13 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "008-optimize-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI applied option (a) — `/optimize` is named as the workflow file's owner, the file `.github/workflows/optimize-merge-gate.yml` is added to `/optimize`'s `produces:` surface, and the install mechanism is specified (skill writes the file on first run if missing, idempotent on re-runs). AC-11 was extended with the install sub-clause. The cross-skill creep is now a single-skill responsibility; a reviewer reading R12 + AC-11 can audit the workflow file's full lifecycle without inferring whether `specflow:setup` or some other sister skill ships it. The Surgical principle's 'touch only what you must' is satisfied — `/optimize` owns its full surface area, including the workflow file that enforces its merge-gate, and that ownership is named in the frontmatter not buried in implementation. Concern resolved."
+    }
+  }
+}

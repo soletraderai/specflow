@@ -1,0 +1,13 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "008-optimize-skill",
+  "responses": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "reasoning": "AI extended R13 with the manual-override clause: manual invocation on a 30-day-skipped target proceeds with the warning surfaced (not refused); a subsequent merged decision clears the skip; a subsequent closed-without-merge does not extend the skip. AC-16 was added to verify the manual-override path's three branches (proceeds-with-warning, merged-clears-skip, closed-without-merge-does-not-extend). The stale-branch accumulation concern was addressed via a Non-goals entry deferring housekeeping to a separate skill — that's the right calibration for v1 (the discipline-installer pattern's precedent: keep the skill bounded, defer ancillary lifecycle concerns). The cron-vs-manual interactions are now traced through; a maintainer running `/optimize` long-term will hit documented paths rather than undocumented ones. The four runtime mechanisms (R7 budget, R8 retention, R13 skip+manual-override, R14 single-PR) now interact in stated ways. Concern resolved."
+    }
+  }
+}

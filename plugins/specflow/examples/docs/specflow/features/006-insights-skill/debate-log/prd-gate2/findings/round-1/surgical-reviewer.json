@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/006-insights-skill/006-insights-skill-prd.md:R1 + R2 + R4 + the Requirements section as a whole — the PRD reads `task-history.json` extensively (R1's two-pass cluster detection over `lane_assigned`, `ai_assistance_level`, `blast_radius_outcome`, `what_didnt_work`, `escaped_issues.descriptions[]`, `regressions_caught.descriptions[]`, `tags`, `addenda`, `superseded_by_retro`) and depends on the v1 schema being stable enough for cluster fields to map to known field names. Cross-checking against `003-complete-skill-prd.md`'s Schema Appendix (lines 137-176): all the fields R1/R2/R4 read are part of the v1 contract. BUT the PRD does not name the cross-skill schema dependency as a contract — there is no R-level statement that says 'this skill depends on `specflow:complete`'s v1 Schema Appendix being stable; if that schema evolves, this PRD revises in lockstep.' If `specflow:complete` ships a v1.1 that adds a new field or renames an existing one, `/insights` could silently start mis-clustering or emitting empty results without surfacing the schema gap. The 003-PRD's own surgical-r1-f1 (round 1, line 26 of the calibration manifest) established the precedent: cross-skill schema dependencies must be named at R-level + AC-level, not buried in implementation. This PRD inherits that precedent surface but doesn't carry a corresponding R-level dependency clause.",
+      "claim": "Cross-skill schema dependency unstated — R1, R2, R4 implicitly require `specflow:complete`'s v1 Schema Appendix to be stable, but no R-level requirement names the dependency. Surgical Changes principle: 'Touch only what you must.' Reading another skill's output schema is a legitimate cross-skill surface, but the dependency must be explicit so a reviewer reading this PRD knows the contract. Mirrors the 003-complete-skill surgical-r1-f1 pattern (cross-skill schema dependency on `specflow:develop` Phase F.5's `superseded_by_retro: false` default flag — named at R4 + AC-4 with the explicit dependency clause).",
+      "proposed_change": "Add a new requirement R14 (or sharpen an existing R) that names the cross-skill schema dependency explicitly: 'Schema-stability check on read. Before running cluster detection, the skill validates that every `task-history.json` entry has the v1 contract field-set (per 003-complete-skill-prd Schema Appendix's 25 documented fields). When any entry is missing required fields the skill refuses with a structured chat line citing the missing field name. Cross-skill dependency: R14 depends on `specflow:complete`'s Schema Appendix being the authoritative contract; if that schema evolves, this PRD's R14 + the v1 contract field-set list must be revised in lockstep. The dependency is explicit, not buried.' Add a matching AC verifying the schema-drift refusal sentinel. The cross-skill dependency is now named at both R-level and AC-level rather than implicit; mirrors the 003-complete-skill AC-4 cross-skill dependency precedent."
+    }
+  ]
+}

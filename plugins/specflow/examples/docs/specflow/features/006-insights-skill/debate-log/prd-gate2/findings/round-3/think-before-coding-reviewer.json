@@ -1,0 +1,17 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "006-insights-skill",
+  "responses": {
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "reasoning": "Load-bearing assumption is no longer hidden. R6 + R7's revisions articulate the cadence knob's purely-informational status as a v1 contract, including the explicit Note that 'cluster detection and refusal logic are cadence-independent ... v2 enhancements adding cadence enforcement (refuse-too-soon, etc.) would be breaking changes.' The partial push-back on option (a)'s four-way determinism check holds: the verification cost (running the cluster pipeline four times on the same corpus to byte-compare outputs) is not justified for a no-behaviour-change contract; option (b)'s documentation-only Note is the right calibration. A fresh agent reading R6 + R7 + AC-6 can now tell unambiguously that the cadence knob has no enforcement semantics inside the skill — the assumption is documented, the contract is named. Block resolved."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "reasoning": "Tradeoff articulation makes the substring-vs-structured-field decision defensible. R9's extended rationale names the false-positive risk (rule id mentioned in unrelated context) and false-negative risk (user describes violation in prose without naming the rule), explicitly identifies R8's three-option human-confirmed prompt as the false-positive mitigation, and names v2's structured `rule_violations: [\"RULE_ID\", ...]` field as the higher-fidelity follow-up path. The pattern matches the 003-complete-skill tbc-r1-f2 outcome where the replace-in-place-vs-preserve-Phase-F-values tradeoff was articulated in R4's rationale without a v1 schema change. Documentation-only path; no scope creep. Concern resolved."
+    }
+  }
+}
