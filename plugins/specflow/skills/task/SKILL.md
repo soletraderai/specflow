@@ -38,7 +38,7 @@ The user invokes you with a feature ID:
 1. Locate `docs/specflow/features/NNN-{slug}/`. If missing, refuse: *"Feature `{NNN-slug}` does not exist. Run `specflow:prd` first."*
 2. Verify the PRD is gate-2-closed:
    - `features/NNN-{slug}/{NNN-slug}-prd.md` exists.
-   - `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with a `**passed**` or `**passed-with-escalations**` closing decision.
+   - `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with a `**passed**`, `**passed-with-revisions**`, or `**passed-with-escalations**` closing decision.
    - If not closed (or status `failed`), refuse: *"PRD has not closed Gate 2 (status: `{status}`). Resolve Gate 2 before tasking. Re-run `specflow:prd {NNN-slug}` to resume."*
 3. Determine the resume point:
    - **No tasks file** → start Phase A.
@@ -62,17 +62,26 @@ Use Read tool in parallel on:
 - `admin/task-history.json` (empty array `{"tasks": []}` is fine)
 - `admin/decision-log.md` (optional)
 
-### A.2 Extract the PRD's load-bearing fields
+### A.2 Surface Gate 2 block-finding resolutions
+
+If the Gate 2 manifest's status is `passed-with-revisions`, read its "PRD revisions applied" section. Each revision listed there is a load-bearing constraint the tasks must respect. For example, if a Gate 2 `block` finding added a new requirement R5.1 (mechanical pre-Gate-4 lane recheck step), the tasks should include a distinct task for the mechanical recheck *separate from* the catch-all reviewer-driven re-lane (R5). Do not merge tasks the Gate 2 process deliberately separated.
+
+Note any revisions that produced new R-level requirements; these inherit the forward-coverage rule (≥1 task per R) automatically when extracted in Phase A.3.
+
+If the manifest status is `passed` (no revisions section expected) or `passed-with-escalations`, skip this sub-step.
+
+### A.3 Extract the PRD's load-bearing fields
 
 You need clean lists for Phase B's coverage matrix:
-- **Requirements** — every `R1`, `R2`, …, with their Trace + Serves-goal pairs.
+- **Requirements** — every `R1`, `R2`, …, with their Trace + Serves-goal pairs. Include any sub-requirements (e.g. `R5.1`) introduced by Gate 2 revisions.
 - **Acceptance criteria** — every `AC-1`, `AC-2`, …, with which requirements they verify.
 - **Non-goals** — used in Phase E (Surgical Reviewer cross-checks).
 - **Open questions** — flagged so any task that depends on an unresolved question is marked.
+- **Gate 2 revisions applied** — surfaced from A.2 when present; tasks reviewing these revisions get a `gate2-revision: {finding-id}` field linking back to the manifest.
 
 Write a small extraction file to `admin/scratch/{NNN-slug}-tasks/prd-extracts.json` (orchestrator-pattern: scratch directory per orchestration). The reviewers in Phase E read this via command substitution.
 
-### A.3 Tell the user what you're doing
+### A.4 Tell the user what you're doing
 
 *"Read the PRD and interview. Synthesising tasks now — every PRD requirement gets at least one task; every task anchors to a requirement and has a binary acceptance check."*
 

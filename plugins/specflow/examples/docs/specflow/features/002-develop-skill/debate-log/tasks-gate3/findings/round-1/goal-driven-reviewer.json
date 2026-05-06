@@ -1,0 +1,23 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "goal-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-tasks.md:T16 — T16's acceptance reads 'parent-context token consumption stays under 30K tokens' and 'per-gate growth stays under 2K tokens' with the verifier sentence '`specflow:budget --skill specflow:develop` confirms both bounds.' This is binary on the numeric thresholds but soft on the verifier mechanism: the task acceptance does not say what `specflow:budget` reports for a passing run, only that it 'confirms both bounds.' A fresh agent could not tell whether confirmation means 'the report shows two numbers both under their caps' or 'the report contains a literal pass token.'",
+      "claim": "Soft verification — T16's `specflow:budget` confirmation clause fails the binary test (Goal-Driven Execution, line 'Could a fresh agent run this step in isolation and tell me unambiguously whether it passed?'). The parent-context bound is the load-bearing AC for the orchestrator-pattern compliance requirement R16; the verifier mechanism must produce a binary signal, not a verb-summarised contract.",
+      "proposed_change": "Sharpen T16 acceptance verifier clause to: 'Running `specflow:budget --skill specflow:develop {NNN-slug}` after the run produces a JSON report with two numeric fields `parent_context_tokens: N` (where N < 30000) and `max_per_gate_growth_tokens: M` (where M < 2000); a report whose N >= 30000 or M >= 2000 is a failed run.' This makes the verifier output binary on the numeric thresholds rather than relying on the verb 'confirms.'"
+    },
+    {
+      "id": "goal-r1-f2",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-tasks.md — The coverage matrix maps R10 → T10 only, but PRD AC-7 requires both 'Gate 4 manifest Reviewers line lists exactly the standard five' AND 'Codex does not join Gate 4 in v1, regardless of cli.codex.available'. T10's acceptance covers the five-reviewer literal-string check; T11's acceptance covers the Codex-Gate-4-refusal check. The coverage matrix splits R10 → T10 and R11 → T11 cleanly, but AC-7 verifies both halves and the matrix shows neither task's coverage row mentioning AC-7's both-halves contract. A reader scanning the matrix would not see that AC-7 needs T10 AND T11 together.",
+      "claim": "Coverage gap on a multi-half AC — AC-7 has two binary halves; T10 covers half (a), T11 covers half (b), but the coverage matrix's R-level mapping does not surface the cross-task AC dependency. The skill could ship with T10 passing (five reviewers correct) but T11 mishandling a future codex-at-gate-4 opt-in (because T11's acceptance leaves room for a 'no effect' interpretation that doesn't actually refuse the opt-in) and the task list would not catch it (Goal-Driven Execution, 'Every requirement is covered by at least one binary check' — extended here to multi-half ACs needing complete coverage).",
+      "proposed_change": "Add a cross-reference note to the coverage matrix or to T11's Notes line explicitly stating 'AC-7 verification requires T10 AND T11; T10 verifies the literal Reviewers line, T11 verifies that no Codex opt-in flag exists in v1.' Sharpen T11 acceptance to: 'The skill exposes no configuration knob `config.json.develop.codexAtGate4`. Reading the field returns undefined; setting the field via config edit produces no observable change in the Gate 4 manifest Reviewers line (verified by re-running T10 acceptance with the field set).'"
+    }
+  ]
+}

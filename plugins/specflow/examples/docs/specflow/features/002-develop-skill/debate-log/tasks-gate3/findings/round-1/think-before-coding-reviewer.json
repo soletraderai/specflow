@@ -1,0 +1,16 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "tbc-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-tasks.md — T7's Depends-on line reads 'T6, T10, T12' but the acceptance covers two distinct scenarios (happy path: all per-task gates pass, batch sign-off fires once at the end; failure path: any per-task Gate 4 / Gate 5 / Verifier check fails, batch pauses at the boundary). The task list does not state whether T10 (Gate 4 reviewer set) and T12 (Gate 5 always fires) are unconditional dependencies or conditional. A reader could infer either: 'T7 always invokes both gates per task' (so T10 and T12 must always be available) or 'T7 invokes the gates inside the batch loop only when a task reaches the gate boundary.' The dependency on T6 is clear (batch composition); the dependencies on T10/T12 are ambiguous.",
+      "claim": "Unstated ordering assumption — the dependency `T7 depends on T6, T10, T12` is ambiguous between unconditional and conditional invocation (Think Before Coding, 'Surface ordering assumptions'). The task list reads correctly forwards but a fresh implementer landing on T7 cannot tell whether the failure-path pause-handler must wire to both Gate 4 and Gate 5 outcomes or only to Verifier outcomes.",
+      "proposed_change": "Sharpen T7 Depends-on to: 'T6 always; T10 and T12 invoked per-task inside the batch loop (Gate 4 fires before agent execution, Gate 5 fires after).' And add a Notes line: 'The failure-path pause handler must inspect three independent per-task signals (Gate 4 closing decision, Gate 5 closing decision, Verifier pass/fail) and pause on the first failure, not wait for the batch to finish. The signal source is the manifest closing-decision line at each gate — read after each gate closes, not at end-of-batch.' This makes the per-task gate signal flow explicit."
+    }
+  ]
+}

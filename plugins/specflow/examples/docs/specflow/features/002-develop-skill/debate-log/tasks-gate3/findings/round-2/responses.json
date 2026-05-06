@@ -1,0 +1,37 @@
+{
+  "round": 2,
+  "feature": "002-develop-skill",
+  "gate": "tasks-gate3",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "rationale": "The verb 'confirms' in T16's verifier clause is exactly the soft-verification flag Goal-Driven Reviewer is meant to catch. Sharpening to two named numeric fields (`parent_context_tokens`, `max_per_gate_growth_tokens`) with explicit thresholds makes the verifier output binary on the contract R16 cares about (orchestrator-pattern compliance bounds).",
+      "revision_applied": "T16 acceptance verifier clause sharpened to specify the JSON report schema and the binary failure rule (N >= 30000 OR M >= 2000)."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-7 has two halves and the coverage matrix's R-level mapping does split them across T10 and T11, but the cross-task AC dependency was implicit. Surfacing it via T11 Notes + sharpened T11 acceptance closes the gap: a future codex-at-gate-4 opt-in attempt cannot pass T11 silently because the acceptance now binds to the observable behaviour (no change in the Gate 4 manifest Reviewers line when the field is set).",
+      "revision_applied": "T11 acceptance sharpened to verify that setting `config.json.develop.codexAtGate4` produces no observable change in the Gate 4 manifest Reviewers line; T11 Notes adds a cross-reference to T10 noting AC-7 verification requires both tasks together."
+    },
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "Gate 2's tbc-r1-f1 deliberately split R5 and R5.1 into two requirements precisely because the mechanical recheck (R5.1) and the reviewer-driven catch-all (R5) are two different mechanisms with different trigger surfaces, different evidence sources, and different failure modes. The Gate 2 manifest's PRD-revisions-applied section names this split as the load-bearing addition that made AC-8 fire in practice. Merging T5b into T5 at the task level would re-collapse what Gate 2 deliberately separated and lose the trace integrity from R5.1 → T5b. The 1:1 R→T trace argument applies at the task level: R5 traces to T5, R5.1 traces to T5b. Merging the tasks would create a multi-anchor task spanning two requirements that Gate 2 said must remain distinct. The split serves traceability AND review-ability — a reviewer should be able to read T5b and know which mechanical mechanism is being checked without holding T5's reviewer-driven catch-all in their head.",
+      "revision_applied": "none — push-back; T5 and T5b remain separate per Gate 2's deliberate R5/R5.1 split."
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "The schema-dependency Notes line surfaced the dependency at design time (per AC-10), but the runtime branch was indeed unspecified. Adding the skip-with-warning + manifest-record clause matches the loud-fallback shape T8 already established for the agent-teams plugin (Gate 2 da-r1-f1 precedent).",
+      "revision_applied": "T13 acceptance gains a runtime-branch clause: schema-gap detected → skip auto-promotion + chat-line warning + Gate 5 manifest records `auto_promotion_skipped: schema_gap`."
+    },
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "rationale": "The dependency line `T6, T10, T12` was indeed ambiguous between unconditional and conditional invocation. Sharpening to 'T6 always; T10 and T12 invoked per-task inside the batch loop' + a Notes line on the per-task signal flow makes the gate-firing order explicit and binds the failure-path pause handler to the per-gate signal source.",
+      "revision_applied": "T7 Depends-on sharpened; T7 Notes adds the per-task signal flow (read manifest closing-decision line after each gate closes, pause on first failure)."
+    },
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "The (Red-lane + plugin-present) cross-product was implementer-dependent. Adding the explicit `(NOT Red)` exclusion to T8's condition prefix and clarifying T9's short-circuit behaviour in T9's Notes pins the case to a binary check and aligns with R8's lane-conditioned trigger + R9's Red-lane safety property.",
+      "revision_applied": "T8 condition prefix sharpened to add `(NOT Red)`; T9 Notes adds the short-circuit clarification pinning the cross-product (Red-lane + plugin-present) case to single-specialist-only."
+    }
+  }
+}

@@ -105,6 +105,56 @@ Backups (`.bak`) are written for every modified file before the migration starts
 
 ---
 
+## v2.0 → v2.1
+
+The Phase 2 development-layer migration. Adds the `develop` config block, surfaces specialised-agent drift via `specflow:agent refresh`, and introduces the per-feature `develop-gate4/` and `develop-gate5/` debate-log subdirectories.
+
+### Scope
+
+**New config keys:**
+- `admin/config.json.develop.greenBatchCap` — default `3`. Maximum number of green-lane tasks the orchestrator batches into a single AFK-eligible run before requiring a human sign-off. User-tunable per Phase 2 PRD R6 (interview Round 2 — user lowered the default from 5 to 3 to keep PR-review fatigue in check; projects with strong CI signal can raise it). The migration adds the key with the default; user re-confirms or edits at next `specflow:develop` invocation.
+- `admin/config.json.develop.codexAtGate5` — boolean default derived from `environment.json.codex.detected`. If Codex is detected, defaults `true`; if absent, `false`. User can override.
+
+**New folders created (per existing feature, on demand):**
+- `features/NNN-{slug}/debate-log/develop-gate4/` — created by `specflow:develop` Phase C.
+- `features/NNN-{slug}/debate-log/develop-gate5/` — created by `specflow:develop` Phase E.
+- `admin/scratch/{NNN-slug}-develop/` — orchestrator scratch path for lane assignments and gate manifests during execution.
+
+**Index schema additions (per agent registry):**
+- `admin/agents/index.json` gains an optional `stack_match_reason` field on specialised agent entries; existing entries without it remain valid (default empty string). Migration is non-destructive — does NOT add the field to existing entries; new `specflow:agent add` invocations populate it going forward.
+
+**Convention additions (no schema change but enforced by skills):**
+- Plans produced by `specflow:develop` MUST start with the PRD-anchor format `"We're doing X because of PRD requirement Y. This aligns with goal field Z."` (Phase 2 PRD R17). Enforced by Gate 4 reviewers (Goal-Driven Reviewer's reverse-traceability lens — added by E4 prompt edit).
+
+### Steps
+
+1. **Backup.** Copy `admin/config.json` to `admin/config.json.bak` before modifying.
+2. **Add config keys.** Insert the `develop` block under the top level of `config.json`. Set `greenBatchCap: 3` and derive `codexAtGate5` from `environment.json.codex.detected`. Pause and ask the user to confirm both values before writing — the green-batch cap is project-taste, not auto-imposed.
+3. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.1.0`.
+4. **Refresh agents.** Invoke `specflow:agent refresh` to surface any specialised-agent drift introduced by Phase 2 (no specialised agent additions ship with the plugin in v2.1, but the refresh is a no-op-when-clean discipline). Surface drift report path to the user.
+5. **Verify.** Run `specflow:doctor`. Confirm `config.json.develop.greenBatchCap` is set, `codexAtGate5` matches the environment, and the index validates.
+
+### Reversibility
+
+- `config.json.bak` retained until the next successful upgrade or explicit cleanup. User can manually restore.
+- Specialised-agent snapshots are NOT touched by this migration — refresh is additive only (drift surfaced, not auto-applied).
+
+### Verify
+
+- `admin/config.json.develop.greenBatchCap` exists, integer.
+- `admin/config.json.develop.codexAtGate5` exists, boolean.
+- `admin/config.json.specflowVersion === "2.1.0"`.
+- `specflow:agent refresh` ran successfully and any drift report is at `admin/scratch/agent-refresh-{timestamp}.md`.
+- `specflow:doctor` passes.
+
+### Failure modes
+
+- **User declines greenBatchCap default.** Pause the migration; let user enter a value. Refuse default below 1.
+- **environment.json missing codex section.** Default `codexAtGate5: false`; warn user that Gate 5 will run without Codex; no migration failure.
+- **`specflow:agent refresh` reports orphaned specialised agents.** Surface to user; offer `specflow:agent remove {name} --keep-snapshot` if the open question from agent skill is implemented, else `specflow:agent remove {name}`. Migration succeeds either way.
+
+---
+
 ## Future entries
 
 Future versions append below. Format above. Newest at top.

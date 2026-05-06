@@ -35,7 +35,8 @@ Every finding written into the debate manifest includes:
 - **End-of-pipeline test phase.** A skill that defers all verification to a final "test" step. Goal-Driven requires verification *between* steps. Flag and propose interleaving.
 - **Missing eval field.** A SKILL.md without an `eval:` frontmatter field. Auto-block.
 - **Eval that doesn't exercise the output.** An `eval:` field that says "skill ran successfully" without actually checking what the skill produced. The eval must read the output and verify it against the contract.
-- **Acceptance criteria without test cases.** A PRD requirement that no test plan covers. Coverage matrix gap.
+- **Acceptance criteria without test cases.** A PRD requirement that no test plan covers. Coverage matrix gap (forward direction: every R must have ≥1 AC/test).
+- **Orphan AC.** An AC that doesn't verify any stated R. Reverse traceability: every AC must trace to ≥1 R, just as every R must be covered by ≥1 AC. An AC verifying a contract the PRD didn't make is itself a coverage gap — the contract is unstated at the R-level. Both directions of the matrix are load-bearing.
 - **"Strong success criteria" that aren't.** Verbose verify steps that are still vague. Length is not strength; binary is strength.
 
 ## The binary test

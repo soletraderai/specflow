@@ -1,0 +1,16 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-tasks.md — T13's Scope line names `specflow:misc --auto` invocation with `manifest_path`, `gate_finding_id`, and `proposed_rule` named fields. The Notes line on T13 says 'this task assumes specflow:misc --auto accepts manifest_path and gate_finding_id as named fields. If the current Phase 1 schema does not include these, ship them via a separate specflow:misc enhancement PRD before specflow:develop v1 lands.' This is the AC-10 schema-dependency clause carried forward. But T13's acceptance does not record what the skill does *during this run* if the named fields are absent from `specflow:misc`'s current schema — does the task fail? Skip the auto-promotion silently? Surface a warning? A reader implementing T13 with a v1-current `specflow:misc` that doesn't accept `manifest_path` cannot tell whether T13 is a no-op or a hard failure.",
+      "claim": "Cross-skill scope drift unhandled at runtime — T13 declares the schema dependency in Notes but the acceptance does not pin a binary check on the dependency-absent branch (Surgical Changes, 'Stay in the smallest blast radius; flag any required cross-cutting work as a misc-task'). The dependency is named in the PRD AC-10 already; the task layer needs the runtime branch.",
+      "proposed_change": "Add a runtime-branch clause to T13 acceptance: 'When `specflow:misc --auto`'s schema does not accept `manifest_path` and `gate_finding_id` as named fields (detected by reading `skills/misc/SKILL.md` for the documented payload schema), the skill skips the auto-promotion AND surfaces a chat-line warning of the form `[develop: codex-only finding {id} not auto-promoted — specflow:misc schema gap; see AC-10 schema-dependency clause]`. The skip-with-warning path is recorded in the Gate 5 manifest as `auto_promotion_skipped: schema_gap`. A run that silently swallows the codex-only finding without the chat-line warning is a failed run.'"
+    }
+  ]
+}

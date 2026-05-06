@@ -1,0 +1,16 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "da-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-tasks.md — T8's acceptance handles three agent-teams branches: (a) plugin present + lane Green/Yellow + scope match → `team-spawn invoked`, (b) condition false → `single-specialist invoked`, (c) team-spawn-failed → fallback log + chat warning. T9 separately enforces Red-lane never spawning a team. But the cross-product case where the agent-teams plugin is present AND `team-spawn` returns an error AND the lane is Red is not covered by either task. T8's failure-fallback clause reads 'falls back to single-specialist' which collides with T9's 'Red-lane always picks single-specialist regardless' — a Red-lane task with team-spawn never being attempted (per T9) means T8's failure-fallback can never fire on a Red-lane task. But a reader implementing T8's failure-fallback could read it as 'on team-spawn failure, fall back regardless of lane' and accidentally invoke team-spawn on a Red-lane task to detect the failure. The (Red-lane + team-spawn-failure-detection) cross-product is implementer-dependent.",
+      "claim": "Cross-cutting branch ambiguity — T8's failure-fallback clause is silent on lane (it implies Green/Yellow but doesn't say so), and T9's Red-lane refusal is silent on team-spawn invocation order (does T9 short-circuit T8's plugin consultation entirely on Red-lane, or does T8's plugin-consultation step run for all lanes and T9 just enforces the result?). The (Red-lane + plugin-detected) combination could ship with team-spawn invoked-and-failed log entries against Red-lane tasks, which contradicts both R8's lane-conditioned trigger and R9's Red-lane safety property (Devil's Advocate cross-cutting lens).",
+      "proposed_change": "Sharpen T8 acceptance condition prefix to: 'When `admin/environment.json.plugins` includes `agent-teams` AND a task's lane is Green or Yellow (NOT Red) AND the task's scope matches a `config.json.teams[].scope` glob, the plugin is consulted and the per-task plan logs...' — the explicit `(NOT Red)` exclusion ensures T8's plugin-consultation never fires for Red-lane tasks. Sharpen T9 Notes to: 'T9 short-circuits T8's plugin-consultation step entirely for Red-lane tasks; T8's failure-fallback path is unreachable on Red-lane.' This pins the cross-product (Red-lane + plugin-present) case to T9's single-specialist-only branch, eliminating the implementer-dependent collision."
+    }
+  ]
+}

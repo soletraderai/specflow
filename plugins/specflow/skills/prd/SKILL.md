@@ -237,7 +237,13 @@ interview: ./NNN-{slug}-interview.md
 
 {Synthesise directly from the interview's Goal section. Vision is one paragraph that
 says: what the world looks like when this feature exists, who it serves, why it matters.
-Do NOT re-derive from the rounds — the goal IS the precedent.}
+Do NOT re-derive from the rounds — the goal IS the precedent.
+
+The Vision should incorporate the Goal Outcome's load-bearing phrases verbatim where
+possible — paraphrase only for prose flow. Reviewers at Gate 2 check Vision-to-Goal
+trace integrity; if the Vision drops or rephrases an Outcome phrase, the prose change
+should be defensible (the dropped phrase is implied by surrounding context, or the
+rephrasing preserves semantic load). When in doubt, keep the Outcome's wording.}
 
 ## Problem
 
@@ -303,6 +309,7 @@ Before invoking the render in Phase D, verify:
 2. **Every requirement has a Trace + Serves-goal pair.** No requirements that don't trace to a Resolved line. No requirements that don't serve at least one goal field.
 3. **Every AC verifies a requirement.** No orphan ACs. No requirements without coverage.
 4. **No requirement contradicts the goal's Out-of-scope-at-goal-level.** Cross-check.
+5. **ACs cross-checked against Phase 1 skill schemas they depend on.** For every AC that names another specflow skill (e.g. `specflow:misc --auto`, `specflow:linear`, `specflow:render`), open that skill's SKILL.md and verify the AC's named fields exist in the documented payload schema. If the AC references fields the schema doesn't include, EITHER edit the AC to use only existing fields OR add an explicit "Schema dependency" note naming the schema gap and the enhancement PRD that must land first. Don't smuggle a Phase 1 schema change into a downstream PRD's AC.
 
 If any check fails, fix the PRD before proceeding.
 
@@ -450,10 +457,17 @@ Now act as the Orchestrator. Read all findings + responses across all three roun
 
 ## Closing decision
 
-Gate 2 status: **passed | passed-with-escalations | failed**
+Gate 2 status: **passed | passed-with-revisions | passed-with-escalations | failed**
 
-{One paragraph closing rationale by the Orchestrator. If passed: PRD is fit to proceed
-to specflow:task. If escalations: list the items the human must resolve before proceeding.
+Status determination:
+- `passed` — zero `block` findings landed (or all `block` findings were rejected with reviewer-accepted defences); zero accepted findings forced revisions to load-bearing requirements.
+- `passed-with-revisions` — `block` or load-bearing-`concern` findings landed and were accepted; PRD revisions applied; reviewers converged in Round 3. Listing under "PRD revisions applied" is required.
+- `passed-with-escalations` — at least one finding did not converge in 3 rounds; surfaced for human decision before proceeding.
+- `failed` — at least one `block` finding was not resolved (rejected without reviewer acceptance, OR no convergence after Round 3 escalation that the human declined).
+
+{One paragraph closing rationale by the Orchestrator. If passed/passed-with-revisions:
+PRD is fit to proceed to specflow:task. If passed-with-revisions: list the revisions
+applied. If escalations: list the items the human must resolve before proceeding.
 If failed: list the blocking findings and what must change.}
 
 — Orchestrator, {YYYY-MM-DD}
@@ -461,7 +475,7 @@ If failed: list the blocking findings and what must change.}
 
 ### E.7 Final disposition
 
-If Gate 2 status is **passed** or **passed-with-escalations**: tell the user *"PRD synthesised and Gate 2 review complete. Status: {status}. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready."*
+If Gate 2 status is **passed**, **passed-with-revisions**, or **passed-with-escalations**: tell the user *"PRD synthesised and Gate 2 review complete. Status: {status}. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready."*
 
 If escalations exist, list them in your response so the user sees them without opening the manifest.
 

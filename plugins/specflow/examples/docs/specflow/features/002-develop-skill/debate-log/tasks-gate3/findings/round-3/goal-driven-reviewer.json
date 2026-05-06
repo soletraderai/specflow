@@ -1,0 +1,16 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "round": 3,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "responses": {
+    "goal-r1-f1": {
+      "decision": "accept",
+      "rationale": "Revision applied. T16's verifier clause now binds to two named numeric fields with explicit thresholds; the verb 'confirms' is gone and the binary failure rule (N >= 30000 OR M >= 2000) makes the verifier output unambiguous. A fresh agent reading the report can pass/fail without holding the prose contract in mind."
+    },
+    "goal-r1-f2": {
+      "decision": "accept",
+      "rationale": "Revision applied. T11's acceptance now binds to the observable behaviour (no change in the Gate 4 manifest Reviewers line when the field is set) rather than the negative claim (the knob is undefined). T11 Notes adds the AC-7-requires-T10-AND-T11 cross-reference. The multi-half AC coverage gap is closed at the task layer."
+    }
+  }
+}

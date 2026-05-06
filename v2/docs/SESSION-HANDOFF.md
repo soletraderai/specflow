@@ -1,18 +1,18 @@
-# Session handoff — specflow v2.0.0 shipped
+# Session handoff — specflow v2.0.0 shipped + Phase 2 staged
 
 **Date:** 2026-05-06
 **Prior sessions:** earlier handoffs archived as `SESSION-HANDOFF-2026-04-30-codex-review.md`. This file is the current snapshot.
-**Status:** Phase 1 shipped as **v2.0.0**. The plugin lives at `plugins/specflow/`; v1 is replaced. Marketplace + plugin manifests are in sync. The recursive-bootstrap dogfood pass produced a real Phase 2 PRD anchor (`002-develop-skill`) that the next session builds against.
-**Next session goal:** apply the dogfood debrief's prompt edits (E1-E5), then start the Phase 2 build (`specflow:develop`) from the anchored PRD.
+**Status:** Phase 1 shipped as **v2.0.0**; Phase 2 build is staged at `plugins/specflow/skills/{develop,agent}/SKILL.md` with the dogfood-produced 002-develop-skill PRD now implemented end-to-end (19 tasks, Gate 3 closed `passed-with-revisions`). Prompt edits E1-E5 applied. v2.0 → v2.1 migration entry written. Awaiting real dogfood of Phase 2 in a consumer project before cutting v2.1.0.
+**Next session goal:** dogfood `specflow:develop` on a real Phase 2 task in a consumer project (or recursive bootstrap on a Phase 3 skill spec); then bump to v2.1.0.
 
 ---
 
 ## TL;DR — How to resume in 60 seconds
 
-1. Glance at `plugins/specflow/CHANGELOG.md` — the 2.0.0 release entry lists what shipped.
+1. Glance at `plugins/specflow/CHANGELOG.md` — the 2.0.0 release entry lists what shipped; the Unreleased section documents the Phase 2 staging.
 2. Read this handoff (you're here).
-3. Read `plugins/specflow/examples/docs/specflow/features/002-develop-skill/DOGFOOD-DEBRIEF.md` — the dogfood pass surfaced 2 `block` findings, 5 `concern` findings, and 5 concrete prompt-edit recommendations (E1-E5) with file:line citations.
-4. The Phase 2 PRD anchor is `plugins/specflow/examples/docs/specflow/features/002-develop-skill/002-develop-skill-prd.md` (18 requirements, 15 ACs, post-Gate-2 revisions applied). Phase 2 build runs `specflow:task` against this PRD next.
+3. Read `plugins/specflow/examples/docs/specflow/features/002-develop-skill/DOGFOOD-DEBRIEF.md` — the dogfood pass surfaced 2 `block` findings and 5 prompt-edit recommendations (E1-E5). All five are now applied.
+4. Look at `plugins/specflow/skills/develop/SKILL.md` (649 lines, 6 phases) and `plugins/specflow/skills/agent/SKILL.md` (232 lines, 4 verbs) — these are the Phase 2 skill bodies, ready for dogfood. The 002-develop-skill tasks file + Gate 3 manifest in `examples/docs/specflow/features/002-develop-skill/` shows the chain handled the develop spec end-to-end.
 
 If you only have 5 minutes, jump to §"Next up" — it's the priority-ordered punch list.
 
@@ -44,9 +44,15 @@ If you only have 5 minutes, jump to §"Next up" — it's the priority-ordered pu
 
 `plugins/specflow/examples/docs/specflow/admin/` is now populated for a hypothetical SaaS product (Northwind Orders, internal order-management dashboard). Demonstrates `config.json`, `pages.json`, `profiles.json` (5 personas), `environment.json`, `CONTEXT.md`, `decision-log.md` (5 entries), `task-history.json` (5 entries), the rules registry (with 4 illustrative project guidelines), and the agents index. Cross-references between files are internally consistent.
 
+### Phase 2 build (staged, awaiting dogfood)
+
+- **`specflow:develop`** — operational at `plugins/specflow/skills/develop/SKILL.md` (649 lines, 6 phases: pre-flight, lane triage, mechanical pre-Gate-4 lane recheck, Gate 4 plan-vs-PRD debate, lane execution, Gate 5 code-vs-plan with Codex degradation). Implements the full 002-develop-skill PRD (R1-R17 plus R5.1).
+- **`specflow:agent`** — operational at `plugins/specflow/skills/agent/SKILL.md` (232 lines, 4 verbs: `add | remove | list | refresh`).
+- **MIGRATIONS v2.0 → v2.1** — written; introduces `config.json.develop.{greenBatchCap, codexAtGate5}` (defaults 3 and env-derived), the optional `stack_match_reason` field on `agents/index.json`, and on-demand `develop-gate4/` / `develop-gate5/` debate-log subdirectories.
+- **E1-E5 prompt edits** — all five applied to `skills/prd/SKILL.md` (3), `skills/task/SKILL.md` (1), and `templates/agents/standard/principles/goal-driven-reviewer.md` (1).
+
 ### Stubbed by design (not yet operational)
 
-- **Phase 2:** `specflow:develop`, `specflow:agent`. Phase 2 build starts from the `002-develop-skill` PRD anchor.
 - **Phase 3:** `specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`. Specs not yet drafted.
 
 ---
@@ -133,36 +139,34 @@ These are settled. Re-opening them costs hours and the original reasoning is dur
 
 ## Next up — priority-ordered
 
-### Priority 1 — Apply dogfood debrief prompt edits (E1-E5)
+### Priority 1 — Real dogfood pass for Phase 2 (`specflow:develop`)
 
-**Why first:** the dogfood pass surfaced five concrete prompt-edit opportunities, all with file:line citations and replacement text. Applying them tightens Phase 1 prompts before Phase 2 builds new orchestrator surfaces on top.
+**Why first:** Phase 2 skill bodies are written but only exercised against the synthetic 002-develop-skill PRD (which the chain itself produced). The skills haven't been run on actual implementation work. Real dogfood means: pick a small implementable feature in a consumer project (or recursively bootstrap a Phase 3 skill spec); run `specflow:develop` on its tasks; observe lane triage, B.1 mechanical recheck, Gate 4 + 5 debate manifests, and Verifier behaviour against real changes.
 
-**Edits to apply** (full text in `plugins/specflow/examples/docs/specflow/features/002-develop-skill/DOGFOOD-DEBRIEF.md`):
+**Options:**
+- **Option A (recommended):** recursive bootstrap on a Phase 3 skill (e.g. `specflow:complete`). Low blast radius — failures land in a new feature folder, not a real codebase. Generates a useful Phase 3 PRD as a byproduct, same shape as the 001/002 examples.
+- **Option B:** a small actual implementation feature in a consumer project — bigger blast radius but closer to real conditions.
 
-- **E1** — `skills/prd/SKILL.md:240` — codify the Vision verbatim-vs-paraphrase contract.
-- **E2** — `skills/prd/SKILL.md:298` — add Phase C.3 sub-step cross-checking ACs against Phase 1 skill schemas.
-- **E3** — `skills/prd/SKILL.md:454` — extend Gate 2 status taxonomy with `passed-with-revisions`.
-- **E4** — `templates/agents/standard/principles/goal-driven-reviewer.md` — add reverse-traceability lens (every AC must verify ≥1 R).
-- **E5** — `skills/task/SKILL.md:62` — surface Gate 2 block-finding resolutions as task synthesis input.
+**Watch for:**
+- Lane triage misclassifying a clearly-confidential path (rule-based check failing) → R5 in PRD: confidentiality classification is rule-based; failures here are bug-shaped.
+- B.1 mechanical recheck not catching a task that picks up new modules at execution time → R5.1 was added by Gate 2 because reviewer-driven re-lane (R5) couldn't catch this; if B.1 misses it too, the recheck logic needs sharpening.
+- Gate 4 reviewers rubber-stamping the lane plan → prompt teeth need sharpening; or all-finding-rejecting → too aggressive.
+- Codex absent + Gate 5 manifest still recording Codex findings → the degradation path is broken.
 
-**Estimated effort:** one focused half-session.
-
-**Don't:** auto-apply without re-reading the recommended replacement text. Each edit's *Why* references friction the dogfood surfaced; verify the friction still exists in the current prompt before patching.
+**Estimated effort:** one focused session.
 
 ---
 
-### Priority 2 — Phase 2 build: `specflow:develop`
+### Priority 2 — Cut v2.1.0
 
-**Why next:** the dogfood produced the PRD anchor (`002-develop-skill-prd.md`, 18 requirements + 15 ACs, post-Gate-2 revisions applied). The Phase 2 build is now a `specflow:task` run + lane-by-lane implementation against that PRD.
+**Why:** once dogfood passes, the Phase 2 work is shippable. Same release discipline as v2.0.0:
 
-**Sequence:**
+1. Bump `plugins/specflow/.claude-plugin/plugin.json` from 2.0.0 to 2.1.0.
+2. Bump `.claude-plugin/marketplace.json` (metadata.version + plugins[0].version) to 2.1.0; sync description if changed.
+3. Move the Phase 2 entry in `CHANGELOG.md` from `[Unreleased]` to `[2.1.0] — {date}`.
+4. Cut a GitHub release tagged `2.1.0`.
 
-1. Run `specflow:task` against `002-develop-skill-prd.md`. Produces `002-develop-skill-tasks.md` + Gate 3 multi-agent debate manifest.
-2. Build the skill body (`plugins/specflow/skills/develop/SKILL.md`) following the orchestrator pattern. Watch the parent-context budget — `specflow:develop` is the largest orchestrator yet (lane triage + agent-team integration + Gates 4 + 5).
-3. Build `specflow:agent` (per-repo agent registry; `add`/`remove`/`list`/`refresh`). Smaller scope; do this in parallel or after `develop`.
-4. Update `MIGRATIONS.md` with v2.0 → v2.1 entry covering any schema additions (e.g. `config.json.develop.greenBatchCap` introduced by R6).
-
-**Don't start until:** Priority 1 (E1-E5) is applied. The dogfood-validated prompts are what the Phase 2 build relies on.
+**Don't start until:** Priority 1 dogfood passes cleanly OR surfaces only fixable issues fixed before promotion.
 
 ---
 
@@ -170,7 +174,7 @@ These are settled. Re-opening them costs hours and the original reasoning is dur
 
 **Scope:** `specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/insights`, `/prune`, `/optimize`. Self-learning memory loop closes here. Gate 6 of the adversarial chain.
 
-**Don't start until:** Phase 2 is shipped and dogfooded.
+**Don't start until:** Phase 2 is shipped (Priorities 1 + 2) and dogfooded.
 
 ---
 

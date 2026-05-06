@@ -1,0 +1,16 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "features/002-develop-skill/002-develop-skill-tasks.md — T5 ('Reviewer-driven lane re-check (catch-all) at Gate 4') and T5b ('Mechanical pre-Gate-4 lane recheck') are split across two tasks but both touch the same surface (the lane-recheck pipeline at the Phase B/C boundary in `skills/develop/SKILL.md`). The two acceptance criteria together verify AC-8 part (a) and AC-8 part (b); the dependency chain T3 → T5b → T10 → T5 means a single-author implementation will land them as adjacent diffs anyway. From the simplicity lens, this looks like over-decomposition: one shippable surface (the lane-recheck pipeline) split into two task entries.",
+      "claim": "Possible over-decomposition — two tasks track one shippable unit (the lane-recheck pipeline) (Simplicity First, 'Minimum surface that solves the problem'; applied at task-list level: minimum tasks that cover the requirements without creating bookkeeping overhead). T5 and T5b share a code surface (`skills/develop/SKILL.md` Phase B.1 / Phase C closer) and both verify halves of AC-8.",
+      "proposed_change": "Merge T5b into T5 as a sub-task with a numbered sub-acceptance (a) for the mechanical recheck and (b) for the reviewer-driven catch-all. Updated T5 acceptance: '(a) Before Gate 4 opens, the skill writes lane-recheck-{task-id}.json per the mechanical-recheck schema; (b) when a Gate 4 round-1 block finding references the lane assignment AND is accepted in Round 2, the manifest records re-lane forced and a fresh manifest opens.' Update the coverage matrix: R5 → T5, R5.1 → T5. Drop T5b."
+    }
+  ]
+}

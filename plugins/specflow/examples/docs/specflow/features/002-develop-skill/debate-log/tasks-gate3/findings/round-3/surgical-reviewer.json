@@ -1,0 +1,12 @@
+{
+  "reviewer": "surgical-reviewer",
+  "round": 3,
+  "gate": "tasks-gate3",
+  "feature": "002-develop-skill",
+  "responses": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "Revision applied. T13's runtime-branch clause now pins the schema-gap behaviour to skip-with-warning + Gate 5 manifest record (`auto_promotion_skipped: schema_gap`). The cross-skill scope drift is contained at runtime; the chat-line warning gives the user the surface to react. Loud-fallback shape matches the Gate 2 da-r1-f1 precedent for the agent-teams plugin path."
+    }
+  }
+}

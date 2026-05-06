@@ -4,7 +4,18 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_Phase 2 (`specflow:develop`, `specflow:agent`) and Phase 3 (`specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`) ship in subsequent releases per the PRD. The Phase 2 skill specs are pre-drafted in `examples/docs/specflow/features/002-develop-skill/` (recursive-bootstrap dogfood artefact) and serve as the implementation anchor for the next milestone._
+**Phase 2 build staged.** `specflow:develop` (649-line orchestrator with Phases A-F: pre-flight, lane triage, mechanical pre-Gate-4 lane recheck, Gate 4 plan-vs-PRD debate, lane execution green/yellow/red, Gate 5 code-vs-plan with Codex degradation) and `specflow:agent` (232-line per-repo registry with `add | remove | list | refresh` verbs) now have operational bodies. The 002-develop-skill PRD is implemented end-to-end against 19 tasks (Gate 3 closed, status `passed-with-revisions`, 6 findings all `concern`, 1 push-back defended on the R5/R5.1 lane-recheck split).
+
+The Phase 1 prompt-edit recommendations from the dogfood debrief (E1-E5) are now applied:
+- E1: `skills/prd/SKILL.md` — Vision verbatim-vs-paraphrase contract codified for Gate 2 trace integrity.
+- E2: `skills/prd/SKILL.md` — Phase C.3 self-check now cross-references ACs against Phase 1 skill schemas.
+- E3: `skills/prd/SKILL.md` — Gate 2 status taxonomy extended with `passed-with-revisions` (distinguishing clean pass from revision-and-pass).
+- E4: `templates/agents/standard/principles/goal-driven-reviewer.md` — reverse-traceability lens (orphan AC) added to anti-patterns.
+- E5: `skills/task/SKILL.md` — Phase A.2 surfaces Gate 2 block-finding resolutions before extraction.
+
+`MIGRATIONS.md` carries the v2.0 → v2.1 entry: introduces `config.json.develop.{greenBatchCap, codexAtGate5}` (defaults `3` and env-derived), the optional `stack_match_reason` field on `agents/index.json`, and the on-demand `develop-gate4/` / `develop-gate5/` debate-log subdirectories. Migration is additive; backups retained until next successful upgrade.
+
+The 2.1.0 cut waits on real dogfood — running `specflow:develop` on an actual Phase 2 task in a consumer project to surface friction the synthetic worked example didn't. Phase 3 (`specflow:complete`, `specflow:decision`, `specflow:scope-change`, `/optimize`, `/insights`, `/prune`) remains stubbed.
 
 ## [2.0.0] — 2026-05-06
 
