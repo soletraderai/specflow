@@ -1,0 +1,29 @@
+{
+  "reviewer": "codex",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "025-sprint-task-flagging",
+  "responses": {
+    "codex-r1-f1": {
+      "disposition": "sharpen",
+      "rationale": "R11 and AC-14 mandate the verbatim `GRAPH-INVALID:` prefix for cycle, self-loop, dangling reference, and duplicate task ID. The Round 3 directive requires duplicate edge coverage, but the revised PRD does not specify duplicate dependency edges as a malformed graph case.",
+      "sharpened_finding": "Update R11 and AC-14 so graph validity rejects duplicate dependency edges with the verbatim `GRAPH-INVALID:` prefix, including a diagnostic form such as `GRAPH-INVALID: duplicate edge T-X -> T-Y` and a dedicated duplicate-edge fixture alongside cycle, self-loop, and dangling-reference fixtures."
+    },
+    "codex-r1-f2": {
+      "disposition": "accept",
+      "rationale": "AC-9 now extracts canonical `(task_id, sprint-bucket)` pairs and sorts them with a typed comparator over `T-<int>(.<letter>)?`. The comparator parses the integer and optional letter rather than sorting raw task-ID strings."
+    },
+    "codex-r1-f3": {
+      "disposition": "accept",
+      "rationale": "R2 now defines task ordering with a typed comparator over `(int, optional-letter)` and explicitly says it is not raw string lexicographic order. AC-3 includes `T-2 < T-10`, which closes the original ambiguity around `T10`-style string ordering."
+    },
+    "codex-r1-f4": {
+      "disposition": "accept",
+      "rationale": "AC-13 is split into a documentation check for `templates/task/sprint-bucket-heuristic.md` and an execution-order fixture that confirms the oversize task aborts before any `sprint-bucket:` line is written. This directly addresses the doc-only ordering concern."
+    },
+    "codex-r1-f5": {
+      "disposition": "accept",
+      "rationale": "R2 includes a topological-floor corollary stating that every dependency has `bucket(T_j) < bucket(T_i)` by construction. R12 mirrors this with an eval clause requiring `M < N`, so same-bucket dependencies are no longer permitted."
+    }
+  }
+}

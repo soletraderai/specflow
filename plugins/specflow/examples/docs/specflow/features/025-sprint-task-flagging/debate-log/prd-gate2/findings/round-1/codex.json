@@ -1,0 +1,44 @@
+{
+  "reviewer": "codex",
+  "principle": "cross-provider-skepticism",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "025-sprint-task-flagging",
+  "findings": [
+    {
+      "id": "codex-r1-f1",
+      "severity": "block",
+      "evidence": "Bucket assignment is computed by `bucket(T) = 1` if `T.depends_on` is empty, otherwise `bucket(T) = 1 + max(bucket(D) for D in T.depends_on)`.",
+      "claim": "The algorithm silently assumes every `Depends on:` edge names an existing task and that the dependency graph is acyclic. Cyclic edges, self-loops, and missing dependency IDs make `bucket(D)` undefined or recursively unsatisfiable, but the PRD gives no abort rule, diagnostic, or acceptance coverage for invalid graphs.",
+      "proposed_change": "Add a pre-bucketing graph-validity invariant: every dependency ID must resolve to a task in the same feature, no task may depend on itself, and the dependency graph must be acyclic. Require synthesis to abort before bucket assignment with a diagnostic naming the offending task/edge, and add AC fixtures for missing ID, self-loop, and cycle."
+    },
+    {
+      "id": "codex-r1-f2",
+      "severity": "concern",
+      "evidence": "Verified via a targeted diff scoped to the `sprint-bucket:` lines: `diff <(grep '^sprint-bucket:' run-1.md) <(grep '^sprint-bucket:' run-2.md)` returns empty.",
+      "claim": "AC-9 compares only bare bucket lines, not task-ID-to-bucket mappings. If task entry order changes between runs, a correct implementation can produce a non-empty diff; if two tasks swap order but have the same bucket sequence, an incorrect mapping can pass. The PRD does not normalize task order or edge order before the idempotency diff.",
+      "proposed_change": "Change AC-9 to compare canonical `(task_id, sprint-bucket)` pairs sorted by natural task ID, and state that dependency-edge inputs are normalized as sorted dependency ID sets before recomputation."
+    },
+    {
+      "id": "codex-r1-f3",
+      "severity": "concern",
+      "evidence": "same-bucket scope-overlap conflicts are resolved by lexicographic tie-break on task ID (the later ID is bumped).",
+      "claim": "R2 clarifies `T1 < T2 < ... < T10` as natural-number ordering on the integer suffix, but AC-9 collapses that to unqualified 'lexicographic tie-break'. Providers can satisfy the AC with pure string ordering (`T10` before `T2`) while violating R2's intended deterministic order.",
+      "proposed_change": "Update AC-9 to require natural-number ordering on the integer suffix and add a fixture with `T1`, `T2`, and `T10` where the expected bump order proves `T10` sorts after `T2`."
+    },
+    {
+      "id": "codex-r1-f4",
+      "severity": "concern",
+      "evidence": "`task/SKILL.md` Phase D verify-step list documents the explicit phase ordering: (a) per-task budget check (029 R4), (b) bucket assignment (R2), (c) topological-floor invariant check (R9).",
+      "claim": "AC-13 verifies that the ordering is documented, not that the implementation follows it. AC-5 observes final split subtasks with buckets, but the final artifact cannot distinguish budget-check-then-bucket from bucket-then-split-then-rebucket, so the ordering remains mostly aspirational.",
+      "proposed_change": "Add an enforcement AC requiring bucket assignment to abort if any unsplit over-budget task reaches it, with a fixture or logged verify-step transcript proving the 029 R4 budget check runs before bucket computation."
+    },
+    {
+      "id": "codex-r1-f5",
+      "severity": "block",
+      "evidence": "for every task `T_i` in bucket `N`, every `T_j` listed in `T_i.Depends on:` has `T_j.sprint-bucket <= N`.",
+      "claim": "The topological-floor invariant allows same-bucket dependencies. After scope-overlap bumps mutate bucket numbers, a predecessor can end up in the same final bucket as its dependent and still pass R9, which contradicts the sprint fan-out meaning that bucket 1 has no predecessors and bucket 2 depends only on bucket 1.",
+      "proposed_change": "Strengthen the final invariant to require every direct dependency of a task in bucket `N` to have `sprint-bucket < N`, or explicitly define a post-bump normalization step that raises dependents until all dependency edges point strictly from lower to higher buckets. Add an AC with a scope bump that would otherwise create a same-bucket dependency."
+    }
+  ]
+}

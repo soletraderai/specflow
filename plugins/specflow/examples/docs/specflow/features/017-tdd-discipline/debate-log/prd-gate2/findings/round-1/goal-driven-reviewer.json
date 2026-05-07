@@ -1,0 +1,58 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "feature": "017-tdd-discipline",
+  "gate": "prd-gate2",
+  "round": 1,
+  "lens": "Could a fresh agent run this verify step in isolation and tell me unambiguously whether it passed?",
+  "findings": [
+    {
+      "id": "gd-r1-f1",
+      "severity": "block",
+      "ac_or_r": "AC-1",
+      "claim": "AC-1's grep verifies subheadings are present but does NOT verify cycle order. The pattern `^### D\\.[123]|^## Phase [DEF]` matches a file containing the subheadings in any order — `### D.3 Refactor` could appear before `### D.1 Red` and the grep would still pass. A fresh agent running this verify cannot answer 'are Red, Green, Refactor in canonical Pocock order' unambiguously. The PRD Vision explicitly names the cycle as 'Red \u2192 Green \u2192 Refactor' — order is load-bearing, not cosmetic.",
+      "evidence": "PRD line 103: `grep -E '^### D\\.[123]|^## Phase [DEF]' plugins/specflow/skills/develop/SKILL.md`. This emits matched lines but does not assert ordinal order. A file with `### D.2 Green` line 100, `### D.1 Red` line 200, `### D.3 Refactor` line 300 passes this grep identically to one in correct order.",
+      "proposed_change": "Replace AC-1's verify clause with: 'Verified via `grep -nE '^### D\\.[123] (Red|Green|Refactor)' plugins/specflow/skills/develop/SKILL.md | awk -F: '{print $1\":\"$3}' | sort -n -t: -k1` returns three lines in this exact order: `<line-N1>:### D.1 Red`, `<line-N2>:### D.2 Green`, `<line-N3>:### D.3 Refactor` with N1 < N2 < N3.' This is binary — line-numbered output makes order verification mechanical."
+    },
+    {
+      "id": "gd-r1-f2",
+      "severity": "block",
+      "ac_or_r": "AC-3",
+      "claim": "AC-3 describes the refusal mechanism narratively ('verify step refuses entry if the per-task plan section ... does not contain at least one case marked `Status: red (failing)`'). There is no binary check that the refusal CLAUSE exists in develop/SKILL.md as text. A fresh agent reading AC-3 cannot test 'is the refusal codified in the skill' — only 'does the skill happen to behave that way at runtime'. Runtime-behaviour testing requires a fixture; the AC names no fixture and no grep.",
+      "evidence": "PRD lines 109-110. AC-3 states the verify-step refuses entry but provides no mechanical check. Compare AC-1 (grep-anchored), AC-2 (literal-string-grep), AC-9 (line-count + verbatim-quote check) — all of which name their mechanism. AC-3 is verbose-but-vague: it describes the desired behaviour without a binary observable.",
+      "proposed_change": "Replace AC-3's verify clause with a two-part binary check: (1) `grep -A 5 '^### D.2 Green' plugins/specflow/skills/develop/SKILL.md` returns a block containing the literal substring `Status: red (failing)` AND the literal substring `refuse` (or `refuses`/`refusal`). (2) The block contains a conditional clause matching the regex `tddRequired.*(true|false)` to prove the lane-conditional knob is wired. Both substrings must appear within 30 lines after `### D.2 Green` for AC-3 to pass."
+    },
+    {
+      "id": "gd-r1-f3",
+      "severity": "block",
+      "ac_or_r": "AC-8",
+      "claim": "AC-8's absence-of-strings check admits a critical false positive. The forbidden string `manifest` already appears MANY times in develop/SKILL.md Phase E and Phase F body (current text: 'Gate 5 manifest', 'develop-gate5/manifest.md', 'verifier outcome ... manifest path'). An absence-of-`manifest` test in those line ranges WILL fail on the unchanged text. The AC will fire a false-block on every correct implementation. The other forbidden strings (`red marker`, `green marker`, `refactor marker`) are reasonable but `manifest` is over-broad.",
+      "evidence": "develop/SKILL.md current text lines 446-633 (the Phase E and Phase F bodies AC-8 names) contains the literal token `manifest` in at least 12 places — all referring to the Gate 4/5/feature-level debate manifests, NOT the per-task manifest 017 introduces. AC-8's absence test cannot distinguish 'Gate 5 manifest' (legitimate, pre-existing) from 'per-task manifest' (the leak 017 forbids).",
+      "proposed_change": "Replace AC-8's absence clauses with concrete-substring absence tests: `grep -E '(per-task manifest|red marker|green marker|refactor marker|red\\s*:\\s*passed|green\\s*:\\s*passed|refactor\\s*:\\s*passed)' <(sed -n '446,633p' plugins/specflow/skills/develop/SKILL.md)` returns zero matches. Drop the bare `manifest` token; keep only the qualified `per-task manifest` form plus the schema-shape literals. This makes the absence test unambiguous and false-positive-free."
+    },
+    {
+      "id": "gd-r1-f4",
+      "severity": "block",
+      "ac_or_r": "AC-11",
+      "claim": "AC-11 describes the hard-block as runtime behaviour ('the develop skill emits a \"Refactor cannot add files; route to specflow:scope-change\" message and halts the cycle'). 'Emits a message and halts' is not a binary file check — it requires a runtime fixture and an oracle for 'halted'. The AC names no fixture path, no test runner, no log artefact. A fresh agent cannot run this check in isolation.",
+      "evidence": "PRD lines 139-140. AC-11 names a 'worked task fixture' but does not state where the fixture lives, what file format it takes, what command exercises it, or what observable proves halt. Compare AC-7a/7b (which point at concrete manifest fragment locations under `plugins/specflow/examples/`) — those are binary-checkable; AC-11 is not.",
+      "proposed_change": "Split AC-11 into two binary parts: (11a) `grep -A 15 '^### D.3 Refactor' plugins/specflow/skills/develop/SKILL.md` returns a block containing the literal substring `Refactor cannot add files; route to specflow:scope-change` AND the literal token `halt` (or `halts`/`refuse`/`refuses`). (11b) A fixture file at `plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/refactor-new-file-block.md` exists and contains a worked task narrative ending with the exact halt-message string from (11a). Both anchors are file-system observable."
+    },
+    {
+      "id": "gd-r1-f5",
+      "severity": "concern",
+      "ac_or_r": "AC-2",
+      "claim": "AC-2 verifies the literal invocation string `specflow:test {NNN-slug} --plan-only --task T{N}` is present in D.1 (Red) body. Mostly-binary, but the check admits the string appearing in a comment, an example block, or a 'do not do this' negative example — not necessarily as the load-bearing 'fire this command' instruction. A fresh agent grepping for the string cannot tell if it is the active contract or merely mentioned.",
+      "evidence": "PRD lines 106-107. The grep is binary-on-presence but blind-on-context. The Pocock failure mode the feature exists to prevent (test-after-implementation) is exactly the kind of nuance a literal-string check cannot catch.",
+      "proposed_change": "Tighten AC-2: the literal invocation must appear within 10 lines of a verb-phrase from {`invoke`, `fire`, `run`, `execute`} that names the agent as subject (e.g. `the agent invokes` / `fire `). Verified via `grep -B 0 -A 10 '^### D.1 Red' plugins/specflow/skills/develop/SKILL.md` containing both the literal invocation string AND one of the verb anchors."
+    },
+    {
+      "id": "gd-r1-f6",
+      "severity": "block",
+      "ac_or_r": "eval-coverage",
+      "claim": "MANDATORY EVAL-COVERAGE FINDING. Neither target skill's `eval:` field exercises the TDD discipline this feature introduces. develop/SKILL.md eval (line 26) checks lane-assignments, recheck files, Gate 4/5 manifest closures, and the six task-history fields — but contains zero check for the three new per-task manifest markers (`red`, `green`, `refactor`) introduced by R9, zero check for the Red-artefact precondition introduced by R5, and zero check for `tddRequired` config awareness. test/SKILL.md eval (line 19) checks AC-to-test traceability and `--feedback` writes, but contains zero check for `--task T{N}` flag handling and zero check for the `Status: red (failing)` marker that R8 makes the canonical Red-artefact contract. A 017-shipped feature whose eval blocks pass identically to a 017-not-shipped state means the eval does not exercise the feature's output. This is the prototypical 'eval that doesn't exercise the output' anti-pattern.",
+      "evidence": "develop/SKILL.md:26 — `eval: lane-assignments.json exists ... Gate 4 manifest closes ... Gate 5 manifest closes ... every task ... has a corresponding entry in admin/task-history.json with the six development-time fields populated (lane_assigned, ai_assistance_level, elapsed_minutes, what_worked, what_didnt_work, blast_radius_outcome).` No mention of red/green/refactor markers, Red-artefact precondition, or per-task manifest stub heading. test/SKILL.md:19 — `eval: every PRD acceptance criterion has a test case ... coverage matrix shows 100% AC-to-test traceability ... lesson-query in B.0 surfaces matched active lessons ...`. No mention of `--task T{N}` flag, `Status: red (failing)` marker, or per-task plan section anchor.",
+      "proposed_change": "Add a new R (R13 or expand R1/R8) requiring both eval fields be extended. develop/SKILL.md eval must additionally assert: 'for every Yellow-lane task and every Green-lane task with config.develop.tddRequired===true, the per-task manifest stub section in {NNN-slug}-tasks.md contains a line matching the regex `^red:\\s+(passed|failed|skipped \\((config|trivial)\\))\\s+\\([0-9T:Z-]+\\)\\s+\u2014\\s+.+$` and equivalent regexes for `green:` and `refactor:`'. test/SKILL.md eval must additionally assert: 'when invoked with `--plan-only --task T{N}`, the per-task plan section written into {NNN-slug}-test.md contains at least one test case marked `Status: red (failing)`'. Without these eval extensions, AC-1 through AC-11 can all pass on a SKILL.md that no longer behaves correctly at runtime — which is the goal-driven anti-pattern this principle exists to prevent."
+    }
+  ]
+}

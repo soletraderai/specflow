@@ -4,7 +4,156 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.4.0 closed Sprint 1 of the v2.4+ master plan. Sprint 2 (template + doctrine churn — `015-key-features-section`, `016-brief-enhancements`, `017-tdd-discipline`) is the next milestone. The first `templateVersion` audit fires at Sprint 2 close per `templates/admin/example-versioning.md`._
+_v2.7.0 closed Sprint 4 — the final sprint of the v2.4+ master plan. The plugin is feature-complete. Next milestone: a real consumer-project dogfood (not recursive specflow-on-itself) to surface friction the recursive dogfoods didn't catch._
+
+## [2.7.0] — 2026-05-08
+
+The Sprint 4 sweep release of the v2.4+ master plan — and the closing release of the v2.x cycle. Two features ship, tightly co-designed: the new `specflow:sprint` skill (the first new skill since v2.3) and `agent-teams-per-stage` doctrine. After Sprint 4, the recommended next step is a real consumer-project dogfood.
+
+### Added
+
+**New skill** (`plugins/specflow/skills/sprint/`):
+
+- `specflow:sprint` — lightweight sprint planner invoked by `specflow:develop` Phase A.5.5 as a sub-step (not a top-level user entry point). Pulls the feature's mapped Linear project (when MCP available); reconciles drift with local `tasks.md`; filters to the in-scope batch via `sprint-bucket: N` (per 025) and `config.develop.maxIssuesPerSprint` (default 5); synthesises a sprint plan with per-stage team assignments (per 026); presents the sprint-plan gate to the developer; on approval creates a git work-tree at `admin/scratch/{NNN-slug}-sprint/worktree/`. Returns the approved plan as a structured result. Refuses standalone invocation. Closes 020-sprint-skill (with 024-sprint-worktree absorbed).
+
+**New doctrine doc**:
+
+- `templates/admin/stage-teams.md` — Plan → Build → Test → Iterate → Validate as first-class doctrine; default rosters per stage; `config.json.teams.{stage}` schema; override path; consumption by 020 / develop / test. Closes 026-agent-teams-per-stage.
+
+**New config knobs** (`admin/config.json`):
+
+- `develop.maxIssuesPerSprint` — integer, default 5. Caps the in-scope batch per sprint plan (per 020).
+- `teams` — object, default `{}` (empty). Per-stage roster overrides per 026's schema. First sprint-plan invocation materialises the doctrine defaults from `templates/admin/stage-teams.md` when keys are absent.
+
+**Skill body changes** (no new skills beyond `specflow:sprint`):
+
+- `specflow:develop` Phase A.5.5 (NEW between A.5 and A.6) — invokes `specflow:sprint {NNN-slug}` as a sub-skill; awaits the approved plan; iterates Phase B-F across the in-scope batch (per 020).
+- `specflow:setup` Phase 8.2 — seeds `develop.maxIssuesPerSprint: 5`, `teams: {}`, and the new `sprint` skill toggle.
+
+**New worked examples** (Sprint 4 features):
+
+- `examples/docs/specflow/features/020-sprint-skill/` (PRD + Gate 2 manifest).
+- `examples/docs/specflow/features/026-agent-teams-per-stage/` (PRD + Gate 2 manifest).
+
+### v2.x cycle recap
+
+The v2.x cycle (v2.0 → v2.7) shipped:
+
+- 4 sprints, 21 features (001-008, 010-014, 016-020, 022-023, 025-029 — IDs 009 / 015 / 021 / 024 stayed allocated as decide-not-build / merged / removed / absorbed).
+- 1 new skill in Sprint 4 (`specflow:sprint`); all other v2.x changes were additive across existing skills.
+- 11 doctrine docs under `templates/admin/` and `templates/task/`: `CONTEXT.md`, `lessons.json` schema, `skill-toggles.md`, `example-versioning.md`, `team-review-bridge.md` (Sprint 1); `single-context-task.md`, `tdd-discipline.md`, `cross-task-review.md`, `sprint-bucket-heuristic.md` (Sprint 2); `lessons-registry.md`, `task-manifest-schema.md`, `reviewer-isolation.md` (Sprint 3); `stage-teams.md` (Sprint 4).
+- 21 worked-example folders under `examples/docs/specflow/features/`.
+- 2 new core principles (TDD added in Sprint 2; the original 4 unchanged).
+- A locked-in architectural decision list of 21 items (in `v2/docs/SESSION-HANDOFF.md`).
+
+The v2.x cycle establishes the chain-don't-absorb pattern as the dominant evolution mode: new features land their operational detail in doctrine docs; SKILL.md bodies carry citations. This keeps skills under their context budget and makes future feature work surgical.
+
+### Acknowledged tradeoffs carried into v2.7
+
+- `brief/SKILL.md` and `task/SKILL.md` exceed the ≤500-line skill-size ceiling (Sprint 2 additions). Chain-don't-absorb extraction (sibling `brief-blocks` / `cross-task-applier` skills) can land in v2.8+ if pressure remains.
+
+## [2.6.0] — 2026-05-08
+
+The Sprint 3 sweep release of the v2.4+ master plan. Five features extend the operational runtime instrumentation: lessons-registry formalisation, per-task manifest, brand-consistency lens, reviewer-context-isolation contract, edge-case-reviewer. All chain-don't-absorb-shaped — five new doctrine docs absorb operational detail; SKILL.md bodies carry citations.
+
+### Added
+
+**New doctrine docs**:
+
+- `templates/admin/lessons-registry.md` — schema (id / created / tags / surface / outcome / context / lesson / source / confidence / superseded_by / status), write paths (test --feedback, complete retro, insights clustering), read paths (prd Phase A.3.5, task Phase A.4, cross-task review), query algorithm (tag-overlap × confidence-weight × recency-decay), config knobs. Closes 018-lessons-registry.
+- `templates/admin/task-manifest-schema.md` — read-first contract, standardised entry format (timestamp / agent_id / phase / event_type / input_ref / output_ref / body / outcome), six lifecycle phases captured, migration from 017's interim stub. Closes 019-task-manifest.
+- `templates/admin/reviewer-isolation.md` — fresh subagent spawn contract, declared-input-only, pairwise-non-equal `agent_id` (format contract: harness-emitted run ID + slot suffix; ISO-8601-with-suffix fallback), runtime collision check (`FRESH-CONTEXT-VIOLATION` aborts the gate), cross-cutting impact across Gates 2/3/4/5. Absorbs 022's interim convention; enables 028's reviewer to land conforming. Closes 027-reviewer-context-isolation.
+
+**New principle reviewer agent**:
+
+- `examples/docs/specflow/admin/agents/standard/principles/edge-case-reviewer.md` — five-question lens (collateral surface / failure modes / inheritance / interaction / state-environment); deliberately NOT goal-aware (the load-bearing complement to Goal-Driven's reverse-traceability blindspot); advisory output shape (`recommendation` + `reasoning`); fresh-context per 027. Closes 028-edge-case-reviewer.
+
+**New config knobs** (`admin/config.json`):
+
+- `prd.maxLessonsSurfaced` — integer, default 5. Caps lessons surfaced inline at PRD Phase A.3.5.
+- `task.maxLessonsSurfaced` — integer, default 5. Caps lessons surfaced at task Phase A.4.
+
+**Skill body changes** (no new skills):
+
+- `specflow:prd` Phase A.3.5 (NEW between A.3 and A.4) — queries `lessons.json` with the feature's tag profile; surfaces inline as "What we've learned before that applies here" subsection in the interview's Codebase context.
+- `specflow:task` Phase B.3 — per-task entry gains `prior-lessons: [L-NNN, ...]` field (per 018).
+- `specflow:test` Phase B.3 write template — adds Brand-consistency lens section with eight standard questions in a table; advisory-not-AC-failing semantics documented inline (per 023).
+- `specflow:develop` Phase C.2 (Gate 4) reviewer set — adds `edge-case-reviewer` to the standard reviewers list (per 028).
+- `specflow:develop` Phase E.2 (Gate 5) reviewer set — adds `edge-case-reviewer` (per 028).
+- `specflow:setup` Phase 8.2 — seeds `prd.maxLessonsSurfaced: 5` and `task.maxLessonsSurfaced: 5` in the config.json template.
+
+**Reviewer template updates** (under `templates/agents/standard/principles/`):
+
+- `goal-driven-reviewer.md`, `simplicity-reviewer.md`, `surgical-reviewer.md`, `think-before-coding-reviewer.md` — each gains the line *"Does NOT consult the writer's chat or the orchestrator's deliberation transcripts"* + the `writer_id ≠ {reviewer-name} agent_id` non-equality clause + citation to `templates/admin/reviewer-isolation.md`. Per 027.
+
+**Orchestrator pattern extension**:
+
+- `templates/orchestrator-pattern.md` — new "Reviewer fresh-context dispatch" section between the three primitives and the skill-author checklist; new checklist bullet *"Every reviewer dispatch in a multi-agent gate honours the fresh-context contract"*. Per 027.
+
+**New worked examples** (Sprint 3 features):
+
+- `examples/docs/specflow/features/018-lessons-registry/` (PRD + Gate 2 manifest).
+- `examples/docs/specflow/features/019-task-manifest/` (PRD + Gate 2 manifest).
+- `examples/docs/specflow/features/023-test-brand-consistency/` (PRD + Gate 2 manifest).
+- `examples/docs/specflow/features/027-reviewer-context-isolation/` (PRD + Gate 2 manifest demonstrating the agent_id contract on its own gate).
+- `examples/docs/specflow/features/028-edge-case-reviewer/` (PRD + Gate 2 manifest).
+
+## [2.5.0] — 2026-05-07
+
+The Sprint 2 sweep release of the v2.4+ master plan. Five features rewrite primary contracts (PRD/task/develop/brief). One-shot template-churn window — every Sprint 2 feature touches `task/SKILL.md` or `develop/SKILL.md` or `brief/SKILL.md`; one MIGRATIONS entry, one round of worked-example backfill (using the 013 versioning policy from Sprint 1).
+
+### Added
+
+**New doctrine docs** (chain-don't-absorb pattern):
+
+- `templates/admin/single-context-task.md` — single-context-window-per-task contract: rationale, verbatim rule (locked-in decision #21), `context-budget-estimate` schema, no-mid-task-compaction contract, develop Phase A pre-flight, cross-references. Closes 029-single-context-task. Worked example: `examples/docs/specflow/features/029-single-context-task/`.
+- `templates/admin/tdd-discipline.md` — Pocock's Red → Green → Refactor cycle: cycle steps with bounded Refactor (no new behaviour, no new files, no scope creep / route to `specflow:scope-change`), per-task manifest stub schema (`red:` / `green:` / `refactor:` markers with outcome enum + ISO timestamp), lane interactions table, `--plan-only --task` Red artefact contract, pre-implementation test execution. Closes 017-tdd-discipline. Worked fixtures: `examples/docs/specflow/features/017-tdd-discipline/fixtures/{yellow-happy-path,green-skip-config,refactor-new-file-block}.md`.
+- `templates/task/cross-task-review.md` — Phase E.4.5 + Phase F doctrine: three-round mini-debate (Cross-task R1 → Applier R2 + apply → Cross-task R3 sharpen → Applier final pass), per-finding decision schema (`accepted | rejected | scope-change-required`), hard-cap enforcement (per 029-R4) at the applier, sprint-bucket recompute (per 025) on accepted merge/split, manifest schema extension (`writer_id` / `cross_task_reviewer_id` / `applier_id` triplet, "Cross-task findings" H2 section), sub-agent dispatch failure fallback. Closes 022-cross-task-review. Worked fixtures: `examples/docs/specflow/features/022-cross-task-review/fixtures/{cross-task-worked-example,threshold-skip-2-tasks/}`.
+- `templates/task/sprint-bucket-heuristic.md` — single-rule fixpoint heuristic with typed `(int, optional-letter)` comparator, bump iteration discipline, topological-floor corollary, graph-validity step (`GRAPH-INVALID:` diagnostics for cycle / self-loop / duplicate-task-id / duplicate-edge / dangling-reference), per-task budget respect. Closes 025-sprint-task-flagging. Worked fixtures: `examples/docs/specflow/features/025-sprint-task-flagging/fixtures/{four-task-bucketing,graph-invalid-cases}.md`.
+
+**New principle reviewer agent** (under `examples/docs/specflow/admin/agents/standard/principles/`):
+
+- `cross-task-reviewer.md` — coherence + better-arrangement lenses applied to the entire task list as a single artefact at Gate 3 Round 2.5. Reads `context-budget-estimate` per task (per 029) as a soft signal for the better-arrangement lens. Never sees the writer's chat (per 027 substrate). Surfaces `coherence` / `better-arrangement` findings with `lens` field + severity + claim + evidence + proposed_change.
+
+**New config knobs** (`admin/config.json`):
+
+- `task.contextBudget` — integer, default 80000. Per-task token ceiling for the single-context-window rule (per 029). Tasks whose `context-budget-estimate` exceeds this value auto-flag at synthesis (`specflow:task` Phase B.4) and route to `specflow:scope-change` for splitting. Resolver contract: `templates/admin/single-context-task.md`.
+- `develop.tddRequired` — boolean, default `true`. When `true`, Green lane behaves identically to Yellow on the Red artefact contract (per 017). When `false`, Green may skip Red and the per-task manifest stub records `red: skipped (config) (...)` alongside the operator's strong-CI-signal attestation. Knob applies to Green only — Yellow always enforces; Red is human-led.
+
+**New per-task field** (`{NNN-slug}-tasks.md`):
+
+- `sprint-bucket: N` — positive integer ≥ 1, derived deterministically from the dependency graph + scope-overlap per `templates/task/sprint-bucket-heuristic.md` (per 025). Read by future `specflow:sprint` (020, Sprint 4) for parallel fan-out batch planning.
+- `context-budget-estimate: <int_tokens>` — pre-existing field formalised in `templates/admin/single-context-task.md`'s schema (per 029).
+
+**New core principle** (`CORE_PRINCIPLES.md`):
+
+- `## TDD` section adopting Pocock's Red → Green → Refactor framing with the canonical Pocock quote *"TDD forces the LLM to really take small steps"*. Cites `templates/admin/tdd-discipline.md` as the doctrine home.
+
+**Skill body changes** (no new skills):
+
+- `specflow:task` Phase B.3 write template — adds `sprint-bucket: N` per-task field; `context-budget-estimate` per-task field formalised.
+- `specflow:task` Phase B.4 self-check — gains budget self-check (per 029), graph-validity check (per 025), and sprint-bucket assignment step (per 025).
+- `specflow:task` Phase E adds Phase E.4.5 (Cross-task review three-round mini-debate) between E.4 (Round 2) and E.5 (Round 3). Per-task Round 3 (E.5) hybrid surface — sharpen surviving findings, auto-resolve merged-out / dropped, treat applier-introduced tasks as `round-3-net-new`.
+- `specflow:task` Phase E.6 closer — manifest gains `writer_id` / `cross_task_reviewer_id` / `applier_id` triplet, "Cross-task findings" H2 section with three H3 sub-headings, `passed-with-revisions` status added to the taxonomy. FAIL rule applies to UNION of per-task and cross-task findings.
+- `specflow:task` Phase F (NEW) — `--apply-cross-task-feedback {NNN-slug}` applier flow with precondition check, per-finding decision (`accepted | rejected | scope-change-required`), hard-cap enforcement (per 029-R4), sprint-bucket recompute (per 025).
+- `specflow:develop` Phase A.6 — context-budget pre-flight per in-scope task (estimate-vs-actual ≥20% divergence triggers a three-option developer prompt; outright budget breach routes to `specflow:scope-change` non-optionally). Per 029.
+- `specflow:develop` Phase D — Red sub-step (`specflow:test --plan-only --task T{N}` invocation; pre-implementation test execution; manifest marker `red:`); Green sub-step (gated on Red artefact for Yellow always and Green when `tddRequired: true`; manifest marker `green:`); Refactor sub-step (bounded structural improvement; manifest marker `refactor:`). Per 017.
+- `specflow:develop` Phases D / E / F single-context-window reminder — no mid-task compaction; escalate to developer per A.6's three-option prompt instead. Per 029.
+- `specflow:test` `--plan-only --task T{N}` mode — per-task variant writes only the per-task plan section into `{NNN-slug}-test.md` and marks the primary AC's case as `Status: red (failing)` by default. Phase B.5 (Codex pass + user prompt) is skipped in `--task` mode. Per 017.
+- `specflow:brief` Visual Block Grammar — four new structured blocks added: `:::key-features` (non-technical card grid), `:::resources` (link cards with source-type pill icons; built-in inline SVG-base64 icons for `linear | doc | design | github`; `icon=` overrides; malformed overrides fall back), `:::key-decisions` (decision table — Decision | Why | Source columns), `:::phase-split` (two-column iteration boundary). Eight-kind grammar; strip rule, eval field, supported-set documentation all updated. CSS extends to mobile breakpoints (1100px / 860px collapse to single-column). Per 016.
+- `specflow:setup` Phase 8.2 — seeds `task.contextBudget: 80000` in the example config.json template.
+
+**New worked examples** (Sprint 2 features):
+
+- `examples/docs/specflow/features/016-brief-enhancements/` (PRD, brief, interview, debate-log).
+- `examples/docs/specflow/features/017-tdd-discipline/` (PRD, brief, interview, debate-log, three fixture files).
+- `examples/docs/specflow/features/022-cross-task-review/` (PRD, brief, interview, debate-log, two fixtures).
+- `examples/docs/specflow/features/025-sprint-task-flagging/` (PRD, brief, interview, debate-log, two fixtures).
+- `examples/docs/specflow/features/029-single-context-task/` (PRD, interview, tasks, debate-log).
+
+### Known acknowledged tradeoff
+
+`brief/SKILL.md` and `task/SKILL.md` exceed the ≤500-line skill-size ceiling after the Sprint 2 additions (brief at ~630 lines; task at ~640 lines). The chain-don't-absorb path was applied (four new doctrine docs absorb the operational detail), but the four new visual blocks in `brief/SKILL.md` and the new Phase E.4.5 / Phase F sub-phases in `task/SKILL.md` are large enough to push past the cap even with the doctrine extraction. Acknowledged tradeoff for v2.5.0; chain-don't-absorb extraction (e.g. a sibling `brief-blocks` skill, or a sibling `cross-task-applier` skill) can land in v2.6 or later if the cap pressure remains operationally relevant.
 
 ## [2.4.0] — 2026-05-06
 

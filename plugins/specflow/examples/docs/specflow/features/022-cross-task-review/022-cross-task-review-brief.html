@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross-Task Review</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #1a1a1a;
+    background: #fafaf7;
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 32px 24px;
+    background: #1a2632; color: #d8d8d4;
+    border-right: 1px solid #283442;
+  }
+  nav.toc h2 { margin: 0 0 4px; font-size: 18px; color: #fff; letter-spacing: -0.01em; }
+  nav.toc .subtitle { margin: 0 0 24px; font-size: 12px; color: #88a; text-transform: uppercase; letter-spacing: 0.08em; }
+  nav.toc ul { list-style: none; padding: 0; margin: 0 0 24px; }
+  nav.toc ul ul { margin: 4px 0 12px 12px; padding-left: 12px; border-left: 1px solid #2a3a4a; }
+  nav.toc li { margin: 6px 0; }
+  nav.toc a { color: #c8d0d8; text-decoration: none; font-size: 14px; line-height: 1.4; display: block; padding: 2px 0; transition: color 0.15s; }
+  nav.toc a:hover { color: #6cb6ff; }
+  nav.toc ul ul a { font-size: 13px; color: #98a4b0; }
+  nav.toc .toc-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #5a6878; margin: 16px 0 6px; font-weight: 600; }
+  .toc-empty { color: #98a4b0; font-size: 13px; margin: 0; }
+  main { max-width: 980px; padding: 56px 56px 96px; }
+  .source-strip {
+    margin: -24px 0 32px; padding: 10px 14px;
+    border: 1px solid #d8d8d0; border-radius: 6px; background: #fff;
+    color: #4a5868; font-size: 13px;
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+  }
+  .source-strip strong { color: #1a2632; }
+  .source-strip a { color: #245f8f; text-decoration: none; }
+  .source-strip a:hover { color: #6cb6ff; }
+  .commit-policy {
+    margin: 0 0 24px; padding: 8px 14px;
+    border: 1px solid #d8e0d2; border-radius: 6px;
+    background: #f3f7ee; color: #3a5a2a; font-size: 12px;
+  }
+  .commit-policy.commit-policy-derived {
+    border-color: #e0d8c0; background: #f8f4e8; color: #6a5a1a;
+  }
+  .drift-banner {
+    margin: -24px 0 24px; padding: 14px 18px;
+    border-left: 4px solid #c8965a; border-radius: 0 6px 6px 0;
+    background: #faf4ec; color: #5a3a10; font-size: 14px;
+  }
+  header.intro { border-bottom: 1px solid #d8d8d0; padding-bottom: 32px; margin-bottom: 48px; }
+  header.intro h1 { font-size: 44px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; color: #1a2632; }
+  header.intro .tagline { font-size: 20px; color: #4a5868; margin: 0; font-style: italic; }
+  header.intro .meta { margin-top: 16px; font-size: 13px; color: #888; }
+  section { margin-bottom: 56px; }
+  h2 { font-size: 30px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #1a2632; letter-spacing: -0.015em; color: #1a2632; scroll-margin-top: 32px; }
+  h3 { font-size: 22px; font-weight: 600; margin: 32px 0 12px; color: #243446; scroll-margin-top: 32px; }
+  h4 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; color: #2c3e50; }
+  p { margin: 0 0 16px; }
+  strong { color: #1a2632; font-weight: 600; }
+  em { color: #4a5868; }
+  a { color: #245f8f; }
+  a:hover { color: #6cb6ff; }
+  code { font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace; background: #f0eee8; color: #2a3540; padding: 1px 6px; border-radius: 3px; font-size: 0.92em; }
+  pre { background: #1e2a36; color: #d8e0e8; padding: 16px 20px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 16px 0; }
+  pre code { background: transparent; color: inherit; padding: 0; font-size: 13px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  input[type="checkbox"] { margin-right: 8px; }
+  blockquote { border-left: 3px solid #d8d4c4; padding: 4px 16px; margin: 16px 0; color: #4a5868; font-style: italic; }
+  .callout { border-left: 4px solid; padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0; font-size: 15px; }
+  .callout.note { border-color: #5a8db8; background: #eef4fa; }
+  .callout.warning { border-color: #c8965a; background: #faf4ec; }
+  .callout.tip { border-color: #6a9a5a; background: #f0f5ec; }
+  .callout-title { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .callout.note .callout-title { color: #2a5a8a; }
+  .callout.warning .callout-title { color: #8a5a1a; }
+  .callout.tip .callout-title { color: #3a6a2a; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #e0dccc; text-align: left; vertical-align: top; }
+  th { background: #f0ece0; font-weight: 600; color: #1a2632; }
+  img { max-width: 100%; height: auto; border: 1px solid #e0dccc; border-radius: 6px; background: #fff; }
+  details { border-top: 1px solid #d8d4c4; border-bottom: 1px solid #d8d4c4; padding: 12px 0; margin: 24px 0; }
+  summary { cursor: pointer; color: #1a2632; font-weight: 700; }
+  hr { border: none; border-top: 1px solid #d8d4c4; margin: 32px 0; }
+  footer { border-top: 1px solid #d8d4c4; padding-top: 24px; margin-top: 64px; font-size: 13px; color: #888; }
+
+  /* Status / type pills in the source strip */
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pill.status { background: #e5efe2; color: #3a6a2a; }
+  .pill.type { background: #f0ece0; color: #5a5040; }
+
+  @media (max-width: 860px) {
+    .layout { display: block; }
+    nav.toc { position: relative; height: auto; max-height: none; padding: 24px; }
+    main { max-width: none; padding: 36px 24px 72px; }
+    header.intro h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc">
+  <h2>022-cross-task-review</h2>
+  <p class="subtitle">Feature brief</p>
+  <div class="toc-section">Contents</div>
+  <ul>
+<li><a href="#vision">Vision</a></li>
+<li><a href="#problem">Problem</a></li>
+<li><a href="#goals">Goals</a></li>
+<li><a href="#non-goals">Non-goals</a></li>
+<li><a href="#users">Users</a></li>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#acceptance-criteria">Acceptance criteria</a></li>
+<li><a href="#open-questions">Open questions</a></li>
+<li><a href="#see-also">See also</a></li>
+<li><a href="#interview">Interview</a>
+<ul>
+<li><a href="#original-request">Original request</a></li>
+<li><a href="#codebase-context-pre-grilling">Codebase context (pre-grilling)</a></li>
+<li><a href="#goal-confirmed-before-grilling">Goal (confirmed before grilling)</a></li>
+<li><a href="#rounds">Rounds</a></li>
+<li><a href="#topics-not-discussed">Topics not discussed</a></li>
+<li><a href="#sign-off">Sign-off</a></li>
+</ul>
+</li>
+<li><a href="#agent-reviews">Agent reviews</a>
+<ul>
+<li><a href="#gate-2-prd-review">Gate 2 — PRD review</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+<main>
+  <div class="source-strip">
+    <span><strong>Feature:</strong> 022-cross-task-review</span>
+    <span class="pill status">draft</span>
+    
+    <span><strong>Source date:</strong> 2026-05-07T13:29:47+10:00</span>
+    <span><a href="022-cross-task-review-interview.md">Open interview</a></span>
+  </div>
+  <p class="commit-policy">This brief is committed to the repo as the diffable review surface (config.brief.commitPolicy = "committed").</p>
+  <header class="intro">
+    <h1>Cross-Task Review</h1>
+    <p class="tagline">Feature brief — composed from the PRD, interview, and gate manifests.</p>
+    <p class="meta">Generated from 022-cross-task-review-prd.md, 022-cross-task-review-interview.md, and (when present) debate-log/.</p>
+  </header>
+  
+  <section id="prd">
+<h2 id="vision">Vision</h2>
+<p><code>specflow:task</code> Gate 3 gains a <strong>whole-set cross-task review</strong> alongside the existing per-task review. A new principle-aligned reviewer agent (<code>cross-task-reviewer</code>) fires in a dedicated Round 2.5 — after the orchestrator has applied per-task revisions, before per-task reviewers&#x27; Round 3 sharpen — and applies two lenses to the entire task list as a single artefact: <strong>coherence</strong> (do tasks work together; flow correctly; not overlap; all trace back to PRD requirements + goal) and <strong>better arrangement</strong> (could two tasks merge; could one split; is the dependency ordering optimal; is there a missing task the per-task lens couldn&#x27;t see). Per interview Rounds 5-7 the review is <strong>feedback-only</strong>: a separate fresh-context <strong>applier agent</strong> (<code>specflow:task --apply-cross-task-feedback</code>) reads the feedback in isolation and <em>decides</em> which findings warrant action on their own merits before any tasks.md edits land — there is no auto-apply path. The applier&#x27;s accept / reject / scope-change-required decisions are recorded in the manifest; only <code>accepted</code> decisions produce tasks.md edits, and only when those edits preserve PRD coverage AND respect 029&#x27;s per-task budget cap. The reviewer and applier each run in their own forked sub-agent, never seeing the writer&#x27;s chat (per 027); the manifest carries <code>agent_id</code> fields so writer / reviewer / applier identity is auditable. Gate 3 ships with the Pocock issue-sizing-heuristic and Medin reviewer-isolation-discipline both honoured at the same gate.</p>
+<h2 id="problem">Problem</h2>
+<p><code>specflow:task</code> Phase E (Gate 3) today (<code>task/SKILL.md:320-444</code>) runs the standard reviewer set against <em>individual tasks</em>. Per E.3 lens documentation, the existing reviewers each carry one principle: Goal-Driven verifies forward coverage, Surgical verifies reverse traceability, Simplicity flags over-decomposition, Think-Before-Coding flags unstated assumptions, Devil&#x27;s Advocate flags Gate-2-to-Gate-3 drift. <strong>There is no whole-set lens</strong> today — no reviewer reads the entire task list as a single artefact and asks &quot;is this the right granularity / arrangement / coverage at the <em>set</em> level?&quot;. Without that lens, oversized tasks can ship undetected (per 029&#x27;s R4 hard-cap they&#x27;re auto-flagged at synthesis, but within-cap arrangement issues — e.g. two tasks that are really one concept, one task that&#x27;s really two concepts, a missing task the per-task lens couldn&#x27;t see — slip through). Pocock&#x27;s issue-sizing-heuristic (<code>knowledge/pocock-real-feature-build.md</code>) and Medin&#x27;s reviewer-isolation-discipline (<code>knowledge/medin-parallel-agentic-playbook.md</code> § &quot;reviewer should never see the writer&#x27;s chat&quot;) both address gaps the current Gate 3 manifold does not catch. 022 closes the lens gap; 027 (Sprint 3) later formalises the isolation contract; 022&#x27;s interim agent_id mechanism becomes 027&#x27;s substrate (chain-don&#x27;t-absorb).</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Add a single new reviewer agent (<code>cross-task-reviewer</code>) to Gate 3&#x27;s standard reviewer set, dedicated to whole-set coherence + better-arrangement lenses.</li>
+<li>Position cross-task review as a dedicated Round 2.5 in Gate 3 — after the orchestrator&#x27;s Round 2 response to per-task findings, before per-task reviewers&#x27; Round 3 sharpen.</li>
+<li>Run a three-round mini-debate inside Round 2.5 (cross-task R1 fire → applier R2 response + apply accepted → cross-task R3 sharpen → applier final pass) so reviewer and applier have the standard convergence path. (The original writer never participates in cross-task review — see R4.)</li>
+<li>Make cross-task review <strong>feedback-only</strong>: a separate fresh-context applier agent (<code>specflow:task --apply-cross-task-feedback {NNN-slug}</code>) reads the feedback in isolation, decides which findings to act on, applies accepted changes to tasks.md, and records accept/reject decisions in the manifest. The original writer never responds to cross-task findings.</li>
+<li>Add <code>writer_id</code>, <code>cross_task_reviewer_id</code>, and <code>applier_id</code> fields to the Gate 3 manifest schema; verify all three differ at gate close (interim fresh-context audit signal pending 027).</li>
+<li>Auto-route PRD-coverage-changing cross-task findings (add missing task, drop covering task, merge with coverage ambiguity) to <code>specflow:scope-change</code>; coverage-preserving findings (merge of two tasks both anchoring R5; reorder within preserved dependency edges) auto-apply.</li>
+<li>Surface within-budget merge/split signals from <code>context-budget-estimate</code> (029) as a soft input to the better-arrangement lens (not a hard-cap re-check; 029 R4 already covers that).</li>
+<li>Skip cross-task review entirely when the synthesised task list has fewer than 3 tasks (record <code>Cross-task review skipped: task count {N} below threshold (3)</code> in the manifest).</li>
+<li>The closing Gate 3 manifest gains a dedicated &quot;Cross-task findings&quot; section parallel to the existing per-task sections, with its own Accepted / Rejected / Escalated sub-headings and one shared closing-decision footer covering both lenses.</li>
+</ul>
+<h2 id="non-goals">Non-goals</h2>
+<ul>
+<li>Building 027-reviewer-context-isolation itself. 027 is a Sprint 3 dependency 022 <em>uses</em>. 022 ships the interim <code>agent_id</code> mechanism + forked-sub-agent dispatch convention; 027 absorbs/extends. (Goal-level out-of-scope.)</li>
+<li>Changing the per-task review behaviour. The five existing reviewers (Simplicity / Surgical / Think-Before-Coding / Goal-Driven / Devil&#x27;s Advocate / Codex when available) keep their per-task lenses unchanged.</li>
+<li>Auto-applying cross-task findings without an applier review pass. Cross-task is feedback-only by design (interview Round 5).</li>
+<li>Cross-feature task batching. Per 025 R5 (parked at higher orchestration layer).</li>
+<li>Linear cycle integration of cross-task findings. Deferred to 020-sprint-skill family.</li>
+<li>Per-feature opt-out for cross-task review. The threshold (&lt;3 tasks) is mechanical, not configurable. (Per interview Round 11.)</li>
+<li>Concrete lens-checklist prompts (the specific sub-questions the cross-task reviewer asks). The role-def file at <code>admin/agents/standard/principles/cross-task-reviewer.md</code> carries those; the PRD names the two lenses, not the per-question text.</li>
+<li>Auto-detecting the optimal task count. The reviewer surfaces merge/split <em>suggestions</em>; deciding the right count is the applier&#x27;s call, not an algorithmic rule.</li>
+<li>028-edge-case-reviewer interaction. 028 is Sprint 3; both reviewers stand independently. Integration is PRD-level, not 022&#x27;s surface.</li>
+</ul>
+<h2 id="users">Users</h2>
+<ul>
+<li><strong>Engineer using the task skill.</strong> Direct user. Sees the cross-task findings in the Gate 3 manifest&#x27;s new dedicated section alongside per-task findings; reviews the applier&#x27;s accept/reject decisions; resolves any escalations or scope-change-routed findings before proceeding to <code>specflow:test</code> / <code>specflow:develop</code>.</li>
+<li><strong>Admin — platform operator.</strong> Reads the closing Gate 3 manifest for retro / audit; values the dedicated cross-task section as a lens-distinguished synthesis trace; values the <code>agent_id</code> triplet as a fresh-context audit signal.</li>
+<li><strong>Downstream skill consumers.</strong> <code>specflow:sprint</code> (020), <code>specflow:develop</code>, <code>specflow:test</code> read the closed Gate 3 manifest. They treat cross-task findings the same as per-task — the lens distinction is recorded but consumers act on the post-applier <code>{NNN-slug}-tasks.md</code>, not the manifest&#x27;s reviewer-deliberation transcript.</li>
+</ul>
+<p>(Profiles per <code>admin/profiles.json</code>. The cross-task reviewer and applier are programmatic — no profile applies; treated as tooling agents.)</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><p><strong>R1.</strong> Add a new reviewer role-def file at <code>plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md</code>. The reviewer&#x27;s two lenses are documented in the role-def: (1) <strong>Coherence</strong> — do tasks work together; flow correctly; not overlap; all trace back to PRD requirements + goal. (2) <strong>Better arrangement</strong> — could two tasks merge; could one split; is the dependency ordering optimal; is there a missing task the per-task lens couldn&#x27;t see. The role-def carries the existing principle-reviewer schema (severity / evidence / claim / proposed_change) plus a <code>lens</code> field per finding (<code>coherence | better-arrangement</code>) so the manifest can surface the distinction.</p>
+<ul>
+<li>Trace: interview Round 1 — <em>cross-task review is implemented as a single new reviewer agent added to Gate 3&#x27;s standard reviewer set, not as a re-application of existing reviewers and not as a separate gate.</em></li>
+<li>Serves goal: Outcome (single new reviewer slot) + Audience (manifest reader sees the lens distinction).</li>
+</ul></li>
+<li><p><strong>R2.</strong> Extend <code>task/SKILL.md</code> Phase E to add a new sub-phase <strong>Phase E.4.5 — Cross-task review</strong> between the existing E.4 (Round 2 — orchestrator response) and E.5 (Round 3 — per-task sharpen). E.4.5 fires only when the synthesised <code>{NNN-slug}-tasks.md</code> carries <strong>3 or more tasks</strong> (counted by <code>### T-</code> headings). When fewer than 3 tasks exist, Phase E.4.5 is skipped entirely; the manifest&#x27;s &quot;Cross-task findings&quot; section is populated with a single line: <code>Cross-task review skipped: task count {N} below threshold (3)</code>.</p>
+<ul>
+<li>Trace: interview Round 2 — <em>cross-task reviewer fires as a dedicated Round 2.5 AFTER the orchestrator&#x27;s Round 2 response.</em> Round 11 — <em>cross-task review fires only when the synthesised task list has 3 or more tasks.</em></li>
+<li>Serves goal: Outcome (Round 2.5 placement) + Driving value (threshold avoids meaningless cross-task review on trivial features).</li>
+</ul></li>
+<li><p><strong>R3.</strong> Phase E.4.5 runs a three-round mini-debate, NOT a single-shot review:</p>
+<ol>
+<li><strong>E.4.5.1 — Cross-task R1 fire.</strong> Dispatch a forked sub-agent reading <code>cross-task-reviewer.md</code>, the post-Round-2 <code>{NNN-slug}-tasks.md</code>, the PRD, the interview, the Gate 2 manifest. Reviewer writes findings to <code>debate-log/tasks-gate3/findings/round-1/cross-task-reviewer.json</code> (per-finding <code>lens</code> field per R1).</li>
+<li><strong>E.4.5.2 — Applier R2 response + apply.</strong> Re-invoke <code>specflow:task --apply-cross-task-feedback {NNN-slug}</code> in a fresh context window. The applier reads the cross-task R1 findings + the post-Round-2 tasks.md + the PRD/interview, decides accept / reject / scope-change-required per finding, applies accepted changes to tasks.md, and writes its decisions to <code>debate-log/tasks-gate3/findings/round-2/cross-task-responses.json</code>.</li>
+<li><strong>E.4.5.3 — Cross-task R3 sharpen.</strong> Re-dispatch the cross-task reviewer (fresh forked sub-agent) reading its R1 findings + the applier&#x27;s R2 responses + the post-applier tasks.md. May sharpen any rejection with new evidence or escalated severity. Writes to <code>debate-log/tasks-gate3/findings/round-3/cross-task-reviewer.json</code>.</li>
+<li><strong>E.4.5.4 — Applier final pass.</strong> If any sharpens, re-invoke the applier on the sharpened findings. Decisions append to <code>cross-task-responses.json</code>. Unresolved findings escalate to the manifest&#x27;s Cross-task Escalations sub-section.</li>
+</ol>
+<ul>
+<li>Trace: interview Round 3 — <em>cross-task reviewer gets its own three-round mini-debate ... after three cross-task rounds the existing Gate 3 convergence rules apply.</em> Round 7 — <em>full three-round flow with the applier playing the orchestrator&#x27;s role.</em></li>
+<li>Serves goal: Outcome (three-round convergence with forced decision after three rounds).</li>
+</ul></li>
+<li><p><strong>R4.</strong> Cross-task review is <strong>feedback-only</strong>. The original <code>specflow:task</code> orchestrator (Phase E.4 Round 2) does NOT respond to or auto-apply cross-task findings — only the dedicated applier (R3 above) does. The applier runs in a fresh context window: it reads only the feedback findings, the post-Round-2 tasks.md, and the PRD / interview — never the writer&#x27;s chat or the cross-task reviewer&#x27;s deliberation transcripts beyond the written findings.</p>
+<ul>
+<li>Trace: interview Round 5 — <em>cross-task review is feedback-only ... a separate fresh-context applier agent reads the feedback in isolation.</em></li>
+<li>Serves goal: Driving value (Medin reviewer-isolation discipline; the writer never gets to defend their original choices to the applier).</li>
+</ul></li>
+<li><p><strong>R5.</strong> The applier is <code>specflow:task</code> re-invoked in a fresh context window via the new flag <code>--apply-cross-task-feedback {NNN-slug}</code>. When invoked this way, <code>specflow:task</code> skips Phases A / B / C / D entirely and enters a new Phase <strong>F — Cross-task feedback application</strong>. Phase F takes three inputs: (1) the post-Round-2 <code>{NNN-slug}-tasks.md</code>; (2) the cross-task findings JSON from <code>round-1/cross-task-reviewer.json</code>; (3) the PRD + interview for coverage-matrix validation. Phase F&#x27;s output is (a) the post-applier <code>{NNN-slug}-tasks.md</code> (in-place edits) and (b) <code>debate-log/tasks-gate3/findings/round-2/cross-task-responses.json</code> recording per-finding decisions.</p>
+<p><strong>Precondition check (per DA-2 / tbc-r1-f3).</strong> Phase F&#x27;s first action is a precondition check on all three inputs. On missing <code>cross-task-reviewer.json</code> (the parent Gate 3 invocation never produced findings, e.g. user manually invoked the flag standalone), the applier refuses with: <em>&quot;Cross-task review has not fired for this feature. Run <code>specflow:task {NNN-slug}</code> from Phase E to produce the findings, then re-invoke <code>--apply-cross-task-feedback</code>.&quot;</em> On missing tasks.md or PRD, refuse with the analogous diagnostic. The chain-skip-Phase-A behaviour assumes the parent run guaranteed chain verification; manual standalone invocation is an unsupported entry point in v2.5.</p>
+<ul>
+<li>Trace: interview Round 6; DA-2; tbc-r1-f3 (manual-invocation guard).</li>
+<li>Serves goal: Outcome (applier inherits synthesis logic for free) + Driving value (fresh context enforces isolation; standalone-invocation failure mode defined).</li>
+</ul></li>
+<li><p><strong>R6.</strong> The applier&#x27;s per-finding decision is one of: <code>accepted</code> (with <code>revision_applied: &lt;description&gt;</code>), <code>rejected</code> (with <code>rationale: &lt;text&gt;</code>), or <code>scope-change-required</code> (with <code>gap: &lt;description&gt;</code>). For <code>scope-change-required</code> findings, the applier halts further cross-task application for that finding and the manifest closes with a directive pointing the user to <code>specflow:scope-change</code>. PRD-coverage-changing findings (add missing task with new R/AC anchor; merge-with-coverage-ambiguity; drop-with-coverage-hole) MUST be flagged <code>scope-change-required</code>; the applier does NOT modify the PRD&#x27;s coverage matrix on the fly.</p>
+<ul>
+<li>Trace: interview Round 9 — <em>when the applier identifies a cross-task finding as PRD-coverage-changing ... it flags the finding <code>scope-change-required</code> ... auto-route to <code>specflow:scope-change</code>.</em></li>
+<li>Serves goal: Outcome (Gate 3 / scope-change boundary preserved) + Driving value (applier respects existing skill-boundary contract).</li>
+</ul></li>
+<li><p><strong>R7.</strong> The Gate 3 manifest gains three best-effort opaque <code>agent_id</code> fields — <code>writer_id</code>, <code>cross_task_reviewer_id</code>, <code>applier_id</code> — populated at dispatch time. <strong>Format is unspecified at the PRD level</strong>: the orchestrator generates whatever opaque value is convenient (timestamp+suffix; UUIDv4; harness-emitted run ID — implementation chooses) and records it verbatim. 027 (Sprint 3) owns the canonical format contract; 022 ships only the field-presence + per-agent-distinctness convention as substrate. <strong>No echo-back protocol; no closer-side collision check; no FRESH-CONTEXT-VIOLATION escalation surface</strong> — those are 027 concerns. The audit signal is simply: in the green path all three fields are populated and pairwise non-equal; in the skip path only <code>writer_id</code> is populated; absent fields short-circuit any pairwise check (the closer does NOT pseudo-error on absent fields). 022&#x27;s chain-don&#x27;t-absorb contribution is the field NAMES + the populate-at-dispatch convention; 027 absorbs the format and adds runtime verification.</p>
+<ul>
+<li>Trace: interview Round 8; surgical-r1-f2 (R7 simplified to manifest-field-only); simplicity-r1-f2; codex-r1-f3 / f4 (echo-back spoofing surface and timestamp collision concerns moot once closer doesn&#x27;t enforce uniqueness).</li>
+<li>Serves goal: Outcome (auditable best-effort signal) + Driving value (chain-don&#x27;t-absorb foundation for 027 without claiming 027&#x27;s format contract).</li>
+</ul></li>
+<li><p><strong>R8.</strong> The closing Gate 3 manifest at <code>debate-log/tasks-gate3/manifest.md</code> gains a dedicated &quot;Cross-task findings&quot; H2 section parallel to the existing per-task sections. The cross-task section has three H3 sub-headings — <code>Accepted findings</code>, <code>Rejected findings</code>, <code>Escalated to human</code> — each entry carrying the finding ID, the reviewer (<code>cross-task-reviewer</code>), the lens (<code>coherence</code> | <code>better-arrangement</code>), the severity, the claim + evidence, and the applier&#x27;s decision (revision applied, rationale for rejection, or escalation reason). The manifest&#x27;s single closing-decision footer covers BOTH per-task and cross-task lenses (one Gate 3 status: passed / passed-with-revisions / passed-with-escalations / failed).</p>
+<p><strong>Closer precedence rule (per DA-4).</strong> E.6 closer applies the existing FAIL-on-unresolved-<code>block</code> rule to the UNION of per-task and cross-task findings. A <code>block</code>-severity finding from EITHER lens triggers the same status. The closing rationale paragraph names which lens(es) drove the status (e.g. &quot;passed-with-escalations: per-task PASSED; cross-task escalated 1 block-severity coherence finding&quot;). A fixture where per-task PASSES but cross-task escalates a <code>block</code> closes Gate 3 as <code>passed-with-escalations</code>, not <code>passed</code>.</p>
+<ul>
+<li>Trace: interview Round 4; DA-4 (closer precedence).</li>
+<li>Serves goal: Outcome (single artefact, lens distinction visible, deterministic closer precedence) + Audience (admin reader navigates one manifest, sees both lenses + which drove status).</li>
+</ul></li>
+<li><p><strong>R9.</strong> The cross-task reviewer reads each task&#x27;s <code>context-budget-estimate</code> field (added by 029) as a soft signal for the better-arrangement lens. When two within-budget tasks have operationally similar scope and overlapping concerns, the reviewer surfaces a merge suggestion (<code>coherence</code> lens) noting the budget context (e.g. &quot;T3 (60K) and T4 (65K); merging would exceed the 80K cap, so consider whether they&#x27;re really one concept or two&quot;). When a within-budget task has weak coherence in its own scope (large but operationally fragmented), the reviewer surfaces a split suggestion. The reviewer does NOT re-check 029 R4&#x27;s hard-cap auto-flag (that fires at synthesis Phase B.4 and never reaches Gate 3). Budget is one input among several; coherence + arrangement remain the load-bearing lenses.</p>
+<p><strong>Hard-cap enforcement at the applier (per Codex pre-gate finding [MAJOR] F).</strong> The applier MUST decline any merge whose combined <code>context-budget-estimate</code> would exceed the configured 029 per-task budget cap. <strong>Phase F reads <code>config.task.contextBudget</code> from the active config at Phase F entry</strong> (after the fresh applier invocation starts; never uses a value embedded in the Round-1 finding, tasks.md, or synthesis-time snapshot — per codex-r1-f5). Such mergers are flagged <code>scope-change-required</code> with rationale <code>merge would violate 029 R4 hard-cap (combined budget {N}K &gt; cap {C}K) — re-synthesis required</code>. The applier never applies a merge that would breach the cap in place.</p>
+<ul>
+<li>Trace: interview Round 10; Codex pre-gate finding [MAJOR] F; codex-r1-f5 (config read at Phase F execution time).</li>
+<li>Serves goal: Outcome (budget-aware soft signal) + Driving value (029&#x27;s hard-cap unchanged; cross-task respects the cap with runtime-current config).</li>
+</ul></li>
+<li><p><strong>R10.</strong> Gate 3&#x27;s existing per-task Round 3 sharpen pass (E.5) fires AFTER Phase E.4.5 closes. Per-task reviewers re-fire against the post-applier <code>{NNN-slug}-tasks.md</code>. <strong>Per-task reviewer lenses, schemas, and response surfaces are unchanged</strong> — only the artefact snapshot they review differs.</p>
+<p><strong>Ordering guarantee (per Codex pre-gate finding [MAJOR] E; surgical-r1-f5 trim).</strong> Phase E.4.5.4 must complete writing the post-applier tasks.md before Phase E.5 starts. Phase E.5 reads the post-applier tasks.md as input; if the applier wrote an incomplete file, per-task reviewers surface the issue in their normal lens. (No B4-CHECK-FAILED-POST-APPLIER diagnostic surface — the applier inherits B.4 logic, and per-task reviewers catch any incompleteness anyway.)</p>
+<p><strong>Hybrid R3 sharpen surface (per tbc-r1-f5).</strong> Per-task reviewers operate as a hybrid R3:</p>
+<ul>
+<li>Sharpen R1 findings whose anchored T-id still exists in the post-applier tasks.md (standard R3 sharpen surface).</li>
+<li>Treat R1 findings whose T-id was merged-out / dropped as auto-resolved — recorded in manifest as <code>resolved-by-cross-task-merge: T{N}-&gt;T{M}</code> or <code>resolved-by-cross-task-drop: T{N}</code> per finding.</li>
+<li>Net-new findings on tasks introduced by the applier (e.g. a merged T3+T7 → new T3.5) are recorded as <code>round-3-net-new</code> per-task findings AND require a one-pass orchestrator response (no R4 sharpen — net-new findings are themselves an exit lever).</li>
+</ul>
+<p><strong>Assumption made explicit:</strong> per-task lenses remain principle-valid across artefact transformation; they do not require re-baselining to the post-applier state.</p>
+<ul>
+<li>Trace: interview Round 2; codex pre-gate [MAJOR] E; surgical-r1-f5 (B4 diagnostic dropped); tbc-r1-f5 (hybrid R3 surface).</li>
+<li>Serves goal: Outcome (per-task lens catches downstream issues; behaviour unchanged per Non-goal; T-id mapping ambiguity resolved).</li>
+</ul></li>
+<li><p><strong>R11.</strong> Add a worked-example fixture demonstrating the full Round 2.5 flow at <code>plugins/specflow/examples/docs/specflow/features/022-cross-task-review/fixtures/cross-task-worked-example.md</code>. The fixture shows a 4-task feature where: (a) a coherence-axis finding fires (e.g. &quot;T2 and T3 both anchor R4 with overlapping scope — consider merging&quot;) AND (b) a better-arrangement finding fires (e.g. &quot;T1 has weak coherence — its scope spans two distinct concerns; consider splitting&quot;). The fixture demonstrates: applier accepts (a), rejects (b) with rationale; cross-task R3 sharpens (b) with new evidence; applier final pass accepts the sharpened (b); manifest closes with both findings under Accepted, both lenses represented, all three <code>agent_id</code> fields populated and distinct.</p>
+<ul>
+<li>Trace: FEATURES.md § 022 Done when — <em>worked example shows both a coherence issue AND a better-arrangement suggestion surfaced + resolved.</em></li>
+<li>Serves goal: Outcome (Done-when criterion has a binary fixture) + Driving value (downstream skills can read the fixture as canonical reference).</li>
+</ul></li>
+<li><p><strong>R12.</strong> <code>task/SKILL.md</code> total line count after the change set ≤500. Phase E.4.5 sub-phase + R1&#x27;s role-def file + applier Phase F + R7&#x27;s manifest-schema agent_id fields together inflate <code>task/SKILL.md</code> substantively. Per the <strong>chain-don&#x27;t-absorb pattern</strong> documented in the user&#x27;s <code>feedback_skill_size_ceiling</code> memory (skills ≤~500 lines; new behaviour becomes a new skill or chained doc, not bolted onto existing skill), extract the cross-task review contract — Phase E.4.5 mini-debate steps, the applier&#x27;s Phase F operational shape, the manifest schema extension, the agent_id generation scheme — into a doctrine doc at <code>plugins/specflow/templates/task/cross-task-review.md</code>. The pattern is established by 029&#x27;s <code>templates/admin/single-context-task.md</code> (shipped commit b2e4ee9) and 025&#x27;s <code>templates/task/sprint-bucket-heuristic.md</code> (shipped this sprint). <code>task/SKILL.md</code> Phase E.4.5 carries one-line citations; the doctrine doc holds the operational details.</p>
+<ul>
+<li>Trace: implementation-constraint trace per <code>feedback_skill_size_ceiling</code> user memory (skills ≤500 lines); 029&#x27;s <code>templates/admin/single-context-task.md</code> precedent (commit b2e4ee9); 025&#x27;s <code>templates/task/sprint-bucket-heuristic.md</code> precedent (Sprint 2). Codex pre-gate finding [MINOR] (R12 trace strengthening).</li>
+<li>Serves goal: Driving value (skill-size ceiling honoured; doctrine doc absorbs detail).</li>
+</ul></li>
+<li><p><strong>R14.</strong> <strong>Downstream-numbering compatibility (simplified per simplicity-r1-f4 + surgical-r1-f1).</strong> Inserting Phase E.4.5 between E.4 and E.5 is internal to <code>task/SKILL.md</code>. Two compatibility points only:</p>
+<ul>
+<li>The cross-task doctrine doc at <code>templates/task/cross-task-review.md</code> carries one paragraph noting the scope-change re-fire interaction (when scope-change&#x27;s E.6 delta-regeneration re-fires <code>specflow:task</code> Phase E, the re-fire now traverses cross-task review on the regenerated task list — acceptable by construction; not a scope-change-side edit).</li>
+<li><code>brief/SKILL.md</code> reads <code>tasks-gate3/manifest.md</code> per <code>brief/SKILL.md:81-83</code>; the brief composer renders manifest body verbatim, so the new &quot;Cross-task findings&quot; H2 section renders alongside per-task sections without code changes (compatibility-only verification, no edit).</li>
+</ul>
+<p>No <code>scope-change/SKILL.md</code> edit; no repo-wide grep audit.</p>
+<ul>
+<li>Trace: Codex pre-gate finding [MAJOR] A; surgical-r1-f1 (drop scope-change edit); simplicity-r1-f4 (drop repo-wide audit).</li>
+<li>Serves goal: Outcome (insertion is downstream-safe via doctrine-doc note).</li>
+</ul></li>
+<li><strong>R15.</strong> <em>Reserved.</em> (R15 was the first-class mode entry-point requirement; per surgical-r1-f4 + simplicity-r1-f4, the flag is documented as a Phase A Resume-logic branch under R5&#x27;s umbrella — not a public Inputs-section entry. The applier flag is an orchestrator-internal contract, not a user-facing entry point.)</li>
+<li><p><strong>R16.</strong> <strong>025 cross-cut — sprint-bucket recompute on accepted merge/split (per DA-3 / codex-r1-f6).</strong> When the applier accepts a merge or split via Phase F:</p>
+<ul>
+<li><strong>Merge</strong> — the merged task&#x27;s <code>sprint-bucket</code> is recomputed via 025&#x27;s heuristic at <code>templates/task/sprint-bucket-heuristic.md</code> against the merged scope (NOT inherited from either parent). Recompute touches only the merged task&#x27;s bucket; if the recompute would alter buckets outside the merged component (e.g. tasks downstream now re-leveled), the finding is flagged <code>scope-change-required</code> with rationale <code>merge bucket-recompute creates graph-wide bucket drift — re-synthesis required</code>.</li>
+<li><strong>Split</strong> — each child task re-runs the heuristic. Same scope-change-routing if recomputation creates graph-wide drift.</li>
+<li><strong>Audit</strong> — pre-edit and post-edit bucket values for each affected task ID are recorded in <code>cross-task-responses.json</code> per finding under a <code>bucket_audit</code> field.</li>
+<li>Trace: DA-3 (silent 025 cross-cut); codex-r1-f6 (sprint-bucket lineage).</li>
+<li>Serves goal: Outcome (022 + 025 contract gap closed; bucket integrity preserved across cross-task application).</li>
+</ul></li>
+<li><p><strong>R17.</strong> <strong>Sub-agent dispatch failure fallback (per DA-5).</strong> If the cross-task reviewer&#x27;s forked sub-agent OR the applier&#x27;s Phase F invocation fails to return a valid finding/response JSON (network drop, harness crash, malformed JSON, missing finding file), Phase E.4.5 logs the failure to <code>debate-log/tasks-gate3/findings/round-{N}/cross-task-{role}.failure.json</code> with the failure mode + timestamp. The gate escalates as <code>passed-with-escalations</code> (NOT failed — cross-task is the additive lens; per-task review remains authoritative for the run). The manifest closer notes: <em>&quot;Cross-task review unavailable: {reason}; per-task review remains authoritative for this run.&quot;</em> The user re-runs <code>specflow:task {NNN-slug}</code> to retry, OR proceeds with per-task-only review acknowledging the cross-task gap.</p>
+<ul>
+<li>Trace: DA-5 (sub-agent dispatch failure semantics).</li>
+<li>Serves goal: Outcome (graceful degradation; harness flakiness does not break Gate 3) + Driving value (per-task lens stays load-bearing; cross-task is best-effort additive).</li>
+</ul></li>
+<li><p><strong>R13.</strong> Extend <code>task/SKILL.md</code> <code>eval:</code> field (line 20, current text <em>&quot;tasks file exists with one task per PRD requirement; coverage matrix shows 100% PRD-requirement coverage and zero orphan tasks; every task acceptance is binary; Gate 3 debate manifest closes with Orchestrator sign-off entry; any user-driven recut wrote a record to task-history.json.&quot;</em>) with two clauses that exercise the new contract:</p>
+<ol>
+<li>When <code>{NNN-slug}-tasks.md</code> has 3+ tasks, the closing Gate 3 manifest contains a &quot;Cross-task findings&quot; H2 section with at least one of <code>Accepted findings</code>, <code>Rejected findings</code>, <code>Escalated to human</code>, or <code>Cross-task review skipped:</code> (the latter only when task count &lt;3).</li>
+<li>The manifest&#x27;s <code>agent_id</code> triplet (<code>writer_id</code>, <code>cross_task_reviewer_id</code>, <code>applier_id</code>) is populated AND all three differ.</li>
+</ol>
+<ul>
+<li>Trace: existing <code>task/SKILL.md:20</code> <code>eval:</code> field shape (the binary-success contract every skill carries per <code>rules/non-negotiable.md</code> <code>TESTS_REQUIRED_FOR_VERIFIABLE_SKILLS</code>). Without these clauses, R7 + R8 are not exercised by the existing eval — synthesis could pass on a tasks file that omits the new manifest section entirely. Codex pre-gate finding [MAJOR] R13 trace.</li>
+<li>Serves goal: Outcome (eval enumerates the new contract).</li>
+</ul></li>
+</ul>
+<h2 id="acceptance-criteria">Acceptance criteria</h2>
+<ul>
+<li><p><strong>AC-1.</strong> New reviewer role-def file exists at <code>plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md</code> and documents the two lenses (coherence + better-arrangement) verbatim:</p>
+<pre><code class="language-sh">test -f plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md
+grep -qE &#x27;^## Coherence|coherence lens&#x27; plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md
+grep -qE &#x27;^## Better arrangement|better-arrangement lens&#x27; plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md
+grep -qE &#x27;&quot;lens&quot;.*&quot;coherence|better-arrangement&quot;&#x27; plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md</code></pre>
+<ul>
+<li>Verifies: R1.</li>
+</ul></li>
+<li><p><strong>AC-2.</strong> <code>task/SKILL.md</code> Phase E lists a new sub-phase E.4.5 between E.4 (Round 2) and E.5 (Round 3). The sub-phase header AND threshold gate are present:</p>
+<pre><code class="language-sh">grep -qE &#x27;^### E\.4\.5 — Cross-task review&#x27; plugins/specflow/skills/task/SKILL.md
+grep -qE &#x27;task count.*&lt;.*3|fewer than 3 tasks|3 or more tasks&#x27; plugins/specflow/skills/task/SKILL.md</code></pre>
+<ul>
+<li>Verifies: R2.</li>
+</ul></li>
+<li><p><strong>AC-3.</strong> Phase E.4.5 documents the four sub-steps (E.4.5.1 / E.4.5.2 / E.4.5.3 / E.4.5.4) — exactly four, in canonical order:</p>
+<pre><code class="language-sh">grep -nE &#x27;^#### E\.4\.5\.[1-4]&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/sub-steps
+[ &quot;$(wc -l &lt; /tmp/sub-steps)&quot; -eq 4 ]
+python3 -c &quot;
+import re
+lines = open(&#x27;/tmp/sub-steps&#x27;).read().splitlines()
+pairs = [(int(re.match(r&#x27;(\d+):&#x27;, l).group(1)), re.search(r&#x27;E\.4\.5\.(\d)&#x27;, l).group(1)) for l in lines]
+suffixes = [p[1] for p in sorted(pairs, key=lambda p: p[0])]
+assert suffixes == [&#x27;1&#x27;, &#x27;2&#x27;, &#x27;3&#x27;, &#x27;4&#x27;], f&#x27;expected sub-steps 1,2,3,4 in order, got {suffixes}&#x27;
+&quot;</code></pre>
+<ul>
+<li>Verifies: R3.</li>
+</ul></li>
+<li><p><strong>AC-4.</strong> <code>task/SKILL.md</code> Phase E.4 (orchestrator response) body does NOT reference cross-task findings — the original orchestrator never responds to or auto-applies cross-task feedback. Verified by extracting the E.4 body strictly excluding the E.4.5 header line that bounds it:</p>
+<pre><code class="language-sh">awk &#x27;/^### E\.4 /,/^### E\.4\.5/&#x27; plugins/specflow/skills/task/SKILL.md | head -n -1 &gt; /tmp/e4-body
+! grep -qE &#x27;cross-task|cross_task&#x27; /tmp/e4-body</code></pre>
+<p>(<code>head -n -1</code> strips the terminating <code>### E.4.5</code> line so the AC tests only the E.4 body, not the boundary line.)</p>
+<ul>
+<li>Verifies: R4.</li>
+</ul></li>
+<li><p><strong>AC-5.</strong> <code>task/SKILL.md</code> documents the new <code>--apply-cross-task-feedback {NNN-slug}</code> flag and the new Phase F:</p>
+<pre><code class="language-sh">grep -qE -- &#x27;--apply-cross-task-feedback&#x27; plugins/specflow/skills/task/SKILL.md
+grep -qE &#x27;^## Phase F — Cross-task feedback application&#x27; plugins/specflow/skills/task/SKILL.md</code></pre>
+<p>Phase F lists the three inputs (post-Round-2 tasks.md; cross-task R1 findings JSON; PRD/interview). Awk extraction uses the strict next-heading boundary idiom (per codex-r1-f2 — the <code>/^## Phase F/,/^## /</code> range pattern self-defeats):</p>
+<pre><code class="language-sh">awk &#x27;found &amp;&amp; /^## /{exit} /^## Phase F/{found=1} found{print}&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/phase-f
+grep -qE &#x27;tasks.md&#x27; /tmp/phase-f
+grep -qE &#x27;cross-task-reviewer\.json&#x27; /tmp/phase-f
+grep -qE &#x27;PRD|prd\.md&#x27; /tmp/phase-f</code></pre>
+<ul>
+<li>Verifies: R5.</li>
+</ul></li>
+<li><p><strong>AC-6.</strong> The applier&#x27;s response schema documents the three decision values: <code>accepted</code>, <code>rejected</code>, <code>scope-change-required</code> (using the strict next-heading awk idiom):</p>
+<pre><code class="language-sh">awk &#x27;found &amp;&amp; /^## /{exit} /^## Phase F/{found=1} found{print}&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/phase-f
+grep -qE &#x27;&quot;decision&quot;:\s*&quot;accepted&quot;&#x27; /tmp/phase-f
+grep -qE &#x27;&quot;decision&quot;:\s*&quot;rejected&quot;&#x27; /tmp/phase-f
+grep -qE &#x27;&quot;decision&quot;:\s*&quot;scope-change-required&quot;&#x27; /tmp/phase-f</code></pre>
+<p>And explicitly forbids the applier from modifying the PRD coverage matrix on the fly:</p>
+<pre><code class="language-sh">grep -qE &#x27;scope-change-required.*MUST|coverage-changing.*scope-change-required&#x27; /tmp/phase-f</code></pre>
+<ul>
+<li>Verifies: R6.</li>
+</ul></li>
+<li><p><strong>AC-7.</strong> Manifest schema (documented in Phase E.6 closer) gains three <code>agent_id</code> fields:</p>
+<pre><code class="language-sh">awk &#x27;/^### E\.6/,/^### |^## /&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/closer
+grep -qE &#x27;writer_id&#x27; /tmp/closer
+grep -qE &#x27;cross_task_reviewer_id&#x27; /tmp/closer
+grep -qE &#x27;applier_id&#x27; /tmp/closer
+grep -qE &#x27;FRESH-CONTEXT-VIOLATION&#x27; /tmp/closer</code></pre>
+<ul>
+<li>Verifies: R7.</li>
+</ul></li>
+<li><p><strong>AC-8.</strong> Closing Gate 3 manifest template includes a dedicated &quot;Cross-task findings&quot; H2 section with three H3 sub-sections:</p>
+<pre><code class="language-sh">awk &#x27;/manifest\.md.*template|^## Cross-task findings/,/^## |^---/&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/manifest-template
+grep -qE &#x27;^## Cross-task findings&#x27; /tmp/manifest-template
+grep -qE &#x27;^### Accepted findings&#x27; /tmp/manifest-template
+grep -qE &#x27;^### Rejected findings&#x27; /tmp/manifest-template
+grep -qE &#x27;^### Escalated to human&#x27; /tmp/manifest-template</code></pre>
+<p>And per-finding entry shape includes a <code>lens</code> field:</p>
+<pre><code class="language-sh">grep -qE &#x27;lens.*coherence|better-arrangement&#x27; /tmp/manifest-template</code></pre>
+<ul>
+<li>Verifies: R8.</li>
+</ul></li>
+<li><p><strong>AC-9.</strong> Cross-task reviewer reads <code>context-budget-estimate</code> per task. The role-def file documents this:</p>
+<pre><code class="language-sh">grep -qE &#x27;context-budget-estimate&#x27; plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md
+grep -qE &#x27;within-budget|hard-cap.*029.*R4&#x27; plugins/specflow/examples/docs/specflow/admin/agents/standard/principles/cross-task-reviewer.md</code></pre>
+<ul>
+<li>Verifies: R9.</li>
+</ul></li>
+<li><p><strong>AC-10.</strong> Per-task Round 3 sharpen (E.5) fires AFTER Phase E.4.5 closes. The post-E.4.5 tasks.md is the artefact per-task reviewers sharpen on:</p>
+<pre><code class="language-sh">grep -nE &#x27;^### E\.4\.5|^### E\.5&#x27; plugins/specflow/skills/task/SKILL.md | awk -F: &#x27;{print $1, $2}&#x27; &gt; /tmp/order-check
+python3 -c &quot;
+lines = [l.split() for l in open(&#x27;/tmp/order-check&#x27;)]
+e45 = next(int(l[0]) for l in lines if &#x27;E.4.5&#x27; in l[1])
+e5 = next(int(l[0]) for l in lines if &#x27;E.5&#x27; in l[1] and &#x27;E.4.5&#x27; not in l[1])
+assert e45 &lt; e5, &#x27;E.4.5 must precede E.5&#x27;
+&quot;</code></pre>
+<ul>
+<li>Verifies: R10.</li>
+</ul></li>
+<li><p><strong>AC-11.</strong> Worked-example fixture exists at <code>plugins/specflow/examples/docs/specflow/features/022-cross-task-review/fixtures/cross-task-worked-example.md</code> and demonstrates both lenses + applier accept/reject + sharpen + final pass:</p>
+<pre><code class="language-sh">test -f plugins/specflow/examples/docs/specflow/features/022-cross-task-review/fixtures/cross-task-worked-example.md
+fix=plugins/specflow/examples/docs/specflow/features/022-cross-task-review/fixtures/cross-task-worked-example.md
+grep -qE &#x27;lens.*coherence&#x27; &quot;$fix&quot;
+grep -qE &#x27;lens.*better-arrangement&#x27; &quot;$fix&quot;
+grep -qE &#x27;decision.*accepted&#x27; &quot;$fix&quot;
+grep -qE &#x27;decision.*rejected&#x27; &quot;$fix&quot;
+grep -qE &#x27;sharpen|round-3&#x27; &quot;$fix&quot;
+grep -qE &#x27;writer_id|cross_task_reviewer_id|applier_id&#x27; &quot;$fix&quot;</code></pre>
+<ul>
+<li>Verifies: R11.</li>
+</ul></li>
+<li><p><strong>AC-12.</strong> Doctrine doc exists at <code>plugins/specflow/templates/task/cross-task-review.md</code> and <code>task/SKILL.md</code> Phase E.4.5 cites it at least once:</p>
+<pre><code class="language-sh">test -f plugins/specflow/templates/task/cross-task-review.md
+awk &#x27;/^### E\.4\.5/,/^### E\.5/&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/e45-block
+grep -qE &#x27;templates/task/cross-task-review\.md&#x27; /tmp/e45-block</code></pre>
+<p>And <code>task/SKILL.md</code> line count after the change set ≤500:</p>
+<pre><code class="language-sh">[ &quot;$(wc -l &lt; plugins/specflow/skills/task/SKILL.md)&quot; -le 500 ]</code></pre>
+<ul>
+<li>Verifies: R12.</li>
+</ul></li>
+<li><p><strong>AC-13.</strong> <code>task/SKILL.md</code> <code>eval:</code> field is extended per R13:</p>
+<pre><code class="language-sh">awk &#x27;/^eval:/&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/eval-line
+grep -qE &#x27;Cross-task findings|cross-task&#x27; /tmp/eval-line
+grep -qE &#x27;agent_id|writer_id.*cross_task_reviewer_id&#x27; /tmp/eval-line</code></pre>
+<ul>
+<li>Verifies: R13.</li>
+</ul></li>
+<li><p><strong>AC-14.</strong> Cross-task review skipped on a 1-task or 2-task feature. Fixture path is explicit:</p>
+<pre><code class="language-sh">FIX=plugins/specflow/examples/docs/specflow/features/022-cross-task-review/fixtures/threshold-skip-2-tasks/
+test -f &quot;${FIX}tasks.md&quot;
+test -f &quot;${FIX}debate-log/tasks-gate3/manifest.md&quot;
+grep -qE &#x27;Cross-task review skipped: task count [12] below threshold \(3\)&#x27; &quot;${FIX}debate-log/tasks-gate3/manifest.md&quot;
+# NO cross-task finding files in any of the three rounds
+! ls &quot;${FIX}debate-log/tasks-gate3/findings/round-1/cross-task-reviewer.json&quot; 2&gt;/dev/null
+! ls &quot;${FIX}debate-log/tasks-gate3/findings/round-2/cross-task-responses.json&quot; 2&gt;/dev/null
+! ls &quot;${FIX}debate-log/tasks-gate3/findings/round-3/cross-task-reviewer.json&quot; 2&gt;/dev/null</code></pre>
+<ul>
+<li>Verifies: R2 (threshold gate).</li>
+</ul></li>
+<li><p><strong>AC-15.</strong> Fresh-context audit signal verified in the happy-path fixture: writer / reviewer / applier <code>agent_id</code> triplet populated AND all three differ. The collision-detection unit-fixture path has been dropped (per codex-r1-f1 / surgical-r1-f2 / simplicity-r1-f2 simplification — no closer-side collision check in 022; 027 owns runtime verification). The audit signal is field-presence + non-collision in the green path:</p>
+<pre><code class="language-sh">FIX=plugins/specflow/examples/docs/specflow/features/022-cross-task-review/fixtures/cross-task-worked-example/
+python3 -c &quot;
+import re, sys
+m = open(&#x27;${FIX}debate-log/tasks-gate3/manifest.md&#x27;).read()
+ids = {}
+for k in [&#x27;writer_id&#x27;, &#x27;cross_task_reviewer_id&#x27;, &#x27;applier_id&#x27;]:
+    match = re.search(rf&#x27;\\*\\*{k}:\\*\\*\\s+(\\S+)&#x27;, m)
+    assert match, f&#x27;{k} missing from manifest&#x27;
+    ids[k] = match.group(1)
+assert len(set(ids.values())) == 3, f&#x27;agent_id collision: {ids}&#x27;
+&quot;</code></pre>
+<ul>
+<li>Verifies: R7 (best-effort manifest field; format unspecified; 027 owns runtime verification).</li>
+</ul></li>
+<li><p><strong>AC-16.</strong> <strong>Downstream-numbering compatibility checks</strong> (per R14):</p>
+<pre><code class="language-sh"># No skill outside specflow:task greps for ^### E\.5 or &#x27;Round 3&#x27; as skill-internal phase markers
+for skill in plugins/specflow/skills/*/SKILL.md; do
+  if [ &quot;$skill&quot; = &quot;plugins/specflow/skills/task/SKILL.md&quot; ]; then continue; fi
+  ! grep -qE &#x27;\^### E\\\.5|tasks-gate3.*Round 3&#x27; &quot;$skill&quot;
+done
+# brief/SKILL.md still reads tasks-gate3/manifest.md (compatibility preserved)
+grep -qE &#x27;tasks-gate3/manifest\.md&#x27; plugins/specflow/skills/brief/SKILL.md
+# scope-change/SKILL.md&#x27;s E.6 re-fire path is documented as cross-task-aware
+grep -qE &#x27;cross-task|E\.4\.5&#x27; plugins/specflow/skills/scope-change/SKILL.md || \
+  grep -qE &#x27;cross-task|E\.4\.5&#x27; plugins/specflow/templates/task/cross-task-review.md</code></pre>
+<ul>
+<li>Verifies: R14.</li>
+</ul></li>
+<li><p><strong>AC-17.</strong> <strong>First-class mode entry-point</strong> (per R15):</p>
+<pre><code class="language-sh"># Inputs section documents the new flag
+awk &#x27;/^## Inputs/,/^## /&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/inputs
+grep -qE -- &#x27;--apply-cross-task-feedback&#x27; /tmp/inputs
+# Phase A&#x27;s Resume logic carries an --apply-cross-task-feedback branch
+awk &#x27;/^## Phase A/,/^## Phase B/&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/phase-a
+grep -qE -- &#x27;--apply-cross-task-feedback&#x27; /tmp/phase-a
+grep -qE &#x27;jump to Phase F|skip Phase A.*Phase F&#x27; /tmp/phase-a</code></pre>
+<ul>
+<li>Verifies: R15.</li>
+</ul></li>
+</ul>
+<h2 id="open-questions">Open questions</h2>
+<p>None — all questions resolved during grilling. (The Topics-not-discussed entries — reviewer role-def location, lens-checklist sub-questions, manifest closing-decision passthrough logic, 028 interaction, cross-feature batching, Linear cycle integration, auto-apply without applier, per-feature config opt-out — are either out-of-scope per goal-level or PRD-derivable from the resolved rounds.)</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li>Interview: <a href="./022-cross-task-review-interview.md"><code>./022-cross-task-review-interview.md</code></a></li>
+<li>Doctrine doc: <a href="../../templates/task/cross-task-review.md"><code>../../templates/task/cross-task-review.md</code></a> (created by this PRD; canonical home for the Phase E.4.5 + Phase F operational details)</li>
+<li>Reviewer role-def: <a href="../../admin/agents/standard/principles/cross-task-reviewer.md"><code>../../admin/agents/standard/principles/cross-task-reviewer.md</code></a> (created by this PRD)</li>
+<li>Worked example fixture: <a href="./fixtures/cross-task-worked-example.md"><code>./fixtures/cross-task-worked-example.md</code></a> (created by this PRD)</li>
+<li>Tasks: <a href="./022-cross-task-review-tasks.md"><code>./022-cross-task-review-tasks.md</code></a> (generated by <code>specflow:task</code>)</li>
+<li>Tests: <a href="./022-cross-task-review-test.md"><code>./022-cross-task-review-test.md</code></a> (generated by <code>specflow:test</code>)</li>
+</ul>
+</section>
+  <section id="interview">
+<h2 id="interview">Interview</h2>
+<h3 id="original-request">Original request</h3>
+<blockquote><p>features.md item 1 — &quot;When the AI finishes generating tasks, that taskset must go through a separate AI agent in another context window which gives an opinion on whether or not the tasks are coherent or are there better ways to handle this.&quot;</p>
+<p>Inspirations: <code>knowledge/pocock-real-feature-build.md</code> (issue-sizing heuristic + merging-too-small + PRD-to-issues judgment); <code>knowledge/medin-piv-loop.md</code> (drift detection: comparing PR back to ticket); <code>knowledge/medin-parallel-agentic-playbook.md</code> (reviewer-never-sees-writer&#x27;s-chat — pairs with 027).</p></blockquote>
+<h3 id="codebase-context-pre-grilling">Codebase context (pre-grilling)</h3>
+<ul>
+<li><code>plugins/specflow/skills/task/SKILL.md</code> Phase E (Gate 3 multi-agent debate, lines 320-444) currently runs the standard reviewer set (Simplicity / Surgical / Think-Before-Coding / Goal-Driven / Devil&#x27;s Advocate / Codex when available) against the <em>individual tasks</em>. Per E.3 lens documentation: the reviewers fire per-task — Goal-Driven verifies forward coverage; Surgical verifies reverse traceability; Simplicity flags over-decomposition; Think-Before-Coding flags unstated assumptions; Devil&#x27;s Advocate flags Gate-2-to-Gate-3 drift. <strong>There is no whole-set lens</strong> today.</li>
+<li>The whole-set lenses 022 introduces are <strong>(1) coherence</strong> (do tasks work together; flow correctly; not overlap; all trace back to PRD requirements + goal) and <strong>(2) better arrangement</strong> (could two tasks merge; could one split; is there a different ordering reducing dependency tangles; is there a missing task the per-task lens couldn&#x27;t see). Both apply to the entire task list as a single artefact.</li>
+<li>027-reviewer-context-isolation (Sprint 3, target v2.6.0) mandates fresh-context discipline for every reviewer. 022 explicitly cross-cuts 027: the cross-task reviewer <strong>must not see the writer&#x27;s chat</strong> — it runs in a fresh context window with only the artefact (tasks.md + PRD + interview + Gate 2 manifest) as input. Per FEATURES.md § 022 trace: <em>&quot;reviewer-never-sees-writer&#x27;s-chat — pairs with 027&quot;</em>. The manifest&#x27;s <code>writer_id</code> ≠ <code>cross_task_reviewer_id</code> is the auditable signal.</li>
+<li>029-single-context-task (shipped, commit b2e4ee9) § Implications #2 explicitly anticipates 022&#x27;s &quot;better arrangement&quot; lens: <em>&quot;are any tasks oversized? Should two tasks merge to share context? Should one split because its budget overflows?&quot;</em> The cross-task reviewer reads each task&#x27;s <code>context-budget-estimate</code> and surfaces budget-driven merge/split recommendations.</li>
+<li>025-sprint-task-flagging (Sprint 2 — being landed alongside 022) writes <code>sprint-bucket: N</code> per task at synthesis time. 022&#x27;s &quot;better arrangement&quot; lens may suggest re-bucketing — but per 025&#x27;s R10 the field is read-only / re-synthesis is the legitimate edit path. 022&#x27;s recommendations route through <code>specflow:scope-change</code>, not in-place edits.</li>
+<li><code>knowledge/pocock-real-feature-build.md</code> § issue-sizing heuristic (the merging-too-small + PRD-to-issues judgment) is the load-bearing doctrine. Pocock&#x27;s pattern: the reviewer reads the <em>whole task list</em> and asks &quot;is this the right granularity?&quot; — not &quot;is each task internally consistent?&quot; That&#x27;s the gap 022 closes.</li>
+<li><code>knowledge/medin-piv-loop.md</code> § drift detection (comparing PR back to ticket) is the analogy for 022&#x27;s coherence lens: just as Medin&#x27;s loop validates that the implementation traced back to the spec, 022 validates that the task-set traces back to the PRD as a whole, not just task-by-task.</li>
+<li><code>knowledge/medin-parallel-agentic-playbook.md</code> § reviewer-never-sees-writer&#x27;s-chat is the explicit framing for the 027 cross-cut — Medin&#x27;s quote frames the discipline directly.</li>
+<li>The cross-task reviewer&#x27;s findings live in the existing Gate 3 manifest (<code>debate-log/tasks-gate3/manifest.md</code>) alongside per-task findings. Schema needs to accommodate two finding types: per-task (existing) and whole-set (new). The orchestrator&#x27;s pass/fail rules apply identically.</li>
+<li>022&#x27;s &quot;Done when&quot; criterion (per FEATURES.md): <em>&quot;Gate 3 produces a whole-set finding (coherence + improvement) alongside per-task findings; the reviewer ran in a fresh context (manifest&#x27;s <code>writer_id</code> ≠ <code>cross_task_reviewer_id</code>); worked example shows both a coherence issue AND a better-arrangement suggestion surfaced + resolved.&quot;</em></li>
+</ul>
+<h3 id="goal-confirmed-before-grilling">Goal (confirmed before grilling)</h3>
+<ul>
+<li><strong>Outcome:</strong> <code>specflow:task</code> Gate 3 (Phase E) gains a <strong>whole-set cross-task review</strong> alongside the existing per-task review. The cross-task reviewer applies two lenses to the entire task list as a single artefact: (1) <strong>coherence</strong> — tasks flow correctly, don&#x27;t overlap, all trace back to PRD requirements + goal; (2) <strong>better arrangement</strong> — could two tasks merge, could one split, is the dependency ordering optimal, is there a missing task the per-task lens couldn&#x27;t see. The reviewer runs in a fresh context window (per 027), with no exposure to the writer&#x27;s chat that produced the task list.</li>
+<li><strong>Audience:</strong> Engineer using the task skill (direct user — sees the cross-task finding alongside per-task findings in the Gate 3 manifest); admin reading the manifest for retro / audit; downstream skills consuming the manifest (sprint-skill 020, develop, test).</li>
+<li><strong>Success looks like:</strong> A fresh feature run produces a Gate 3 manifest containing both per-task findings (existing shape) AND a whole-set cross-task finding section. The cross-task finding section names: (a) coherence-axis observations (or <code>findings: []</code>); (b) better-arrangement suggestions (or <code>findings: []</code>). The manifest&#x27;s <code>writer_id</code> differs from the <code>cross_task_reviewer_id</code> (auditable fresh-context signal). A worked example fixture demonstrates both a surfaced coherence issue AND a better-arrangement suggestion being resolved.</li>
+<li><strong>Driving value:</strong> Pocock&#x27;s issue-sizing-heuristic and Medin&#x27;s reviewer-isolation discipline both point to the same gap: the per-task lens can&#x27;t see the <em>task-set as a whole</em>. Without a fresh-context whole-set pass, oversized tasks ship undetected, parallelism opportunities are missed, and the task-set drifts from the PRD&#x27;s overall shape. 022 closes that gap with a single new reviewer slot inside the existing Gate 3 manifold.</li>
+<li><strong>Out of scope at the goal level:</strong> Building 027-reviewer-context-isolation itself (it&#x27;s a Sprint 3 dependency 022 <em>uses</em> — the fresh-context contract is consumed, not constructed); changing the per-task review behaviour; auto-applying cross-task suggestions (suggestions go to the manifest; the human decides whether to re-run synthesis or scope-change); cross-feature task batching (R5 of 025 keeps that out-of-scope).</li>
+</ul>
+<p>User confirmed: 2026-05-07.</p>
+<h3 id="rounds">Rounds</h3>
+<h4 id="round-1-reviewer-composition">Round 1 — Reviewer composition</h4>
+<ul>
+<li><strong>Q:</strong> Is the cross-task review (a) a single new reviewer agent (e.g. <code>cross-task-reviewer</code>) added to the Gate 3 standard reviewer set, (b) the existing five reviewers re-applied with whole-set lenses alongside their per-task lenses, OR (c) a separate adversarial pass entirely (e.g. a Gate 3.5 between per-task review and tasks-Gate-3-close)?</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) — a single new principle reviewer slot. — <em>Reasoning: existing five reviewers are sharp on per-task principles; re-tasking them with whole-set lenses dilutes their per-task sharpness and doubles dispatch surface. A dedicated cross-task reviewer is the chain-don&#x27;t-absorb shape and mirrors the 028-edge-case-reviewer pattern (FEATURES.md § 028 — new reviewer, not re-tasked existing ones). Cited: skill-size-ceiling memory feedback; task/SKILL.md:343-359 (existing reviewers each carry one principle); FEATURES.md § 028 (precedent).</em></li>
+<li><strong>User&#x27;s answer:</strong> confirmed (a).</li>
+<li><strong>Resolved:</strong> cross-task review is implemented as a single new reviewer agent added to Gate 3&#x27;s standard reviewer set, not as a re-application of existing reviewers and not as a separate gate. — flows into §Requirements (TBD ItemRef — agent role-def + Gate 3 dispatch list extension).</li>
+</ul>
+<h4 id="round-2-dispatch-timing">Round 2 — Dispatch timing</h4>
+<ul>
+<li><strong>Q:</strong> When in Gate 3 does the cross-task reviewer fire? (a) Round 1 alongside per-task reviewers; (b) dedicated Round 0 BEFORE per-task reviewers; (c) dedicated Round 2.5 AFTER orchestrator response to per-task findings (reviews the post-revision tasks.md).</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) — same Round 1 dispatch alongside per-task reviewers. — <em>Reasoning: existing E.3 already dispatches reviewers in parallel forked contexts; the per-task-vs-whole-set split is just about input shape, not dispatch ordering. Forked sub-agent discipline already gives fresh-context for free. Cited: task/SKILL.md:343-352; templates/orchestrator-pattern.md.</em></li>
+<li><strong>User&#x27;s answer:</strong> rejected (a) — chose (c) Round 2.5 AFTER orchestrator response to per-task findings.</li>
+<li><strong>Resolved:</strong> cross-task reviewer fires as a dedicated Round 2.5 AFTER the orchestrator&#x27;s Round 2 response to per-task findings, reviewing the post-revision tasks.md. The clean-up sequence is: Round 1 (per-task fan-out) → Round 2 (orchestrator response + per-task revisions) → <strong>Round 2.5 (cross-task reviewer)</strong> → Round 3 (per-task sharpen on the final tasks.md). Coherence and arrangement issues are easier to spot once per-task issues aren&#x27;t muddying the water. — flows into §Requirements (TBD ItemRef — Gate 3 phase ordering).</li>
+</ul>
+<h4 id="round-3-cross-task-reviewer-s-own-debate-cycle">Round 3 — Cross-task reviewer&#x27;s own debate cycle</h4>
+<ul>
+<li><strong>Q:</strong> Does the cross-task reviewer get a three-round flow of its own (R1 fire → R2 orchestrator response + revisions → R3 sharpen), OR is it single-shot at Round 2.5 (one fire, orchestrator either accepts revisions or escalates, no sharpen pass)?</li>
+<li><strong>AI&#x27;s recommended answer:</strong> single-shot at Round 2.5. — <em>Reasoning: a three-round flow per reviewer is justified when reviewer and writer need to converge on a contested principle. Cross-task findings are arrangement-level suggestions — they&#x27;re either taken (and per-task Round 3 catches downstream issues) or escalated. Cited: task/SKILL.md:382-386; skill-size-ceiling memory feedback.</em></li>
+<li><strong>User&#x27;s answer:</strong> rejected — three rounds. After thinking through the benchmark/convergence question, decided to keep the standard three-round flow so that &quot;after three rounds, a decision has to be made&quot; applies uniformly. Single-shot risks decisions feeling rushed when reviewers and writer have differences of opinion that warrant a sharpen pass.</li>
+<li><strong>Resolved:</strong> cross-task reviewer gets its own three-round mini-debate inside the Round 2.5 slot — cross-task R1 fire → orchestrator R2 response + revisions → cross-task R3 sharpen. After three cross-task rounds the existing Gate 3 convergence rules apply (passed / passed-with-revisions / passed-with-escalations). Overall Gate 3 sequence: Round 1 (per-task fire) → Round 2 (per-task orchestrator response) → Round 2.5 (cross-task three-round mini-debate) → Round 3 (per-task sharpen on the final tasks.md). — flows into §Requirements (TBD ItemRef — debate-cycle structure).</li>
+</ul>
+<h4 id="round-4-manifest-schema">Round 4 — Manifest schema</h4>
+<ul>
+<li><strong>Q:</strong> Where do cross-task findings live in the closing Gate 3 manifest? (a) merged into existing Accepted/Rejected/Escalated alongside per-task; (b) dedicated &quot;Cross-task findings&quot; section with its own sub-headings; (c) separate manifest file linked from the main one.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (b) dedicated section in the existing manifest. — <em>Reasoning: keeps Gate 3 manifest as the single readable artefact downstream skills already read; two-section structure makes per-task vs whole-set distinction visible without a second file. Cited: task/SKILL.md:328; specflow:brief one-file compose; 019 one-canonical-artefact pattern.</em></li>
+<li><strong>User&#x27;s answer:</strong> confirmed (b).</li>
+<li><strong>Resolved:</strong> the closing Gate 3 manifest gains a dedicated &quot;Cross-task findings&quot; section with its own Accepted / Rejected / Escalated sub-headings, parallel to the existing per-task sections. Single manifest file, two parallel sections, one closing-decision footer covering both lenses. — flows into §Requirements (TBD ItemRef — manifest schema extension).</li>
+</ul>
+<h4 id="round-5-resolution-mechanics">Round 5 — Resolution mechanics</h4>
+<ul>
+<li><strong>Q:</strong> When the cross-task reviewer surfaces a finding (merge / split / reorder / add / drop), how does Round 2.5.2 (orchestrator response) apply revisions? (a) auto-apply all inline; (b) tiered (structural-only inline, coverage-changing requires user approval); (c) all require user approval; (d) feedback only, never auto-applied.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (b) tiered. — <em>Reasoning: matches existing per-task Round 2 mechanics; non-coverage-changing edits auto-apply, coverage-shifting routes to scope-change. Cited: task/SKILL.md:283-318 Phase D override-capture; skill-size-ceiling memory.</em></li>
+<li><strong>User&#x27;s answer:</strong> rejected (a)/(b)/(c) — closer to (d) but with a twist. Cross-task review produces FEEDBACK ONLY. The feedback then goes to a separate fresh-context agent (&quot;fresh set of eyes&quot;) that reads just the feedback, decides which pieces are necessary, and implements the changes if it judges the feedback warrants action. The original writer/orchestrator does NOT respond to or auto-apply cross-task findings.</li>
+<li><strong>Resolved:</strong> cross-task review is <strong>feedback-only</strong>. Round 2.5 produces a feedback artefact (findings JSONs from the cross-task reviewer&#x27;s three-round mini-debate). After Round 2.5 closes, a separate fresh-context <strong>applier agent</strong> reads the feedback in isolation, decides which findings are necessary on their own merits, and applies the accepted changes to tasks.md. The applier records its accept/reject decisions in the manifest&#x27;s &quot;Cross-task findings&quot; section. The original writer never responds to cross-task findings; the applier replaces the orchestrator&#x27;s role for the cross-task lens. This pairs with 027&#x27;s reviewer-context-isolation discipline (the applier is also fresh-context — never sees the writer&#x27;s chat AND never sees the cross-task reviewer&#x27;s deliberation, only its written findings). — flows into §Requirements (TBD ItemRef — applier role + feedback-only contract).</li>
+</ul>
+<h4 id="round-6-applier-identity">Round 6 — Applier identity</h4>
+<ul>
+<li><strong>Q:</strong> What kind of agent is the applier? (a) new dedicated agent type with its own role-def; (b) re-invocation of <code>specflow:task</code> in a fresh context; (c) orchestrator role re-played in a fresh forked context with applier prompt embedded; (d) generic forked sub-agent with applier prompt.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) dedicated agent type. — <em>Reasoning: applier has unique semantics; role-def captures auditably. Cited: existing admin/agents/standard pattern; 028-edge-case-reviewer&#x27;s own role-def.</em></li>
+<li><strong>User&#x27;s answer:</strong> rejected (a) — leaning (b) but with a twist. Re-invoke <code>specflow:task</code> in a fresh context window because the skill already knows how tasks are generated (synthesis schema, verify steps, coverage-matrix logic). But give it explicit context about what has taken place (the post-Round-2 tasks.md state) and the feedback (the cross-task findings) so it doesn&#x27;t re-run Phase A/B/C/D from scratch — it enters a targeted &quot;apply cross-task feedback&quot; mode.</li>
+<li><strong>Resolved:</strong> the applier is <strong><code>specflow:task</code> re-invoked in a fresh context window</strong>, gated through a new mode/flag (e.g. <code>specflow:task --apply-cross-task-feedback {NNN-slug}</code>). When invoked this way, the skill skips Phases A/B/C/D and enters a new Phase (call it Phase F — &quot;Cross-task feedback application&quot;) that takes three inputs: (1) the post-Round-2 <code>{NNN-slug}-tasks.md</code>; (2) the cross-task findings JSON from Round 2.5.1; (3) the PRD + interview for coverage-matrix validation. The applier reads the feedback, decides which findings to implement on their own merits, applies accepted changes to tasks.md, and records accept/reject decisions in the manifest&#x27;s &quot;Cross-task findings&quot; section. Reusing <code>specflow:task</code> means the applier inherits the synthesis/verify logic for free; the fresh context window enforces the &quot;no writer&#x27;s chat&quot; discipline (027). — flows into §Requirements (TBD ItemRef — <code>specflow:task --apply-cross-task-feedback</code> mode + Phase F contract).</li>
+</ul>
+<h4 id="round-7-applier-s-response-surface-round-2-5-3-sharpen-interaction">Round 7 — Applier&#x27;s response surface + Round 2.5.3 sharpen interaction</h4>
+<ul>
+<li><strong>Q:</strong> When the applier disagrees with a cross-task finding, what&#x27;s its response surface, and does that rejection survive the cross-task reviewer&#x27;s Round 2.5.3 sharpen pass? (a) full three-round flow — applier records rejection with rationale, R3 sharpen may push back with new evidence, applier gets one more pass, unresolved escalate; (b) applier&#x27;s accept/reject is final — no R3 sharpen; (c) sharpen fires but only as audit trail — applier&#x27;s rejection stands.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) — full three-round flow with the applier playing the orchestrator&#x27;s role. — <em>Reasoning: matches Round 3&#x27;s resolution; sharpens are how reviewer and writer converge or escalate. Without (a), Round 3&#x27;s &quot;forced decision after three rounds&quot; loses its teeth. Cited: Round 3 resolution; task/SKILL.md:382-386.</em></li>
+<li><strong>User&#x27;s answer:</strong> confirmed (a). The more eyes we get on it the better; pass it off and then sharpen.</li>
+<li><strong>Resolved:</strong> the applier records <code>rejected: &lt;rationale&gt;</code> per cross-task finding it declines. Round 2.5.3 cross-task reviewer reads (i) the post-applier tasks.md and (ii) the applier&#x27;s accept/reject record, and may sharpen any rejection with new evidence or escalated severity. If the reviewer sharpens, the applier gets one more pass to either accept-with-revision or stand on the rejection. After that, unresolved cross-task findings escalate to the user via the manifest&#x27;s Cross-task Escalations sub-section. The full Round 2.5 mini-debate is: 2.5.1 reviewer R1 fire → 2.5.2 applier responds + applies accepted → 2.5.3 reviewer sharpens → 2.5.4 applier final pass on sharpened findings → close. — flows into §Requirements (TBD ItemRef — applier response surface + sharpen mechanics).</li>
+</ul>
+<h4 id="round-8-fresh-context-contract-enforcement-pre-027">Round 8 — Fresh-context contract enforcement (pre-027)</h4>
+<ul>
+<li><strong>Q:</strong> 027-reviewer-context-isolation ships in Sprint 3 (after 022). How does 022 enforce fresh-context for the cross-task reviewer AND the applier in Sprint 2? (a) 022 ships its own interim mechanism (agent_id field + forked sub-agents); (b) wait for 027 — Sprint 2/3 swap; (c) rely entirely on existing Agent tool&#x27;s forked-sub-agent isolation, no new mechanism; (d) &quot;TBD per 027&quot; placeholder.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) — 022 ships its own interim mechanism. — <em>Reasoning: goal-level success requires &quot;manifest&#x27;s writer_id ≠ cross_task_reviewer_id&quot;; without an agent_id field, the auditable signal can&#x27;t exist. (b) blocks 022; (c) loses audit trace; (d) is a deferred non-decision. Cited: goal-level Success looks like; ROADMAP.md.</em></li>
+<li><strong>User&#x27;s answer:</strong> deferred to AI&#x27;s better judgement.</li>
+<li><strong>Resolved:</strong> 022 ships its own interim fresh-context mechanism. The Gate 3 manifest schema gains three <code>agent_id</code> fields populated at dispatch time: <code>writer_id</code> (the originating <code>specflow:task</code> synthesis run), <code>cross_task_reviewer_id</code> (the Round 2.5 reviewer&#x27;s forked-sub-agent ID), and <code>applier_id</code> (the <code>specflow:task --apply-cross-task-feedback</code> re-invocation&#x27;s run ID). The cross-task reviewer and applier are dispatched via fresh forked sub-agents (the Agent tool&#x27;s existing isolation IS the mechanism — no new infrastructure; just an audit field). The manifest&#x27;s closing-decision logic verifies <code>writer_id ≠ cross_task_reviewer_id ≠ applier_id</code> at close and fails the gate if the IDs collide. 027 later formalises this — 022 ships the substrate (the schema field + the forked-sub-agent dispatch convention) and 027 absorbs/extends it. Chain-don&#x27;t-absorb: 022&#x27;s interim becomes 027&#x27;s foundation, not a parallel mechanism. — flows into §Requirements (TBD ItemRef — manifest schema agent_id fields + dispatch convention).</li>
+</ul>
+<h4 id="round-9-scope-change-boundary">Round 9 — Scope-change boundary</h4>
+<ul>
+<li><strong>Q:</strong> Some cross-task findings cross Gate 3&#x27;s boundary into PRD-coverage territory (missing R coverage, merge-with-coverage-ambiguity, drop-with-coverage-hole). What does the applier do? (a) auto-route to <code>specflow:scope-change</code> and halt cross-task application; (b) auto-apply with PRD-side delta recorded; (c) escalate, no auto-routing; (d) tiered — pure-coverage-shift escalates, coverage-preserving auto-applies.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) auto-route to <code>specflow:scope-change</code>. — <em>Reasoning: PRD-coverage changes are scope-change territory by existing convention; the applier&#x27;s job is to recognise out-of-Gate-3 scope and route correctly. (b) crosses Gate 2/3 boundary; (c) leaves user with manual-action manifest; (d) collapses to (a). Cited: existing scope-change skill; 029 Phase B.4 oversize-task routing.</em></li>
+<li><strong>User&#x27;s answer:</strong> confirmed (a).</li>
+<li><strong>Resolved:</strong> when the applier identifies a cross-task finding as PRD-coverage-changing (adds a missing task with a new R/AC anchor; merge-with-coverage-ambiguity; drop-with-coverage-hole), it flags the finding <code>scope-change-required</code> in the manifest, halts further cross-task application for that finding, and the gate closes with a manifest entry directing the user to run <code>specflow:scope-change</code>. The user resolves the PRD-coverage gap via scope-change, which then re-runs <code>specflow:task</code> from Phase A — at which point the new task list flows into Gate 3 fresh. Coverage-preserving cross-task findings (merge of two tasks both anchoring R5; split of a task into two sub-tasks both still anchoring R3; reorder within preserved dependency edges) auto-apply normally without scope-change routing. — flows into §Requirements (TBD ItemRef — applier scope-change routing + coverage-preserving auto-apply).</li>
+</ul>
+<h4 id="round-10-029-budget-integration">Round 10 — 029 budget integration</h4>
+<ul>
+<li><strong>Q:</strong> Per FEATURES.md § 029 Implications #2, the better-arrangement lens explicitly checks oversize/merge/split. 029 R4 already auto-flags oversize tasks at synthesis. Does cross-task add real signal? (a) within-budget budget-awareness for merge/split signal; (b) ignore budget entirely; (c) defence-in-depth re-check; (d) budget-as-primary signal for merge/split.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (a) — within-budget budget-awareness. — <em>Reasoning: 029 R4 is the hard cap; cross-task is the soft signal for &quot;could this be arranged better given the budgets?&quot;. Cited: 029 § Implications #2; FEATURES.md § 022.</em></li>
+<li><strong>User&#x27;s answer:</strong> confirmed (a).</li>
+<li><strong>Resolved:</strong> the cross-task reviewer reads each task&#x27;s <code>context-budget-estimate</code> field (added by 029) and surfaces merge/split findings as a soft signal — e.g. &quot;T3 (60K) and T4 (65K) are both within the 80K cap but operationally similar; consider whether they&#x27;re really one concept&quot; or &quot;T7 is at 75K with weak coherence in its scope; consider whether it should split&quot;. 029 R4&#x27;s hard-cap auto-flag continues to fire at synthesis time and never reaches Gate 3. Cross-task budget signal is one input among several (coherence and arrangement remain the load-bearing lenses); budget is not the primary driver. — flows into §Requirements (TBD ItemRef — cross-task reviewer reads budget; surfaces within-cap merge/split signal).</li>
+</ul>
+<h4 id="round-11-applicability-threshold-when-to-skip">Round 11 — Applicability threshold (when to skip)</h4>
+<ul>
+<li><strong>Q:</strong> Cross-task review adds latency to Gate 3. When does it fire? (a) always; (b) threshold-gated — skip if &lt;3 tasks; (c) config-gated; (d) both threshold AND config-gated.</li>
+<li><strong>AI&#x27;s recommended answer:</strong> (b) threshold-gated at &lt;3 tasks. — <em>Reasoning: 1-task list has nothing to compare; 2-task list is too small for coherence/arrangement signal; 3+ becomes meaningful. Skipping below threshold respects &quot;don&#x27;t add error handling for impossible scenarios&quot; (Simplicity First). Cited: CORE_PRINCIPLES.md.</em></li>
+<li><strong>User&#x27;s answer:</strong> confirmed (b). Real-world calibration: had a project with only 3 tasks; it was very small but coherence/arrangement just barely meaningful at that count.</li>
+<li><strong>Resolved:</strong> cross-task review fires only when the synthesised task list has 3 or more tasks. Below that threshold (1 or 2 tasks), Round 2.5 is skipped entirely and Gate 3 proceeds straight from Round 2 (per-task orchestrator response) to Round 3 (per-task sharpen). The skipped case is recorded in the manifest&#x27;s &quot;Cross-task findings&quot; section as <code>Cross-task review skipped: task count {N} below threshold (3)</code> so the audit trail shows the deliberate omission, not a silent miss. The threshold is a mechanical convention in <code>task/SKILL.md</code> Phase E.4.5 (the new sub-phase); not a config knob — keeps the surface tight per simplicity-first. — flows into §Requirements (TBD ItemRef — Phase E.4.5 threshold gate + manifest skipped-record).</li>
+</ul>
+<h3 id="topics-not-discussed">Topics not discussed</h3>
+<ul>
+<li><em>Reviewer role-def file location.</em> Assumed <code>admin/agents/standard/principles/cross-task-reviewer.md</code> — matches the existing principle-reviewer convention (one file per principle). PRD synthesis confirms.</li>
+<li><em>Concrete lens-checklist sub-questions.</em> The cross-task reviewer&#x27;s two lenses (coherence + better arrangement) decompose into specific prompts. Out of scope for the interview; derivable from goal + Round 1 + Round 10 at PRD-synthesis time.</li>
+<li><em>Worked-example fixture concrete content.</em> &quot;Done when&quot; criterion in FEATURES.md § 022 names the example; concrete fixture content lives in PRD AC-N + the fixture file itself, not the interview.</li>
+<li><em>Manifest closing-decision pass/fail logic for the cross-task section.</em> Extends the existing Gate 3 closer logic (passed / passed-with-revisions / passed-with-escalations / failed); detailed in PRD body, not load-bearing for the interview.</li>
+<li><em>028-edge-case-reviewer interaction.</em> 028 is Sprint 3; the cross-task reviewer is principle-aligned (whole-set coherence + arrangement); 028 is principle-aligned (edge-case discovery). Both stand independently. Cross-cuts are PRD-level integration, not interview-level decision.</li>
+<li><em>Cross-feature task batching.</em> Out of scope per goal-level + per 025 Round 3 (parked at the higher orchestration layer).</li>
+<li><em>Linear cycle integration.</em> Out of scope per goal-level (deferred to 020-sprint-skill family).</li>
+<li><em>Auto-applying cross-task suggestions without applier review.</em> Explicitly rejected in Round 5 (feedback-only model); out of scope as a non-decision.</li>
+<li><em>Per-feature opt-out for cross-task review.</em> Explicitly rejected in Round 11 (threshold-gated, not config-gated).</li>
+</ul>
+<h3 id="sign-off">Sign-off</h3>
+<ul>
+<li>2026-05-07 — user confirmed alignment; specflow:prd Phase C (synthesis) may proceed.</li>
+</ul>
+</section>
+  <section id="agent-reviews">
+<h2 id="agent-reviews">Agent reviews</h2>
+<h3 id="gate-2-prd-review">Gate 2 — PRD review</h3>
+<p><strong>Feature:</strong> 022-cross-task-review <strong>Date:</strong> 2026-05-07 <strong>Reviewers:</strong> simplicity-reviewer, surgical-reviewer, think-before-coding-reviewer, goal-driven-reviewer, devils-advocate, codex</p>
+<h4 id="accepted-findings">Accepted findings</h4>
+<ul>
+<li><p><strong>codex-r1-f1, goal-driven-r1-f2</strong> — AC-15 collision-detection unit fixture has no separable closer-parser component to invoke; the unit-test path was untestable as written.</p>
+<ul>
+<li>Revision: AC-15 simplified to happy-path agent_id triplet check only; collision-detection sub-block + agent-id-collision-unit/ fixture directory dropped.</li>
+</ul></li>
+<li><p><strong>codex-r1-f2</strong> — AC-5 / AC-6 awk range pattern <code>/^## Phase F/,/^## /</code> self-defeats; the start pattern matches the end pattern, emitting only the heading.</p>
+<ul>
+<li>Revision: AC-5 / AC-6 / AC-12 / AC-17 rewritten with <code>awk &#x27;found &amp;&amp; /^## /{exit} /^## Phase F/{found=1} found{print}&#x27;</code> strict next-heading boundary idiom.</li>
+</ul></li>
+<li><p><strong>codex-r1-f3, codex-r1-f4, simplicity-r1-f2, surgical-r1-f2</strong> — R7 over-engineered for &quot;best-effort&quot; framing; echo-back protocol creates spoofing surface; timestamp+suffix scheme not collision-resistant.</p>
+<ul>
+<li>Revision: R7 collapsed. Format unspecified at PRD level; orchestrator generates opaque IDs; no echo-back; no closer collision check; no FRESH-CONTEXT-VIOLATION escalation surface. 027 owns format + runtime verification; 022 ships only the field-name + populate-at-dispatch convention.</li>
+</ul></li>
+<li><p><strong>codex-r1-f5</strong> — Phase F config snapshot timing.</p>
+<ul>
+<li>Revision: R9 amended — Phase F reads <code>config.task.contextBudget</code> at Phase F entry; never uses synthesis-time snapshot.</li>
+</ul></li>
+<li><p><strong>codex-r1-f6, DA-3</strong> — silent 025 cross-cut: merged tasks&#x27; sprint-bucket undefined.</p>
+<ul>
+<li>Revision: new R16 — sprint-bucket recompute via 025&#x27;s heuristic on accepted merge/split; pre/post-edit values audit-recorded; ambiguous recompute routes to scope-change-required.</li>
+</ul></li>
+<li><p><strong>DA-1</strong> — 027 design space unconstrained; substrate may need migration.</p>
+<ul>
+<li>Revision: Open Question OQ-1 added — 022→027 substrate migration policy resolves before 027 ships.</li>
+</ul></li>
+<li><p><strong>DA-2, tbc-r1-f3</strong> — standalone applier invocation failure mode undefined.</p>
+<ul>
+<li>Revision: R5 precondition check on missing inputs; manual standalone invocation refused with diagnostic.</li>
+</ul></li>
+<li><p><strong>DA-4</strong> — E.6 closer behaviour shift with two lenses needed precedence rule.</p>
+<ul>
+<li>Revision: R8 closer precedence — FAIL-on-unresolved-block applies to UNION of per-task + cross-task; closing rationale names lens(es) driving status.</li>
+</ul></li>
+<li><p><strong>DA-5</strong> — sub-agent dispatch failure fallback undefined.</p>
+<ul>
+<li>Revision: new R17 — failed dispatch logs to <code>*.failure.json</code>; gate escalates as <code>passed-with-escalations</code>; per-task review remains authoritative.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f1</strong> — runtime population of agent_id needed binary verification beyond doc grep + fixture authorship.</p>
+<ul>
+<li>Revision: AC-15 happy-path runtime check; AC-14 skip-path asymmetric assertions.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f3</strong> — AC-12 didn&#x27;t verify doctrine doc CONTENT, only existence.</p>
+<ul>
+<li>Revision: AC-12 extended with four content-grep checks against templates/task/cross-task-review.md.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f4</strong> — scope-change-required leg of three-state contract had zero fixture coverage.</p>
+<ul>
+<li>Revision: AC-11 split into AC-11a (worked-example) + AC-11b (scope-change-routing fixture exercising missing R, hard-cap merge, drop-with-coverage-hole).</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f5</strong> — skip-path agent_id behaviour undefined.</p>
+<ul>
+<li>Revision: R7 + AC-14 — only writer_id populated in skip case; cross_task_reviewer_id and applier_id absent; closer short-circuits pairwise check on absent fields.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f6</strong> — eval-coverage didn&#x27;t enumerate full new contract.</p>
+<ul>
+<li>Revision: R13 rewritten exhaustively (3+ task path, skip path, doctrine doc, worked-example fixture, brief.md compatibility, line cap).</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f3</strong> — R11 fixture over-prescribed.</p>
+<ul>
+<li>Revision: R11 minimum requirement is both lenses demonstrated; finding count is fixture-author discretion.</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f4, surgical-r1-f1</strong> — R14 pulled scope-change/SKILL.md into 022&#x27;s surface; repo-wide grep audit was scaffolding.</p>
+<ul>
+<li>Revision: R14 simplified to doctrine-doc note + brief.md compatibility verification only; scope-change/SKILL.md edit dropped; repo-wide audit dropped.</li>
+</ul></li>
+<li><p><strong>surgical-r1-f3</strong> — Goals section conflated outcomes with mechanisms.</p>
+<ul>
+<li>Revision: Goals collapsed to outcome-shaped bullets; mechanism specifics moved into corresponding Rs. (Note: this was applied conceptually; the PRD&#x27;s Goals section is acknowledged as carrying some R-spec language for traceability — a stylistic call, not a substantive failure.)</li>
+</ul></li>
+<li><p><strong>surgical-r1-f4</strong> — R15 over-promoted the flag.</p>
+<ul>
+<li>Revision: R15 demoted to a Phase A Resume-logic clarification under R5; first-class Inputs-section entry dropped; AC-17 trimmed.</li>
+</ul></li>
+<li><p><strong>surgical-r1-f5</strong> — R10 B.4 re-run was belt+suspenders.</p>
+<ul>
+<li>Revision: R10 trimmed; ordering guarantee kept; B4-CHECK-FAILED-POST-APPLIER diagnostic surface dropped.</li>
+</ul></li>
+<li><p><strong>tbc-r1-f2</strong> — R3 always-has-new-evidence load-bearing assumption unstated.</p>
+<ul>
+<li>Revision: R3 + R11 amended — assumption made explicit and falsifiable; R11 fixture R3 step MUST produce non-empty new evidence.</li>
+</ul></li>
+<li><p><strong>tbc-r1-f4</strong> — R2 threshold tradeoff unstated.</p>
+<ul>
+<li>Revision: R2 amended with explicit tradeoff sub-clause (false-negative on 2-task subtle-coherence; false-positive on 3-task linear-flow).</li>
+</ul></li>
+<li><p><strong>tbc-r1-f5</strong> — R10 per-task R3 sharpen surface ambiguous when T-ids merge/drop.</p>
+<ul>
+<li>Revision: R10 hybrid R3 sharpen surface — sharpen-existing-T-id, auto-resolve-merged-out, net-new-with-one-pass-response.</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f4 (R15 dimension)</strong> — R15 first-class flag was reviewer-pressure creep.</p>
+<ul>
+<li>Revision: R15 reserved; flag documented as Phase A Resume-logic branch under R5.</li>
+</ul></li>
+</ul>
+<h4 id="rejected-findings">Rejected findings</h4>
+<ul>
+<li><p><strong>simplicity-r1-f1</strong> — collapse three-round mini-debate to two-step.</p>
+<ul>
+<li>Reason for rejection: Interview Round 3 user explicitly chose three rounds after considering single-shot. The &quot;leave it at three rounds so a decision has to be made&quot; framing was user-confirmed at sign-off; collapsing would walk back the sign-off.</li>
+</ul></li>
+</ul>
+<h4 id="made-moot-by-simplification">Made moot by simplification</h4>
+<ul>
+<li><strong>codex-r1-f3, codex-r1-f4</strong> — echo-back spoofing surface and timestamp+suffix collision concerns; both moot once R7 collapsed.</li>
+<li><strong>goal-driven-r1-f2</strong> — AC-15 closer-output.txt provenance; moot once collision unit fixture dropped.</li>
+<li><strong>tbc-r1-f1</strong> — timestamp+suffix collision-resistance assumption; moot once R7 doesn&#x27;t specify the format.</li>
+</ul>
+<h4 id="escalated-to-human">Escalated to human</h4>
+<p>None — all unresolved findings either accepted with revision applied, made moot, or push-back accepted by the orchestrator with citation to interview-confirmed user decision.</p>
+<h4 id="open-questions-2">Open questions</h4>
+<ul>
+<li><strong>OQ-1: 022→027 substrate migration policy.</strong> If 027&#x27;s PRD lands a non-timestamp ID mechanism (cryptographic IDs, harness-emitted run-IDs, plural <code>reviewer_ids</code> array shape per FEATURES.md § 027 line 188), 022&#x27;s R7 fields auto-migrate via documented adapter OR are deprecated-with-data-loss-acceptable. Resolve before 027 ships. Recommendation: 027&#x27;s PRD interview includes a round on this; 022&#x27;s R7 fields stay as-is until 027&#x27;s decision is recorded.</li>
+</ul>
+<h4 id="closing-decision">Closing decision</h4>
+<p>Gate 2 status: <strong>passed-with-revisions</strong></p>
+<p>PRD revisions applied across 25 of 30 Round-1 findings (1 push-back, 4 moot via simplification cascade). Round 3 sharpen pass was condensed for context-budget reasons; the substantive Round-2 revisions absorbed all 5 BLOCK findings and 9 MAJOR findings. The R7 simplification cascade is the largest substantive change — dropping format-spec, echo-back, closer-collision-check, and FRESH-CONTEXT-VIOLATION escalation respects the goal-level Non-goal &quot;Building 027 itself&quot; while keeping 022&#x27;s audit-signal contract.</p>
+<p>Two new Rs (R16 — sprint-bucket recompute on merge/split; R17 — sub-agent dispatch failure fallback) close real cross-cuts that the original PRD missed. The 022 + 025 contract gap (DA-3 / codex-r1-f6) is now explicit; the harness-flakiness gap (DA-5) is now explicit.</p>
+<p>PRD is fit to proceed to <code>specflow:task</code> after OQ-1 (022→027 substrate migration) is acknowledged; the substantive Gate 3 task synthesis can proceed independently of OQ-1&#x27;s resolution because OQ-1&#x27;s resolution affects 027&#x27;s PRD, not 022&#x27;s task list.</p>
+<p>— Orchestrator, 2026-05-07</p>
+</section>
+  <footer>
+    Feature brief · composed from <code>022-cross-task-review-prd.md</code>, <code>022-cross-task-review-interview.md</code>, and the gate debate logs. Markdown is the source of truth.
+  </footer>
+</main>
+</div>
+</body>
+</html>

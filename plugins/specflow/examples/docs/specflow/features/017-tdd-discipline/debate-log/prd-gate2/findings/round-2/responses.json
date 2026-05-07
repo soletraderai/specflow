@@ -1,0 +1,153 @@
+{
+  "round": 2,
+  "gate": "prd-gate2",
+  "feature": "017-tdd-discipline",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "Interview Round 1 explicitly resolved tddRequired as a configurable knob: 'Green lane: configurable via config.json.develop.tddRequired (default true). Projects with strong CI signal and binary-AC-heavy task lists may opt out.' User-confirmed; not speculative. TBC-2's separate concern about 'strong CI signal' being undefined is addressed by adding an operational definition (see TBC-2 response)."
+    },
+    "simplicity-r1-f2": {
+      "decision": "push_back_partial",
+      "rationale": "Original user request: 'TDD should inherit Matt Pocock's Red, Green approach' implies principle-level adoption. R12 stays. However, DA-2 is right that 029's chain-don't-absorb pattern should be mirrored: the verbatim cycle contract belongs in a doctrine doc, not duplicated across CORE_PRINCIPLES + develop/SKILL.md.",
+      "revision_applied": "Created templates/admin/tdd-discipline.md as the canonical cycle home (mirroring 029's templates/admin/single-context-task.md pattern). CORE_PRINCIPLES.md gets a one-paragraph principle entry citing the doctrine doc; develop/SKILL.md gets one-line citations per cycle reference. Avoids duplication, respects skill-size ceiling."
+    },
+    "simplicity-r1-f3": {
+      "decision": "push_back",
+      "rationale": "Three-line manifest schema is more readable for retro consumers than a single-line collapsed form. Each line carries timing for one cycle step — important when the cycle is the audit subject. The schema-coordination cost simplicity-reviewer cites is the same either way (017 owns the schema in both shapes)."
+    },
+    "simplicity-r1-f4": {
+      "decision": "push_back",
+      "rationale": "AC-7a / AC-7b cover distinct outcomes (Yellow happy path vs Green skip). Per Goal-Driven Reviewer's coverage-matrix mandate, both skip outcomes need a binary AC. Collapsing them loses coverage."
+    },
+    "simplicity-r1-f5": {
+      "decision": "accept",
+      "rationale": "DA-5 confirms: existing scope-change route detects plan-vs-actual or confidential-path drift, NOT 'file count grew between Green and Refactor'. Adding bespoke detection logic in D.3 violates surgical changes. Demote R11's hard-block to a manifest-marker outcome value 'refactor: failed (new-file-attempted)' so retros catch it post-hoc; the cycle contract states 'no new files in Refactor' as a discipline, not a runtime detection.",
+      "revision_applied": "R11 demoted to documentation-level discipline + manifest outcome value. AC-11 dropped; replaced by cycle-contract statement in templates/admin/tdd-discipline.md."
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "Stub-section in tasks.md broadcasts markers into the most-broadcast artefact. Move to 017-owned scratch territory.",
+      "revision_applied": "R9 + AC-7c rewritten: stub lands at admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md (one file per task). 019 absorbs from this scratch path. Tasks.md untouched."
+    },
+    "surgical-r1-f2": {
+      "decision": "push_back",
+      "rationale": "Original user request explicitly invoked Pocock framing ('TDD should inherit Matt Pocock's Red, Green approach'). Principle-level adoption is in scope. The trace-from-codebase-context language was loose; tightening to cite the user request directly."
+    },
+    "surgical-r1-f3": {
+      "decision": "push_back",
+      "rationale": "Worked examples are AC-7a/7b/7c per the goal-driven coverage requirement. The schema in R9 is the contract, but a fresh agent verifying outcome-string handling needs the worked example as the binary check. Per Goal-Driven Reviewer's gd-r1-f6 finding, both skip outcomes must be exercised."
+    },
+    "surgical-r1-f4": {
+      "decision": "accept",
+      "rationale": "Tighten AC-5 to develop/SKILL.md only; matches the existing greenBatchCap precedent.",
+      "revision_applied": "AC-5 rewritten: documents tddRequired in develop/SKILL.md Phase D body. Drop 'or admin/config.json schema' clause."
+    },
+    "surgical-r1-f5": {
+      "decision": "accept",
+      "rationale": "Pin the surgical surface for the develop-time agent.",
+      "revision_applied": "R8 amended with explicit edit-bound clause: edits scoped to test/SKILL.md lines 39, 51, 214; Phase B's case-derivation logic and B.3's write template unchanged in shape."
+    },
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "rationale": "017→019 absorption contract was unstated. Move stub to scratch (per surgical-r1-f1) AND surface the contract as an Open Question to be resolved before 017 ships.",
+      "revision_applied": "Open Questions: 017→019 absorption contract — scratch-path schema must be documented before 019's PRD synthesis; 019 cites the schema verbatim from templates/admin/tdd-discipline.md."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "rationale": "'Strong CI signal' was a phrase, not a definition. Operationalise.",
+      "revision_applied": "R6 extended: 'Strong CI signal' defined operationally — (a) every PR runs vitest + typecheck + lint as required checks; (b) merge blocked on red checks; (c) project enforces binary-AC convention. Operator self-attests by setting tddRequired:false; manifest records attestation alongside red:skipped(config)."
+    },
+    "tbc-r1-f3": {
+      "decision": "accept",
+      "rationale": "Phase E grep for 'manifest' false-positives on Gate 5 manifest.md references. Replace with positive-input-list test.",
+      "revision_applied": "AC-8 rewritten as positive-input-list assertion: Phase E.3 reviewer-dispatch input list does NOT include the per-task manifest scratch file or the cycle markers. Phase B context-budget input list amendment recorded as AC-8b."
+    },
+    "tbc-r1-f4": {
+      "decision": "accept",
+      "rationale": "AC-2 verification mechanism was ambiguous.",
+      "revision_applied": "AC-2 amended to specify grep against develop/SKILL.md prose with 10-line proximity to a verb anchor."
+    },
+    "tbc-r1-f5": {
+      "decision": "accept",
+      "rationale": "test/SKILL.md Phase B.5's user prompt would fire inside develop's Red sub-step, breaching 029's single-context-window discipline.",
+      "revision_applied": "R8 amended: --task T{N} mode skips Phase B.5 (Codex pass + user prompt). Per-task slice inherits the feature-level B.5 outcome; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time."
+    },
+    "gd-r1-f1": {
+      "decision": "accept",
+      "rationale": "AC-1 grep doesn't verify cycle order.",
+      "revision_applied": "AC-1 rewritten with a sort-by-line-number assertion that the three cycle markers appear in canonical order."
+    },
+    "gd-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-3 narrative refusal needs binary check.",
+      "revision_applied": "AC-3 rewritten as two-part grep: (1) Status: red (failing) + refuse substring within 30 lines after the Green sub-step heading; (2) tddRequired conditional within same range."
+    },
+    "gd-r1-f3": {
+      "decision": "accept",
+      "rationale": "AC-8 grep for 'manifest' over-broad. Same as tbc-r1-f3.",
+      "revision_applied": "AC-8 replaced with concrete-substring absence + positive-input-list test."
+    },
+    "gd-r1-f4": {
+      "decision": "accept",
+      "rationale": "AC-11 needs binary fixture-anchored check.",
+      "revision_applied": "AC-11 split: (11a) grep develop/SKILL.md Refactor body for hard-block message + halt token; (11b) fixture file at plugins/specflow/examples/.../017-tdd-discipline/fixtures/refactor-new-file-block.md exists with worked narrative ending in the halt-message string."
+    },
+    "gd-r1-f5": {
+      "decision": "accept",
+      "rationale": "AC-2 needed verb-anchor proximity.",
+      "revision_applied": "AC-2 tightened (same as tbc-r1-f4)."
+    },
+    "gd-r1-f6": {
+      "decision": "accept",
+      "rationale": "Mandatory eval-coverage finding. Both develop and test SKILL.md eval fields must exercise the new discipline.",
+      "revision_applied": "Added R13: extends both eval fields. develop's eval asserts the manifest-stub regex per task; test's eval asserts --task T{N} writes Status: red (failing). AC-12 verifies."
+    },
+    "devils-advocate-r1-f1": {
+      "decision": "accept",
+      "rationale": "D.1/D.2/D.3 numbering collision is a genuine architectural gotcha. develop/SKILL.md lines 403/424/430 already use those headings for lane execution.",
+      "revision_applied": "Cycle steps RENAMED to 'Red sub-step / Green sub-step / Refactor sub-step' (no D.X numbering). The cycle is internal to a task's execution within whatever lane it landed on (D.1 Green / D.2 Yellow / D.3 Red). All R1/R2/R3 + AC-1 wording updated to use cycle-step terminology, NOT phase-numbering."
+    },
+    "devils-advocate-r1-f2": {
+      "decision": "accept",
+      "rationale": "029's chain-don't-absorb pattern should be mirrored. Doctrine doc home keeps develop's skill-size in check.",
+      "revision_applied": "Created plugins/specflow/templates/admin/tdd-discipline.md as the cycle's canonical home. develop/SKILL.md Phase D adds three sub-step citations + one-line invocation contracts; CORE_PRINCIPLES.md gets a one-paragraph entry citing the doctrine."
+    },
+    "devils-advocate-r1-f3": {
+      "decision": "accept",
+      "rationale": "Stub in tasks.md broadcasts to every downstream skill. Same as surgical-r1-f1 — move to scratch.",
+      "revision_applied": "Stub at admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md."
+    },
+    "devils-advocate-r1-f4": {
+      "decision": "accept",
+      "rationale": "Blast radius is wider than 'Yellow' suggests. CORE_PRINCIPLES.md is loaded into every skill prompt.",
+      "revision_applied": "Added 'Blast radius' note to Vision: five files + scratch path + doctrine doc + CORE_PRINCIPLES.md cache invalidation. Lane stays Yellow because Red lane bypasses TDD enforcement (R7) and the doctrine doc absorbs the principles delta — the CORE_PRINCIPLES entry is one paragraph, not a 30-line section."
+    },
+    "devils-advocate-r1-f5": {
+      "decision": "accept",
+      "rationale": "R11's hard-block needs a host or demote.",
+      "revision_applied": "R11 demoted to documented-prose-only with manifest outcome value 'refactor: failed (new-file-attempted)' so retros catch the violation post-hoc. AC-11 covers the documentation-level discipline + the worked fixture."
+    },
+    "codex-r1-f1": {
+      "decision": "accept",
+      "rationale": "Protected-path tasks should still produce a Red artefact when AI assists with testable code; otherwise R7 creates a TDD bypass.",
+      "revision_applied": "R7 extended: Red lane (PROTECTED_PATHS_REQUIRE_RED_LANE) stays human-led. When AI assists by drafting/changing testable code, the human supplies a Red artefact OR the manifest records 'red: skipped (human-led Red lane)' with no green:passed marker emitted by the skill."
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "rationale": "017 should own only the interim stub schema. 019 owns the canonical manifest with a migration adapter.",
+      "revision_applied": "R9 reworded: 017 owns the interim stub contract (semantic fields red/green/refactor + outcome + timestamp + note). 019 owns the canonical schema and provides a migration/adapter from the 017 stub. Schema not pre-claimed for 019."
+    },
+    "codex-r1-f3": {
+      "decision": "accept",
+      "rationale": "Same as gd-r1-f1 — order assertion needed.",
+      "revision_applied": "AC-1 carries the order check."
+    },
+    "codex-r1-f4": {
+      "decision": "accept",
+      "rationale": "Status: red (failing) is a doc marker; Pocock failure mode is the test-after-implementation pattern. Need actual pre-implementation test execution.",
+      "revision_applied": "Added R14 + AC-13: after authoring the test in Red sub-step and before Green entry, the targeted test command runs against the pre-implementation state and captures the failing exit + stderr in admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log. Green sub-step may flip Status: green (passing) only when the same command subsequently exits 0. Pre-implementation pass blocks as an invalid Red artefact."
+    }
+  },
+  "summary": "Accepted 22 of 28 findings. Six push-backs: tddRequired knob (interview-resolved), CORE_PRINCIPLES.md TDD section (user-requested principle adoption — kept; verbatim cycle contract moved to doctrine doc), three-line manifest schema (readability), worked-examples coverage (per goal-driven mandate), Pocock-framing trace (kept; trace cites user request). Major revisions applied: cycle steps RENAMED (no D.X collision); doctrine doc created at templates/admin/tdd-discipline.md; stub markers moved to admin/scratch/; eval fields extended; pre-implementation test execution required (Pocock-failure-mode-prevention); strong-CI-signal operationalised; AC numbering tightened to binary-by-construction. Final R count: 14, AC count: 13."
+}

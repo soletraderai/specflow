@@ -1,0 +1,44 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "feature": "016-brief-enhancements",
+  "gate": "prd-gate2",
+  "round": 1,
+  "findings": [
+    {
+      "id": "SURG-1",
+      "severity": "block",
+      "evidence": "AC-3 mandates two specific prose-tightening passes on existing, unchanged content: (a) 'collapse the verbatim block-grammar example listings (currently lines 130-141 for :::flow, 150-163 for :::comparison, 173-188 for :::scope, 198-207 for :::tree) into a single shared example shape with per-kind cells'; (b) 'extract the inline CSS comment headers (e.g. /* Visual abstract — :::flow */) from the style block since the selectors are self-documenting.' R8 frames this as 'existing prose tightening is part of the work.' The user's original request (interview line 5) and Goal confirmation (line 7) ask for four new blocks — neither asks the PRD to refactor the four existing blocks' examples or strip CSS comments. The current SKILL.md is already 524 lines, so the 500-line cap forces 'while I was here…' edits on the four existing blocks the user did not touch.",
+      "claim": "AC-3 smuggles an in-scope refactor of the four existing blocks' grammar examples and CSS comments under the cover of meeting an aspirational line cap. This violates Surgical Changes ('Touch only what you must … Don't refactor what isn't broken … Every changed line traces directly to the user's request'). The skill-size-ceiling memory feedback is explicit: 'Skills ≤~500 lines; new behaviour becomes a new skill or agent chained in, not bolted onto existing skill' — the prescribed response to 'too many lines' is chain-don't-absorb, NOT inline reformatting of unrelated examples. Blast radius is non-trivial: collapsing four canonical block-grammar examples into a 'shared example shape with per-kind cells' is a documentation refactor of the surface every brief author reads.",
+      "proposed_change": "Demote the line cap from a hard acceptance criterion to a target. Replace R8 + AC-3 with: 'R8. Adding four new block grammars and their CSS rule-sets is expected to push brief/SKILL.md above the 500-line ceiling. The overage is acknowledged and logged as a misc-task pointing at a follow-up chain-don't-absorb refactor (e.g. extracting Visual Block Grammar into a sibling file). The four existing blocks' grammar examples and CSS comments MUST NOT be touched in this change set.' Drop the AC-3 prose-tightening prescriptions entirely. Add a note to Non-goals: 'Reformatting the four existing blocks' grammar examples or stripping their CSS section comments is out of scope — chain-don't-absorb applies.'"
+    },
+    {
+      "id": "SURG-2",
+      "severity": "block",
+      "evidence": "AC-3 final sentence: 'If after both passes the file still exceeds 500 lines, the change set blocks and routes to a follow-up \"chain-don't-absorb\" feature (not 016) per the skill-size-ceiling memory feedback.' This embeds a contingent in-PRD escape hatch — the PRD itself authorises the implementer to abandon the change set and create a new feature on the fly if the cap is missed.",
+      "claim": "Branching scope decisions belong in misc-task / Open Questions, not as a ship-or-block conditional inside an acceptance criterion. The current wording lets the AC pass with the feature unshipped, which inverts the 'every AC commits to the user's request' contract. Surgical Changes: 'Out-of-scope rule violations get logged as misc-task, not fixed inline' — the symmetric reading is that mid-ship pivots get logged, not baked into an AC.",
+      "proposed_change": "Strip the conditional clause from AC-3. If line-count overage is a real risk, surface it once as an Open Question with binary options ('ship over 500 with misc-task follow-up' vs 'block ship until refactor complete') and resolve at sign-off. Do not embed a runtime branch inside an AC."
+    },
+    {
+      "id": "SURG-3",
+      "severity": "concern",
+      "evidence": "Interview Round 3 (line 37) lists FIVE source-type icons the user agreed to ship inline: 'a small set of known source-type icons (Linear, Doc, Design, GitHub, Slack) is shipped as inline base64 in the brief skill itself.' PRD R2 (line 50) silently narrows to four: 'a small set of inline base64 icons for `linear | doc | design | github` ships in the brief skill itself.' Slack is dropped with no callout, no Open Question, no Non-goal entry.",
+      "claim": "The PRD diverges from the user's confirmed Round 3 answer without surfacing the change. Surgical Changes lens: 'Every changed line traces directly to the user's request and the confirmed Goal' — narrowing five source types to four is a quiet edit that doesn't trace. Either Slack stays (matching what the user said) or it is explicitly removed with a one-line trace.",
+      "proposed_change": "Either: (a) add `slack` to R2's icon set so it matches Round 3 verbatim ('linear | doc | design | github | slack'); or (b) keep four and add a one-line trace to R2 explaining the drop ('Slack dropped from the inline icon set — no current Slack usage in feature briefs; explicit `icon=` data URI override remains available'). Pick one; do not ship a silent narrowing."
+    },
+    {
+      "id": "SURG-4",
+      "severity": "concern",
+      "evidence": "R10 reads: 'Unsupported block kinds (anything outside the eight listed) continue to render as `<pre>` with the existing \"Unsupported visual block\" warning, never silently dropped. The new blocks expand the supported list; the unknown-block fallback is unchanged.' The trace cites 'interview goal-level out-of-scope — building a separate brief renderer' but the user never asked about the unknown-block fallback at all — it's an existing rule (brief/SKILL.md:214) that needs no requirement.",
+      "claim": "R10 is a defensive restatement of unchanged existing behaviour. Adding requirements that re-affirm 'existing behaviour stays the same' is style-normalisation creep — every requirement should commit the change set to a NEW behaviour or extension. Anti-pattern flagged in the brief: 'Don't improve adjacent code, comments, or formatting.' R10 has no proposed change to the artefact; it is decorative.",
+      "proposed_change": "Delete R10 and AC-8. The unknown-block fallback at brief/SKILL.md:214 already governs all kinds outside the supported list — extending the supported list from 4 to 8 is captured by R1-R4 + R7. If reviewers want a regression check that the fallback still triggers for non-supported kinds, fold it into AC-4's verification ('a `:::xyzzy` block in the same test PRD still produces the existing Unsupported-visual-block warning')."
+    },
+    {
+      "id": "SURG-5",
+      "severity": "note",
+      "evidence": "AC-11 enumerates three edge cases for the new blocks (nested `:::`, unclosed block, malformed attribute) and explicitly states 'edge-case extensions of the existing contract; no new behaviour introduced.' R5 separately re-states 'Whitespace inside the body is preserved as authored' which is the existing § Strict rules at brief/SKILL.md:216.",
+      "claim": "AC-11 and the whitespace clause in R5 re-litigate existing contract for the new blocks. Defensible as binary verification that new blocks inherit the contract, but borderline: by the same logic, every existing rule (idempotence, unknown-block fallback, image asset resolution, link resolution) would need a per-new-block AC. The PRD has chosen idempotence (AC-5) and unknown-block (AC-8) but otherwise stops — the line is arbitrary.",
+      "proposed_change": "Either drop AC-11 and R5's whitespace clause (the existing § Strict rules already govern the new blocks because they are blocks), or add a single AC-X stating 'all existing § Strict rules and § Determinism rules apply unchanged to the four new block kinds — AC-5 and AC-11 are illustrative spot-checks, not an exhaustive enumeration' and remove the per-edge-case wording. Pick consistency, not selective re-statement."
+    }
+  ]
+}

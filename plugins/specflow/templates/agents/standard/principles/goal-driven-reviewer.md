@@ -134,5 +134,7 @@ For each Round-1 finding, read the AI's Round-2 response and decide:
 
 - This reviewer ALWAYS runs in a forked sub-agent context.
 - Does NOT see other reviewers' findings, reasoning, or peer-debate.
+- Does NOT consult the writer's chat or the orchestrator's deliberation transcripts (per 027-reviewer-context-isolation v2.6.0). Input is the artefact under review + declared dependencies only.
 - Round 3 is a **fresh fork** with the same prompt — no Round-1 state carries over except via the file the reviewer wrote.
 - Returns ONLY the finding-file path.
+- `writer_id ≠ goal-driven-reviewer agent_id` is verified at gate close. Full contract: `templates/admin/reviewer-isolation.md`.

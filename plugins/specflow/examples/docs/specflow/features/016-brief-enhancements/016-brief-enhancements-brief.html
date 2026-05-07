@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brief Enhancements</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #1a1a1a;
+    background: #fafaf7;
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 32px 24px;
+    background: #1a2632; color: #d8d8d4;
+    border-right: 1px solid #283442;
+  }
+  nav.toc h2 { margin: 0 0 4px; font-size: 18px; color: #fff; letter-spacing: -0.01em; }
+  nav.toc .subtitle { margin: 0 0 24px; font-size: 12px; color: #88a; text-transform: uppercase; letter-spacing: 0.08em; }
+  nav.toc ul { list-style: none; padding: 0; margin: 0 0 24px; }
+  nav.toc ul ul { margin: 4px 0 12px 12px; padding-left: 12px; border-left: 1px solid #2a3a4a; }
+  nav.toc li { margin: 6px 0; }
+  nav.toc a { color: #c8d0d8; text-decoration: none; font-size: 14px; line-height: 1.4; display: block; padding: 2px 0; transition: color 0.15s; }
+  nav.toc a:hover { color: #6cb6ff; }
+  nav.toc ul ul a { font-size: 13px; color: #98a4b0; }
+  nav.toc .toc-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #5a6878; margin: 16px 0 6px; font-weight: 600; }
+  .toc-empty { color: #98a4b0; font-size: 13px; margin: 0; }
+  main { max-width: 980px; padding: 56px 56px 96px; }
+  .source-strip {
+    margin: -24px 0 32px; padding: 10px 14px;
+    border: 1px solid #d8d8d0; border-radius: 6px; background: #fff;
+    color: #4a5868; font-size: 13px;
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+  }
+  .source-strip strong { color: #1a2632; }
+  .source-strip a { color: #245f8f; text-decoration: none; }
+  .source-strip a:hover { color: #6cb6ff; }
+  .drift-banner {
+    margin: -24px 0 24px; padding: 14px 18px;
+    border-left: 4px solid #c8965a; border-radius: 0 6px 6px 0;
+    background: #faf4ec; color: #5a3a10; font-size: 14px;
+  }
+  header.intro { border-bottom: 1px solid #d8d8d0; padding-bottom: 32px; margin-bottom: 48px; }
+  header.intro h1 { font-size: 44px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; color: #1a2632; }
+  header.intro .tagline { font-size: 20px; color: #4a5868; margin: 0; font-style: italic; }
+  header.intro .meta { margin-top: 16px; font-size: 13px; color: #888; }
+  section { margin-bottom: 56px; }
+  h2 { font-size: 30px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #1a2632; letter-spacing: -0.015em; color: #1a2632; scroll-margin-top: 32px; }
+  h3 { font-size: 22px; font-weight: 600; margin: 32px 0 12px; color: #243446; scroll-margin-top: 32px; }
+  h4 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; color: #2c3e50; }
+  p { margin: 0 0 16px; }
+  strong { color: #1a2632; font-weight: 600; }
+  em { color: #4a5868; }
+  a { color: #245f8f; }
+  a:hover { color: #6cb6ff; }
+  code { font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace; background: #f0eee8; color: #2a3540; padding: 1px 6px; border-radius: 3px; font-size: 0.92em; }
+  pre { background: #1e2a36; color: #d8e0e8; padding: 16px 20px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 16px 0; }
+  pre code { background: transparent; color: inherit; padding: 0; font-size: 13px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  input[type="checkbox"] { margin-right: 8px; }
+  blockquote { border-left: 3px solid #d8d4c4; padding: 4px 16px; margin: 16px 0; color: #4a5868; font-style: italic; }
+  .callout { border-left: 4px solid; padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0; font-size: 15px; }
+  .callout.note { border-color: #5a8db8; background: #eef4fa; }
+  .callout.warning { border-color: #c8965a; background: #faf4ec; }
+  .callout.tip { border-color: #6a9a5a; background: #f0f5ec; }
+  .callout-title { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .callout.note .callout-title { color: #2a5a8a; }
+  .callout.warning .callout-title { color: #8a5a1a; }
+  .callout.tip .callout-title { color: #3a6a2a; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #e0dccc; text-align: left; vertical-align: top; }
+  th { background: #f0ece0; font-weight: 600; color: #1a2632; }
+  img { max-width: 100%; height: auto; border: 1px solid #e0dccc; border-radius: 6px; background: #fff; }
+  details { border-top: 1px solid #d8d4c4; border-bottom: 1px solid #d8d4c4; padding: 12px 0; margin: 24px 0; }
+  summary { cursor: pointer; color: #1a2632; font-weight: 700; }
+  hr { border: none; border-top: 1px solid #d8d4c4; margin: 32px 0; }
+  footer { border-top: 1px solid #d8d4c4; padding-top: 24px; margin-top: 64px; font-size: 13px; color: #888; }
+
+  /* Visual abstract — :::flow */
+  .journey { display: grid; grid-template-columns: repeat(var(--n,8), 1fr); gap: 0; margin: 0 0 36px; background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; overflow: hidden; }
+  .stage { padding: 16px 14px; border-right: 1px solid #ece6d8; min-width: 0; }
+  .stage:last-child { border-right: none; }
+  .stage .num { font-family: ui-monospace, monospace; font-size: 11px; color: #88a; letter-spacing: 0.04em; font-weight: 700; }
+  .stage .verb { font-size: 13px; font-weight: 700; color: #1a2632; margin: 6px 0 4px; line-height: 1.3; }
+  .stage .desc { font-size: 11.5px; color: #5a6878; line-height: 1.45; }
+  .stage .ann { font-size: 10px; color: #b25d1c; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-top: 6px; }
+  .stage.gate { background: #f4f0e6; }
+  .stage.gate .verb { color: #5a3a10; }
+
+  /* Visual abstract — :::comparison */
+  .modes-row { display: grid; grid-template-columns: repeat(var(--n,3), 1fr); gap: 14px; margin: 20px 0 36px; }
+  .mode { background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; padding: 18px 20px 16px; border-top: 3px solid #ccc4b0; }
+  .mode.new { border-top-color: #245f8f; }
+  .mode .mode-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: #245f8f; color: #fff; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px; }
+  .mode .mode-tag.muted { background: #d0c8b4; color: #5a5040; }
+  .mode .mode-name { font-size: 18px; font-weight: 700; color: #1a2632; margin: 0 0 6px; }
+  .mode .mode-desc { font-size: 14px; color: #4a5868; margin: 0 0 12px; line-height: 1.5; }
+  .mode .mode-meta { font-size: 12px; color: #6a7888; line-height: 1.6; }
+  .mode .mode-meta .label { color: #98a0aa; text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; font-weight: 600; }
+
+  /* Visual abstract — :::scope */
+  .scope { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 0 0 36px; }
+  .scope-col { background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; padding: 16px 18px; }
+  .scope-col.v1 { border-top: 3px solid #6a9a5a; }
+  .scope-col.v2 { border-top: 3px solid #c8965a; }
+  .scope-col.out { border-top: 3px solid #888; }
+  .scope-col h4 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .scope-col.v1 h4 { color: #3a6a2a; }
+  .scope-col.v2 h4 { color: #8a5a1a; }
+  .scope-col.out h4 { color: #555; }
+  .scope-col ul { padding: 0; margin: 0; list-style: none; }
+  .scope-col li { font-size: 13px; color: #3a4858; padding: 5px 0 5px 18px; position: relative; line-height: 1.4; }
+  .scope-col li::before { position: absolute; left: 0; top: 5px; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; }
+  .scope-col.v1 li::before { content: "+"; color: #6a9a5a; }
+  .scope-col.v2 li::before { content: "›"; color: #c8965a; }
+  .scope-col.out li::before { content: "−"; color: #888; }
+
+  /* Visual abstract — :::tree */
+  .cap-block { background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; padding: 20px 24px; margin: 0 0 36px; }
+  .cap-tree { display: grid; grid-template-columns: repeat(var(--n,3), 1fr); gap: 0; align-items: stretch; }
+  .cap-q { padding: 10px 14px; border-right: 1px dashed #c8c2b4; font-size: 13px; }
+  .cap-q:last-child { border-right: none; }
+  .cap-q .q-text { font-weight: 700; color: #1a2632; margin-bottom: 8px; font-size: 13px; }
+  .cap-branch { padding: 6px 0 6px 18px; border-left: 2px solid #d8d4c4; font-size: 12.5px; color: #4a5868; margin-bottom: 4px; }
+  .cap-branch.no { border-left-color: #c8965a; }
+  .cap-branch.yes { border-left-color: #6a9a5a; }
+  .cap-branch .br-label { font-family: ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; }
+  .cap-branch.no .br-label { color: #8a5a1a; }
+  .cap-branch.yes .br-label { color: #3a6a2a; }
+
+  /* Status / type pills in the source strip */
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pill.status { background: #e5efe2; color: #3a6a2a; }
+  .pill.type { background: #f0ece0; color: #5a5040; }
+
+  @media (max-width: 1100px) {
+    .modes-row, .scope, .cap-tree, .journey { grid-template-columns: 1fr; }
+    .cap-q { border-right: none; border-bottom: 1px dashed #c8c2b4; }
+    .cap-q:last-child { border-bottom: none; }
+    .stage { border-right: none; border-bottom: 1px solid #ece6d8; }
+    .stage:last-child { border-bottom: none; }
+  }
+  @media (max-width: 860px) {
+    .layout { display: block; }
+    nav.toc { position: relative; height: auto; max-height: none; padding: 24px; }
+    main { max-width: none; padding: 36px 24px 72px; }
+    header.intro h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc">
+  <h2>016-brief-enhancements</h2>
+  <p class="subtitle">Feature brief</p>
+  <div class="toc-section">Contents</div>
+  <ul>
+    <li><a href="#vision">Vision</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#non-goals">Non-goals</a></li>
+    <li><a href="#users">Users</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#acceptance-criteria">Acceptance criteria</a></li>
+    <li><a href="#open-questions">Open questions</a></li>
+    <li><a href="#see-also">See also</a></li>
+    <li><a href="#interview">Interview</a>
+      <ul>
+        <li><a href="#goal-confirmation">Goal confirmation</a></li>
+        <li><a href="#original-request">Original request</a></li>
+        <li><a href="#codebase-context-pre-grilling">Codebase context (pre-grilling)</a></li>
+        <li><a href="#round-1-where-does-key-features-sit-in-the-brief-layout">Round 1 — where does Key Features sit in the brief layout</a></li>
+        <li><a href="#round-2-does-the-prd-carry-key-features-content-too">Round 2 — does the PRD carry Key Features content too</a></li>
+        <li><a href="#round-3-should-resources-auto-fetch-favicons">Round 3 — should resources auto-fetch favicons</a></li>
+        <li><a href="#round-4-phase-split-layout-vs-scope-at-a-glance">Round 4 — phase-split layout vs scope-at-a-glance</a></li>
+        <li><a href="#sign-off">Sign-off</a></li>
+        <li><a href="#topics-not-discussed">Topics not discussed</a></li>
+      </ul>
+    </li>
+    <li><a href="#agent-reviews">Agent reviews</a>
+      <ul>
+        <li><a href="#gate-2-prd-review">Gate 2 — PRD review</a>
+          <ul>
+            <li><a href="#accepted-findings">Accepted findings</a></li>
+            <li><a href="#rejected-findings">Rejected findings</a></li>
+            <li><a href="#escalated-to-human">Escalated to human</a></li>
+            <li><a href="#closing-decision">Closing decision</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+<main>
+  <div class="source-strip">
+    <span><strong>Feature:</strong> 016-brief-enhancements</span>
+    <span class="pill status">draft</span>
+    <span><strong>Source date:</strong> 2026-05-07T12:01:59+10:00</span>
+    <span><a href="016-brief-enhancements-interview.md">Open interview</a></span>
+  </div>
+  <p class="commit-policy">This brief is committed to the repo as the diffable review surface (config.brief.commitPolicy = "committed").</p>
+  <header class="intro">
+    <h1>Brief Enhancements</h1>
+    <p class="tagline">Feature brief — composed from the PRD, interview, and gate manifests.</p>
+    <p class="meta">Generated from 016-brief-enhancements-prd.md, 016-brief-enhancements-interview.md, and (when present) debate-log/.</p>
+  </header>
+  <section id="prd">
+    <h2 id="vision">Vision</h2>
+    <p>The brief becomes the layered, interface-first feature artefact: a non-technical Key Features overview at the top, a Resources card row mid-brief, a Key Decisions table that exposes the synthesis trace, and a This-phase / Next-phase split that surfaces iteration boundaries inside a single version. Four new structured blocks extend <code>plugins/specflow/skills/brief/SKILL.md</code> with deterministic HTML compilation and inline CSS — no JS, no network calls, no external assets. The PRD stays purely technical; the brief carries the user-facing scan surface so a feature owner can hand the rendered HTML to a non-technical reader and have it land.</p>
+    <h2 id="problem">Problem</h2>
+    <p>The brief today compiles four block kinds (<code>:::flow</code>, <code>:::comparison</code>, <code>:::scope</code>, <code>:::tree</code>) that all serve technical or scope-shaping audiences. There is no block whose semantics are <em>user-facing feature description</em> (what the feature does in plain language), no block for <em>external references the brief should expose without forcing the reader into the source tree</em>, no block that captures the <em>decisions made during synthesis</em> in a glanceable table, and no block that distinguishes <em>iteration boundaries inside a single version</em> from whole-feature scope. Feature owners patch around the gap in prose, which the brief is contractually forbidden from rewording (<code>brief/SKILL.md</code> § What you MUST NOT do). The result: briefs stop short of the layered, interface-first Pocock-shape the team is targeting (interview Round 1; cited from <code>knowledge/pocock-real-feature-build.md</code>).</p>
+    <h2 id="goals">Goals</h2>
+    <ul>
+      <li>Extend the brief block grammar with four new kinds — <code>:::key-features</code>, <code>:::resources</code>, <code>:::key-decisions</code>, <code>:::phase-split</code> — each with deterministic HTML compilation and inline CSS.</li>
+      <li>Preserve the no-JS / no-external-assets / no-network-calls contract (<code>brief/SKILL.md:514</code>).</li>
+      <li>Target ≤500 lines for <code>brief/SKILL.md</code> after additions, per the skill-size ceiling. The file is currently <strong>524 lines</strong> (verified at PRD time); the change set must net-reduce by at least 24 + new-block-cost lines. If the line arithmetic does not close after a measured prose-tightening pass, the change set blocks pre-merge and a chain-don't-absorb feature creates a sibling <code>brief-blocks</code> skill — see Open Questions.</li>
+      <li>Place Key Features at the top of the Visual abstract by source-order convention; do not introduce a new top-level <code>&lt;section&gt;</code> wrapper.</li>
+      <li>Drive <code>:::resources</code> icons by source-type pill (Linear / Doc / Design / GitHub — Slack dropped per decision-log 2026-03-22 <em>Slack removed from the stack</em>; CONTEXT.md confirms Slack-free tooling) shipped as inline SVG-base64; explicit <code>icon="data:..."</code> override on a resource line; no runtime favicon fetch.</li>
+    </ul>
+    <h2 id="non-goals">Non-goals</h2>
+    <ul>
+      <li>Building a separate brief renderer. The four blocks ship inside the existing <code>brief/SKILL.md</code> template (interview goal-confirmation block — Out of scope at the goal level).</li>
+      <li>Relaxing the no-JS / no-external-assets / no-network-calls contract. Filtering, interactive controls, and runtime favicon fetches are forbidden (interview Round 3; goal-level out-of-scope).</li>
+      <li>Promoting Key Features into the PRD body as prose. The block lives in the PRD as source for the brief, and the brief skill strips it from rendered PRD prose (interview Round 2).</li>
+      <li>Touching any other skill — <code>prd</code>, <code>task</code>, <code>develop</code>, <code>test</code>, <code>complete</code> are out of scope (goal-level out-of-scope).</li>
+      <li>Folding <code>:::phase-split</code> into <code>:::scope</code> via an attribute. Different semantics, different visual weight, deliberately separate (interview Round 4).</li>
+      <li>Auto-resolving <code>:::key-decisions</code> <code>Source</code> column to a <code>decision-log.md</code> file. Considered, deferred — would add a path-traversal step that breaks byte-determinism (interview "Topics not discussed").</li>
+      <li>Per-resource <code>tags=[...]</code> filter on <code>:::resources</code>. Filtering implies JS / interactivity (interview "Topics not discussed").</li>
+      <li>Reformatting the four existing blocks' grammar examples or stripping their CSS section comments. The existing four blocks (<code>:::flow</code>, <code>:::comparison</code>, <code>:::scope</code>, <code>:::tree</code>) are not touched in this change set; if the line-cap arithmetic forces a refactor, chain-don't-absorb applies (see Open Questions). Surgical-changes constraint per the skill-size-ceiling memory feedback.</li>
+    </ul>
+    <h2 id="users">Users</h2>
+    <ul>
+      <li><strong>Power user — operations coordinator.</strong> Reads the brief to scan a feature's user-facing surface in seconds before diving into the PRD; values Key Features for the non-technical at-a-glance, Phase split for sprint-boundary visibility.</li>
+      <li><strong>First-time visitor — new internal hire.</strong> Lands on a brief without prior context; needs Key Features and Resources up front to build a mental model without reading the technical PRD body.</li>
+      <li><strong>Admin — platform operator.</strong> Audits feature decisions; values Key Decisions as a synthesis trace pointing back to the interview rounds.</li>
+      <li><strong>Mobile warehouse operator.</strong> Reads briefs on a mobile device with intermittent connectivity; values that the new blocks degrade gracefully at the existing 1100px / 860px / 360px viewport widths (mobile breakpoints already present in <code>brief/SKILL.md:391-403</code>).</li>
+    </ul>
+    <p>(Profiles per <code>admin/profiles.json</code>. Each user reads the brief; none of them author the blocks — block authoring is a feature-owner concern handled by the existing PRD skill flow.)</p>
+    <h2 id="requirements">Requirements</h2>
+    <ul>
+      <li>
+        <p><strong>R1.</strong> Add a <code>:::key-features</code> block grammar to <code>brief/SKILL.md</code> § Visual Block Grammar. The block compiles to a CSS-grid row of cards under selector <code>.key-features</code> with one <code>&lt;article class="feature-card"&gt;</code> per feature line: title + one-line description + optional thumbnail or icon — no meta tail, no accent variants. The grid scaffolding reuses the <code>:::comparison</code> CSS pattern at <code>brief/SKILL.md:346</code> (<code>.modes-row</code> grid scaffolding, simpler card payload).</p>
+        <ul>
+          <li>Trace: interview Round 1 — <em>Key Features renders inside the Visual abstract; source order determines layout.</em> Codebase context bullet 5 — <em><code>:::comparison</code> already does card-grid rendering; reuse beats invent.</em></li>
+          <li>Serves goal: Outcome (four new blocks compile deterministically) + Audience (first-time visitor scans non-technical surface).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R2.</strong> Add a <code>:::resources</code> block grammar to <code>brief/SKILL.md</code> § Visual Block Grammar. The block compiles to a row of <code>&lt;a class="resource-card"&gt;</code> link cards (icon + title + source-type pill) under selector <code>.resources</code>. Icons:</p>
+        <ol>
+          <li>Source-type pill drives the icon: built-in inline SVG-base64 glyphs for <code>linear | doc | design | github</code> ship in the brief skill itself.</li>
+          <li>Format pinned: SVG-base64 (not PNG) for crisp rendering at any pill size and minimal byte cost.</li>
+          <li>Source: author-drawn monochrome glyphs in the brand's silhouette, not the official brand mark — avoids trademark/licensing entanglement.</li>
+          <li>Each icon adds at most one line to <code>brief/SKILL.md</code> (counted against R8's ceiling).</li>
+          <li>Slack dropped from the icon set per decision-log 2026-03-22 <em>Slack removed from the stack</em>; CONTEXT.md Stack section confirms Slack-free tooling.</li>
+          <li>Explicit <code>icon="data:image/(svg+xml|png);base64,..."</code> attribute on a resource line overrides the source-type default (validation rules in R13).</li>
+        </ol>
+        <ul>
+          <li>Trace: interview Round 3 — <em>Declared inline. Favicons are inline data URIs declared in the block source, OR a small set of known source-type icons ... is shipped as inline base64 in the brief skill itself.</em></li>
+          <li>Serves goal: Outcome + Driving value (the brief is byte-deterministic and self-contained — adding network-fetched favicons would break both contracts).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R3.</strong> Add a <code>:::key-decisions</code> block grammar to <code>brief/SKILL.md</code> § Visual Block Grammar. The block compiles to <code>&lt;table class="key-decisions"&gt;</code> with three <code>&lt;th&gt;</code> columns in fixed grammar order — <code>Decision | Why | Source</code>. The Source column accepts plain text or an explicit markdown link the author wrote; the brief skill does not auto-resolve to <code>decision-log.md</code>.</p>
+        <ul>
+          <li>Trace: interview Goal confirmation — <em>Key Decisions (decision table)</em>. Topics not discussed — <em>Whether <code>:::key-decisions</code> should auto-link the <code>Source</code> column to a <code>decision-log.md</code> file when present. Considered, deferred — auto-resolution adds a path-traversal step and the existing brief contract is byte-deterministic.</em></li>
+          <li>Serves goal: Outcome + Audience (admin auditing the synthesis trace).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R4.</strong> Add a <code>:::phase-split</code> block grammar to <code>brief/SKILL.md</code> § Visual Block Grammar. The block compiles to a two-column panel under selector <code>.phase-split</code> with two <code>&lt;div class="phase-col this-phase"&gt;</code> and <code>&lt;div class="phase-col next-phase"&gt;</code> panels; each column is a flat list, one item per line. Visually distinct from <code>:::scope</code>'s three-column shape — <code>:::phase-split</code> shows the iteration boundary inside a single version, <code>:::scope</code> shows the whole-feature scope.</p>
+        <ul>
+          <li>Trace: interview Round 4 — <em>Different semantics, different visual weight … <code>:::scope</code> is the whole-feature scope-at-a-glance; <code>:::phase-split</code> is iteration-boundary … Two columns (this-phase, next-phase), no third "out" column.</em></li>
+          <li>Serves goal: Outcome + Driving value (the iteration boundary inside a version is currently invisible in the brief; <code>:::phase-split</code> exposes it).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R5.</strong> Each new block honours the existing block contract at <code>brief/SKILL.md:212-216</code>: <code>:::{kind} key="value"</code> opener with optional space-separated attributes, structured body, <code>:::</code> closer. Whitespace inside the body is preserved as authored (verbatim, leading-space-included). Each block keeps its position in the source — the brief author places blocks in the order they should render in the Visual abstract; the compiler does not re-order.</p>
+        <ul>
+          <li>Trace: interview Round 1 — <em>the block-compile order in the source is what determines layout … the existing "Each block keeps its position in the source" rule from § Step 3 carries this for free.</em> Codebase context bullet 2 — <em>The four existing blocks compile deterministically.</em></li>
+          <li>Serves goal: Outcome (deterministic compilation).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R6.</strong> Each new block compiles deterministically — same input bytes produce same HTML output bytes, per the existing § Determinism contract at <code>brief/SKILL.md:44-53</code>. No clock time, no random IDs, no machine-specific paths in the compiled output. Field emission order is fixed by the documented grammar — Decision/Why/Source columns; resource card sub-elements; emitted HTML attributes — never by object/map iteration order.</p>
+        <ul>
+          <li>Trace: codebase context bullet 2 — <em>The four existing blocks compile deterministically — same input bytes produce same HTML output bytes. The new blocks must hold the same contract.</em></li>
+          <li>Serves goal: Outcome + Driving value (Visual abstract idempotence is the brief's review-surface guarantee).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R7.</strong> The brief skill extends the existing block-strip rule (<code>brief/SKILL.md:71</code>) so the four new block kinds — <code>:::key-features | :::resources | :::key-decisions | :::phase-split</code> — are stripped from the rendered PRD body prose before emitting <code>{prd_body_html}</code>, exactly as the four existing blocks (<code>flow | comparison | scope | tree</code>) are. Blocks appear only inside the Visual abstract section, never duplicated in the PRD body. This is an extension of the existing contract — the strip rule's surface widens from four kinds to eight; no consumer behaviour beyond "blocks render in the Visual abstract, not in PRD prose" is changed.</p>
+        <ul>
+          <li>Trace: interview Round 2 — <em>the brief skill strips it from the rendered PRD prose (per the existing § Step 3 "Strip the same blocks from the PRD body content before rendering it as prose" rule) so it appears only inside the Visual abstract.</em></li>
+          <li>Serves goal: Outcome (the PRD body stays purely technical; non-technical Key Features content lives only in the brief's Visual abstract).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R8.</strong> <code>brief/SKILL.md</code> total line count after the change set targets ≤500 lines. The file is currently <strong>524 lines</strong> (pre-change baseline). The change set must net-reduce by at least 24 + new-block-cost (estimated 60-100 lines for four block grammars + four CSS rule-sets + R11 eval enumeration). Existing prose tightening (e.g. condensing redundant block-grammar examples, distilling § HTML Template comments) is part of the change set — but the four existing blocks' grammar examples and CSS comments MUST NOT be touched (Non-goals constraint). If the arithmetic does not close, the change set blocks pre-merge per Open Questions.</p>
+        <ul>
+          <li>Trace: codebase context bullet 4 — <em>Adding four new block CSS rule-sets must keep the file under 500 lines after additions, per the project's skill-size ceiling. Existing prose tightening is required.</em></li>
+          <li>Serves goal: Driving value (skills must remain operable inside their context budget).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R9.</strong> The four new blocks support the same <code>title="..."</code> / <code>subtitle="..."</code> attribute pattern as <code>:::flow</code> (the most-complete existing pattern at <code>brief/SKILL.md:131</code>). Block titles render as <code>&lt;div class="block-title"&gt;</code> styled to look like a heading — NOT <code>&lt;h2&gt;</code> or <code>&lt;h3&gt;</code> — so they do not enter the sidebar TOC. The existing four blocks are unchanged; "consistent" means the new four follow the most-complete pattern, not that all eight have identical attribute surfaces.</p>
+        <ul>
+          <li>Trace: interview "Topics not discussed" — <em>Whether the four new blocks should support the same <code>title="..."</code> / <code>subtitle="..."</code> attribute pattern … Assumed yes — consistency with the existing four blocks.</em> DA-4 cross-artefact concern resolved by the non-heading rendering decision.</li>
+          <li>Serves goal: Outcome (block grammar consistency without TOC inflation).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R10.</strong> Unsupported block kinds (anything outside the eight listed: <code>flow | comparison | scope | tree | key-features | resources | key-decisions | phase-split</code>) continue to render as <code>&lt;pre&gt;</code> with the existing "Unsupported visual block" warning, never silently dropped. The new blocks expand the supported list; the unknown-block fallback's surface widens to eight but its behaviour is unchanged.</p>
+        <ul>
+          <li>Trace: interview goal-level out-of-scope — <em>building a separate brief renderer; relaxing the no-JS / no-external-assets contract</em>. Codebase context bullet 1 — the unknown-block warning lives in <code>brief/SKILL.md:214</code>.</li>
+          <li>Serves goal: Outcome (extending the supported set without breaking the existing contract).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R11.</strong> Update the <code>brief/SKILL.md</code> frontmatter <code>eval:</code> field to enumerate all eight block kinds. The current eval field reads "every structured visual block in the PRD renders deterministically into the Visual abstract section" — too vague for a fresh agent to verify. Replace with: enumerate <code>{flow, comparison, scope, tree, key-features, resources, key-decisions, phase-split}</code> and assert per-kind selector presence under <code>&lt;section id="visual-abstract"&gt;</code> AND per-kind absence under <code>&lt;section id="prd"&gt;</code>.</p>
+        <ul>
+          <li>Trace: codebase context bullet 1 — the brief skill <code>eval:</code> field at <code>brief/SKILL.md:12</code> is the binary contract reviewers and agents read. Goal-Driven Reviewer GDR-1.</li>
+          <li>Serves goal: Outcome (the eval is the binary contract; enumerating the eight kinds makes the contract checkable).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R12.</strong> Update all hardcoded references to the four-kind supported list in <code>brief/SKILL.md</code>. The current file lists the supported kinds at four call-sites: line 28 (intro paragraph), line 68 (Step 3 grammar), line 237 (markdown rules visualisation note), and line 513 ("Only flow, comparison, scope, tree are supported" in § What you MUST NOT do). All four call-sites must update to the eight-kind list in lockstep; the post-change file has zero references to the four-kind-only set.</p>
+        <ul>
+          <li>Trace: DA-2 architectural gotcha — duplicated list copies across the skill must remain consistent or the contract is internally contradictory.</li>
+          <li>Serves goal: Outcome (the documented supported set is a single source of truth, not four drifting copies).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R13.</strong> <code>:::resources</code> <code>icon="..."</code> override accepts only <code>data:image/(svg+xml|png);base64,...</code> URIs. Malformed overrides (non-base64, http(s), other MIME types) fall back to the source-type pill's default icon — no compose abort, since interview Round 3's tone was forgiving on attribute malformation. The fallback is recorded in the compiled HTML's source comment so a reviewer can audit which icons used the override path.</p>
+        <ul>
+          <li>Trace: codex-r1-f3 — override validation was unspecified; without a rule, implementations diverge.</li>
+          <li>Serves goal: Outcome (deterministic icon resolution; no silent divergence).</li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="acceptance-criteria">Acceptance criteria</h2>
+    <ul>
+      <li>
+        <p><strong>AC-1.</strong> Each new block kind has a fenced example under <code>brief/SKILL.md</code> § Visual Block Grammar.</p>
+        <pre><code class="language-sh">for kind in key-features resources key-decisions phase-split; do
+  grep -qE &quot;^### \`:::${kind}\`&quot; plugins/specflow/skills/brief/SKILL.md || exit 1
+done
+</code></pre>
+        <ul>
+          <li>Verifies: R1, R2, R3, R4.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-2.</strong> Each new selector class is defined inside the inline <code>&lt;style&gt;</code> block of <code>brief/SKILL.md</code>. The rule-sets are inline; no external stylesheet reference is added.</p>
+        <pre><code class="language-sh">for sel in key-features resources key-decisions phase-split; do
+  grep -qE &quot;^[[:space:]]+\\.${sel}[[:space:]\\{,]&quot; plugins/specflow/skills/brief/SKILL.md || exit 1
+done
+! grep -qE '&lt;link[^&gt;]+rel=&quot;stylesheet&quot;' plugins/specflow/skills/brief/SKILL.md
+</code></pre>
+        <ul>
+          <li>Verifies: R1, R2, R3, R4, R6.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-3.</strong> <code>wc -l plugins/specflow/skills/brief/SKILL.md</code> returns ≤500 after the change set. Binary check; the prescriptive prose-tightening tactics that lived in the previous draft of this AC have been demoted to non-binding implementation notes (see R8). If the arithmetic does not close, see Open Questions.</p>
+        <ul>
+          <li>Verifies: R8.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-4.</strong> Given a fixture PRD body containing one of each new block, the compiled brief HTML satisfies all four selector-grep assertions:</p>
+        <pre><code class="language-sh">grep -qE '&lt;section id=&quot;visual-abstract&quot;&gt;[\s\S]*&lt;div class=&quot;key-features&quot;&gt;[\s\S]*&lt;article class=&quot;feature-card&quot;&gt;' brief.html
+grep -qE '&lt;section id=&quot;visual-abstract&quot;&gt;[\s\S]*&lt;div class=&quot;resources&quot;&gt;[\s\S]*&lt;a class=&quot;resource-card&quot;[^&gt;]*&gt;[\s\S]*&lt;img[^&gt;]+src=&quot;data:' brief.html
+grep -qE '&lt;section id=&quot;visual-abstract&quot;&gt;[\s\S]*&lt;table class=&quot;key-decisions&quot;&gt;[\s\S]*&lt;th[^&gt;]*&gt;Decision&lt;/th&gt;[\s\S]*&lt;th[^&gt;]*&gt;Why&lt;/th&gt;[\s\S]*&lt;th[^&gt;]*&gt;Source&lt;/th&gt;' brief.html
+grep -qE '&lt;section id=&quot;visual-abstract&quot;&gt;[\s\S]*&lt;div class=&quot;phase-split&quot;&gt;[\s\S]*&lt;div class=&quot;phase-col this-phase&quot;&gt;[\s\S]*&lt;div class=&quot;phase-col next-phase&quot;&gt;' brief.html
+</code></pre>
+        <p>Selector names are frozen by R1-R4.</p>
+        <ul>
+          <li>Verifies: R1, R2, R3, R4, R7.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-5.</strong> The same fixture PRD body, run through <code>specflow:brief</code> twice with no source change, produces byte-identical HTML on both runs.</p>
+        <pre><code class="language-sh">cmp -s brief-run-1.html brief-run-2.html
+</code></pre>
+        <p>Matches the existing § Binary Verify Steps idempotence check at <code>brief/SKILL.md:489</code>.</p>
+        <ul>
+          <li>Verifies: R6.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-6.</strong> Compiling a <code>:::resources</code> block whose entries declare only a source-type pill (no <code>icon=</code> attribute) produces link cards whose <code>&lt;img&gt;</code> <code>src</code> matches a pinned format regex AND whose payload base64-decodes to a valid SVG or PNG:</p>
+        <pre><code class="language-sh">grep -qE '&lt;img[^&gt;]+src=&quot;data:image/(svg\+xml|png);base64,' brief.html
+! grep -qE '&lt;img[^&gt;]+src=&quot;https?://' brief.html
+# base64 decode + format validation per built-in icon
+python3 -c &quot;
+import re, base64, sys
+h = open('brief.html').read()
+for m in re.finditer(r'&lt;img[^&gt;]+src=\&quot;data:image/(svg\+xml|png);base64,([A-Za-z0-9+/=]+)\&quot;', h):
+    mime, payload = m.group(1), m.group(2)
+    decoded = base64.b64decode(payload, validate=True)
+    if mime == 'svg+xml':
+        assert decoded.lstrip().startswith(b'&lt;svg'), 'svg payload does not start with &lt;svg'
+    elif mime == 'png':
+        assert decoded.startswith(b'\\x89PNG\\r\\n\\x1a\\n'), 'png magic bytes missing'
+&quot;
+</code></pre>
+        <p>No HTTP(S) URLs; no other image MIME types; payloads decode to valid image bytes (per codex-r3 sharpen).</p>
+        <ul>
+          <li>Verifies: R2.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-7.</strong> Given a fixture PRD body containing a <code>:::key-features</code> block followed by <code>## Vision</code>, the compiled brief HTML satisfies a DOM-scoped assertion:</p>
+        <pre><code class="language-sh">python3 -c &quot;import sys; h=open('brief.html').read(); s=h.find('&lt;section id=\&quot;visual-abstract\&quot;&gt;'); e=h.find('&lt;/section&gt;',s); va=h[s:e]; assert va.count('&lt;div class=\&quot;key-features\&quot;&gt;')==1, 'expected exactly one .key-features in visual-abstract'; ps=h.find('&lt;section id=\&quot;prd\&quot;&gt;'); pe=h.find('&lt;/section&gt;',ps); prd=h[ps:pe]; assert ':::key-features' not in prd, ':::key-features marker leaked into prd section'&quot;
+</code></pre>
+        <p>Matches inside <code>&lt;style&gt;</code> blocks are ignored (the regex is scoped to section ranges, not the whole document).</p>
+        <ul>
+          <li>Verifies: R7.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-8.</strong> A PRD body containing a <code>:::xyzzy</code> block (where <code>xyzzy</code> is none of the eight supported kinds) compiles to a <code>&lt;pre&gt;</code> element with the literal text "Unsupported visual block" preceding it.</p>
+        <pre><code class="language-sh">grep -qE 'Unsupported visual block[\s\S]{0,200}&lt;pre' brief.html
+</code></pre>
+        <ul>
+          <li>Verifies: R10.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-9.</strong> A <code>:::key-features</code> block declared with <code>title="Key features"</code> produces compiled HTML in which the title text appears verbatim under a non-heading element, NOT under <code>&lt;h2&gt;</code> or <code>&lt;h3&gt;</code>.</p>
+        <pre><code class="language-sh">grep -qE '&lt;div class=&quot;block-title&quot;[^&gt;]*&gt;Key features&lt;/div&gt;' brief.html
+! grep -qE '&lt;h[23][^&gt;]*&gt;Key features&lt;/h[23]&gt;' brief.html
+</code></pre>
+        <ul>
+          <li>Verifies: R9.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-10.</strong> <code>:::phase-split</code> and <code>:::scope</code> blocks in the same fixture PRD body compile to distinct shapes, verified by column counts and class-grep:</p>
+        <pre><code class="language-sh">grep -qE '&lt;div class=&quot;scope&quot;&gt;[\s\S]*&lt;div class=&quot;scope-col v1&quot;&gt;[\s\S]*&lt;div class=&quot;scope-col v2&quot;&gt;[\s\S]*&lt;div class=&quot;scope-col out&quot;&gt;' brief.html
+grep -qE '&lt;div class=&quot;phase-split&quot;&gt;[\s\S]*&lt;div class=&quot;phase-col this-phase&quot;&gt;[\s\S]*&lt;div class=&quot;phase-col next-phase&quot;&gt;' brief.html
+! grep -qE '&lt;div class=&quot;phase-split&quot;&gt;[\s\S]*&lt;div class=&quot;phase-col out&quot;&gt;' brief.html
+[ &quot;$(grep -oE '&lt;div class=\&quot;scope-col [a-z0-9]+\&quot;&gt;' brief.html | wc -l)&quot; -eq 3 ]
+[ &quot;$(grep -oE '&lt;div class=\&quot;phase-col [a-z0-9-]+\&quot;&gt;' brief.html | wc -l)&quot; -eq 2 ]
+</code></pre>
+        <ul>
+          <li>Verifies: R4 + interview Round 4 stance against folding the two.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-11.</strong> Edge-case rendering for the new blocks is binary-defined via three executable sub-assertions:</p>
+        <ul>
+          <li><strong>Unclosed block</strong> — fixture PRD with <code>:::key-features</code> and no closer:
+            <pre><code class="language-sh">specflow:brief NNN-slug; rc=$?; [ $rc -ne 0 ] &amp;&amp; grep -qE 'unclosed block.*key-features.*:[0-9]+' stderr.log
+</code></pre>
+          </li>
+          <li><strong>Nested <code>:::</code></strong> — fixture PRD with <code>:::key-features</code> body containing a literal indented <code>:::</code> line as content:
+            <pre><code class="language-sh">specflow:brief NNN-slug &amp;&amp; [ $(grep -c '^:::$' brief.html) -eq 0 ] &amp;&amp; [ $(grep -c '&lt;div class=&quot;key-features&quot;&gt;' brief.html) -eq 1 ]
+</code></pre>
+          </li>
+          <li><strong>Malformed attribute</strong> — fixture PRD with <code>:::resources title=</code> (no value):
+            <pre><code class="language-sh">specflow:brief NNN-slug &amp;&amp; grep -qE '&lt;div class=&quot;resources&quot;&gt;' brief.html &amp;&amp; ! grep -qE '&lt;div class=&quot;block-title&quot;[^&gt;]*&gt;&lt;/div&gt;' brief.html
+</code></pre>
+          </li>
+        </ul>
+        <ul>
+          <li>Verifies: R5, R6, R10.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-12.</strong> Source-order preservation and whitespace verbatim render: given a fixture PRD with <code>:::key-features</code> followed by <code>:::resources</code> followed by <code>:::phase-split</code>, in that source order, with one feature line containing <code>  two-leading-spaces</code>:</p>
+        <pre><code class="language-sh">python3 -c &quot;import sys; h=open('brief.html').read(); s=h.find('&lt;section id=\&quot;visual-abstract\&quot;&gt;'); e=h.find('&lt;/section&gt;',s); body=h[s:e]; idx=[body.find(c) for c in ['key-features','resources','phase-split']]; sys.exit(0 if idx==sorted(idx) and -1 not in idx else 1)&quot;
+grep -qE '  two-leading-spaces' brief.html
+</code></pre>
+        <ul>
+          <li>Verifies: R5.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-13.</strong> Strip rule extended to all four new kinds: given a fixture PRD body containing <code>:::key-features</code>, <code>:::resources</code>, <code>:::key-decisions</code>, <code>:::phase-split</code>:</p>
+        <pre><code class="language-sh">for kind in key-features resources key-decisions phase-split; do
+  python3 -c &quot;import sys; h=open('brief.html').read(); s=h.find('&lt;section id=\&quot;prd\&quot;&gt;'); e=h.find('&lt;/section&gt;',s); sys.exit(0 if ':::${kind}' not in h[s:e] else 1)&quot; || exit 1
+done
+</code></pre>
+        <ul>
+          <li>Verifies: R7.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-14.</strong> A <code>:::key-features title="Key features" subtitle="What the feature does"</code> block produces compiled HTML in which the subtitle renders inside the block's container:</p>
+        <pre><code class="language-sh">grep -qE '&lt;div class=&quot;key-features&quot;[\s\S]*&lt;div class=&quot;block-subtitle&quot;[^&gt;]*&gt;What the feature does&lt;/div&gt;' brief.html
+</code></pre>
+        <ul>
+          <li>Verifies: R9 (subtitle= path, complementing AC-9's title= path).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-15.</strong> <code>brief/SKILL.md</code> frontmatter <code>eval:</code> field enumerates all eight block kinds verbatim, asserting both per-kind visual-abstract presence AND per-kind PRD-section absence:</p>
+        <pre><code class="language-sh">grep -qE 'eval:.*\{flow.*comparison.*scope.*tree.*key-features.*resources.*key-decisions.*phase-split\}' plugins/specflow/skills/brief/SKILL.md
+</code></pre>
+        <ul>
+          <li>Verifies: R11.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-16.</strong> All four hardcoded supported-kind references in <code>brief/SKILL.md</code> updated to the eight-kind list. After the change set, no line in the file lists exactly the four-kind-only set:</p>
+        <pre><code class="language-sh">! grep -nE '^[^#]*:::flow.*:::comparison.*:::scope.*:::tree[^|]' plugins/specflow/skills/brief/SKILL.md
+! grep -nE 'Only `flow`, `comparison`, `scope`, `tree`' plugins/specflow/skills/brief/SKILL.md
+</code></pre>
+        <ul>
+          <li>Verifies: R12.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-17.</strong> TOC inflation guard: a brief whose PRD body contains all four new blocks (each with a <code>title="..."</code> attribute) renders a sidebar TOC that does not contain those titles:</p>
+        <pre><code class="language-sh">python3 -c &quot;import sys; h=open('brief.html').read(); s=h.find('&lt;nav class=\&quot;toc\&quot;&gt;'); e=h.find('&lt;/nav&gt;',s); toc=h[s:e]; titles=['Key features','Resources','Key decisions','This phase']; assert not any(t in toc for t in titles), 'block titles leaked into TOC'&quot;
+</code></pre>
+        <ul>
+          <li>Verifies: R9 (non-heading rendering decision; resolves DA-4 cross-artefact concern).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-18.</strong> Mobile breakpoint behaviour: the four new selectors collapse to single-column at the existing <code>@media (max-width: 1100px)</code> AND <code>@media (max-width: 860px)</code> breakpoints documented at <code>brief/SKILL.md:391-403</code>, with no horizontal overflow at 360px viewport width:</p>
+        <pre><code class="language-sh"># Both breakpoints carry the new selectors
+for bp in '1100px' '860px'; do
+  for sel in key-features resources phase-split; do
+    grep -qE &quot;@media \\(max-width: ${bp}\\)[\\s\\S]*\\.${sel}[\\s\\S]*grid-template-columns: 1fr&quot; plugins/specflow/skills/brief/SKILL.md || exit 1
+  done
+done
+# 360px headless render — no horizontal overflow
+npx playwright open --viewport-size=360,640 brief.html --eval &quot;document.documentElement.scrollWidth &lt;= 360 || (() =&gt; { throw new Error('horizontal overflow at 360px') })()&quot;
+</code></pre>
+        <p>(The <code>:::key-decisions</code> <code>&lt;table&gt;</code> already has <code>width: 100%</code> per existing rule at <code>brief/SKILL.md:325</code>, so no per-block CSS override is needed; the 360px render check still applies to verify no overflow.)</p>
+        <ul>
+          <li>Verifies: R1, R2, R4 (mobile-warehouse-operator profile audience). Per codex-r3 sharpen: 860px breakpoint AND 360px render now both verified, not just rule-presence at 1100px.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-19.</strong> <code>:::resources</code> <code>icon=</code> override validation:</p>
+        <ul>
+          <li><strong>Valid override</strong> — <code>icon="data:image/svg+xml;base64,..."</code> produces an <code>&lt;img src="..."/&gt;</code> carrying the override:
+            <pre><code class="language-sh">grep -qE '&lt;a class=&quot;resource-card&quot;[\s\S]*&lt;img[^&gt;]+src=&quot;data:image/svg\+xml;base64,' brief.html
+</code></pre>
+          </li>
+          <li><strong>Malformed override</strong> — <code>icon="https://example.com/icon.png"</code> falls back to the source-type pill's default; the compiled HTML carries a source comment recording the fallback:
+            <pre><code class="language-sh">grep -qE '&lt;!-- icon override fallback: .* --&gt;' brief.html
+grep -qE '&lt;a class=&quot;resource-card&quot;[\s\S]*&lt;img[^&gt;]+src=&quot;data:image/(svg\+xml|png);base64,' brief.html
+! grep -qE '&lt;img[^&gt;]+src=&quot;https?://' brief.html
+</code></pre>
+          </li>
+        </ul>
+        <ul>
+          <li>Verifies: R13.</li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="open-questions">Open questions</h2>
+    <ul>
+      <li>
+        <p><strong>OQ-1: Chain-don't-absorb risk on the line-cap.</strong> <code>brief/SKILL.md</code> is currently 524 lines (24 over the 500-line target). The change set's measured prose-tightening pass (R8) must absorb the 24-line debt PLUS the four-block additions (estimated 60-100 lines for grammar examples + CSS rule-sets + R11 eval enumeration). If the arithmetic does not close after the prose-tightening pass, the change set blocks pre-merge and creates a follow-up feature <code>017a-brief-blocks-extraction</code> (or successor number) that extracts § Visual Block Grammar into a sibling skill <code>brief-blocks/SKILL.md</code>. The decision-point is whether to do the extraction <em>prerequisite</em> (split into two PRs: extraction first, then 016 lands in the smaller <code>brief-blocks</code> skill) or <em>contingent</em> (016 lands monolithic-but-over-cap and 017a follows). Resolution needed before <code>specflow:task</code>.</p>
+        <ul>
+          <li>Resolution path: at task-synthesis time, measure the actual prose-tightening savings against four benchmark fixtures; if net is &lt; 0, route to prerequisite extraction.</li>
+          <li><strong>In-scope tightening targets</strong> (non-existing-block; per Round 3 DA + TBC sharpen): § HTML Template comment density (lines 240-280, ~40 lines candidate); § Markdown Conversion rule-list redundancy (lines 220-238, ~10 lines candidate); § Reference / § What you MUST NOT do prose distillation (lines 510-524, ~10 lines candidate). Estimated ceiling savings ≈ 60 lines, which against +60-100 new-block cost suggests <strong>the chain-don't-absorb path is the likely outcome</strong>, not the contingency. Naming the candidate ranges keeps OQ-1 honest and lets the task skill decide on data, not vibes.</li>
+        </ul>
+      </li>
+    </ul>
+    <h2 id="see-also">See also</h2>
+    <ul>
+      <li>Interview: <a href="./016-brief-enhancements-interview.md"><code>./016-brief-enhancements-interview.md</code></a></li>
+      <li>Tasks: <a href="./016-brief-enhancements-tasks.md"><code>./016-brief-enhancements-tasks.md</code></a> (generated by <code>specflow:task</code>)</li>
+      <li>Tests: <a href="./016-brief-enhancements-test.md"><code>./016-brief-enhancements-test.md</code></a> (generated by <code>specflow:test</code>)</li>
+    </ul>
+  </section>
+  <section id="interview">
+    <h2 id="interview-heading">Interview</h2>
+    <h3 id="goal-confirmation">Goal confirmation</h3>
+    <p>The user invoked <code>specflow:prd 016-brief-enhancements</code> with the brief: "Extend the brief skill so the rendered HTML carries four new structured blocks — Key Features (non-technical card grid at the top), Resources (link cards), Key Decisions (decision table), and This-phase / Next-phase (two-column split). The brief is a visual artefact, not a text dump; every new block compiles to deterministic HTML with inline CSS, no JS. The Key Features section absorbs the original 015 scope and lives only in the brief — the PRD stays purely technical."</p>
+    <p>Confirmed: the goal is to add four new <code>:::key-features | :::resources | :::key-decisions | :::phase-split</code> block grammars to <code>plugins/specflow/skills/brief/SKILL.md</code>, with HTML templates and inline CSS for each, plus a placement note that Key Features renders at the top of the brief (after Vision / scope-at-a-glance, before the PRD body). Out-of-scope-at-goal-level: building a separate brief renderer; relaxing the "no JS, no external assets" contract; promoting Key Features into the PRD body; touching any other skill.</p>
+    <h3 id="original-request">Original request</h3>
+    <blockquote>
+      <p>"The brief should be presented to a minor technical level… we need to list key features within a feature in non-technical format" — chat feedback (the originating drive for both 015 and 016). 015 was folded into 016 as a fourth block, per FEATURES.md § 016: "PRD stays purely technical; the brief carries the non-technical Key Features overview for the user's own scanning."</p>
+    </blockquote>
+    <h3 id="codebase-context-pre-grilling">Codebase context (pre-grilling)</h3>
+    <ul>
+      <li><code>plugins/specflow/skills/brief/SKILL.md</code> carries the brief contract — frontmatter at lines 1-13, the four existing block kinds (<code>:::flow</code>, <code>:::comparison</code>, <code>:::scope</code>, <code>:::tree</code>) under § Visual Block Grammar (lines 122-216), the inline-CSS HTML template (lines 240-444), and the no-JS / no-external-assets guarantee. The 3-column scope-at-a-glance pattern lives at <code>brief/SKILL.md:166</code>; that visual shape is the precedent for the new <code>:::phase-split</code> block.</li>
+      <li>The four existing blocks compile deterministically — same input bytes produce same HTML output bytes. The new blocks must hold the same contract (per the file's § Determinism, lines 44-53).</li>
+      <li><code>knowledge/pocock-real-feature-build.md</code> is the inspiration. Pocock sketches modules and interfaces <em>first</em> and updates ubiquitous-language inline as new terms emerge ("materialize", "materialization cascade") — the brief is the layered, interface-first artefact analogue at the feature level. The four new blocks formalise the layering: Key Features at the top (interface), Resources mid-brief (referenced docs), Key Decisions (the synthesis trace), Phase split (the iteration boundary).</li>
+      <li>The existing brief template loads ~200 lines of inline CSS (lines 253-403). Adding four new block CSS rule-sets must keep the file under 500 lines after additions, per the project's skill-size ceiling (<code>feedback_skill_size_ceiling</code>). Existing prose tightening is required.</li>
+      <li>The <code>:::comparison</code> block already does card-grid rendering; <code>:::key-features</code> reuses the same CSS-grid scaffolding but with simpler card content (title + one-line description + optional thumbnail/icon — no meta tail, no accent variants). Reuse beats invent.</li>
+    </ul>
+    <h3 id="round-1-where-does-key-features-sit-in-the-brief-layout">Round 1 — where does Key Features sit in the brief layout</h3>
+    <p><strong>Question.</strong> Is Key Features rendered inside the Visual abstract section (alongside compiled <code>:::flow | :::comparison | :::scope | :::tree</code> blocks) or as its own top-level section above Visual abstract?</p>
+    <p><strong>Answer.</strong> Inside the Visual abstract section, but the block-compile order in the source is what determines layout — the brief author places the <code>:::key-features</code> block first in the PRD body so it renders first in the Visual abstract (the existing "Each block keeps its position in the source" rule from § Step 3 carries this for free). No new top-level <code>&lt;section&gt;</code> wrapper. This keeps the brief's structural shape unchanged and means the new block joins the existing four under the same composition rules.</p>
+    <h3 id="round-2-does-the-prd-carry-key-features-content-too">Round 2 — does the PRD carry Key Features content too</h3>
+    <p><strong>Question.</strong> The Key Features content is non-technical. Where does it physically live — only in the PRD as a <code>:::key-features</code> block (which the brief skill compiles), or split across PRD-as-source vs brief-as-rendering?</p>
+    <p><strong>Answer.</strong> Only in the PRD as a <code>:::key-features</code> block. The PRD body is the source of truth for the brief; placing the block in the PRD means the brief renders it without inventing content (the existing brief contract: "Markdown is the source of truth. The brief is a derived artefact… it never rewords or paraphrases the source content"). The block stays in the PRD's body, but the brief skill strips it from the rendered PRD prose (per the existing § Step 3 "Strip the same blocks from the PRD body content before rendering it as prose" rule) so it appears only inside the Visual abstract. <strong>Important nuance:</strong> the <em>content</em> of <code>:::key-features</code> is non-technical (one-line user-facing descriptions, optional thumbnails). The PRD's R/AC list around it remains technical. The non-technical / technical separation is by <em>block</em> in the PRD, not by <em>file</em>.</p>
+    <h3 id="round-3-should-resources-auto-fetch-favicons">Round 3 — should resources auto-fetch favicons</h3>
+    <p><strong>Question.</strong> The <code>:::resources</code> block renders link cards with favicon + title + source-type pill. Should the brief skill fetch favicons at compose time (network call) or are they declared inline in the block source?</p>
+    <p><strong>Answer.</strong> Declared inline. The brief contract is no-network-calls / no-build-step (§ "What you MUST NOT do" line 514). Favicons are inline data URIs declared in the block source, OR a small set of known source-type icons (Linear, Doc, Design, GitHub, Slack) is shipped as inline base64 in the brief skill itself and selected by the source-type pill value. Default route: the source-type pill drives the icon; explicit <code>icon=</code> attribute on a resource line overrides. This preserves byte-identical determinism (same source → same output) and the self-contained-file guarantee.</p>
+    <h3 id="round-4-phase-split-layout-vs-scope-at-a-glance">Round 4 — phase-split layout vs scope-at-a-glance</h3>
+    <p><strong>Question.</strong> The <code>:::phase-split</code> block is "this phase / next phase". The existing <code>:::scope</code> block is "v1 / v2 / out of scope" (three columns). Why a new block — couldn't <code>:::scope</code> be extended?</p>
+    <p><strong>Answer.</strong> Different semantics, different visual weight. <code>:::scope</code> is the <em>whole-feature</em> scope-at-a-glance — what the feature ships now, what's deferred to a later version, what's permanently out. It is referenced once near the feature's top. <code>:::phase-split</code> is <em>iteration-boundary</em>: when a feature is being built across multiple phases inside the same version (e.g. "Sprint 2 ships R1-R5, Sprint 3 ships R6-R8"), this block makes the iteration boundary visible. Two columns (this-phase, next-phase), no third "out" column — out-of-scope already lives in <code>:::scope</code>. Layered on top of <code>:::scope</code>, not a replacement. A feature uses <code>:::scope</code> always; <code>:::phase-split</code> only when there is an iteration boundary inside the version. The user explicitly does not want to fold the two — different decisions, different audience, different visual weight.</p>
+    <h3 id="sign-off">Sign-off</h3>
+    <p>User confirmed: four new blocks (<code>:::key-features</code>, <code>:::resources</code>, <code>:::key-decisions</code>, <code>:::phase-split</code>), each with deterministic HTML compilation + inline CSS + no JS; Key Features lives in the PRD as a block but renders only in the brief's Visual abstract; favicons inline / source-type-pill-driven; phase-split distinct from scope. Proceed to PRD synthesis.</p>
+    <h3 id="topics-not-discussed">Topics not discussed</h3>
+    <ul>
+      <li>Whether the four new blocks should support the same <code>title="..."</code> / <code>subtitle="..."</code> attribute pattern as <code>:::flow</code> and <code>:::comparison</code>. Assumed yes — consistency with the existing four blocks; spelled out at PRD-synthesis time per block.</li>
+      <li>Whether <code>:::key-decisions</code> should auto-link the <code>Source</code> column to a <code>decision-log.md</code> file when present. Considered, deferred — auto-resolution adds a path-traversal step and the existing brief contract is byte-deterministic; explicit links in the block source are sufficient. May surface as a follow-up if <code>decision-log.md</code> becomes a primary artefact in a later sprint.</li>
+      <li>Whether <code>:::phase-split</code> should be replaceable by a <code>phase=</code> attribute on <code>:::scope</code> itself. Rejected per Round 4 — distinct semantics, distinct visual weight.</li>
+      <li>Whether <code>:::resources</code> should support a per-resource <code>tags=[...]</code> filter for dimensioned scanning (e.g. "show only Linear resources"). Out of scope — the brief is a static visual artefact; filtering implies JS / interactivity, which the no-JS contract forbids.</li>
+    </ul>
+  </section>
+  <section id="agent-reviews">
+    <h2 id="agent-reviews-heading">Agent reviews</h2>
+    <h3 id="gate-2-prd-review">Gate 2 — PRD review</h3>
+    <p><strong>Feature:</strong> 016-brief-enhancements<br>
+    <strong>Date:</strong> 2026-05-07<br>
+    <strong>Reviewers:</strong> simplicity-reviewer, surgical-reviewer, think-before-coding-reviewer, goal-driven-reviewer, devils-advocate, codex</p>
+    <h4 id="accepted-findings">Accepted findings</h4>
+    <ul>
+      <li>
+        <p><strong>simplicity-r1-f3</strong> (simplicity-reviewer, concern) — AC-3 over-prescribed prose-tightening tactics inside the AC body.</p>
+        <ul>
+          <li>Evidence: PRD AC-3 prescribed <code>(a) collapse the four block-grammar examples into a shared shape … (b) extract CSS comment headers</code>.</li>
+          <li>Revision applied: AC-3 demoted to a single binary <code>wc -l ≤ 500</code> check; prescriptive tactics moved to non-binding implementation notes; baseline 524-line reality + chain-don't-absorb fallback surfaced in Open Questions.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>SURG-1</strong> (surgical-reviewer, block) — AC-3 was smuggling a refactor of the four existing blocks under the cover of a line cap.</p>
+        <ul>
+          <li>Evidence: AC-3 mandated tightening passes on <code>:::flow / :::comparison / :::scope / :::tree</code> content the user did not request.</li>
+          <li>Revision applied: Non-goals now declares the existing four blocks untouched; AC-3 is a binary check; chain-don't-absorb path lives in OQ-1.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>SURG-2</strong> (surgical-reviewer, block) — AC-3 carried a contingent in-PRD escape hatch.</p>
+        <ul>
+          <li>Revision applied: Conditional clause stripped; chain-don't-absorb risk surfaced as OQ-1.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>SURG-3</strong> (surgical-reviewer, concern) — Slack silently dropped from interview's five-icon set without callout.</p>
+        <ul>
+          <li>Revision applied: R2 trace cites decision-log 2026-03-22 (<em>Slack removed from the stack</em>) + CONTEXT.md Stack-section Slack-free confirmation.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-1</strong> (think-before-coding-reviewer, block) — 524-line baseline was the load-bearing unstated assumption behind R8/AC-3.</p>
+        <ul>
+          <li>Revision applied: R8 explicit baseline + chain-don't-absorb fallback + measured budget. OQ-1 (Round-3-extended) names in-scope tightening targets so the line arithmetic is auditable.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-2</strong> (think-before-coding-reviewer, block) — Slack drop tradeoff unstated. (Same revision as SURG-3.)</p>
+      </li>
+      <li>
+        <p><strong>TBC-4</strong> (think-before-coding-reviewer, concern) — R9's "consistent across all eight blocks" was factually wrong about the baseline.</p>
+        <ul>
+          <li>Revision applied: R9 restated — new four follow <code>:::flow</code>'s most-complete pattern; existing four unchanged.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-5</strong> (think-before-coding-reviewer, concern) — Icon format/source/byte cost were silent assumptions.</p>
+        <ul>
+          <li>Revision applied: R2 extended with three sub-clauses — SVG-base64 format; author-drawn monochrome glyphs (avoids brand-mark licensing); each icon ≤1 line in SKILL.md.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>GDR-1 through GDR-6</strong> (goal-driven-reviewer, blocks/concerns) — Multiple ACs were soft / verb-level / not actually binary.</p>
+        <ul>
+          <li>Revisions applied: AC-1 / AC-2 rewritten as for-loops with grep; AC-3 binary line-count; AC-4 four selector-grep assertions with frozen class names; AC-5 cmp-s; AC-6 pinned format regex + base64-decode; AC-7 DOM-scoped Python assertion; AC-8 hardened regex; AC-10 column-count + class-grep; AC-11 three executable sub-assertions; AC-12 source-order Python; AC-13 strip rule for all four kinds via DOM-scope; AC-14 subtitle= rendering; AC-15 eval enumeration check; AC-19 icon-override fallback recording; new R11 (eval enumeration), R12 (four-callsite lockstep), R13 (icon-override validation).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>DA-1, DA-2, DA-3, DA-4</strong> (devils-advocate, blocks/concerns) — 524-line baseline reality (DA-1); four hardcoded list call-sites must update in lockstep (DA-2); Slack drop silence (DA-3); TOC inflation from new headings (DA-4).</p>
+        <ul>
+          <li>Revisions applied: OQ-1 carries the 524 → ≤500 arithmetic + chain-don't-absorb path with named candidate ranges (Round-3-extended per DA-r3-f1); R12 + AC-16 enumerate the four call-sites with lockstep checks; R2 trace cites the Slack decision; R9 pins block titles to <code>&lt;div class="block-title"&gt;</code> (not <code>&lt;h2&gt;</code>/<code>&lt;h3&gt;</code>) + AC-17 verifies titles do not enter the TOC.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f1</strong> (codex, concern) — Mobile breakpoint participation missing.</p>
+        <ul>
+          <li>Revision applied: AC-18 added; <strong>Round 3 sharpened</strong> to cover BOTH 1100px AND 860px breakpoints AND a Playwright headless 360px render (no horizontal overflow). Mobile-warehouse-operator profile audience.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f2</strong> (codex, concern) — AC-6 icon format under-specified.</p>
+        <ul>
+          <li>Revision applied: AC-6 pinned to <code>data:image/(svg+xml|png);base64,</code>; <strong>Round 3 sharpened</strong> to base64-decode + SVG-or-PNG byte validation.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f3</strong> (codex, concern) — <code>icon=</code> override validation/fallback missing.</p>
+        <ul>
+          <li>Revision applied: R13 + AC-19 specify validation (data:image/(svg+xml|png);base64 only), HTML-escape, fallback-to-pill on malformed, source-comment audit trail.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f4</strong> (codex, concern) — Field emission order unpinned.</p>
+        <ul>
+          <li>Revision applied: R6 amended — emission order fixed by grammar, not map iteration.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f5</strong> (codex, concern) — AC-7 DOM-scope ambiguous.</p>
+        <ul>
+          <li>Revision applied: AC-7 rewritten as Python DOM-scoped assertion ignoring matches inside <code>&lt;style&gt;</code> blocks.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f6 + DA-5</strong> (codex + devils-advocate, notes) — AC numbering out of order (AC-11 before AC-9, AC-10).</p>
+        <ul>
+          <li>Revision applied: AC numbering renumbered sequentially (AC-1 through AC-19).</li>
+        </ul>
+      </li>
+    </ul>
+    <h4 id="rejected-findings">Rejected findings</h4>
+    <ul>
+      <li>
+        <p><strong>simplicity-r1-f1</strong> (simplicity-reviewer, concern) — R9 title=/subtitle= speculative configurability.</p>
+        <ul>
+          <li>Reason for rejection: Interview "Topics not discussed" explicitly resolved this — <em>"Assumed yes — consistency with the existing four blocks."</em> User-confirmed at sign-off. Round 3 reviewer pushed back a third time; the orchestrator stands on the user's interview decision.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r1-f2</strong> (simplicity-reviewer, concern) — R2 icon override speculative.</p>
+        <ul>
+          <li>Reason for rejection: Interview Round 3 verbatim — <em>"explicit <code>icon=</code> attribute on a resource line overrides."</em> User-confirmed.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r1-f4</strong> (simplicity-reviewer, note) — R5 + AC-11 redundant with existing block contract.</p>
+        <ul>
+          <li>Reason for rejection: R5 + AC-11 are the load-bearing consistency line for the new blocks. Per Goal-Driven Reviewer's mandatory eval-coverage matrix, every requirement must trace to a binary AC; collapsing them would create a coverage gap.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>SURG-4</strong> (surgical-reviewer, concern) — R10 defensive restatement.</p>
+        <ul>
+          <li>Reason for rejection: R10 binds the new blocks to the existing unsupported-kind fallback; without it, the strip-rule's surface widening is undocumented.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>SURG-5</strong> (surgical-reviewer, note) — R5 + AC-11 selective re-statement.</p>
+        <ul>
+          <li>Reason for rejection: Selective re-statement of high-leverage edge cases is the right cut; the symmetric reading would explode the AC list.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-3</strong> (think-before-coding-reviewer, concern) — R7 strip rule for <code>:::phase-split</code> differently from <code>:::key-features</code>.</p>
+        <ul>
+          <li>Reason for rejection: Interview Round 1 sign-off covers all four new blocks rendering in Visual abstract; treating phase-split differently breaks per-kind symmetry.</li>
+        </ul>
+      </li>
+    </ul>
+    <h4 id="escalated-to-human">Escalated to human</h4>
+    <ul>
+      <li>
+        <p><strong>simplicity-r3-f1</strong> (simplicity-reviewer, concern) — Walking back R9's user-confirmed <code>title=</code>/<code>subtitle=</code> decision.</p>
+        <ul>
+          <li>Reason: reviewer and writer did not converge in 3 rounds; reviewer wants a feature-level decision the user already made in interview "Topics not discussed".</li>
+          <li>Recommendation: stand on the user's interview sign-off. If the user wants to revisit the assumption, route through <code>specflow:scope-change</code>, not Gate 2.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>surgical-r3-f1</strong> (surgical-reviewer, concern) — Frame chain-don't-absorb as expected outcome rather than contingency.</p>
+        <ul>
+          <li>Reason: reviewer and writer agree on the substantive content; framing-level disagreement.</li>
+          <li>Recommendation: OQ-1's named candidate ranges + estimated savings already make the likely outcome auditable. Accept Gate 2 as-is; framing can be revised in 022's cross-task-review pass.</li>
+        </ul>
+      </li>
+    </ul>
+    <h4 id="closing-decision">Closing decision</h4>
+    <p>Gate 2 status: <strong>passed-with-escalations</strong></p>
+    <p>PRD revisions applied across 28 of 32 Round-1 findings; four push-backs cited interview-confirmed decisions. Round 3 added two more sharpens (codex on mobile + icon validation) which were accepted and applied; one Round-3 sharpen (simplicity-r3-f1, third pass) did not converge on R9's user-confirmed title=/subtitle= consistency assumption; one Round-3 sharpen (surgical-r3-f1) is a framing-level non-convergence that does not block ship.</p>
+    <p>PRD is fit to proceed to <code>specflow:task</code> after the escalation is resolved by the human. Revisions applied are listed under "Accepted findings" above; escalations are listed under "Escalated to human."</p>
+    <p>— Orchestrator, 2026-05-07</p>
+  </section>
+  <footer>
+    Feature brief · composed from <code>016-brief-enhancements-prd.md</code>, <code>016-brief-enhancements-interview.md</code>, and the gate debate logs. Markdown is the source of truth.
+  </footer>
+</main>
+</div>
+</body>
+</html>

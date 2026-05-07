@@ -1,0 +1,81 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 3,
+  "feature": "025-sprint-task-flagging",
+  "lens": "Does every requirement and AC trace directly to the user's request and the confirmed Goal? Round 3 verdict on each Round-1 finding after Round-2 revision.",
+  "decisions": {
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "severity_original": "block",
+      "rationale": "Round 2 dropped R10's recompute-and-compare enforcement and AC-12 outright. The revised PRD § R10 (line 106) now reads explicitly 'Documentation-level only — task/SKILL.md does NOT recompute-and-compare on every synthesis run' with the matching Non-goals entry (line 38). AC-12 is reserved (line 225). The cross-skill blast radius into specflow:scope-change is gone. The 'computed not asserted' contract survives via R2's heuristic doc + AC-11's grep-absence on hand-edit affordances — which is exactly the documentation-level-only outcome Round 1 asked for.",
+      "verification": [
+        "PRD line 38 — Non-goals entry: 'Hand-edit detection. The field is documented as read-only (R10), but specflow:task does NOT recompute-and-compare on every synthesis run to police hand-edits.'",
+        "PRD line 106 — R10 narrowed to documentation-level read-only; AC-11 remains the only verify step.",
+        "PRD line 225 — AC-12 reserved with explicit drop-rationale citation.",
+        "No new R or AC re-introduces runtime hand-edit detection."
+      ],
+      "residual_risk": "none",
+      "remedy_status": "fully_applied"
+    },
+    "surgical-r1-f2": {
+      "decision": "accept",
+      "severity_original": "concern",
+      "rationale": "Round 2 reshaped R7 into a property statement (PRD line 92: 'Property statement: tasks whose context-budget-estimate exceeds the configured budget are split per 029 R4 before bucketing operates. The heuristic doc states this explicitly; no verbatim phase-listing requirement.'). The verbatim three-step ordered list with abort/re-route control flow is gone. AC-13 is split into a doc check + an execution-order fixture (PRD lines 227-233) — which addresses goal-driven-r1-f3's separate execution-coverage concern WITHOUT re-introducing verbatim phase-ordering text. The execution fixture reuses AC-5's oversize-task fixture rather than carving new control-flow surface in Phase D. Net: the property is verified; the machinery is not bolted on.",
+      "verification": [
+        "PRD line 92-94 — R7 reads as a property statement, no abort/re-route language, traces to 'SURG-r1-f2 (property, not control flow)'.",
+        "PRD line 227-233 — AC-13 doc check + execution fixture, no verbatim-list verify."
+      ],
+      "residual_risk": "AC-13's execution leg is fixture-based and hangs off AC-5; this is goal-driven-r1-f3's coverage ask. Surgical-wise, this is a property check via existing fixture, NOT new control-flow surface. Acceptable.",
+      "remedy_status": "fully_applied"
+    },
+    "surgical-r1-f3": {
+      "decision": "accept",
+      "severity_original": "concern",
+      "rationale": "Round 2 dropped R9 outright (PRD line 104 marks it Reserved with the simplicity-r1-f3 / SURG-r1-f3 citation). The topological-floor invariant now lives as a one-line corollary inside R2 (PRD line 68: 'Topological-floor corollary (by construction): for every T_j ∈ Depends-on(T_i), bucket(T_j) < bucket(T_i)') — fold-in, not separate verify-surface. AC-4 is also reserved (PRD line 152). The runtime check that exists (R12 eval clause 2 / AC-15) is the eval-coverage finding from goal-driven-r1-f1 — a different concern (binary contract via the eval field), not a duplicated heuristic verify-step.",
+      "verification": [
+        "PRD line 104 — R9 reserved with drop rationale.",
+        "PRD line 68 — Topological-floor stated as a corollary inside R2, not a separate R.",
+        "PRD line 152 — AC-4 reserved.",
+        "R12 / AC-15 are eval-field extensions (goal-driven-r1-f1), not a re-introduction of R9."
+      ],
+      "residual_risk": "none",
+      "remedy_status": "fully_applied"
+    },
+    "surgical-r1-f4": {
+      "decision": "sharpen",
+      "severity_original": "note",
+      "rationale": "Round 2 dropped AC-3's 'or fixture under examples/' alternative — the worked example now lands in templates/task/sprint-bucket-heuristic.md (PRD lines 142-150). Original Round 1 remedy said 'lives in task/SKILL.md only'. Round 2 instead routed to the doctrine doc per DA-r1-f5 + SURG-r1-f5 (chain-don't-absorb extraction). This is a CHANGE from the Round 1 remedy text but is fully consistent with the surgical principle: AC-3's content lives in ONE named place (the heuristic doc), not in a free-floating fixture file. The surgical concern was 'optional fixture as alternative landing site expands the surface area'; that ambiguity is gone — there is one canonical home, named explicitly. However, AC-14 (PRD line 246) DOES introduce a new fixtures directory under plugins/specflow/examples/docs/specflow/features/025-sprint-task-flagging/fixtures/. This is a separate surface from AC-3 and is justified by R11 (graph-validity, TBC-r1-f1) — but it warrants a sharpen note: the fixtures directory was not in the Round-1 surgical scope review, and Round 3 should flag it for surgical attention even though TBC and goal-driven reviewers asked for it.",
+      "verification": [
+        "PRD line 142-150 — AC-3 now points only at templates/task/sprint-bucket-heuristic.md; the 'or fixture under examples/' alternative is removed.",
+        "PRD line 246 — AC-14 introduces a NEW fixtures directory (separate from AC-3's resolution)."
+      ],
+      "sharpened_remedy": "AC-3 remedy is fully applied (the alternative landing site is gone). Adjacent observation for the next gate: AC-14's fixtures directory under plugins/specflow/examples/docs/specflow/features/025-sprint-task-flagging/fixtures/ is a NEW surface introduced by R11 (TBC-r1-f1, codex-r1-f1, goal-driven-r1-f5). It is justified by those findings, but it is the kind of surface a Round-1 surgical pass would have flagged. For Gate 3 (test) the surgical lens should re-confirm that the four fixtures stay scoped to graph-validity edge cases and do not metastasise into a general fixture corpus.",
+      "residual_risk": "low — fixtures directory is new surface but each fixture maps 1:1 to an R11 failure mode (cycle / self-loop / duplicate / dangling); no fixture exists for non-R11 cases.",
+      "remedy_status": "applied_with_adjacent_observation"
+    },
+    "surgical-r1-f5": {
+      "decision": "accept",
+      "severity_original": "note",
+      "rationale": "Round 2 fully reframed R8 as chain-don't-absorb. PRD lines 96-102 list the EXACT additions to task/SKILL.md (one field-emission line in B.3, one citation in B.3, one citation in B.4) and explicitly state 'No prose-tightening of unrelated sections.' The heuristic, worked example, typed-comparator grammar, iteration discipline, and graph-validity diagnostic format ALL land in templates/task/sprint-bucket-heuristic.md — a sibling doctrine doc that mirrors 029's templates/admin/single-context-task.md pattern (per DA-r1-f5). The drive-by-prose risk is gone: R8 now constrains the change set to three named lines in task/SKILL.md plus a new doctrine doc. The 14-line headroom problem (DA-r1-f5) is solved by extraction, not by tightening unrelated prose.",
+      "verification": [
+        "PRD line 96-102 — R8 enumerates the only allowed edits to task/SKILL.md and explicitly forbids unrelated prose tightening.",
+        "PRD line 23 — Goals entry mirrors: 'task/SKILL.md adds one-line citations from B.3 and B.4'.",
+        "PRD line 27 — 'The heuristic + worked example land in the doctrine doc, not the skill body.'",
+        "AC-8 (PRD line 178-181) keeps the line-count ceiling as the binary check."
+      ],
+      "residual_risk": "none",
+      "remedy_status": "fully_applied"
+    }
+  },
+  "out_of_scope_audit_round3": {
+    "all_seven_explicit_forbiddings_still_guarded": "respected — Non-goals (PRD lines 30-38) preserves all seven, plus a NEW eighth: hand-edit detection (per the R10 narrowing).",
+    "new_surface_introduced_in_round_2": [
+      "templates/task/sprint-bucket-heuristic.md (justified by chain-don't-absorb / DA-r1-f5; surgical lens approves — extraction, not absorption)",
+      "plugins/specflow/examples/docs/specflow/features/025-sprint-task-flagging/fixtures/ (justified by R11 / TBC-r1-f1; surgical lens flags as adjacent observation per surgical-r1-f4)",
+      "R11 + AC-14 graph-validity step (justified by TBC-r1-f1, codex-r1-f1, goal-driven-r1-f5; surgical lens accepts — graph-validity is a precondition for the heuristic to be well-defined, NOT a 'while I was here' addition)",
+      "R12 + AC-15 eval extension (justified by goal-driven-r1-f1; surgical lens accepts — eval is the binary contract for AC-1..AC-15 to be meaningful)"
+    ]
+  },
+  "summary": "All five Round-1 surgical findings resolved. Four accept, one sharpen. The block-severity finding (surgical-r1-f1, R10/AC-12 hand-edit enforcement) is fully dropped — runtime detection is gone, R10 is documentation-level only, AC-11 is the only verify step, and Non-goals carries the explicit disclaimer. The two concerns (surgical-r1-f2 R7 verbatim phase-ordering, surgical-r1-f3 R9 standalone topo-floor verify) are both resolved by reshape-to-property + drop-the-duplicate-verify. The two notes — surgical-r1-f4 (AC-3 fixture alternative) and surgical-r1-f5 (R8 prose tightening) — both fully resolved, with surgical-r1-f4 carrying an adjacent observation about AC-14's NEW fixtures directory (justified by R11 but not in Round-1 surgical scope). Net change footprint after Round 2 is tighter than Round 1 in absolute surface terms despite four new surfaces (heuristic doc, fixtures dir, R11/AC-14, R12/AC-15) — because the dropped surfaces (R9, R10-runtime, AC-12, AC-4, AC-13-verbatim, AC-3-fixture-alternative, R8-prose-tightening) more than offset the additions, and each addition traces to a Round-1 finding from another reviewer. Surgical principle held."
+}

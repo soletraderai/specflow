@@ -1,0 +1,55 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "summary": "The PRD has more binary verify steps than most — AC-3, AC-5, AC-7 cite concrete shell commands, and the existing skill `eval:` field is present. But several ACs leak judgement-laden phrases (\"documented HTML shape\", \"visually distinct shapes\", \"appears verbatim\", \"compiles to a `<pre>` element with the literal text 'Unsupported visual block' preceding it\") without spelling out the grep/cmp invocation that produces pass/fail. AC-11's edge cases (\"fatal compose error\", \"malformed attribute is ignored\") have no executable assertion. The skill `eval:` field still references \"every structured visual block\" without naming the four new kinds, so a fresh agent cannot tell from the eval alone whether key-features|resources|key-decisions|phase-split coverage is part of the success bar. Several requirements (R9 subtitle, R5 whitespace preservation, R5 source-order) lack a directly traceable AC-with-command.",
+  "findings": [
+    {
+      "id": "GDR-1",
+      "severity": "block",
+      "title": "Skill `eval:` field does not enumerate the four new block kinds",
+      "where": "plugins/specflow/skills/brief/SKILL.md:12",
+      "principle_violation": "Every skill has a binary eval: field describing the success check. The current eval reads 'every structured visual block in the PRD renders deterministically into the Visual abstract section' — a fresh agent reading the eval cannot determine whether `:::key-features`, `:::resources`, `:::key-decisions`, `:::phase-split` are covered, or whether the new kinds must be stripped from the PRD body. The eval is the binary contract; it must name what counts.",
+      "proposed_binary_verify_step": "Replace the eval line with: `eval: features/NNN-{slug}/{NNN-slug}-brief.html exists; second compose from unchanged sources is byte-identical (cmp -s passes); for each of {flow,comparison,scope,tree,key-features,resources,key-decisions,phase-split} a fixture PRD containing that block produces compiled HTML matching the documented selector (.journey, .modes-row, .scope, .cap-tree, .key-features, .resources, .key-decisions, .phase-split) inside <section id=\"visual-abstract\"> AND the literal `:::{kind}` text does NOT appear inside <section id=\"prd\">; sidebar TOC links resolve; rendered HTML carries a one-line policy banner reflecting config.brief.commitPolicy.`"
+    },
+    {
+      "id": "GDR-2",
+      "severity": "block",
+      "title": "AC-4 hides judgement inside 'produces the documented HTML shape' parenthetical",
+      "where": "PRD lines 97-98 (AC-4)",
+      "principle_violation": "'Documented HTML shape' is a description, not an assertion. The four payload phrases (\"CSS-grid row of feature cards\", \"row of link cards with favicon + title + source-type pill\", \"<table> with Decision | Why | Source columns\", \"two-column panel\") need a fresh agent to translate prose into selectors. That translation is judgement.",
+      "proposed_binary_verify_step": "Split AC-4 into four selector-grep assertions. Given a fixture PRD body with one of each new block, all of these must pass:\n```sh\ngrep -qE '<section id=\"visual-abstract\">[\\s\\S]*<div class=\"key-features\">[\\s\\S]*<article class=\"feature-card\">' brief.html\ngrep -qE '<section id=\"visual-abstract\">[\\s\\S]*<div class=\"resources\">[\\s\\S]*<a class=\"resource-card\"[^>]*>[\\s\\S]*<img[^>]+src=\"data:' brief.html\ngrep -qE '<section id=\"visual-abstract\">[\\s\\S]*<table class=\"key-decisions\">[\\s\\S]*<th[^>]*>Decision</th>[\\s\\S]*<th[^>]*>Why</th>[\\s\\S]*<th[^>]*>Source</th>' brief.html\ngrep -qE '<section id=\"visual-abstract\">[\\s\\S]*<div class=\"phase-split\">[\\s\\S]*<div class=\"phase-col this-phase\">[\\s\\S]*<div class=\"phase-col next-phase\">' brief.html\n```\nFreeze the selector names in the PRD so AC-4 and the implementation share one vocabulary."
+    },
+    {
+      "id": "GDR-3",
+      "severity": "block",
+      "title": "AC-11 edge-case ACs have no executable assertion",
+      "where": "PRD lines 112-116 (AC-11)",
+      "principle_violation": "'Fatal compose error per § Strict rules', 'malformed attribute is ignored, not fatal', 'treated as a closing marker' — these are behavioural descriptions. None says HOW a fresh agent verifies. Exit code? stderr regex? presence of a card despite the bad attribute? Without that, AC-11 fails the binary test.",
+      "proposed_binary_verify_step": "Rewrite AC-11 with three executable sub-assertions:\n- **Unclosed block**: fixture PRD with `:::key-features` and no closer → `specflow:brief NNN-slug` exits non-zero AND stderr matches regex `unclosed block.*key-features.*:[0-9]+` (file:line citation).\n- **Nested `:::`**: fixture PRD with `:::key-features\\n- foo | bar\\n:::\\n` (literal `:::` line in body) → compose succeeds (exit 0); compiled HTML contains exactly one `<div class=\"key-features\">` and the second `:::` line is absent from the HTML body (`grep -c '^:::$' brief.html` returns 0).\n- **Malformed attribute**: fixture PRD with `:::resources title=` (no value) → compose succeeds (exit 0); `<div class=\"resources\">` is present and contains no `<h3>` / `<h2>` title element (`grep -qE '<div class=\"resources\">[^<]*<a class=\"resource-card\"' brief.html` passes — title slot empty/skipped)."
+    },
+    {
+      "id": "GDR-4",
+      "severity": "block",
+      "title": "AC-10 'visually distinct shapes' is not binary",
+      "where": "PRD lines 121-122 (AC-10)",
+      "principle_violation": "'Compile to visually distinct shapes' is the canonical soft-verification anti-pattern. A fresh agent cannot run a 'visually distinct' check. The parenthetical column-heading text is the closest binary proxy but isn't framed as the assertion.",
+      "proposed_binary_verify_step": "Replace AC-10 body with: Given a fixture PRD body containing both `:::scope` and `:::phase-split`, the compiled brief HTML must satisfy all four greps:\n```sh\ngrep -qE '<div class=\"scope\">[\\s\\S]*<div class=\"scope-col v1\">[\\s\\S]*<div class=\"scope-col v2\">[\\s\\S]*<div class=\"scope-col out\">' brief.html\ngrep -qE '<div class=\"phase-split\">[\\s\\S]*<div class=\"phase-col this-phase\">[\\s\\S]*<div class=\"phase-col next-phase\">' brief.html\n# negative: phase-split must NOT carry the third 'out' column\n! grep -qE '<div class=\"phase-split\">[\\s\\S]*<div class=\"phase-col out\">' brief.html\n# count: scope renders 3 columns, phase-split renders 2\n[ \"$(grep -oE '<div class=\"scope-col [a-z0-9]+\">' brief.html | wc -l)\" -eq 3 ]\n[ \"$(grep -oE '<div class=\"phase-col [a-z0-9-]+\">' brief.html | wc -l)\" -eq 2 ]\n```"
+    },
+    {
+      "id": "GDR-5",
+      "severity": "concern",
+      "title": "AC-1 / AC-2 are soft presence claims with no command",
+      "where": "PRD lines 88-92 (AC-1, AC-2)",
+      "principle_violation": "'§ Visual Block Grammar lists four new block kinds' and '§ HTML Template carries CSS rule-sets for .key-features...' are presence claims. No grep is given, so a fresh agent has to find the section heading, decide what 'lists' means, and judge whether 'analogous selector names' counts. AC-2 also hedges with '(or analogous selector names)' — locking the names in is the cheap binary.",
+      "proposed_binary_verify_step": "Tighten to:\n```sh\n# AC-1: each new block kind has a fenced example under § Visual Block Grammar\nfor kind in key-features resources key-decisions phase-split; do\n  grep -qE \"^### \\`:::${kind}\\`\" plugins/specflow/skills/brief/SKILL.md || exit 1\ndone\n# AC-2: each new selector class is defined inside the inline <style> block\nfor sel in key-features resources key-decisions phase-split; do\n  grep -qE \"^[[:space:]]+\\\\.${sel}[[:space:]{,]\" plugins/specflow/skills/brief/SKILL.md || exit 1\ndone\n# negative: no external stylesheet link added\n! grep -qE '<link[^>]+rel=\"stylesheet\"' plugins/specflow/skills/brief/SKILL.md\n```\nThis also closes the 'analogous selector names' weasel — pick the four names, freeze them in AC-2."
+    },
+    {
+      "id": "GDR-6",
+      "severity": "concern",
+      "title": "Eval-coverage matrix: three requirements lack a binary AC trace",
+      "where": "PRD § Requirements (R5, R7, R9) vs § Acceptance criteria",
+      "principle_violation": "Goal-Driven Execution demands every requirement trace to a binary verify step. Walking R1-R10:\n- R1 → AC-1, AC-2, AC-4 (binary after GDR-2/GDR-5)\n- R2 → AC-1, AC-2, AC-4, AC-6 (AC-6 is binary)\n- R3 → AC-1, AC-2, AC-4 (binary after GDR-2)\n- R4 → AC-1, AC-2, AC-4, AC-10 (binary after GDR-2/GDR-4)\n- **R5 (block contract: opener attrs, structured body, `:::` closer, whitespace preserved as authored, source-order)** → only AC-11 (closer/attribute edge cases). **No AC asserts whitespace preservation; no AC asserts source-order rendering.**\n- R6 → AC-2, AC-5 (binary)\n- **R7 (strip rule for new kinds from PRD body)** → AC-7 covers `:::key-features` only. The other three (`:::resources`, `:::key-decisions`, `:::phase-split`) are not asserted-stripped.\n- R8 → AC-3 (binary)\n- **R9 (title= AND subtitle= attribute pattern)** → AC-9 covers `title=` only. **No AC asserts `subtitle=` renders.**\n- R10 → AC-8 (binary intent, no command — see severity note below)\n\nThis is the mandatory eval-coverage finding.",
+      "proposed_binary_verify_step": "Add three ACs (or extend existing ones) with concrete commands:\n\n**AC-12 (R5 whitespace + source-order)**: Given a fixture PRD with `:::key-features` followed by `:::resources` followed by `:::phase-split`, in that source order, with one feature line containing `  two-leading-spaces`:\n```sh\n# source order preserved\npython3 -c \"import re,sys; h=open('brief.html').read(); s=h.find('<section id=\\\"visual-abstract\\\">'); e=h.find('</section>',s); body=h[s:e]; idx=[body.find(c) for c in ['key-features','resources','phase-split']]; sys.exit(0 if idx==sorted(idx) and -1 not in idx else 1)\"\n# whitespace preserved: literal '  two-leading-spaces' appears in compiled output\ngrep -qE '  two-leading-spaces' brief.html\n```\n\n**AC-13 (R7 extended strip rule for all four new kinds)**: Given a fixture PRD body containing all four new blocks:\n```sh\nfor kind in key-features resources key-decisions phase-split; do\n  # extract <section id=\"prd\"> ... </section> range; verify literal ':::kind' marker absent\n  python3 -c \"import sys; h=open('brief.html').read(); s=h.find('<section id=\\\"prd\\\">'); e=h.find('</section>',s); sys.exit(0 if ':::${kind}' not in h[s:e] else 1)\" || exit 1\ndone\n```\n\n**AC-14 (R9 subtitle=)**: A `:::key-features title=\"Key features\" subtitle=\"What the feature does\"` block produces compiled HTML in which `grep -qE '>What the feature does<' brief.html` passes inside the `<div class=\"key-features\">` block.\n\nAlso harden **AC-8** (R10): change to `grep -qE 'Unsupported visual block[\\s\\S]{0,200}<pre' brief.html` so the literal string + ordering is asserted, not described."
+    }
+  ]
+}

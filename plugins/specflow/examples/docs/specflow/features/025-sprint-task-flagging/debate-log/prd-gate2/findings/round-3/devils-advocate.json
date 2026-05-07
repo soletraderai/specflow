@@ -1,0 +1,35 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "025-sprint-task-flagging",
+  "findings": {
+    "da-r1-f1": {
+      "decision": "accept",
+      "rationale": "Confirmed moot. R10 (PRD lines 106-108) is now documentation-only with explicit 'task/SKILL.md does NOT recompute-and-compare on every synthesis run' language. AC-12 is reserved (line 225) with the drop attributed to simplicity-r1-f1 / SURG-r1-f1 / DA-r1-f1. The Non-goals section (line 38) calls out 'Hand-edit detection' as out of scope. The circular-diagnostic interaction with `specflow:scope-change` Phase E delta-regeneration is structurally avoided because no runtime check fires. R10's trace explicitly cites 'avoids circular diagnostic with specflow:scope-change delta-regeneration' as a driving-value rationale — the architectural concern that motivated the finding is now load-bearing for the resolution. No further sharpening required.",
+      "residual_concern": "None. The hand-edit-as-scope-change-concern is documentation-level; AC-11 (grep absence of edit-affordance language) is the only check, and it does not produce false positives against the legitimate scope-change path."
+    },
+    "da-r1-f2": {
+      "decision": "accept",
+      "rationale": "Confirmed resolved. Non-goals (PRD line 37) now reads: 'Auto-detecting the optimal number of buckets vs accepting whatever the topology produces. Whether this lands in 022 or a future feature is a separate planning decision — FEATURES.md § 022 currently scopes 022 as task-merge / split / re-order, NOT bucket-count tuning.' This matches the proposed_change option (a): no longer claims 022 owns bucket-count tuning, scopes it as 'out here, planning decision later', and explicitly cites FEATURES.md § 022's actual scope. The cross-feature-coupling assumption is no longer asserted as resolved; it is documented as an open routing decision. R6 (line 88) similarly reads 'The heuristic does not tune the bucket count' without delegating ownership.",
+      "residual_concern": "Minor — proposed_change option (b) ('add a one-line note to 022's brief in v2/docs/FEATURES.md') was not applied; the dependency is documented at 025's end only, not at 022's end. Acceptable for PRD gate (FEATURES.md edits would be tangent work) but worth a follow-up doc-edit when 022's PRD is interviewed, so the cross-reference is bidirectional."
+    },
+    "da-r1-f3": {
+      "decision": "accept",
+      "rationale": "Confirmed resolved. The PRD now consistently references 'Phase B.4' (where 029's budget check already lives at task/SKILL.md line 208) instead of the non-existent 'Phase D verify-steps'. Specifically: R3 (line 74) — 'task/SKILL.md Phase B.4 (Self-check, where 029's budget check already lives at line 208) gains two one-line citations'; R3 explicitly disclaims a new Phase D — 'No new Phase D verify-steps section is created — verify lives in B.4 + the existing Verify before declaring done tail (line 460)'; R11 (line 110) — 'task/SKILL.md Phase B.4 invokes a graph-validity step'; AC-2 (line 136) anchors on B.4 + B.3. The implementer no longer faces the fork between restructuring Phase D vs relocating content. The skill-size headroom argument is now coherent because no Phase D rewrite is implied.",
+      "residual_concern": "None. Phase B.4's actual structure (per current task/SKILL.md line 208 onwards) is preserved; the PRD adds citations into the existing section rather than creating a new home."
+    },
+    "da-r1-f4": {
+      "decision": "accept",
+      "rationale": "Confirmed resolved. PRD Users section (lines 42-46) now lists three direct-user types (Power user, Admin, Engineer). Line 46 reads: 'Downstream consumers (informational, NOT contract-shaping stakeholders). specflow:sprint (020, future) reads sprint-bucket: N to plan a fan-out batch. 025 writes the field per R1-R12; how 020 reads it is 020's concern. Listing 020 here is informational and does not give it contract authority over 025's surface.' This matches proposed_change option (b) verbatim — a Downstream consumers note that disclaims contract authority. Non-goal 1 ('Building the sprint-skill itself (020). 025 produces the field; 020 consumes it.') is preserved on line 31. The framing risk that 020's eventual interface needs would force changes back into 025's contract is structurally defused.",
+      "residual_concern": "None. The disclaimer is explicit ('NOT contract-shaping stakeholders'), which is the strongest framing available short of dropping the bullet entirely."
+    },
+    "da-r1-f5": {
+      "decision": "accept",
+      "rationale": "Confirmed resolved via chain-don't-absorb (proposed_change option (c)). The heuristic + worked example + typed-comparator grammar + iteration discipline + graph-validity diagnostic format all live in the new sibling doctrine doc `plugins/specflow/templates/task/sprint-bucket-heuristic.md` (PRD lines 23, 54, 96-100), mirroring 029's `templates/admin/single-context-task.md` pattern. R8 (lines 96-102) explicitly enumerates the only skill-body additions: (1) one field-emission line in B.3, (2) one B.3 citation, (3) one B.4 citation, plus an explicit 'No prose-tightening of unrelated sections' constraint. R12's eval extension adds 2-4 lines on line 20. Total skill-body additions are ~5-7 lines against the 14-line headroom (current 486 → ≤500 cap), now plausible. The implementer no longer has implicit licence for drive-by edits to unrelated sections — surgical-r1-f5's framing is reinforced by the explicit prohibition.",
+      "residual_concern": "Minor — R12's exact eval-line count is not pinned (depends on whether each clause is one line or two). If the eval extension takes >7 lines (e.g. clause 1 + clause 2 + the parser-pass mechanism each on separate lines + connector prose), the headroom narrows to ~7 lines for the three R8-permitted additions. Acceptable risk: R8's ceiling is ≤500, not 'exactly 14 lines used', and AC-8 verifies the binary cap. The chain-don't-absorb posture is the structurally correct move; line-by-line accounting is a Gate 3 / synthesis-time concern."
+    }
+  },
+  "summary": "All five Round 1 findings accepted as resolved. da-r1-f1 is moot (R10 enforcement + AC-12 dropped); da-r1-f2 resolved by softening the 022 ownership claim to 'separate planning decision'; da-r1-f3 resolved by replacing all 'Phase D verify-steps' references with 'Phase B.4'; da-r1-f4 resolved by moving 020 to a 'Downstream consumers (informational)' note that explicitly disclaims contract authority; da-r1-f5 resolved by extracting the heuristic and worked example to `templates/task/sprint-bucket-heuristic.md` (chain-don't-absorb mirror of 029) and bounding skill-body additions to ~5-7 lines with an explicit prohibition on prose-tightening unrelated sections. Two minor residual concerns flagged (bidirectional cross-reference in FEATURES.md § 022; eval-line count slack) but neither blocks PRD gate."
+}

@@ -1,0 +1,32 @@
+{
+  "reviewer": "codex",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "016-brief-enhancements",
+  "responses": {
+    "codex-r1-f1": {
+      "decision": "sharpen",
+      "reasoning": "The PRD now says the mobile warehouse operator values graceful degradation at 1100px, 860px, and 360px, and AC-18 says the new selectors collapse at the existing 1100px and 860px breakpoints with no horizontal overflow at 360px. However, the executable AC-18 checks only grep for three CSS rules under `@media (max-width: 1100px)`; it does not check the 860px breakpoint, does not render at 360px, and does not assert actual overflow behaviour. Sharpen: require a rendering or browser-level check at 360px for all four new block surfaces, plus explicit verification that the 860px rules do not reintroduce overflow."
+    },
+    "codex-r1-f2": {
+      "decision": "sharpen",
+      "reasoning": "AC-6 is tighter than Round 1 because it now rejects HTTP(S) icon URLs and requires an `<img>` `src` prefix matching `data:image/(svg\\+xml|png);base64,`. The PRD still does not require the payload after the comma to be valid base64, to decode to a valid SVG or PNG image, or to stay within a maximum rendered attribute length; R2's one-line source-cost clause limits SKILL.md line count, not payload validity. Sharpen: pin the full data URI validation contract, including successful base64 decode and image-type validation for built-in source-type icons."
+    },
+    "codex-r1-f3": {
+      "decision": "accept",
+      "reasoning": "The revised PRD adds R13: malformed `icon=\"...\"` overrides, including non-base64, HTTP(S), and other MIME types, fall back to the source-type pill default and do not abort composition. AC-19 makes that observable by requiring a compiled HTML source comment `<!-- icon override fallback: .* -->`, a fallback `src` matching `data:image/(svg\\+xml|png);base64,`, and no HTTP(S) image URL. That is concrete enough for a test to assert fallback behaviour."
+    },
+    "codex-r1-f4": {
+      "decision": "accept",
+      "reasoning": "R6 now explicitly states that field emission order is fixed by the documented grammar and never by object or map iteration order. It names the affected surfaces: `Decision/Why/Source` columns, resource card sub-elements, and emitted HTML attributes. This applies the requested deterministic ordering rule in the PRD text."
+    },
+    "codex-r1-f5": {
+      "decision": "accept",
+      "reasoning": "AC-7 has been rewritten as a section-scoped assertion rather than a whole-document string count. It extracts `<section id=\"visual-abstract\">` and asserts exactly one `<div class=\"key-features\">`, then extracts `<section id=\"prd\">` and asserts that the `:::key-features` marker did not leak there. The PRD also states that matches inside `<style>` blocks are ignored because the check is scoped to section ranges."
+    },
+    "codex-r1-f6": {
+      "decision": "accept",
+      "reasoning": "The acceptance criteria in the revised PRD are numbered sequentially from AC-1 through AC-19. The prior out-of-order AC-11 before AC-9 and AC-10 condition is no longer present. This resolves the trace-review numbering concern."
+    }
+  }
+}

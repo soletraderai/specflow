@@ -1,0 +1,24 @@
+{
+  "reviewer": "codex",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "017-tdd-discipline",
+  "responses": {
+    "codex-r1-f1": {
+      "decision": "accept",
+      "reasoning": "R7 now preserves Red-lane human leadership while requiring a human-supplied Red artefact when AI drafts or changes testable code, or else recording `red: skipped (human-led Red lane)` with no `green: passed` marker emitted by the skill. AC-10 also requires the AI-assisted Red-lane marker contract to be documented."
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "reasoning": "R9 now states that 017 owns only the interim stub contract and semantic fields, while 019 owns the canonical per-task manifest schema. It explicitly says 019 may transform the stub through a migration/adapter and is not required to read the three-line block unchanged."
+    },
+    "codex-r1-f3": {
+      "decision": "accept",
+      "reasoning": "AC-1 now requires the first three cycle-step references to appear in Red, Green, Refactor order with strictly increasing line numbers. That addresses the original presence-only grep concern by adding an order check."
+    },
+    "codex-r1-f4": {
+      "decision": "accept",
+      "reasoning": "R14 requires the targeted test command to run against the pre-implementation state and capture failing exit plus stderr before Green entry. AC-13 further requires the trace to show a nonzero pre-implementation exit, later `exit 0`, and blocking on an invalid Red artefact."
+    }
+  }
+}

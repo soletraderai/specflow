@@ -1,0 +1,56 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "feature": "017-tdd-discipline",
+  "gate": "prd-gate2",
+  "round": 1,
+  "lens": "Does every requirement and AC trace directly to the user's request and the confirmed Goal?",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "block",
+      "claim": "R9's stub-section (`## Per-task manifest stub` appended to `{NNN-slug}-tasks.md`) silently extends the schema of an artefact 017 does not own — `tasks.md` is owned by `specflow:task`, and the per-task manifest is the explicit deliverable of feature 019. 017 is writing into a downstream artefact's body to bridge a schema gap that belongs to 019.",
+      "evidence": "PRD R9 schema-dependency clause: \"Until 019 lands, 017 writes the three lines into a stub `## Per-task manifest stub` section appended at the bottom of `{NNN-slug}-tasks.md` per task; 019 absorbs the section when it lands by promoting the stub to its own per-task manifest file.\" AC-7c locks the verbatim heading. The user's request (\"enforce TDD; tests-first must precede code execution\") and the confirmed Goal name the per-task manifest as the marker home — but the manifest is 019's surface, not 017's. Appending into the user-shipping tasks.md is adjacent-artefact creep; the markers should land in `admin/scratch/{NNN-slug}-develop/` (already in develop's scratch surface) or in a dedicated 017-owned file, not bolted onto a sibling skill's output.",
+      "blast_radius": "Every task in every feature run on 017+ will gain a stub block in tasks.md until 019 lands. Tasks.md becomes a hybrid spec+runtime-log artefact, breaking task.md's read-only-after-Gate-3 contract and contaminating the artefact `specflow:task` produces. Rolling back is a search-and-delete across all in-flight features.",
+      "rule_ref": "core-principles/surgical-changes — 'Touch only what you must. Don't improve adjacent code.'",
+      "remediation": "Land the stub in 017-owned territory: either `admin/scratch/{NNN-slug}-develop/manifest-stubs/{task-id}.md` or a new sibling file `{NNN-slug}-cycle.md`. Leave `{NNN-slug}-tasks.md` untouched. Update R9 + AC-7c to name the new location; 019 still absorbs deterministically because 017 owns the path."
+    },
+    {
+      "id": "surgical-r1-f2",
+      "severity": "concern",
+      "claim": "R12 (TDD section in CORE_PRINCIPLES.md) is adjacent-fix creep. The user's original request is operational — `specflow:develop` enforces tests-first — not doctrinal. The trace cites only \"codebase context bullet 3\" (the reviewer's own observation that the file lacks a TDD section), with no interview round where the user asked for a principle-level addition.",
+      "evidence": "Original request: \"Development needs to implore TDD; we must pass off work to another agent to review externally then provide feedback.\" Plus: \"TDD should inherit Matt Pocock's Red, Green approach.\" The interview rounds (1-4) all discuss Phase D mechanics, the Red artefact contract, Refactor bounds, and Gate 5 visibility — none ask whether TDD should be a 5th core principle. R12's trace bullet (\"codebase context bullet 3 — `CORE_PRINCIPLES.md` … has no TDD section. Adding a TDD section keeps it tight and bounded\") is an observation about the file, not a derived requirement from the user's goal.",
+      "blast_radius": "CORE_PRINCIPLES.md ships into every skill's system prompt. A new principle bumps every skill's preamble by ~30 lines (the cap R12 itself sets). If the principle is wrong-shaped, every downstream skill's behaviour shifts. The user did not ask for this surface to grow.",
+      "rule_ref": "core-principles/surgical-changes — 'Every changed line must trace directly to the user's request.'",
+      "remediation": "Drop R12 + AC-9 from 017. Document the cycle in `develop/SKILL.md` Phase D body (which is already in scope) and let the principle promotion be its own future feature if/when it earns its place. Alternative if R12 stays: re-frame the trace as a deliberate scope expansion the user explicitly approved at Sign-off, and surface in Open Questions whether the principle add is in scope or a separate feature."
+    },
+    {
+      "id": "surgical-r1-f3",
+      "severity": "concern",
+      "claim": "AC-7a / AC-7b (worked examples of per-task manifest fragments) and the alternative \"test fixture under `plugins/specflow/examples/`\" expand 017's surface beyond what the interview confirmed. The interview specifies the marker schema (Round 4) but does not request worked examples or fixtures — example artefacts are adjacent prose addition, not part of the goal.",
+      "evidence": "AC-7a: \"A worked example in `develop/SKILL.md` (or a test fixture under `plugins/specflow/examples/`) shows a per-task manifest fragment …\". AC-7b similar. Interview Round 4 only says: \"the per-task manifest (019, future) carries the three markers … so retro consumers can audit whether the cycle held.\" No request for examples in the SKILL body or fixtures under examples/. The schema (R9's three-line block) is itself the contract; the example is decorative.",
+      "blast_radius": "If the example lands as a fixture under `plugins/specflow/examples/`, 017 ships a new directory entry the example tree does not yet have. If it lands inline in `develop/SKILL.md`, the SKILL grows by N lines per example × 2 examples — pushing against the skill-size ceiling already flagged in user feedback.",
+      "rule_ref": "core-principles/surgical-changes — 'Don't improve adjacent code, comments, or formatting.' Plus user feedback: 'Skill size ceiling — chain, don't absorb.'",
+      "remediation": "Drop AC-7a + AC-7b. Keep AC-7c (the stub-section heading contract) since it is the load-bearing schema-dependency clause. The R9 schema block in the PRD itself is the example; downstream readers do not need a worked-fixture demo to understand a three-line format."
+    },
+    {
+      "id": "surgical-r1-f4",
+      "severity": "concern",
+      "claim": "AC-5 leaves the schema home ambiguous: \"`admin/config.json` schema (or its documented expectations in the relevant skill) declares `develop.tddRequired`\". The 'or' clause invites schema-creep into a file 017 may not need to touch — if `develop/SKILL.md` is the only consumer, documenting the expectation in develop is sufficient and surgical; declaring a schema entry in admin/config.json is heavier than the user's request.",
+      "evidence": "AC-5 wording: \"`admin/config.json` schema (or its documented expectations in the relevant skill) declares …\" — the 'or' makes both paths acceptable. R6's trace (interview Round 1: \"Green lane: configurable via `config.json.develop.tddRequired` (default `true`)\") names the *consumer* path but does not require a schema declaration in `admin/config.json` itself. `develop/SKILL.md` already reads `config.json.develop.greenBatchCap` (line 405) without a schema declaration in admin/config.json — surgical precedent is to consume, not to declare.",
+      "blast_radius": "If 017 lands a schema entry in `admin/config.json`, every other config knob (`greenBatchCap`, etc.) becomes a future surgical-creep magnet — 'while we were adding tddRequired we also documented greenBatchCap'. Bounded today; precedent-setting tomorrow.",
+      "rule_ref": "core-principles/surgical-changes — 'Touch only what you must. Match existing style.'",
+      "remediation": "Tighten AC-5 to a single path: document `develop.tddRequired` in `develop/SKILL.md` Phase D body (where the consumer reads it), matching the existing `greenBatchCap` precedent. Drop the 'or admin/config.json schema' clause from AC-5 unless the PRD author has evidence other skills consume the knob too."
+    },
+    {
+      "id": "surgical-r1-f5",
+      "severity": "note",
+      "claim": "R8 + AC-6 extend `test/SKILL.md` `--plan-only` mode with a new `--task T{N}` co-flag and a Red-artefact contract (mark primary AC's case as `Status: red (failing)` by default). This is in-scope per interview Round 2, but the change set should be auditable for surgical breadth: ensure the edit is the minimum delta against current `test/SKILL.md` lines 39, 51, 214 — not a wholesale rewrite of Phase B output format.",
+      "evidence": "R8 trace: codebase context bullet 2 + interview Round 2 (\"The Red phase fires `specflow:test {NNN-slug} --plan-only --task T{N}` against the task. The flag re-derives the test plan (Phase B of test) without executing\"). The contract is clear; the risk is execution-side: when the implementation lands, ensure no adjacent edits to test/SKILL.md Phase B's general behaviour creep in. The PRD's targeted lines (39, 51, 214) are the only edit surface.",
+      "blast_radius": "Low at PRD time (this is a flag addition, not a rewrite). Surfaced as a note so the develop-time reviewer keeps the surgical line drawn.",
+      "rule_ref": "core-principles/surgical-changes — 'Touch only what you must.'",
+      "remediation": "Add an explicit clause to R8: 'The edit is bounded to the three named line ranges (lines 39, 51, 214); Phase B's case-derivation logic and B.3's write template are unchanged in shape — only the per-task filter and the default `Status: red (failing)` marker are added.' This pins the surgical contract for the develop-time agent."
+    }
+  ],
+  "summary": "Two of the four targeted files are clean-trace (`develop/SKILL.md` Phase D restructure, `test/SKILL.md` `--plan-only --task T{N}` extension). The third (`CORE_PRINCIPLES.md` TDD section) is adjacent-fix creep — the user asked for operational TDD enforcement, not a principle-level addition; the trace cites only the reviewer's own codebase observation. The fourth (`admin/config.json` schema declaration) is ambiguously specified and risks setting a schema-creep precedent. The most blast-radius-significant finding is R9's stub-section in `{NNN-slug}-tasks.md`: 017 is writing into an artefact owned by `specflow:task` and slated for replacement by 019, hybridising the user-shipping tasks file with runtime cycle log. AC-7a/AC-7b worked examples are decorative additions the interview did not request."
+}

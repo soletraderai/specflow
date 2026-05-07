@@ -1,0 +1,79 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "feature": "025-sprint-task-flagging",
+  "lens": "Could a fresh agent run this verify step in isolation and tell me unambiguously whether it passed?",
+  "decision_basis": "Round-2 author accepted 5 of 6 findings (f4 ruled moot when AC-12 was dropped). Round-3 applies the binary test to the revised PRD: does each finding's verify-step now pass on its own evidence, or does residual ambiguity remain?",
+  "findings": {
+    "goal-driven-r1-f1": {
+      "round1_severity": "block",
+      "round2_decision": "accept",
+      "round3_decision": "sharpen",
+      "round3_severity": "concern",
+      "binary_test": "Does the eval field, after R12/AC-15 lands, exercise the new sprint-bucket field such that a fresh agent running the eval can return PASS only when both the field is present and the strict topological-floor corollary holds?",
+      "verdict": "Direction accepted; AC-15 verify-step under-specified. The author added R12 (two clauses) and AC-15 (verify), but AC-15 only greps the `eval:` *line text* for the strings `sprint-bucket` and `topological-floor|sprint-bucket: M.*M < N`. That confirms the eval field was *edited*, not that the eval field, when *executed*, exercises the corollary. A fresh agent reading AC-15 could legally satisfy it by writing `eval: ... sprint-bucket ... topological-floor ...` as a prose blurb without any binary verify command behind it — the same anti-pattern Round-1 flagged for AC-7/AC-10.",
+      "residual_gap": "AC-15 verifies the eval field's *text* but not the eval field's *executable contract*. R12 specifies `a parser pass over the synthesised tasks file emits zero violations` as the verify mechanism — that mechanism needs to appear inside the eval line as an actual command (or a stable `cited from <doc>` pointer to one), and AC-15 needs to verify the command runs and exits 0 against a fixture.",
+      "proposed_sharpening": "Tighten AC-15 to two stages. Stage 1 (text presence — the existing grep, retained): the eval field text mentions `sprint-bucket` and the strict-less-than corollary. Stage 2 (execution): the eval field embeds OR cites a parser command of the form `python3 -c '<extraction-and-floor-check>' {NNN-slug}-tasks.md`; running this command against a synthesised tasks file with a planted floor violation (T-2 has `Depends on: T-1`, T-1.sprint-bucket = 2, T-2.sprint-bucket = 2 — equal, not strict-less-than) exits non-zero with a parseable diagnostic. Fixture lives at `fixtures/eval-floor-violation-tasks.md`. Without Stage 2, R12 collapses to a documentation-only requirement — the same failure mode R12 was created to avoid.",
+      "calibration_note": "Severity drops block→concern because the *direction* (extending eval to exercise sprint-bucket) is correctly applied; only the AC's binary edge needs sharpening. If left as-is, the field could ship with a prose-only eval that still passes AC-15."
+    },
+    "goal-driven-r1-f2": {
+      "round1_severity": "block",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "round3_severity": "resolved",
+      "binary_test": "Does AC-9's verify command, run against the actual markdown-bullet file format `- **sprint-bucket:** N` under `### T-<id>` headings, distinguish two divergent runs from two reproducible runs?",
+      "verdict": "Resolved. AC-9 now uses a python3 regex `r'### (T-\\d+(?:\\.[A-Z])?)[\\s\\S]*?- \\*\\*sprint-bucket:\\*\\* (\\d+)'` that correctly anchors on both the heading AND the bullet pattern. The typed-comparator sort over `(int, optional-letter)` makes ordering deterministic. The Notes-leakage edge case is explicitly called out and handled by the dual anchor. A fresh agent running this on two divergent runs sees `sys.exit(1)`; on two reproducible runs sees `sys.exit(0)`. Binary.",
+      "residual_gap": "None. AC-9 passes the binary test as written."
+    },
+    "goal-driven-r1-f3": {
+      "round1_severity": "block",
+      "round2_decision": "accept",
+      "round3_decision": "sharpen",
+      "round3_severity": "concern",
+      "binary_test": "Does AC-13's execution-order fixture confirm the synthesis pass actually runs (a) budget check before (b) bucket assignment — not just that the doc lists them in that order?",
+      "verdict": "Direction accepted; AC-13 execution leg leans on AC-5 by reference (`fixture per AC-5 confirms the abort happens before any sprint-bucket: line is written for the oversize task`), but AC-5's own command pattern has two latent ambiguities that reduce the binary edge. (1) AC-5 uses the literal `T-OVERSIZE` ID in the fixture grep — a fresh agent constructing the fixture must know to use that exact ID; the PRD does not stipulate this naming convention so two implementations could disagree on the fixture ID and AC-5/AC-13 verdicts could diverge. (2) AC-5's `! grep -E 'T-OVERSIZE.*sprint-bucket' \"{NNN-slug}-tasks.md\"` is a negative grep; if the synthesis aborts before *any* tasks file is written (which is the most likely 029-R4 path), the file does not exist and `grep` exits 2, NOT 1 — the `!` then evaluates to success regardless of whether sprint-bucket appears. The negative is satisfied by file-not-existing, which is not the same as the property `the oversize task has no sprint-bucket`.",
+      "residual_gap": "AC-5 (and AC-13's execution leg by reference) needs (a) a stipulated fixture task ID, (b) a guard for the file-absent case, (c) clarity on whether 029-R4 aborts wholesale or writes a partial file with the oversize task elided.",
+      "proposed_sharpening": "Pin the fixture: AC-5 references `fixtures/oversize-task-prd.md` containing `T-1` (normal) and `T-OVERSIZE` (estimate exceeds budget) with `T-OVERSIZE Depends on: T-1`. The verify becomes: `specflow:task <fixture> 2>stderr.log; rc=$?; grep -qE 'budget.*exceeds.*T-OVERSIZE' stderr.log && { ! test -f <fixture-tasks.md> || ! grep -qE '### T-OVERSIZE[\\s\\S]*?\\*\\*sprint-bucket:\\*\\*' <fixture-tasks.md>; }`. The `! test -f || !grep` short-circuit covers both modes (abort wholesale OR partial file) without conflating file-absence with property-success. AC-13's execution leg cites this exact command rather than 'fixture per AC-5 confirms'.",
+      "calibration_note": "block→concern because the AC structure is right; only the negative-grep failure mode and fixture-ID stipulation need pinning. The risk is low but real: a fresh agent following AC-5 verbatim could declare PASS when the file doesn't exist for an unrelated reason (e.g. 029-R4 not yet implemented)."
+    },
+    "goal-driven-r1-f4": {
+      "round1_severity": "block",
+      "round2_decision": "moot",
+      "round3_decision": "accept",
+      "round3_severity": "resolved",
+      "binary_test": "n/a — the requirement (R10's hand-edit enforcement) was dropped per simplicity-r1-f1 / surgical-r1-f1 / DA-r1-f1.",
+      "verdict": "Moot is correct. AC-12 dropped; R10 reduced to documentation-only with AC-11 as the verifier. The original concern (under-specified diagnostic for hand-edit detection) no longer applies because the runtime diagnostic itself is out of scope. AC-11's `! grep -qE 'edit.*sprint-bucket|hand-edit|manually set sprint-bucket'` is a binary absence-of-affordance check that does pass the binary test for *what remains* (the documentation contract).",
+      "residual_gap": "None for the dropped surface. Note: the residual AC-11 is itself an absence-of-text check (the same family flagged by goal-driven-r1-f6), but its closed token list (`edit.*sprint-bucket|hand-edit|manually set sprint-bucket`) is bounded enough to satisfy the binary test, unlike the open-ended AC-7/AC-10 originals."
+    },
+    "goal-driven-r1-f5": {
+      "round1_severity": "concern",
+      "round2_decision": "accept",
+      "round3_decision": "sharpen",
+      "round3_severity": "concern",
+      "binary_test": "Does AC-14's per-case fixture + grep distinguish each malformed-graph case (self-loop, cycle, duplicate ID, dangling ref) from a valid graph and from each other?",
+      "verdict": "Direction accepted (R11 + AC-14 cover the four cases with verbatim `GRAPH-INVALID:` subtype prefixes). Two residual sharpenings needed. (1) AC-14 fixtures live at `fixtures/<case>.md` but the fixture *contents* are not stipulated — a fresh agent constructing the fixtures has latitude on how the cycle is shaped (T-1→T-2→T-1 vs T-1→T-2→T-3→T-1), which affects whether `grep -qE '^GRAPH-INVALID: cycle: T-'` matches. The grep happens to be permissive enough, but the fixture-shape ambiguity means two implementations could produce different cycle-traversal outputs and both pass the AC. That's acceptable for the present cycle case but tightens for the next two: (2) the duplicate-ID case has no stipulated 'how many duplicates' — does the fixture contain T-1, T-1 (two entries) or T-1, T-1, T-1 (three entries)? R11 says `duplicate task ID T-X` (singular), but the diagnostic format for >2 collisions is undefined. (3) The dangling-ref grep `'^GRAPH-INVALID: T-.*references unknown task T-'` is loose — it matches `T-X.depends_on references unknown task T-Y` but also matches any future diagnostic that happens to share the prefix; fine for now but worth pinning to the exact format from R11.",
+      "residual_gap": "Fixture contents not stipulated; behaviour with multiple duplicates undefined; greps are permissive enough to leak.",
+      "proposed_sharpening": "AC-14 stipulates each fixture's content explicitly: self-loop = `T-1 Depends on: T-1`; cycle = `T-1 Depends on: T-2; T-2 Depends on: T-1` (minimal 2-cycle, deterministic traversal); duplicate-ID = exactly two `### T-1` headings; dangling-ref = `T-1 Depends on: T-2` with no T-2 entry. Greps tighten to anchor on the full diagnostic line: `grep -qE '^GRAPH-INVALID: cycle: T-1 -> T-2 -> T-1$'` etc. R11 also gains a one-line clause: 'Multiple duplicates of the same ID emit one diagnostic per duplicate pair, in (line-number-asc) order.'",
+      "calibration_note": "concern→concern (severity preserved). Sharpening is structural, not a blocking gap; AC-14's spine is correct."
+    },
+    "goal-driven-r1-f6": {
+      "round1_severity": "concern",
+      "round2_decision": "accept",
+      "round3_decision": "sharpen",
+      "round3_severity": "concern",
+      "binary_test": "Do AC-7 (positive structural) and AC-10 (closed token list) survive the absence-check anti-pattern by being either positive assertions OR bounded negative greps with explicit allow-lists?",
+      "verdict": "AC-7 direction is good — it now asserts a structural property (`no shared file references both feature IDs alongside a sprint-bucket`) instead of a vague absence of 'cross-feature merging logic'. AC-10 direction is good — closed token list (`auto-tune|auto-detect|DAG|visuali[sz]ation|render`) is bounded. Two residual sharpenings: (a) AC-7's grep covers `plugins/specflow/skills/` but cross-feature bucket-merging logic could plausibly land in `plugins/specflow/templates/` (the new home of the heuristic doc) — a fresh implementer could move the leak there and AC-7 still passes; (b) AC-10's marker convention (`<!-- non-goal --> ... <!-- /non-goal -->`) is asserted by the Python check but not specified in any R requirement — task/SKILL.md today does not use these markers, so the Non-goals section in the *PRD* uses prose rather than HTML-comment markers, and AC-10's logic would flag the legitimate non-goals reference as a leak. The marker convention needs to be either (i) introduced as part of R8's allowed additions, or (ii) replaced with a section-anchor check (`pre.rfind('## Non-goals')` instead of `<!-- non-goal -->`).",
+      "residual_gap": "AC-7 path coverage is partial; AC-10 leans on a marker convention not introduced by any R requirement.",
+      "proposed_sharpening": "AC-7: extend the grep root to `plugins/specflow/{skills,templates}/` so the heuristic doc and any future template can't host the leak. AC-10: drop the `<!-- non-goal -->` marker dependency; instead assert that all matches occur after the literal `## Non-goals` heading and before the next `## ` heading. Updated check: `python3 -c 'import re; body = open(\"plugins/specflow/skills/task/SKILL.md\").read(); ng = re.search(r\"## Non-goals\\n([\\s\\S]*?)\\n## \", body); allowed = ng.group(1) if ng else \"\"; matches = [l for l in body.splitlines() if re.search(r\"\\b(auto-tune|auto-detect|DAG|visuali[sz]ation|render)\\b\", l)]; assert all(m in allowed for m in matches), [m for m in matches if m not in allowed]'`. Binary, no marker convention required.",
+      "calibration_note": "concern→concern. AC-7 and AC-10 are now mostly binary; the remaining sharpening prevents two predictable failure modes (leak migrating to templates/, marker convention silently absent) but the spine of the AC is intact."
+    }
+  },
+  "summary": {
+    "accept_resolved": ["goal-driven-r1-f2", "goal-driven-r1-f4"],
+    "sharpen": ["goal-driven-r1-f1", "goal-driven-r1-f3", "goal-driven-r1-f5", "goal-driven-r1-f6"],
+    "headline": "Round 2 applied the right directions; Round 3 closes residual binary-test gaps. The four sharpens cluster on the same theme: documented direction without an executable command leaves the verify-step soft. f1 needs an executed parser command inside the eval, not a text grep on the eval line. f3 needs a fixture-ID stipulation and a file-absent guard so the negative grep can't pass on file-not-found. f5 needs stipulated fixture contents so cycle-shape ambiguity doesn't fork the diagnostic format. f6 needs path-coverage extension and a marker-convention drop so the absence checks bind correctly. None are blockers; all are tightening passes that preserve the existing AC structure.",
+    "blockers_remaining": 0,
+    "concerns_remaining": 4
+  }
+}

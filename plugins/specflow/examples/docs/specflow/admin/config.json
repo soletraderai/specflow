@@ -17,6 +17,17 @@
       "iterationCap": 10
     }
   },
+  "task": {
+    "contextBudget": 80000,
+    "maxLessonsSurfaced": 5
+  },
+  "prd": {
+    "maxLessonsSurfaced": 5
+  },
+  "develop": {
+    "maxIssuesPerSprint": 5,
+    "tddRequired": true
+  },
   "teams": {},
   "linearProject": {
     "workspace": "northwind-orders",

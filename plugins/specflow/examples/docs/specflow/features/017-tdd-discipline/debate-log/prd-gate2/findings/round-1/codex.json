@@ -1,0 +1,37 @@
+{
+  "reviewer": "codex",
+  "principle": "cross-provider-skepticism",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "017-tdd-discipline",
+  "findings": [
+    {
+      "id": "codex-r1-f1",
+      "severity": "concern",
+      "evidence": "R7: \"The Red lane (human-led, per `rules/non-negotiable.md` PROTECTED_PATHS_REQUIRE_RED_LANE) does not have its TDD discipline enforced by `specflow:develop` — the human leads, the skill assists on bounded subtasks. The TDD configurable knob applies only to Green; Yellow and Red are fixed.\"",
+      "claim": "Protected-path work is forcibly Red-lane under PROTECTED_PATHS_REQUIRE_RED_LANE, and R7 then removes specflow:develop TDD enforcement for that lane. That creates an explicit path where protected-path tasks skip the Red artefact requirement entirely, even when the same task would otherwise be Yellow-mandatory tests-first because of weak verifiability.",
+      "proposed_change": "Amend R7/AC-10 to distinguish lane control from artefact audit: Red-lane protected-path tasks remain human-led, but if the AI assists by drafting or changing testable code, the skill must either require a human-supplied Red artefact before any AI Green-like implementation assistance or record `red: skipped (human-led Red lane)` with no `green: passed` marker emitted by the skill."
+    },
+    {
+      "id": "codex-r1-f2",
+      "severity": "concern",
+      "evidence": "R9: \"Each marker is one line in the manifest with this exact shape (the schema 017 owns):\" ... \"Schema dependency: 019-per-task-manifest is the eventual canonical home for these markers. Until 019 lands, 017 writes the three lines into a stub `## Per-task manifest stub` section appended at the bottom of `{NNN-slug}-tasks.md` per task; 019 absorbs the section when it lands by promoting the stub to its own per-task manifest file. The marker schema (the three-line block above) is owned by 017; 019 reads the schema unchanged.\"",
+      "claim": "017 pre-claims canonical ownership over a future 019 manifest schema. If 019 lands with a structured per-task manifest format, different timestamp precision, machine-readable outcome enum, or non-line-oriented storage, 017's 'exact shape' and '019 reads unchanged' requirement will force 019 to inherit an implementation detail from an interim stub.",
+      "proposed_change": "Reword R9 so 017 owns only the interim stub contract and semantic fields (`red`, `green`, `refactor`, outcome, timestamp, note). State that 019 owns the canonical manifest schema and must provide a migration/adapter from the 017 stub rather than being required to read the three-line block unchanged."
+    },
+    {
+      "id": "codex-r1-f3",
+      "severity": "note",
+      "evidence": "AC-1: \"`develop/SKILL.md` Phase D body contains three subheadings — `### D.1 Red`, `### D.2 Green`, `### D.3 Refactor` (or the equivalent literal substrings `Red`, `Green`, `Refactor` under H3 markers within Phase D). Phase E and Phase F headings are unchanged in scope. (Verified via `grep -E '^### D\\.[123]|^## Phase [DEF]' plugins/specflow/skills/develop/SKILL.md`.)\"",
+      "claim": "The grep command reports matching headings but does not define an expected ordered output or fail when D.2 appears before D.1. A post-change file could contain all three subheadings out of Red -> Green -> Refactor order and still look compliant if the verifier only checks presence.",
+      "proposed_change": "Replace the grep-only verifier with an order assertion, for example an awk/perl check that extracts Phase D headings and fails unless the first three D subheadings are exactly `### D.1 Red`, `### D.2 Green`, `### D.3 Refactor` before `## Phase E`; include the expected output in AC-1."
+    },
+    {
+      "id": "codex-r1-f4",
+      "severity": "block",
+      "evidence": "R8: \"Extend `test/SKILL.md` `--plan-only` mode (currently at `test/SKILL.md:39, 51, 214`) so that with the additional `--task T{N}` flag it writes the per-task plan section into `{NNN-slug}-test.md` and marks the primary AC's test case as `Status: red (failing)` by default. The Green sub-phase flips the marker to `Status: green (passing)` after `vitest` (or the configured runner) confirms the implementation passes.\"",
+      "claim": "`Status: red (failing)` is a documentation marker written during `--plan-only`, not runner output. R5/AC-3 only require that the marker string exists before Green entry, so an implementation can satisfy the Red artefact contract without ever proving the test actually fails before code is written.",
+      "proposed_change": "Add a Red-phase verification requirement: after authoring the test and before D.2, run the targeted test against the pre-implementation state and capture the failing runner exit/output in `{NNN-slug}-test.md` or an artefact file. D.2 may flip to `Status: green (passing)` only when the same targeted test command subsequently exits 0; if the pre-implementation run passes, block as an invalid Red artefact."
+    }
+  ]
+}

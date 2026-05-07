@@ -1,0 +1,51 @@
+{
+  "reviewer": "codex",
+  "principle": "cross-provider-skepticism",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "016-brief-enhancements",
+  "findings": [
+    {
+      "id": "codex-r1-f1",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:91-92; plugins/specflow/skills/brief/SKILL.md:391-403; admin/profiles.json:80-90",
+      "claim": "The PRD requires CSS for the four new selectors but does not require those selectors to participate in the existing responsive breakpoints, leaving the new card rows and table unverified for the mobile warehouse operator's limited-screen profile.",
+      "proposed_change": "Extend AC-2 or add a new AC requiring `.key-features`, `.resources`, `.key-decisions`, and `.phase-split` to have mobile behavior at the existing `max-width: 1100px` and `max-width: 860px` breakpoints, with a binary check that no new visual block overflows a 360px-wide viewport."
+    },
+    {
+      "id": "codex-r1-f2",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:50-52,103-104; 016-brief-enhancements-interview.md:35-37",
+      "claim": "Resource icon compatibility is under-specified because R2 says inline base64 icons but AC-6 only checks that `src` starts with `data:image/`, which would also pass SVG or other image data URI formats with inconsistent older/mobile browser behavior.",
+      "proposed_change": "Change AC-6 to assert the exact allowed icon URI form, for example `src` matches `^data:image/(png|webp);base64,` for built-in source-type icons and reject `http:`, `https:`, and non-base64 `data:image/svg+xml` unless the PRD explicitly permits and tests those formats."
+    },
+    {
+      "id": "codex-r1-f3",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:50,103-104; 016-brief-enhancements-interview.md:37",
+      "claim": "The PRD allows an explicit `icon=\"data:...\"` override but does not define validation or fallback for malformed, non-image, or non-base64 data URIs, so implementations can diverge while still satisfying the default-icon AC.",
+      "proposed_change": "Add a requirement and AC for `icon=` overrides: accept only `data:image/(png|webp);base64,...`, HTML-escape the attribute, and deterministically fall back to the source-type icon or abort with `file:line` when the override is malformed."
+    },
+    {
+      "id": "codex-r1-f4",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:62-64,97-100; plugins/specflow/skills/brief/SKILL.md:48-52",
+      "claim": "R5 preserves source order for blocks, but neither R5 nor AC-5 defines deterministic ordering for repeated fields inside a block when the parser stores attributes, metadata, or decision/resource columns in maps before rendering.",
+      "proposed_change": "Add text to R6 or AC-5 requiring field emission order to be fixed by the documented grammar, not by object/map iteration, including `Decision | Why | Source` table columns, resource card sub-elements, and any emitted HTML attributes."
+    },
+    {
+      "id": "codex-r1-f5",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:106-107; plugins/specflow/skills/brief/SKILL.md:253-404,449-458",
+      "claim": "AC-7's 'appears exactly once' check is ambiguous because selector names and title text can also appear in the inline `<style>` block or elsewhere outside the Visual abstract DOM.",
+      "proposed_change": "Rewrite AC-7 to use DOM-scoped assertions: within `section#visual-abstract`, exactly one `.key-features` root exists; within `section#prd`, zero elements and zero text nodes from the original `:::key-features` fenced block remain; ignore matches inside `<style>`."
+    },
+    {
+      "id": "codex-r1-f6",
+      "severity": "note",
+      "evidence": "016-brief-enhancements-prd.md:112-121",
+      "claim": "The acceptance criteria are numbered out of order, with AC-11 appearing before AC-9 and AC-10, which makes trace reviews and generated task lists more error-prone.",
+      "proposed_change": "Renumber the acceptance criteria so AC-9, AC-10, and AC-11 appear in numeric order without changing their requirement mappings."
+    }
+  ]
+}

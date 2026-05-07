@@ -350,6 +350,200 @@ The Sprint 1 sweep release. Closes the three remaining v2.x open PRD questions a
 
 ---
 
+## v2.4 → v2.5
+
+The Sprint 2 sweep release. Five features rewrite primary contracts (PRD/task/develop/brief). Adds four new doctrine docs, a new principle reviewer, two new config knobs, two new per-task fields, and a new core principle (TDD).
+
+### Scope
+
+**Config schema additions** (`admin/config.json`):
+
+- `task.contextBudget` — integer, default 80000. Per-task token ceiling for the single-context-window rule (per 029-single-context-task). Tasks whose `context-budget-estimate` exceeds this value auto-flag at synthesis and route to `specflow:scope-change` for splitting.
+- `develop.tddRequired` — boolean, default `true`. When `true`, Green lane behaves identically to Yellow on the Red artefact contract (per 017-tdd-discipline). When `false`, Green may skip Red. Knob applies to Green only — Yellow always enforces; Red is human-led.
+
+**New doctrine docs** (chain-don't-absorb pattern):
+
+- `templates/admin/single-context-task.md` — single-context-window-per-task contract (per 029).
+- `templates/admin/tdd-discipline.md` — Pocock's Red → Green → Refactor cycle (per 017).
+- `templates/task/cross-task-review.md` — Phase E.4.5 + Phase F doctrine for whole-set review (per 022).
+- `templates/task/sprint-bucket-heuristic.md` — single-rule fixpoint heuristic + graph-validity diagnostics (per 025).
+
+**New principle reviewer** (under `examples/docs/specflow/admin/agents/standard/principles/`):
+
+- `cross-task-reviewer.md` — coherence + better-arrangement lenses applied to the entire task list at Gate 3 Round 2.5.
+
+**New per-task fields** (`{NNN-slug}-tasks.md`):
+
+- `sprint-bucket: N` — derived deterministically per `templates/task/sprint-bucket-heuristic.md`.
+- `context-budget-estimate: <int_tokens>` — formalised in `templates/admin/single-context-task.md`.
+
+**Skill body changes** (no new skills):
+
+- `specflow:task` Phase B.3 / B.4 — adds the two new per-task fields, budget self-check, graph-validity check, sprint-bucket assignment.
+- `specflow:task` Phase E — Phase E.4.5 (Cross-task review three-round mini-debate) inserted between E.4 and E.5; Phase E.5 hybrid R3 surface.
+- `specflow:task` Phase E.6 closer — manifest gains `writer_id` / `cross_task_reviewer_id` / `applier_id` triplet, "Cross-task findings" H2 section, `passed-with-revisions` status added.
+- `specflow:task` Phase F (NEW) — `--apply-cross-task-feedback {NNN-slug}` applier flow.
+- `specflow:develop` Phase A.6 — context-budget pre-flight per in-scope task.
+- `specflow:develop` Phase D — Red / Green / Refactor sub-step structure with cycle-marker contract; `tddRequired` knob.
+- `specflow:develop` Phases D / E / F — single-context-window reminder.
+- `specflow:test` `--plan-only --task T{N}` mode — per-task variant with `Status: red (failing)` default; B.5 skipped.
+- `specflow:brief` Visual Block Grammar — four new blocks (`:::key-features`, `:::resources`, `:::key-decisions`, `:::phase-split`); inline SVG-base64 icon set for source-type pills; eight-kind grammar.
+- `specflow:setup` Phase 8.2 — seeds `task.contextBudget: 80000` in the config.json template.
+
+**New core principle** (`CORE_PRINCIPLES.md`):
+
+- `## TDD` section adopting Pocock's Red → Green → Refactor framing.
+
+### Steps the upgrade skill will execute
+
+1. **Backup** `admin/config.json.bak`.
+2. **Seed** `task.contextBudget: 80000` if absent. Preserve any user-set value.
+3. **Seed** `develop.tddRequired: true` if absent. Preserve any user-set value.
+4. **Stamp** `admin/config.json.specflowVersion` to `2.5.0`.
+5. **Synthesis re-run** is NOT triggered automatically — existing tasks files retain their pre-2.5 shape (no `sprint-bucket: N` or `context-budget-estimate` field). New `specflow:task` runs synthesise the new shape; user can manually re-run on existing features if desired.
+6. **Verify.** Run `specflow:doctor`. Confirm new config keys exist; confirm new doctrine docs are reachable from skill bodies.
+
+### Reversibility
+
+- `config.json.bak` retained until next successful upgrade or explicit `/specflow:upgrade --clean-backups`.
+- No source markdown is modified by this migration. PRD bodies, interviews, manifests, and registry files are untouched.
+- Existing tasks files retain their pre-2.5 shape; the new fields are forward-compatible (their absence on legacy task files is treated as "not yet bucketed; not yet budget-estimated").
+
+### Verify
+
+- `admin/config.json.task.contextBudget` is a positive integer.
+- `admin/config.json.develop.tddRequired` is a boolean.
+- `admin/config.json.specflowVersion === "2.5.0"`.
+- New doctrine docs exist: `templates/admin/single-context-task.md`, `templates/admin/tdd-discipline.md`, `templates/task/cross-task-review.md`, `templates/task/sprint-bucket-heuristic.md`.
+- New principle reviewer exists: `templates/agents/standard/principles/cross-task-reviewer.md` (or under `admin/agents/standard/principles/` once seeded by setup).
+- `CORE_PRINCIPLES.md` has a `## TDD` section citing `templates/admin/tdd-discipline.md`.
+- `specflow:doctor` passes.
+
+### Failure modes
+
+- **Existing tasks files have hand-edited fields colliding with new field names.** New fields are appended only when synthesis re-runs; legacy tasks files retain their shape. No silent overwrites.
+- **`brief/SKILL.md` and `task/SKILL.md` exceed the ≤500-line skill-size ceiling after Sprint 2 additions.** Acknowledged tradeoff (see CHANGELOG `### Known acknowledged tradeoff`). Chain-don't-absorb extraction (e.g. sibling `brief-blocks` skill) can land in v2.6 or later.
+
+---
+
+## v2.5 → v2.6
+
+The Sprint 3 sweep release. Five features extend operational runtime instrumentation: lessons-registry formalisation, per-task manifest, brand-consistency lens, reviewer-context-isolation contract, edge-case-reviewer.
+
+### Scope
+
+**Config schema additions** (`admin/config.json`):
+
+- `prd.maxLessonsSurfaced` — integer, default 5. Caps lessons surfaced inline at PRD time (per 018).
+- `task.maxLessonsSurfaced` — integer, default 5. Caps lessons surfaced at task time (per 018).
+
+**New doctrine docs**:
+
+- `templates/admin/lessons-registry.md` — formalises the read-write loop for `lessons.json` (per 018).
+- `templates/admin/task-manifest-schema.md` — per-task lifecycle workspace at `debate-log/tasks/T-NN-manifest.md` (per 019).
+- `templates/admin/reviewer-isolation.md` — fresh-context contract across all gates (per 027).
+
+**New principle reviewer agent**:
+
+- `examples/docs/specflow/admin/agents/standard/principles/edge-case-reviewer.md` — Gate 4 + Gate 5 reviewer with deliberately-not-goal-aware lens (per 028).
+
+**Skill body changes**:
+
+- `specflow:prd` Phase A.3.5 (NEW) — queries lessons.json; surfaces inline.
+- `specflow:task` Phase B.3 — `prior-lessons: [L-NNN, ...]` per-task field.
+- `specflow:test` Phase B.3 — Brand-consistency lens with 8 standard questions.
+- `specflow:develop` Phase C.2 + Phase E.2 — `edge-case-reviewer` joins the reviewer set at Gate 4 + Gate 5.
+- `specflow:setup` Phase 8.2 — seeds the new config knobs.
+
+**Reviewer template updates** — each principle reviewer's role-def gains the "Does NOT consult the writer's chat" + `writer_id` non-equality clause + isolation citation.
+
+**Orchestrator pattern extension** — new "Reviewer fresh-context dispatch" section + checklist bullet.
+
+### Steps the upgrade skill will execute
+
+1. **Backup** `admin/config.json.bak`.
+2. **Seed** `prd.maxLessonsSurfaced: 5` and `task.maxLessonsSurfaced: 5` if absent. Preserve user-set values.
+3. **Stamp** `admin/config.json.specflowVersion` to `2.6.0`.
+4. **Manifest migration** — for active in-flight features whose tasks have shipped 017's interim stub, the new manifest format is forward-only; existing stubs remain valid until those features close. New features land directly in 019's format.
+5. **Verify.** Run `specflow:doctor`.
+
+### Reversibility
+
+- `config.json.bak` retained until next successful upgrade.
+- No source markdown is modified by this migration.
+- Existing per-task scratch stubs (017 format) retained until feature closes; new features land in 019's format.
+
+### Verify
+
+- `admin/config.json.prd.maxLessonsSurfaced` and `admin/config.json.task.maxLessonsSurfaced` are positive integers.
+- `admin/config.json.specflowVersion === "2.6.0"`.
+- New doctrine docs exist: `templates/admin/lessons-registry.md`, `templates/admin/task-manifest-schema.md`, `templates/admin/reviewer-isolation.md`.
+- New principle reviewer exists at `templates/agents/standard/principles/edge-case-reviewer.md` (or under `admin/agents/standard/principles/` once seeded).
+- `specflow:doctor` passes.
+
+### Failure modes
+
+- **Existing per-task scratch stubs (017 format) on active features.** Retained as-is; no in-place migration. New features land in 019.
+- **Reviewer-template updates land on the plugin's `templates/agents/`, not on user-installed `admin/agents/`.** Users get the updates via `specflow:setup --upgrade-agents` (idempotent re-copy from templates). Without this, hand-edited reviewer files retain their pre-v2.6 shape; the contract still holds because the orchestrator's pre-dispatch check uses the doctrine doc, not the reviewer's role-def text.
+
+---
+
+## v2.6 → v2.7
+
+The Sprint 4 sweep release — and the closing release of the v2.x cycle. Two features: the new `specflow:sprint` skill (the first new skill since v2.3) and the `agent-teams-per-stage` doctrine.
+
+### Scope
+
+**New skill** (`plugins/specflow/skills/sprint/`):
+
+- `specflow:sprint` — lightweight sprint planner invoked by `specflow:develop` Phase A.5.5 as a sub-step. Skill toggle `config.skills.sprint.enabled` defaults to `true` (per 012-config-skill-toggles).
+
+**New doctrine doc**:
+
+- `templates/admin/stage-teams.md` — Plan → Build → Test → Iterate → Validate first-class doctrine.
+
+**Config schema additions** (`admin/config.json`):
+
+- `develop.maxIssuesPerSprint` — integer, default 5.
+- `teams` — object, default `{}` (empty). Per-stage roster overrides; doctrine defaults materialise on first sprint invocation.
+- `skills.sprint` — `{ "enabled": true }` toggle.
+
+**Skill body changes**:
+
+- `specflow:develop` Phase A.5.5 (NEW) — invokes `specflow:sprint` as a sub-skill.
+- `specflow:setup` Phase 8.2 — seeds the new config knobs and the new skill toggle.
+
+### Steps the upgrade skill will execute
+
+1. **Backup** `admin/config.json.bak`.
+2. **Seed** `develop.maxIssuesPerSprint: 5` if absent. Preserve user-set values.
+3. **Seed** `teams: {}` if absent. Preserve user-set values.
+4. **Seed** `skills.sprint: { "enabled": true }` if absent. Preserve user-set values.
+5. **Stamp** `admin/config.json.specflowVersion` to `2.7.0`.
+6. **Verify.** Run `specflow:doctor`. Confirm new config keys; confirm the new skill is registered in `skills.{name}.enabled` toggles.
+
+### Reversibility
+
+- `config.json.bak` retained until next successful upgrade.
+- No source markdown is modified by this migration.
+- The new sprint skill and stage-teams doctrine are forward-only; v2.6 projects continue to work without invoking them (develop's Phase A.5.5 short-circuits when `skills.sprint.enabled === false`).
+
+### Verify
+
+- `admin/config.json.develop.maxIssuesPerSprint` is a positive integer.
+- `admin/config.json.teams` exists (default `{}`).
+- `admin/config.json.skills.sprint.enabled` exists (default `true`).
+- `admin/config.json.specflowVersion === "2.7.0"`.
+- New doctrine doc exists at `templates/admin/stage-teams.md`.
+- New skill exists at `skills/sprint/SKILL.md`.
+- `specflow:doctor` passes.
+
+### Failure modes
+
+- **Existing in-flight features have no `team_assignments` block in their tasks.md.** Sprint reads `config.json.teams.{stage}` (or doctrine defaults) at sprint-plan time and resolves assignments for the in-scope batch only. Pre-v2.7 features whose tasks have already shipped don't need backfill.
+
+---
+
 ## Future entries
 
 Future versions append below. Format above. Newest at top.

@@ -1,0 +1,44 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "017-tdd-discipline",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "R6 adds `develop.tddRequired` (boolean, default `true`) to `admin/config.json` schema, with the rationale (interview Round 1) that 'projects with strong CI signal and binary-AC-heavy task lists may opt out.' No concrete second consumer is cited — the dogfood project defaults to `true` and there is no evidence in the interview or PRD of a current project demanding the opt-out. Simplicity First explicitly says: 'Do not introduce config knobs without a concrete second consumer demanding them.' AC-3 + AC-5 + AC-7b + R6 + the `red: skipped (config)` outcome enum value all exist solely to support this speculative knob.",
+      "claim": "The `tddRequired` knob is speculative configurability. Removing it collapses one config field, one outcome enum value, one verify-conditional in AC-3, one schema entry in AC-5, and the entire AC-7b worked example — net surface reduction across PRD, develop SKILL.md, test SKILL.md, and config.json. Yellow stays mandatory (the load-bearing case); Green inherits the same discipline. If a project later proves it doesn't need TDD on Green, that's the second-consumer signal that justifies adding the knob.",
+      "proposed_change": "Remove R6, AC-5, AC-7b, the `skipped (config)` outcome value from R9, and the conditional clause in AC-3 ('Green blocks when … / Green permits skip when …'). Replace with one sentence in R5: 'Green-lane tasks inherit Yellow's tests-first contract — the Red artefact is mandatory across both batched lanes.' If a future project needs the opt-out, add the knob then with the demand cited."
+    },
+    {
+      "id": "simplicity-r1-f2",
+      "severity": "concern",
+      "evidence": "R12 adds a new 'TDD' section to `CORE_PRINCIPLES.md` (currently four principles: Think-Before-Coding, Simplicity, Surgical, Goal-Driven). The CORE_PRINCIPLES file documents itself as 'rules-of-rules — they govern how the AI behaves on every piece of work.' TDD is a workflow shape inside one specific skill (develop) — it does not govern *how the AI behaves on every piece of work*. R1 already lands the discipline as Phase D sub-phases in develop/SKILL.md; R12 re-encodes the same content in CORE_PRINCIPLES. This is cross-file abstraction the principles file explicitly warns against ('Local reasoning beats cross-file elegance').",
+      "claim": "Adding TDD to CORE_PRINCIPLES.md duplicates R1's content and inflates a deliberately-tight file. The Pocock quote and Red/Green/Refactor naming belong inside develop/SKILL.md Phase D's prose where the contract actually fires. Downstream skills that need to cite the principle can cite `develop/SKILL.md § Phase D` directly — there is no current consumer outside develop.",
+      "proposed_change": "Drop R12 and AC-9. Inline the verbatim Pocock quote into develop/SKILL.md Phase D's opening paragraph (R1 already restructures Phase D — one extra paragraph there is the natural home). If a Phase 3 retro shows multiple skills citing the principle, promote then with the second-consumer signal in hand."
+    },
+    {
+      "id": "simplicity-r1-f3",
+      "severity": "concern",
+      "evidence": "R9 specifies three separate lines per task in the manifest, each with outcome + ISO-8601 timestamp + one-line note: `red: {outcome} ({timestamp}) — {note}`, `green: …`, `refactor: …`. The interview Round 4 + PRD R10 both establish this is *retro-only audit signal* — Gate 5 reviewers do not read the markers, the manifest is not in their context. The schema dependency on 019-per-task-manifest (R9 schema-dependency clause + AC-7c) adds a stub-section fallback heading that 019 must absorb deterministically.",
+      "claim": "Three timestamped lines per task for a single retro-audit consumer is over-spec. ISO-8601 timestamps on each sub-phase imply downstream timing analysis the PRD doesn't actually call for. The three-line + stub-section + 019-absorption contract creates coordination surface (017 owns the schema, 019 reads it unchanged) for what is currently a one-reader, one-writer signal.",
+      "proposed_change": "Collapse R9's marker schema to a single line per task: `tdd: {red-outcome}/{green-outcome}/{refactor-outcome} — {one-line note covering the cycle}`. Drop the per-sub-phase ISO timestamps (the manifest already carries one task-level timestamp). Update AC-7a + AC-7c accordingly; AC-7b is removed by f1's proposal. The single-line shape is still auditable, still absorb-able by 019, and reduces the schema-coordination surface 017 ↔ 019 must agree on."
+    },
+    {
+      "id": "simplicity-r1-f4",
+      "severity": "note",
+      "evidence": "AC-7a, AC-7b, and AC-7c are three separate worked-example acceptance criteria (Yellow happy path, Green-with-skip-outcomes, stub-section heading verbatim). The PRD already documents the schema in R9; develop/SKILL.md will document it in Phase D. Three worked examples for one schema is duplication.",
+      "claim": "One worked example per concept is enough. Three examples (one per outcome variant) is configuration-driven AC proliferation — each new outcome enum value spawned a new AC.",
+      "proposed_change": "After f1 lands (drops AC-7b) and f3 lands (collapses the schema), keep AC-7a as the single worked example showing the one-line `tdd:` marker shape. AC-7c becomes a one-liner inside R9's schema-dependency clause ('section heading is verbatim `## Per-task manifest stub`') rather than a standalone AC."
+    },
+    {
+      "id": "simplicity-r1-f5",
+      "severity": "note",
+      "evidence": "R11 specifies that Refactor's 'no new files' rule hard-blocks via the develop skill emitting 'Refactor cannot add files; route to specflow:scope-change' and halting the cycle. This implies new file-creation detection logic inside D.3 (Refactor sub-phase). Develop already has scope-change routing in B.1.3 (confidential paths added mid-execution force-upgrade to red) and D.1 (machine-check failure force-upgrades lane). Adding a third bespoke detection path for Refactor adds skill surface.",
+      "claim": "The 'no new files in Refactor' bound is correct (interview Round 3 + Topics-not-discussed both confirm hard-block), but the implementation surface is unnecessary. If the agent inside D.3 attempts to add a new file, that is by definition a Surgical-Changes violation — the existing scope-change route at B.1.3 / D.1 already covers 'change set extends beyond planned scope.' R11 + AC-11 specify a Refactor-specific message + halt path that duplicates existing routing.",
+      "proposed_change": "Reduce R11 to one bullet under R3's Refactor bounds: 'If Refactor would add a new file, the agent halts and routes to specflow:scope-change (per existing develop skill scope-change routing — no new detection logic in D.3).' Drop AC-11's bespoke 'Refactor cannot add files' message contract; the existing scope-change handoff message is enough."
+    }
+  ]
+}

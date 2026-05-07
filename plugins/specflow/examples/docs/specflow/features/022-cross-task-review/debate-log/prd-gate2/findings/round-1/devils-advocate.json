@@ -1,0 +1,49 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "022-cross-task-review",
+  "findings": [
+    {
+      "id": "DA-1",
+      "severity": "block",
+      "lens": "architectural-gotcha",
+      "claim": "R7's `agent_id` substrate is asserted as 022's-becomes-027's-foundation, but 027 has no PRD yet. 027 may legitimately reject the timestamp+suffix scheme in favour of cryptographically-bound or harness-emitted run-IDs (Medin's archon pattern, knowledge/medin-archon-harness-builder.md). If 027 lands a different mechanism, 022 ships ~3 manifest fields and a closer-escalation path that 027 must then deprecate-with-migration. The PRD treats 'chain-don't-absorb' as a one-way street but 027's design space is unconstrained.",
+      "evidence": "PRD R7 (line 80-87), interview Round 8 resolution (line 79). FEATURES.md § 027 line 188-189 names the doctrine doc and `writer_id`/`reviewer_ids` block but does NOT pin the ID-generation scheme. The 'reviewer_ids' (plural array) shape in 027's stated scope already differs structurally from 022's three-flat-fields shape (writer_id + cross_task_reviewer_id + applier_id). Substrate compatibility is asserted, not designed.",
+      "proposed_change": "Either (a) add an 'Open question' to the PRD: 'If 027's PRD lands a non-timestamp ID mechanism, 022's R7 fields auto-migrate via {documented adapter} OR are deprecated-with-data-loss-acceptable' — and resolve before Gate 2 closes; OR (b) downgrade R7 to a single `agent_id_audit_block: <opaque blob>` field that 027 fills however it likes, with 022 only verifying the block is non-empty and per-agent-distinct. Option (b) genuinely chains-don't-absorbs; the current R7 prejudges the substrate."
+    },
+    {
+      "id": "DA-2",
+      "severity": "block",
+      "lens": "lane-surface-mismatch",
+      "claim": "Phase F (`specflow:task --apply-cross-task-feedback`) is a NEW invocation contract for `specflow:task` that the PRD treats as a private internal sub-mode, but `specflow:task` has parent skills (e.g. `specflow:scope-change` re-fires it; future `specflow:sprint`/020 may invoke it; the user can invoke it directly per R15 'first-class mode entry-point'). R15 itself acknowledges this by demanding the flag be first-class in `## Inputs`. But the PRD does not specify what happens when a HUMAN runs `specflow:task --apply-cross-task-feedback {NNN}` standalone (e.g. to retry a failed applier pass) without the orchestrator's R1 findings JSON having been produced. Phase F's three required inputs (R5) include `cross-task-reviewer.json` from round-1 — what does the skill do if it's missing? Refuse? Generate a stub? Re-fire E.4.5.1?",
+      "evidence": "PRD R5 (line 71-74) names the three Phase F inputs but no precondition-check protocol. R15 (line 120-122) makes the flag first-class but documents only happy-path resume (skip A→F). AC-17 verifies the Inputs section + Phase A branch but not the missing-input failure mode.",
+      "proposed_change": "Add a sub-requirement (R15.1 or extend R5): Phase F's first action is a precondition check on all three inputs; on missing `cross-task-reviewer.json`, refuse with `'Cross-task review has not fired for this feature. Run specflow:task {NNN} from Phase E to produce the findings, then re-invoke --apply-cross-task-feedback'`. Add an AC clause testing this path (1-task fixture invoked with the flag must refuse cleanly). Without this, the standalone-invocation surface is undefined."
+    },
+    {
+      "id": "DA-3",
+      "severity": "block",
+      "lens": "cross-artefact-drift",
+      "claim": "The PRD addresses 029 (budget) cross-cuts (R9) and 027 (isolation) cross-cuts (R7) but is SILENT on 025 (sprint-bucket) cross-cuts despite 025 shipping in the SAME sprint. When the applier accepts a merge of T3+T7, the merged task carries… T3's `sprint-bucket` value? T7's? Recomputed via 025's heuristic? When a split surfaces, do both children inherit the parent's bucket or get re-bucketed? If the applier writes a `sprint-bucket` value the cross-task review didn't read, 025's heuristic lineage is broken silently.",
+      "evidence": "PRD lists 025 only in interview pre-grilling context (line 14: 'recommendations route through specflow:scope-change, not in-place edits') — but 022's applier explicitly DOES do in-place edits for coverage-preserving merges/splits (R6 line 76, R9 line 95). FEATURES.md § 025 (line 81-86) ships `sprint-bucket: N` per task; FEATURES.md § 029 (line 95-96) line `Cross-task review (022) — its 'better arrangement' lens explicitly checks: are any tasks oversized?` shows 029 anticipates 022, but no parallel callout exists from 022 → 025. The Non-goal at PRD line 36 carves out cross-feature batching but NOT in-feature bucket-recompute.",
+      "proposed_change": "Add R-bucket-rebucket-on-merge-or-split: 'When the applier accepts a merge, the merged task's `sprint-bucket` is recomputed via 025's heuristic against the merged scope (NOT inherited from either parent). When the applier accepts a split, each child re-runs the heuristic. The applier records the pre-edit and post-edit bucket values in `cross-task-responses.json` per finding for audit.' Add an AC clause exercising this in the worked-example fixture (R11). Without this, 022 + 025 ship into the same sprint with a silent contract gap."
+    },
+    {
+      "id": "DA-4",
+      "severity": "major",
+      "lens": "blast-radius-underestimate",
+      "claim": "The PRD inserts Phase E.4.5 mid-numbering and asserts (R14) that downstream-numbering compatibility is fine because no skill greps for `^### E\\.5` literally. But the 'behaviour shift' at E.6 (Closer), E.7 (Final disposition), and E.8 (Clean up) is unaddressed. E.6 today (`task/SKILL.md:388-426`) writes a manifest with three sections (Accepted / Rejected / Escalated) covering ONE artefact under review. R8 mandates a parallel 'Cross-task findings' H2 section with its OWN three sub-sections. E.6's closing-decision logic must now collate findings from TWO lenses into ONE status (passed/passed-with-revisions/passed-with-escalations/failed). What if per-task says PASS but cross-task escalates? The PRD asserts 'one shared closing-decision footer covering both lenses' (Goal line 28, R8 line 89) but doesn't specify the precedence rule. E.6's behaviour change is structural, not cosmetic.",
+      "evidence": "Current `task/SKILL.md:388-426` E.6 closer template has three sections; R8 doubles them. Current `lifecycle/orchestrator.md` closer rules (cited E.6 line 426: 'FAIL on any unresolved block; HUMAN-DECISION-NEEDED on any unconverged block; PASS otherwise') are written for a single finding-stream. Two streams introduces the question: does an unresolved cross-task block fail Gate 3 the same way an unresolved per-task block does? PRD is silent.",
+      "proposed_change": "Add R-closer-precedence: 'E.6 closer logic applies the existing FAIL-on-unresolved-block rule to the UNION of per-task and cross-task findings. A `block`-severity finding from EITHER lens triggers the same status rules. The closing-decision rationale paragraph names which lens(es) drove the status.' Add an AC clause: a fixture where per-task PASSES but cross-task escalates a `block` finding closes Gate 3 as `passed-with-escalations`. Without this, E.6's behaviour change is implicit and the orchestrator may pass-status a gate that should escalate."
+    },
+    {
+      "id": "DA-5",
+      "severity": "major",
+      "lens": "blast-radius-underestimate",
+      "claim": "The PRD specifies the happy-path three-round mini-debate (R3) but is silent on failure semantics for the FORKED SUB-AGENT itself. What if the cross-task reviewer's R1 forked sub-agent dies mid-deliberation (network drop, harness crash, returns malformed JSON, returns no findings file)? What if the applier's Phase F invocation fails mid-edit (tasks.md half-written)? Per 027's still-pending isolation contract, the orchestrator can't simply 'retry in same context' — that violates fresh-context discipline. The PRD treats sub-agent dispatch as reliable; the forked-sub-agent surface is not. R7's `FRESH-CONTEXT-VIOLATION` escalation is the only failure path documented and it covers ID collision, not dispatch failure.",
+      "evidence": "PRD R3 (line 60-65) describes the four-step mini-debate as if every dispatch returns a valid finding JSON. R7 (line 85-87) treats agent_id collision as the only failure mode worth a manifest signal. Compare to existing E.3 in `task/SKILL.md:343-352`: it dispatches reviewers and 'wait for all reviewers to return their finding paths' — same trust assumption. This is a pre-existing gap in the standard reviewer set; 022 inherits it but does not call it out.",
+      "proposed_change": "Add R-sub-agent-failure-fallback: 'If the cross-task reviewer's forked sub-agent fails to return a valid finding JSON within {timeout/retries TBD}, Phase E.4.5 logs the failure to `debate-log/tasks-gate3/findings/round-{N}/cross-task-reviewer.failure.json` with the failure mode, escalates the gate as `passed-with-escalations` (NOT failed — the cross-task lens is additive, not load-bearing), and the manifest closer notes `Cross-task review unavailable: {reason}; per-task review remains authoritative for this run.' Same fallback applies to applier dispatch failure. Add an AC clause exercising the fallback against a fixture that simulates dispatch failure. Without this, a flaky harness silently breaks Gate 3."
+    }
+  ]
+}

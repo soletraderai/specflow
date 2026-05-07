@@ -16,7 +16,7 @@ produces:
   - docs/specflow/admin/lessons.json (mutated; .bak preserved on every write)
   - docs/specflow/admin/task-history.json (appended on --feedback)
   - docs/specflow/admin/pages.json (lazy-appended on first UI run per route; never duplicates)
-eval: every PRD acceptance criterion has a test case in {NNN-slug}-test.md; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact (screenshot, log line, runner output) referenced from the test plan; lesson-query in B.0 surfaces matched active lessons; --feedback writes one new lesson to lessons.json plus one new test case to {NNN-slug}-test.md tagged with the lesson id; UI scenarios append unseen routes to admin/pages.json idempotently (009-pages-policy v2.4.0).
+eval: every PRD acceptance criterion has a test case in {NNN-slug}-test.md; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact (screenshot, log line, runner output) referenced from the test plan; lesson-query in B.0 surfaces matched active lessons; --feedback writes one new lesson to lessons.json plus one new test case to {NNN-slug}-test.md tagged with the lesson id; UI scenarios append unseen routes to admin/pages.json idempotently (009-pages-policy v2.4.0); when invoked with `--plan-only --task T{N}`, the per-task plan section written into {NNN-slug}-test.md contains at least one test case marked `Status: red (failing)` (017-tdd-discipline v2.5.0).
 
 ---
 
@@ -37,6 +37,7 @@ The user invokes you with one of:
 - `specflow:test {NNN-slug}` — full mode. Re-derives the plan, executes everything in scope.
 - `specflow:test {NNN-slug} --targeted T1,T3,AC-2` — targeted mode. Re-derives the plan but executes only the specified task IDs and AC IDs.
 - `specflow:test {NNN-slug} --plan-only` — re-derives the plan and writes the test file; does NOT execute. Useful for early-cadence reviews when the implementation isn't ready yet.
+- `specflow:test {NNN-slug} --plan-only --task T{N}` — per-task variant of plan-only. Writes only the per-task plan section into `{NNN-slug}-test.md` (not the whole feature plan) and marks the primary AC's case as `Status: red (failing)` by default — the Red artefact for `specflow:develop`'s 017-tdd-discipline cycle. **Phase B.5 (Codex pass + user prompt) is skipped** in `--task` mode — the per-task slice inherits whatever B.5 outcome the feature-level test plan recorded; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time. Doctrine: `templates/admin/tdd-discipline.md`.
 - `specflow:test {NNN-slug} --feedback` — feedback mode. Runs Phase D (lesson capture) instead of A/B/C. Used when something marked done turned out to be wrong on human review; logs the gap to `admin/lessons.json`, adds a covering test case, and appends an attribution to `task-history.json`. See **Phase D** below.
 - `/specflow:test` with no argument — ask the user which feature.
 
@@ -175,9 +176,26 @@ tasks: ./{NNN-slug}-tasks.md
 
 (continue for every test case)
 
+## Brand-consistency lens (per 023-test-brand-consistency v2.6.0)
+
+Beyond binary AC pass/fail, ask the following questions and record findings *separately* from AC findings (so they don't pollute the binary signal). One row per question per page/component touched.
+
+| Question | Answer (yes/no/n-a) | Evidence | Severity (info/concern/block) |
+|---|---|---|---|
+| Are fonts correct on every page? | | | |
+| Are colors / palette tokens correct? | | | |
+| Are spacing / layout tokens correct? | | | |
+| Are CTAs styled consistently with the rest of the product? | | | |
+| Are loading / empty / error states designed (not default)? | | | |
+| Are accessibility primitives present (alt text, aria-labels, focus rings, skip links)? | | | |
+| Does the change feel on-brand on first read (subjective but recorded)? | | | |
+| What might have been missed that the AC list didn't cover? | | | |
+
+Brand findings are **advisory** — they don't fail the binary AC pass/fail signal; they surface in the Execution log for human review. `severity: block` flags an item the human MUST resolve before ship; `concern` is documented technical debt; `info` is observational.
+
 ## Execution log
 
-(Phase C appends here on every run — most recent at the top.)
+(Phase C appends here on every run — most recent at the top. Each run includes both the AC table outcomes and the brand-consistency lens table.)
 
 ## See also
 

@@ -1,0 +1,37 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "016-brief-enhancements",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:78-80 (R9) and :118-119 (AC-9) require all four new blocks to support title=/subtitle= attributes; trace cites interview 'Topics not discussed' which says 'Assumed yes — consistency with the existing four blocks'. No goal, user, or other AC consumes a titled :::resources, :::key-decisions, or :::phase-split block.",
+      "claim": "R9/AC-9 add a configurability surface (title=/subtitle= on four new block kinds) that no concrete consumer in this PRD demands — violates 'No flexibility or configurability that wasn't requested' (CORE_PRINCIPLES.md:23) and 'Do not introduce config knobs without a concrete second consumer demanding them' (line 34).",
+      "proposed_change": "Drop R9 and AC-9. Specify title=/subtitle= only for the block kinds whose ACs actually render a title — currently :::key-features (because Vision/non-technical surface implies a heading). For :::resources / :::key-decisions / :::phase-split, omit attribute support until an AC needs it. If a later feature requires titles on those, add per kind then."
+    },
+    {
+      "id": "simplicity-r1-f2",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:50-52 (R2) and :103-104 (AC-6) define :::resources as having two icon-resolution paths: source-type-pill-driven base64 lookup AND an explicit per-line icon=\"data:...\" override. The interview (Round 3) frames the override as 'OR'/'overrides' but only AC-6 verifies behaviour — and it verifies the pill-driven default, not the override. There is no AC, user, or example demanding the override.",
+      "claim": "Dual icon-resolution (pill default + per-line icon= override) is speculative configurability — one path with no consumer. Violates 'Minimum code that solves the problem' and 'Do not introduce config knobs without a concrete second consumer demanding them' (CORE_PRINCIPLES.md:23, 34).",
+      "proposed_change": "R2 and AC-6: ship only the source-type-pill-driven inline base64 lookup for linear|doc|design|github. Strip the icon=\"data:...\" override clause from R2. If a feature owner later needs a custom icon for a one-off pill (e.g. slack, notion), add the override then with a real AC."
+    },
+    {
+      "id": "simplicity-r1-f3",
+      "severity": "concern",
+      "evidence": "016-brief-enhancements-prd.md:94 (AC-3) prescribes the exact prose-tightening shape: '(a) collapse the verbatim block-grammar example listings (currently lines 130-141 for :::flow, 150-163 for :::comparison, 173-188 for :::scope, 198-207 for :::tree) into a single shared example shape with per-kind cells; (b) extract the inline CSS comment headers (e.g. /* Visual abstract — :::flow */) from the style block since the selectors are self-documenting.'",
+      "claim": "AC-3 over-specifies the line-reduction tactic — it dictates a 'shared example shape with per-kind cells' across four currently-independent block grammars, introducing a cross-block coupling for budget reasons. Violates 'Local reasoning beats cross-file elegance' / 'No abstractions for single-use code' (CORE_PRINCIPLES.md:23, 29). The contract the AC actually wants to verify is byte-cap.",
+      "proposed_change": "Reduce AC-3 to its binary check: 'wc -l plugins/specflow/skills/brief/SKILL.md ≤ 500 after the change set'. Drop the prescribed (a) shared-example-shape and (b) comment-header-extraction tactics from the AC body. Move them — without prescription — into a non-binding 'Implementation notes' bullet under R8 if needed. Let the implementer pick the shortest path that keeps each block grammar locally readable."
+    },
+    {
+      "id": "simplicity-r1-f4",
+      "severity": "note",
+      "evidence": "016-brief-enhancements-prd.md:62-64 (R5) and :112-116 (AC-11) restate the existing block contract (opener/closer, whitespace preservation, source-order positioning, nested-:::, unclosed-block fatal, malformed-attribute forgiving) for the four new blocks. brief/SKILL.md:212-216 already declares these rules for all blocks generically.",
+      "claim": "R5 and AC-11 add PRD surface for behaviour the existing skill contract already covers — 'Each block keeps its position in the source' and the § Strict rules at brief/SKILL.md:215 apply by construction once a kind is added to the supported set. Restating them risks divergent wording. Mild violation of 'Minimum code that solves the problem' / 'Surgical changes — touch only what you must'.",
+      "proposed_change": "Collapse R5 into a one-line sentence in R1-R4: 'Each new block honours the existing block contract at brief/SKILL.md:212-216 (opener/closer, source-order, whitespace, nested-:::, unclosed-fatal, malformed-attribute-forgiving) — no new edge-case rules introduced.' Delete AC-11 entirely; the existing § Strict rules are the verifier. Keep only AC-8 (unsupported-kind <pre> fallback), which is the one edge case being extended."
+    }
+  ]
+}

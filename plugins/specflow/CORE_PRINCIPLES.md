@@ -51,6 +51,12 @@ Touch only what you must. Don't improve adjacent code, comments, or formatting. 
 
 ---
 
+## TDD
+
+Adopt Pocock's Red → Green → Refactor cycle as the canonical implementation pattern inside `specflow:develop`'s lane sub-phases. Pocock: *"TDD forces the LLM to really take small steps."* Red writes a failing test before any code lands and the failing exit must be captured pre-implementation; Green writes the simplest change that makes the test pass; Refactor is bounded structural improvement under the green test as guard (no new behaviour, no new files, no scope creep). The cycle is mandatory on Yellow, configurable on Green via `config.develop.tddRequired` (default `true`), and skipped on Red lane (human-led). Operational contract — markers, schema, lane interactions, halt messages — lives in `templates/admin/tdd-discipline.md`.
+
+---
+
 ## 4. Goal-driven execution
 
 Every skill that produces output declares verify steps inline (`1. Step → verify: check`). Loop until verified. Strong success criteria let the LLM iterate independently; weak ones force constant clarification.

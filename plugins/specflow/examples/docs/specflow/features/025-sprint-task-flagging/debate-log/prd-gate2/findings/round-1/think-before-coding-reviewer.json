@@ -1,0 +1,49 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 1,
+  "feature": "025-sprint-task-flagging",
+  "artefact": "025-sprint-task-flagging-prd.md",
+  "findings": [
+    {
+      "id": "tbc-r1-f1",
+      "severity": "block",
+      "claim": "R2's recursive rule `bucket(T) = 1 + max(bucket(D) for D in T.depends_on)` is well-defined only on a DAG. The PRD never states the DAG assumption and never specifies what synthesis does when `Depends on:` contains a cycle. On a cycle the recursion is non-terminating; on a self-edge `bucket(T) = 1 + bucket(T)` has no fixed point. A silent assumption that 'the graph is acyclic' is load-bearing for the entire heuristic to be deterministic and reproducible (R2 + AC-9).",
+      "evidence": "PRD R2 input #1: 'bucket(T) = 1 if T.depends_on is empty, otherwise bucket(T) = 1 + max(bucket(D) for D in T.depends_on). This guarantees a unique integer per task derived from the dependency graph alone.' — the 'guarantees' clause is only true on a DAG. PRD has no mention of cycle detection, DAG validation, or behaviour on cyclic input. R9's topological-floor invariant (`T_j.sprint-bucket <= N` for every T_j in T_i's depends_on) is a *post-hoc* check that would catch a cycle only by infinite loop or by violating the strictness implied by 'bucket N+1 only depends on buckets ≤ N' — but the synthesis would never reach the invariant check because the recursion would not terminate first.",
+      "proposed_change": "Add R11 (or extend R2): 'Before bucket assignment, `task/SKILL.md` Phase D verifies that the `Depends on:` graph is acyclic. A cycle aborts synthesis with a diagnostic naming the cycle members and pointing the user to `specflow:scope-change`. The DAG assumption is stated explicitly: bucket assignment requires an acyclic dependency graph; cycles are a synthesis-time error, not a runtime concern.' Add corresponding AC for cycle detection.",
+      "trace": "Think Before Coding: 'state assumptions explicitly'. The DAG-ness of `Depends on:` is the load-bearing unstated assumption that makes the entire R2 heuristic well-defined."
+    },
+    {
+      "id": "tbc-r1-f2",
+      "severity": "block",
+      "claim": "R2's lexicographic tie-break references 'task ID' but the canonical task ID format is unstated and the assumption it makes about the format is wrong for the format actually used in this codebase. R2 parenthetically clarifies '(`T1 < T2 < ... < T10` — i.e. natural-number ordering on the integer suffix)' but the existing tasks files in this codebase (e.g. 029-single-context-task-tasks.md) use IDs of the form `T-1`, `T-2`, `T-3.A`, `T-3.B`. Naive string lexicographic ordering yields `T-1 < T-10 < T-2 < T-3.A < T-3.B` — NOT natural-number order. The tie-break is therefore non-deterministic-in-effect across two readers who disagree on what 'lexicographic' means here.",
+      "evidence": "PRD R2 input #2: 'Lexicographic ordering on task IDs (T1 < T2 < ... < T10 — i.e. natural-number ordering on the integer suffix) is the deterministic tie-break.' AC-9 reiterates 'lexicographic tie-break on task ID (the later ID is bumped)'. Actual task IDs in 029-single-context-task-tasks.md (read via Grep): `T-1`, `T-2`, `T-3.A`, `T-3.B`, `T-4`, `T-5`. The `T-` prefix and the `.A`/`.B` suffix from 029's split flow break the 'integer suffix' assumption. Natural-number-ordering ≠ string-lexicographic-ordering once IDs reach two digits or carry split suffixes.",
+      "proposed_change": "Specify the canonical task-ID grammar explicitly in R2 (e.g. 'Task IDs follow `T-<int>(\\.<letter>)?` per `task/SKILL.md` Phase B'), and define the tie-break as a typed comparator over (int, optional-letter) — NOT as 'lexicographic' on the raw string. Add an AC asserting the comparator is documented as such and a worked example shows the comparison `T-2 < T-10` (natural-number, not string-lex).",
+      "trace": "Think Before Coding: 'don't assume; surface tradeoffs'. R2's tie-break has the *appearance* of determinism but rests on an unstated and contradicted ID-format assumption."
+    },
+    {
+      "id": "tbc-r1-f3",
+      "severity": "concern",
+      "claim": "R5 says 'bucket numbers are scoped to the feature' but never states the load-bearing precondition: task IDs are unique within a feature. Without this, the lexicographic tie-break in R2 is undefined when two tasks share an ID. Within-feature uniqueness is implied by the existing schema but not asserted; cross-feature uniqueness is silent (and the PRD does not need it, but a reader can't tell from the text).",
+      "evidence": "R5 trace says feature-scoped numbering, but neither R5 nor R2 asserts 'task IDs are unique within a feature'. AC-7 only verifies that two features carry independent bucket numbering; it doesn't verify ID uniqueness. The interview never raises ID uniqueness either.",
+      "proposed_change": "Add to R2 (or as a preamble to the heuristic): 'Task IDs are unique within a feature; bucket assignment relies on within-feature ID uniqueness for the lexicographic tie-break to be defined. Cross-feature ID collisions are out of scope (R5).' One sentence, makes the assumption explicit.",
+      "trace": "Think Before Coding: 'state assumptions explicitly'. The uniqueness assumption is load-bearing for R2's tie-break and the within-feature scoping in R5; both leave it implicit."
+    },
+    {
+      "id": "tbc-r1-f4",
+      "severity": "concern",
+      "claim": "The PRD treats the '020 maps one Linear project to one specflow feature' mapping as a stable contract that justifies excluding cross-feature batching from 025's surface (R5). But `v2/docs/FEATURES.md` § 020 explicitly lists this as 'open design (deferred to feature build)' with cross-feature planning parked. So R5's rationale is grounded in a hypothesis, not a settled contract. If 020's mapping later evolves (e.g. one feature → many Linear projects, or many features → one project), R5's feature-scoped invariant becomes either trivially true but useless, or actively misleading.",
+      "evidence": "PRD R5 trace: 'The sprint-skill (020) maps one Linear project to one specflow feature; cross-feature batching happens at a higher orchestration layer if/when promoted.' v2/docs/FEATURES.md § 020 (line 224): 'Open design (deferred to feature build): skill vs persistent agent — skill recommended… Cross-feature sprint planning (multi-Linear-project batches) stays parked under the existing parked-memory entry — out of scope for 020.' The mapping assumption is forward-looking, not contract-locked.",
+      "proposed_change": "Reword R5's 'See also' or trace to be hypothesis-tagged: 'Per the current 020 design hypothesis (one Linear project → one specflow feature; FEATURES.md § 020), cross-feature batching is out of scope. If 020's mapping evolves, 025's feature-scoping should be re-examined.' Or add an explicit Open Question rather than closing it. The change is stylistic but prevents 025 from outliving the 020 hypothesis it leans on.",
+      "trace": "Think Before Coding: 'present multiple interpretations' — R5 currently presents one. The interview's note that 020 'maps one Linear project to one specflow feature' is a design choice still up for revision per FEATURES.md."
+    },
+    {
+      "id": "tbc-r1-f5",
+      "severity": "concern",
+      "claim": "R2's scope-overlap split rule bumps `bucket(T_j) := bucket(T_j) + 1` when same-bucket tasks have overlapping scope. After the bump, T_j is now in bucket N+1 and could newly overlap with *other* tasks already in bucket N+1, creating cascading conflicts. The PRD doesn't say whether the bump is one-pass (single sweep, may leave residual overlaps) or iterated to fixed-point (re-checks after each bump). Two synthesis runs that pick different sweep orders could produce different bucketings unless the iteration discipline is specified.",
+      "evidence": "R2 input #2: 'When two tasks T_i and T_j are in the same computed bucket and have overlapping scope surfaces, the lexicographically later task ID is bumped to the next bucket: bucket(T_j) := bucket(T_j) + 1 if T_i.id < T_j.id.' No statement about whether this rule is applied once per pair, iterated until stable, or scheduled in a particular order. AC-9 asserts reproducibility but does not specify the iteration discipline that would make reproducibility hold.",
+      "proposed_change": "Specify the sweep order explicitly: e.g. 'Bumps are applied iteratively until no same-bucket scope overlap remains: in each pass, walk same-bucket task pairs in (bucket-asc, T-id-asc, T-id-asc) order and bump the later-ID partner; repeat passes until a pass produces zero bumps (fixed point). Termination is guaranteed because each bump strictly increases bucket numbers and the topological-floor invariant bounds the maximum bucket a task can reach.' Add to AC-9.",
+      "trace": "Think Before Coding: 'don't hide confusion'. The bump rule looks deterministic at the pair level but is silent on the iteration that turns pair-level determinism into global determinism."
+    }
+  ]
+}

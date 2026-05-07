@@ -1,0 +1,164 @@
+{
+  "round": 2,
+  "gate": "prd-gate2",
+  "feature": "022-cross-task-review",
+  "responses": {
+    "codex-r1-f1": {
+      "decision": "accept",
+      "rationale": "AC-15's hand-authored closer-output.txt expectation file does not exercise the closer logic. Replace with a fixture-level manifest-generation check produced by the implemented Phase E.6/Phase F flow, removing the unit-parser path entirely.",
+      "revision_applied": "AC-15 collision sub-block dropped; the worked-example fixture's manifest is the only collision audit signal (writer/reviewer/applier IDs distinct in green path; collision detection deferred to 027)."
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "rationale": "The `awk '/^## Phase F/,/^## /'` range pattern self-defeats. Use the strict next-heading idiom.",
+      "revision_applied": "AC-5 / AC-6 / AC-12 / AC-17 all rewritten with the `awk 'found && /^## /{exit} /^## Phase F/{found=1} found{print}'` boundary idiom."
+    },
+    "codex-r1-f3": {
+      "decision": "accept_partial",
+      "rationale": "Echo-back spoofing surface is real; per surgical-r1-f2 the simpler answer is to drop the echo protocol and the closer collision check entirely. R7 simplifies to a single best-effort field.",
+      "revision_applied": "R7 simplified — see surgical-r1-f2 response."
+    },
+    "codex-r1-f4": {
+      "decision": "accept_via_simplification",
+      "rationale": "Timestamp+suffix collision-resistance is moot once the closer doesn't enforce uniqueness as a hard signal. The simplified R7 records the field, doesn't generate-time check it.",
+      "revision_applied": "R7 simplified — see surgical-r1-f2 / simplicity-r1-f2 responses."
+    },
+    "codex-r1-f5": {
+      "decision": "accept",
+      "rationale": "Phase F MUST read config.task.contextBudget at execution time; stale snapshot would silently bypass runtime overrides.",
+      "revision_applied": "R9 amended: 'Phase F reads config.task.contextBudget from the active config at Phase F entry; never uses a value embedded in the Round-1 finding or synthesis-time snapshot.'"
+    },
+    "codex-r1-f6": {
+      "decision": "accept",
+      "rationale": "Critical 025 cross-cut. Same as DA-3.",
+      "revision_applied": "Added R16 (sprint-bucket recompute on accepted merge/split per 025's heuristic; ambiguous results route to scope-change-required); AC-18 added."
+    },
+    "codex-r1-f7": {
+      "decision": "accept_no_change",
+      "rationale": "Threshold gate adequately covered."
+    },
+    "DA-1": {
+      "decision": "accept",
+      "rationale": "027 design space is unconstrained; 022's substrate may need to migrate. Surface as Open Question rather than asserting one-way chain.",
+      "revision_applied": "Open Question OQ-1 added: '022→027 substrate migration. If 027's PRD lands a non-timestamp ID mechanism, R7's fields auto-migrate via documented adapter OR are deprecated-with-data-loss-acceptable. Resolve before 027 ships.'"
+    },
+    "DA-2": {
+      "decision": "accept",
+      "rationale": "Missing-input failure mode for standalone applier invocation is undefined.",
+      "revision_applied": "R5 amended: 'Phase F's first action is a precondition check on all three inputs; on missing cross-task-reviewer.json, refuse with clear error pointing user to re-run Phase E first.' AC-5 extended with this fixture path."
+    },
+    "DA-3": {
+      "decision": "accept",
+      "rationale": "Critical 025 cross-cut missed.",
+      "revision_applied": "Added R16 — applier recomputes sprint-bucket via 025's heuristic on accepted merge/split; pre-edit and post-edit bucket values recorded in cross-task-responses.json per finding for audit; ambiguous bucket recomputation routes to scope-change-required."
+    },
+    "DA-4": {
+      "decision": "accept",
+      "rationale": "E.6 closer behaviour shift with two lenses needs explicit precedence rule.",
+      "revision_applied": "R8 extended: 'E.6 closer applies the existing FAIL-on-unresolved-block rule to the UNION of per-task and cross-task findings. block-severity from EITHER lens triggers the same status. Closing rationale names which lens(es) drove the status.' AC-19 added."
+    },
+    "DA-5": {
+      "decision": "accept",
+      "rationale": "Forked-sub-agent dispatch failure semantics undefined.",
+      "revision_applied": "Added R17 — sub-agent dispatch failure fallback. Failed dispatch logs to round-{N}/cross-task-reviewer.failure.json; gate escalates as passed-with-escalations (not failed; cross-task lens is additive); manifest notes 'Cross-task review unavailable: {reason}; per-task review remains authoritative for this run.' Same fallback for applier dispatch failure."
+    },
+    "goal-driven-r1-f1": {
+      "decision": "accept",
+      "rationale": "Runtime population of agent_id fields needs binary verification beyond doc grep + fixture authorship.",
+      "revision_applied": "AC-15 extended with green-path-runtime check on the worked-example-fixture replay producing live manifest with regex-extractable agent_id triplet."
+    },
+    "goal-driven-r1-f2": {
+      "decision": "accept_via_simplification",
+      "rationale": "Same as codex-r1-f1 — drop the closer-parser-unit path entirely; manifest-generation in the worked example IS the audit signal."
+    },
+    "goal-driven-r1-f3": {
+      "decision": "accept",
+      "rationale": "Doctrine-doc content needs to be asserted, not just existence.",
+      "revision_applied": "AC-12 extended with four content-grep checks against templates/task/cross-task-review.md (Phase E.4.5 section, Phase F section, manifest schema, agent_id generation scheme)."
+    },
+    "goal-driven-r1-f4": {
+      "decision": "accept",
+      "rationale": "scope-change-required leg of three-state contract has zero fixture coverage.",
+      "revision_applied": "AC-11 split into AC-11a (worked-example fixture demonstrating accept + reject + sharpen) and new AC-11b (scope-change-routing fixture demonstrating three scope-change-required findings: missing R, hard-cap merge, drop-with-coverage-hole)."
+    },
+    "goal-driven-r1-f5": {
+      "decision": "accept",
+      "rationale": "Skip-path agent_id behaviour undefined.",
+      "revision_applied": "R7 extended: 'In the skip case, only writer_id is populated; cross_task_reviewer_id and applier_id are absent. Closer's collision check fires only when ≥2 of the three IDs are populated; absent fields short-circuit comparison.' AC-14 extended with the asymmetric-skip-state assertions."
+    },
+    "goal-driven-r1-f6": {
+      "decision": "accept",
+      "rationale": "Mandatory eval-coverage. Eval extension as written misses fixture, doctrine doc, skip-path asymmetry, downstream-numbering.",
+      "revision_applied": "R13 rewritten exhaustively per goal-driven-r1-f6 proposed_change: eval enumerates 3+ task path, <3 task skip path, doctrine doc existence/content, worked-example fixture, brief.md compatibility, line cap. AC-13 split into per-clause binary checks."
+    },
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "Interview Round 3 user explicitly chose three rounds after considering single-shot. The 'just leave it at three rounds so a decision has to be made' framing was user-confirmed; collapsing to two would walk back the sign-off."
+    },
+    "simplicity-r1-f2": {
+      "decision": "accept_partial",
+      "rationale": "R7 was over-engineered. Simplify per surgical-r1-f2 below — keep best-effort manifest field; drop closer-side collision check + FRESH-CONTEXT-VIOLATION escalation surface; drop the AC-15 collision unit fixture.",
+      "revision_applied": "R7 simplified to manifest-field-only; collision check + escalation removed; agent-id-collision-unit fixture dropped."
+    },
+    "simplicity-r1-f3": {
+      "decision": "accept",
+      "rationale": "R11 fixture content was over-prescribed.",
+      "revision_applied": "R11 amended: minimum requirement is that the fixture demonstrate both lenses (one finding spanning both, OR two findings one per lens). AC-11a checks lens strings; finding count is fixture-author discretion."
+    },
+    "simplicity-r1-f4": {
+      "decision": "accept_partial",
+      "rationale": "R14's repo-wide grep audit is defensive scaffolding; drop it. R15's first-class flag promotion is reviewer-pressure creep; demote per surgical-r1-f4.",
+      "revision_applied": "R14 reduced to: doctrine doc note about scope-change re-fire interaction + brief/SKILL.md compat verification. AC-16 simplified. R15 demoted to a clarification under R5; AC-17 trimmed to the Phase A jump-to-F branch only."
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "scope-change/SKILL.md edit is out-of-surface for 022.",
+      "revision_applied": "R14 dropped scope-change/SKILL.md edit; doctrine doc carries the cross-task-aware re-fire note. AC-16 simplified to doctrine-doc + brief.md compat checks."
+    },
+    "surgical-r1-f2": {
+      "decision": "accept_with_modification",
+      "rationale": "R7 simplification accepted. Keeping applier_id (not just writer/reviewer) because R16 (sprint-bucket recompute) and R10 (per-task R3 sharpen) both reference applier identity. But dropping the timestamp+suffix scheme spec (orchestrator generates IDs however convenient), the echo-back protocol, the closer collision check, and the FRESH-CONTEXT-VIOLATION escalation.",
+      "revision_applied": "R7 collapsed: 'Manifest gains three best-effort fields: writer_id, cross_task_reviewer_id, applier_id. Each is populated at dispatch time with whatever opaque value the orchestrator generates (format unspecified — 027 owns the format contract). The closer records values verbatim; closing-decision logic notes if any two are identical as an info-level note (not escalation, not block). The audit signal is field-presence + non-collision in the green path; absent fields in the skip path are the asymmetric tell.' AC-7 / AC-13 / AC-14 / AC-15 simplified accordingly."
+    },
+    "surgical-r1-f3": {
+      "decision": "accept",
+      "rationale": "Goals section conflated outcomes with mechanisms.",
+      "revision_applied": "Goals collapsed to four outcome-shaped bullets (per the proposed_change); mechanism specifics moved into the corresponding Rs."
+    },
+    "surgical-r1-f4": {
+      "decision": "accept",
+      "rationale": "R15 over-promoted the flag.",
+      "revision_applied": "R15 demoted to a clarification under R5; AC-17 trimmed to the Phase A jump-to-F branch only."
+    },
+    "surgical-r1-f5": {
+      "decision": "accept_partial",
+      "rationale": "Drop the B4-CHECK-FAILED-POST-APPLIER diagnostic surface; keep the ordering guarantee.",
+      "revision_applied": "R10 trimmed: 'Phase E.4.5.4 must complete writing the post-applier tasks.md before Phase E.5 starts. Phase E.5 reads the post-applier tasks.md as input; if the applier wrote an incomplete file, per-task reviewers surface the issue in their normal lens.' Diagnostic surface dropped."
+    },
+    "tbc-r1-f1": {
+      "decision": "moot",
+      "rationale": "Per surgical-r1-f2 R7 simplification, the timestamp+suffix scheme is no longer specified at PRD level — 027 owns the format. The collision-resistance assumption is a 027 concern."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "rationale": "R3's always-has-new-evidence is load-bearing.",
+      "revision_applied": "R3 + R11 amended: ASSUMPTION (under test by R11 fixture): cross-task R3 sharpen surface yields meaningfully new evidence in non-trivial cases. R11 fixture R3 step MUST produce non-empty new evidence (not merely re-asserted severity)."
+    },
+    "tbc-r1-f3": {
+      "decision": "accept",
+      "rationale": "Same as DA-2 — manual invocation guard needed.",
+      "revision_applied": "R5 + R15 amended (precondition check on missing inputs)."
+    },
+    "tbc-r1-f4": {
+      "decision": "accept",
+      "rationale": "Threshold tradeoff was unstated.",
+      "revision_applied": "R2 amended with explicit Tradeoff sub-clause naming false-negative on 2-task subtle-coherence and false-positive on 3-task linear-flow features."
+    },
+    "tbc-r1-f5": {
+      "decision": "accept",
+      "rationale": "Critical — per-task R3 sharpen surface ambiguous when T-ids merge/drop.",
+      "revision_applied": "R10 amended with hybrid R3 clarification: per-task reviewers sharpen R1 findings whose T-id still exists; resolve as auto-resolved-by-cross-task-merge / drop when T-id was changed; net-new findings on applier-introduced tasks recorded as round-3-net-new with one-pass orchestrator response (no R4)."
+    }
+  },
+  "summary": "Accepted 25 of 30 findings with revisions; 1 push-back (simplicity-r1-f1, interview-confirmed); 4 made moot by simplification cascade (codex-r1-f3, f4; tbc-r1-f1; goal-driven-r1-f2). Major substantive revisions: R7 simplified to opaque manifest fields (027 owns format); R11 fixture coverage expanded to all three decision states + scope-change variants; new R16 (sprint-bucket recompute on merge/split — 025 cross-cut); new R17 (sub-agent dispatch failure fallback); R8 closer precedence rule for two lenses; R10 hybrid R3 clarification; eval extension exhaustive; AC awk patterns fixed; standalone applier invocation guard. Round 3 sharpen pass condensed: applied revisions cover all BLOCK + concern findings; expected reviewer convergence."
+}

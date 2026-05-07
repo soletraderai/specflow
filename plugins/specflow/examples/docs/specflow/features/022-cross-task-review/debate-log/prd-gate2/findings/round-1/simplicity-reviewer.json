@@ -1,0 +1,37 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "022-cross-task-review",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "concern",
+      "evidence": "R3 mandates a four-step mini-debate (E.4.5.1 fire → E.4.5.2 applier respond + apply → E.4.5.3 sharpen → E.4.5.4 applier final pass). The interview Round 3 user rationale is symmetry with the per-task three-round flow ('after three rounds, a decision has to be made'). But the per-task flow has that shape because the writer authored the artefact and naturally pushes back; here the applier is a fresh-context agent with no skin in the game — its 'rejection' is just a reading of the same evidence the reviewer saw. Three rounds between two impartial fresh-context agents debating someone else's tasks is convergence machinery without a contested counterparty. R3's flow doubles dispatch count (4 forks vs 2), doubles JSON artefact count (round-1 + round-2 + round-3 cross-task files), and inflates Phase E.4.5 documentation in task/SKILL.md against R12's 500-line ceiling.",
+      "claim": "The three-round mini-debate inside Round 2.5 is convergence machinery imported from a writer-vs-reviewer asymmetry that doesn't apply between a fresh-context reviewer and a fresh-context applier. Single-shot (reviewer fires → applier decides accept/reject/scope-change → escalate unresolved) achieves the same outcome with half the dispatches and half the manifest surface.",
+      "proposed_change": "Collapse R3 / E.4.5 to a two-step flow: E.4.5.1 cross-task reviewer fires findings; E.4.5.2 applier reads findings + post-Round-2 tasks.md, decides accept/reject/scope-change-required per finding, applies accepted edits. Any finding the applier rejects with rationale escalates to the manifest's 'Escalated to human' sub-section; the human decides — they are the load-bearing convergence mechanism here, not a third reviewer pass. Keeps R7's three-agent_id audit signal intact (writer/reviewer/applier still distinct). If a future feature shows fresh-context reviewer/applier pairs systematically need a sharpen pass, add it then with evidence — don't ship it speculatively. Update AC-3 to expect exactly two sub-steps."
+    },
+    {
+      "id": "simplicity-r1-f2",
+      "severity": "concern",
+      "evidence": "R7 introduces three new manifest fields (writer_id, cross_task_reviewer_id, applier_id), a generation scheme (`{role}-{ISO-8601}-{4-hex-suffix}`), an echo-back protocol (orchestrator passes ID in dispatch brief; reviewer echoes in finding JSON's top-level field), a closer-side collision-detection check, a FRESH-CONTEXT-VIOLATION escalation path, and a hand-authored unit fixture (AC-15 second half) to exercise the collision path because 'collision can't be forced under normal dispatch'. The PRD itself acknowledges this is a 'best-effort manifest field' and that 027 will replace it. We're shipping infrastructure (generation scheme + echo protocol + collision parser + unit fixture) for a check whose only failure mode requires hand-authored fixtures to trigger.",
+      "claim": "The agent_id triplet is more surface than its best-effort framing warrants. Three fields, an echo protocol, a collision-detector, and a unit fixture for an unreachable failure mode is speculative infrastructure for 027 to absorb.",
+      "proposed_change": "Trim to the minimum that delivers the goal-level audit signal ('manifest's writer_id ≠ cross_task_reviewer_id'): keep writer_id and cross_task_reviewer_id as plain manifest fields (timestamp+suffix is fine); drop applier_id OR derive it as `applier-{cross_task_reviewer_id}` since they always co-occur; drop the collision-detection closer logic and FRESH-CONTEXT-VIOLATION escalation entirely (the field's presence IS the audit signal — interim mechanism doesn't need runtime verification); drop AC-15's collision-unit-fixture clause + the agent-id-collision-unit/ directory. 027 owns the verifiable contract; 022 owns the field. Update R7, AC-7, AC-15 accordingly."
+    },
+    {
+      "id": "simplicity-r1-f3",
+      "severity": "note",
+      "evidence": "R11 + AC-11 require the worked-example fixture to demonstrate two findings (one coherence, one better-arrangement) AND applier accept/reject AND a sharpen pass AND a final pass — five behaviours in one fixture. The Done-when criterion in FEATURES.md only states 'both a coherence issue AND a better-arrangement suggestion surfaced + resolved' (two findings, one resolution shape each). The accept/reject/sharpen choreography is fixture-author overhead chosen to demonstrate R3's three-round flow.",
+      "claim": "If R3 collapses to two steps (per finding-1), R11's fixture naturally simplifies — one finding accepted, one rejected → escalated. Even keeping R3, the fixture could carry one finding demonstrating both lenses if a single arrangement issue (e.g. 'T2 + T3 overlap and T1 is fragmented — consider merging T2/T3 + splitting T1') triggers both lens labels in one finding entry; the schema already supports `lens` per finding.",
+      "proposed_change": "Drop the explicit two-finding requirement from R11. Keep AC-11's grep checks for both lens strings (`lens.*coherence` AND `lens.*better-arrangement`) — those can fire on one finding that anchors both lenses, or two findings, at the fixture author's discretion. Remove the fixture's mandatory sharpen+final-pass demonstration if R3 collapses. If R3 survives, keep AC-11 but stop dictating the finding count."
+    },
+    {
+      "id": "simplicity-r1-f4",
+      "severity": "note",
+      "evidence": "R14 was added under Codex pre-gate finding [MAJOR] A. It mandates verifying that no skill greps for `^### E\\.5` or `Round 3` as skill-internal phase markers, documenting scope-change/SKILL.md's E.6 re-fire implication in the doctrine doc, and an AC-16 grep loop that walks every other skill. R15 was added under Codex pre-gate finding [MAJOR] B mandating an explicit Inputs-section flag entry and a Phase A Resume-logic branch. Neither is required for the goal-level outcome (whole-set lens fires; manifest captures it). They're defensive hardening for hypothetical downstream coupling.",
+      "claim": "R14's grep-other-skills check is defending against a coupling that doesn't exist (the AC's `for skill ... ! grep -qE` is checking the absence of something nobody has written). R15 is configurability surface for a mode the orchestrator already invokes internally — the skill doesn't need to publish a first-class flag if humans never invoke the applier directly.",
+      "proposed_change": "Reframe R14 as a one-line note in the doctrine doc ('Phase E.4.5 inserts between E.4 and E.5; scope-change's E.6 re-fire path now traverses cross-task review on regenerated tasks — re-test if scope-change behaviour changes'). Drop AC-16's grep-loop. For R15: keep the Phase A Resume-logic branch (genuinely needed for re-entry) but drop the Inputs-section public documentation — the flag is an orchestrator-internal contract, not a user-facing entry point per Round 6's framing. Update AC-17 to test only the Phase A branch, not the Inputs documentation."
+    }
+  ]
+}

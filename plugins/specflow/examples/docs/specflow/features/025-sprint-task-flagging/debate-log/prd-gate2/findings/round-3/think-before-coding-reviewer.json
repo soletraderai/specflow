@@ -1,0 +1,60 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "round": 3,
+  "feature": "025-sprint-task-flagging",
+  "artefact": "025-sprint-task-flagging-prd.md",
+  "prior_rounds": {
+    "round_1": "debate-log/prd-gate2/findings/round-1/think-before-coding-reviewer.json",
+    "round_2": "debate-log/prd-gate2/findings/round-2/responses.json"
+  },
+  "verdict_summary": "All five Round-1 findings were accepted in Round 2 with concrete revisions. Round 3 verifies the revisions actually landed in the PRD; four of five accepted as-applied; one (tbc-r1-f1) is sharpened to close a residual ambiguity in the GRAPH-INVALID cycle diagnostic format and to demand a fixture for an empty (zero-task) feature, which is structurally adjacent to the malformed-graph cases R11 already covers.",
+  "findings": {
+    "tbc-r1-f1": {
+      "round_1_severity": "block",
+      "round_2_decision": "accept",
+      "round_2_revision": "Added R11: pre-bucketing graph-validity step rejects cycles, self-loops, dangling refs, duplicate IDs with deterministic GRAPH-INVALID diagnostic. AC-14 verifies via fixtures.",
+      "round_3_decision": "sharpen",
+      "round_3_rationale": "The R11 + AC-14 revision lands the DAG assumption explicitly and the four named failure modes (cycle / self-loop / dangling / duplicate) close the load-bearing gap from Round 1. Two residual issues remain. (1) The cycle diagnostic format `GRAPH-INVALID: cycle: T-X -> T-Y -> ... -> T-X` is non-deterministic at the entry point: a 3-cycle T-1 -> T-2 -> T-3 -> T-1 has three rotationally-equivalent renderings depending on which node the walk starts from, and three runs over the same input could emit three different diagnostic strings, breaking AC-9-style reproducibility for the error path. (2) The empty-feature edge case (zero tasks, or a feature where all `Depends on:` lists are empty AND there are zero tasks at synthesis time) is silent — R11 names malformed-graph subtypes but not the trivial-graph case. AC-9's reproducibility check passes vacuously on an empty file; the question is whether synthesis aborts, succeeds-with-zero-buckets, or errors with its own diagnostic.",
+      "round_3_proposed_change": "Sharpen R11 / AC-14 in two places: (a) Specify a canonical entry rule for cycle rendering: 'The cycle diagnostic starts at the lexicographically-smallest task ID under the typed comparator (R2) and walks the cycle in `Depends on:` traversal order; e.g. for the cycle T-3 -> T-1 -> T-2 -> T-3, the diagnostic is `GRAPH-INVALID: cycle: T-1 -> T-2 -> T-3 -> T-1`.' Add a fixture under AC-14 that verifies the entry-rule is honoured (input cycle written in a non-canonical traversal order; diagnostic still starts at the smallest ID). (b) Add a fifth subtype to R11 — 'Empty feature (zero tasks at synthesis time)' — with diagnostic `GRAPH-INVALID: no tasks present` OR a positive non-error signal (whichever the synthesis flow already produces); AC-14 grows a fifth fixture. If the team prefers to treat empty-feature as out-of-scope rather than a graph-invalid case, that choice should be a Non-goal entry, not silence.",
+      "trace": "Think Before Coding: 'state assumptions explicitly'. R11 named four malformed-graph cases but the canonical rendering of the cycle diagnostic and the trivial-graph case are still implicit assumptions that two readers (or two synthesis runs) could disagree on."
+    },
+    "tbc-r1-f2": {
+      "round_1_severity": "block",
+      "round_2_decision": "accept",
+      "round_2_revision": "R2 + AC-9 reworded: canonical ID grammar T-<int>(\\.<letter>)?; tie-break is a typed comparator over (int, optional-letter). AC-3 worked example includes T-2 < T-10.",
+      "round_3_decision": "accept",
+      "round_3_rationale": "R2's 'Canonical task ID grammar' paragraph names the grammar `T-<int>(\\.<letter>)?` verbatim, asserts within-feature uniqueness, and defines the tie-break as a typed comparator on `(int, optional-letter)` — explicitly NOT raw string lexicographic. The `T-2 < T-10` worked example in AC-3 (verified via grep) prevents string-lex regression. AC-9's typed-comparator sort key in the python3 extraction is a concrete instantiation of the comparator. The Round-1 concern that 'lexicographic' on raw strings would put T-10 between T-1 and T-2 is fully closed.",
+      "round_3_proposed_change": "None.",
+      "trace": "Think Before Coding: 'don't assume; surface tradeoffs'. The tie-break assumption is now explicit at the grammar, comparator, and worked-example layers."
+    },
+    "tbc-r1-f3": {
+      "round_1_severity": "concern",
+      "round_2_decision": "accept",
+      "round_2_revision": "R2 preamble: 'Task IDs are unique within a feature; bucket assignment relies on this uniqueness for the typed-comparator tie-break to be defined.' Cross-feature collisions remain out-of-scope per R5.",
+      "round_3_decision": "accept",
+      "round_3_rationale": "R2's 'Canonical task ID grammar' paragraph carries the within-feature uniqueness assertion verbatim ('Task IDs are unique within a feature; bucket assignment relies on within-feature ID uniqueness'). R11's duplicate-ID failure mode (`GRAPH-INVALID: duplicate task ID T-X`) is the runtime enforcement of the uniqueness assumption — the assumption is now both stated and binary-checked. R5 remains the cross-feature scoping anchor.",
+      "round_3_proposed_change": "None.",
+      "trace": "Think Before Coding: 'state assumptions explicitly'. The uniqueness assumption is stated in R2, scoped in R5, and enforced via R11's duplicate-ID subtype."
+    },
+    "tbc-r1-f4": {
+      "round_1_severity": "concern",
+      "round_2_decision": "accept",
+      "round_2_revision": "R5 trace tagged as hypothesis: 'Per the current 020 design hypothesis (FEATURES.md § 020 — open design)... If 020's mapping evolves, 025's feature-scoping should be re-examined.'",
+      "round_3_decision": "accept",
+      "round_3_rationale": "R5 now carries a verbatim 'Hypothesis tag (per TBC-4)' paragraph that names FEATURES.md § 020 as 'open design' and explicitly invites re-examination if the 020 mapping evolves. The Open Questions section also documents that R5 is reopened by `specflow:scope-change` rather than tracked as an open question here, which is consistent with the chain-don't-absorb pattern. The Round-1 concern that R5's rationale was grounded in a forward-looking hypothesis without saying so is fully closed.",
+      "round_3_proposed_change": "None.",
+      "trace": "Think Before Coding: 'present multiple interpretations'. R5 now distinguishes the design hypothesis from a contract-locked invariant, with an explicit reopener path."
+    },
+    "tbc-r1-f5": {
+      "round_1_severity": "concern",
+      "round_2_decision": "accept",
+      "round_2_revision": "R2 extended: 'Bumps applied iteratively until no same-bucket scope overlap remains. In each pass, walk same-bucket task pairs in (bucket-asc, T-id-asc, T-id-asc) order and bump the later-ID partner; repeat passes until a pass produces zero bumps (fixed point). Termination guaranteed because each bump strictly increases bucket numbers and the topological-floor invariant bounds the maximum.'",
+      "round_3_decision": "accept",
+      "round_3_rationale": "R2's 'Bump iteration discipline' paragraph names the pass order, the comparator, the bump direction (later-ID partner), the fixed-point termination condition, and the termination argument (strict bucket increase + topological-floor bound). The order specification under the typed comparator from tbc-r1-f2 means two synthesis runs over the same input cannot diverge in sweep order. The Round-1 concern that pair-level determinism didn't entail global determinism is fully closed by the (bucket-asc, T-id-asc, T-id-asc) total ordering of passes.",
+      "round_3_proposed_change": "None.",
+      "trace": "Think Before Coding: 'don't hide confusion'. The iteration discipline is now explicit and the termination argument is sound."
+    }
+  },
+  "summary": "Four findings (tbc-r1-f2, tbc-r1-f3, tbc-r1-f4, tbc-r1-f5) accepted as-applied. One finding (tbc-r1-f1) sharpened to close a residual ambiguity in the GRAPH-INVALID cycle diagnostic format (rotational equivalence of cycle entry points) and a silent edge case (empty/zero-task feature). The R11 / AC-14 graph-validity step otherwise lands the DAG assumption robustly."
+}

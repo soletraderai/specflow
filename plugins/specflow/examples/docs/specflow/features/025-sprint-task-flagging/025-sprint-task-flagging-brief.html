@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint Task Flagging</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #1a1a1a;
+    background: #fafaf7;
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 32px 24px;
+    background: #1a2632; color: #d8d8d4;
+    border-right: 1px solid #283442;
+  }
+  nav.toc h2 { margin: 0 0 4px; font-size: 18px; color: #fff; letter-spacing: -0.01em; }
+  nav.toc .subtitle { margin: 0 0 24px; font-size: 12px; color: #88a; text-transform: uppercase; letter-spacing: 0.08em; }
+  nav.toc ul { list-style: none; padding: 0; margin: 0 0 24px; }
+  nav.toc ul ul { margin: 4px 0 12px 12px; padding-left: 12px; border-left: 1px solid #2a3a4a; }
+  nav.toc li { margin: 6px 0; }
+  nav.toc a { color: #c8d0d8; text-decoration: none; font-size: 14px; line-height: 1.4; display: block; padding: 2px 0; transition: color 0.15s; }
+  nav.toc a:hover { color: #6cb6ff; }
+  nav.toc ul ul a { font-size: 13px; color: #98a4b0; }
+  nav.toc .toc-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #5a6878; margin: 16px 0 6px; font-weight: 600; }
+  .toc-empty { color: #98a4b0; font-size: 13px; margin: 0; }
+  main { max-width: 980px; padding: 56px 56px 96px; }
+  .source-strip {
+    margin: -24px 0 32px; padding: 10px 14px;
+    border: 1px solid #d8d8d0; border-radius: 6px; background: #fff;
+    color: #4a5868; font-size: 13px;
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+  }
+  .source-strip strong { color: #1a2632; }
+  .source-strip a { color: #245f8f; text-decoration: none; }
+  .source-strip a:hover { color: #6cb6ff; }
+  .commit-policy {
+    margin: 0 0 24px; padding: 8px 14px;
+    border: 1px solid #d8e0d2; border-radius: 6px;
+    background: #f3f7ee; color: #3a5a2a; font-size: 12px;
+  }
+  .commit-policy.commit-policy-derived {
+    border-color: #e0d8c0; background: #f8f4e8; color: #6a5a1a;
+  }
+  .drift-banner {
+    margin: -24px 0 24px; padding: 14px 18px;
+    border-left: 4px solid #c8965a; border-radius: 0 6px 6px 0;
+    background: #faf4ec; color: #5a3a10; font-size: 14px;
+  }
+  header.intro { border-bottom: 1px solid #d8d8d0; padding-bottom: 32px; margin-bottom: 48px; }
+  header.intro h1 { font-size: 44px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; color: #1a2632; }
+  header.intro .tagline { font-size: 20px; color: #4a5868; margin: 0; font-style: italic; }
+  header.intro .meta { margin-top: 16px; font-size: 13px; color: #888; }
+  section { margin-bottom: 56px; }
+  h2 { font-size: 30px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #1a2632; letter-spacing: -0.015em; color: #1a2632; scroll-margin-top: 32px; }
+  h3 { font-size: 22px; font-weight: 600; margin: 32px 0 12px; color: #243446; scroll-margin-top: 32px; }
+  h4 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; color: #2c3e50; }
+  p { margin: 0 0 16px; }
+  strong { color: #1a2632; font-weight: 600; }
+  em { color: #4a5868; }
+  a { color: #245f8f; }
+  a:hover { color: #6cb6ff; }
+  code { font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace; background: #f0eee8; color: #2a3540; padding: 1px 6px; border-radius: 3px; font-size: 0.92em; }
+  pre { background: #1e2a36; color: #d8e0e8; padding: 16px 20px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 16px 0; }
+  pre code { background: transparent; color: inherit; padding: 0; font-size: 13px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  input[type="checkbox"] { margin-right: 8px; }
+  blockquote { border-left: 3px solid #d8d4c4; padding: 4px 16px; margin: 16px 0; color: #4a5868; font-style: italic; }
+  .callout { border-left: 4px solid; padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0; font-size: 15px; }
+  .callout.note { border-color: #5a8db8; background: #eef4fa; }
+  .callout.warning { border-color: #c8965a; background: #faf4ec; }
+  .callout.tip { border-color: #6a9a5a; background: #f0f5ec; }
+  .callout-title { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .callout.note .callout-title { color: #2a5a8a; }
+  .callout.warning .callout-title { color: #8a5a1a; }
+  .callout.tip .callout-title { color: #3a6a2a; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #e0dccc; text-align: left; vertical-align: top; }
+  th { background: #f0ece0; font-weight: 600; color: #1a2632; }
+  img { max-width: 100%; height: auto; border: 1px solid #e0dccc; border-radius: 6px; background: #fff; }
+  details { border-top: 1px solid #d8d4c4; border-bottom: 1px solid #d8d4c4; padding: 12px 0; margin: 24px 0; }
+  summary { cursor: pointer; color: #1a2632; font-weight: 700; }
+  hr { border: none; border-top: 1px solid #d8d4c4; margin: 32px 0; }
+  footer { border-top: 1px solid #d8d4c4; padding-top: 24px; margin-top: 64px; font-size: 13px; color: #888; }
+
+  /* Status / type pills in the source strip */
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pill.status { background: #e5efe2; color: #3a6a2a; }
+  .pill.type { background: #f0ece0; color: #5a5040; }
+
+  @media (max-width: 860px) {
+    .layout { display: block; }
+    nav.toc { position: relative; height: auto; max-height: none; padding: 24px; }
+    main { max-width: none; padding: 36px 24px 72px; }
+    header.intro h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc">
+  <h2>025-sprint-task-flagging</h2>
+  <p class="subtitle">Feature brief</p>
+  <div class="toc-section">Contents</div>
+  <ul>
+  <li><a href="#vision">Vision</a>
+  </li>
+  <li><a href="#problem">Problem</a>
+  </li>
+  <li><a href="#goals">Goals</a>
+  </li>
+  <li><a href="#non-goals">Non-goals</a>
+  </li>
+  <li><a href="#users">Users</a>
+  </li>
+  <li><a href="#requirements">Requirements</a>
+  </li>
+  <li><a href="#acceptance-criteria">Acceptance criteria</a>
+  </li>
+  <li><a href="#open-questions">Open questions</a>
+  </li>
+  <li><a href="#see-also">See also</a>
+  </li>
+  <li><a href="#interview">Interview</a>
+  <ul>
+  <li><a href="#goal-confirmation">Goal confirmation</a></li>
+  <li><a href="#original-request">Original request</a></li>
+  <li><a href="#codebase-context-pre-grilling">Codebase context (pre-grilling)</a></li>
+  <li><a href="#round-1-what-does-the-heuristic-actually-decide">Round 1 — what does the heuristic actually decide</a></li>
+  <li><a href="#round-2-does-sprint-bucket-compete-with-depends-on-for-the-same-information">Round 2 — does sprint-bucket compete with Depends on: for the same information</a></li>
+  <li><a href="#round-3-what-about-cross-feature-buckets">Round 3 — what about cross-feature buckets</a></li>
+  <li><a href="#sign-off">Sign-off</a></li>
+  <li><a href="#topics-not-discussed">Topics not discussed</a></li>
+  </ul>
+  </li>
+  <li><a href="#agent-reviews">Agent reviews</a>
+  <ul>
+  <li><a href="#gate-2-prd-review">Gate 2 — PRD review</a></li>
+  </ul>
+  </li>
+  </ul>
+</nav>
+<main>
+  <div class="source-strip">
+    <span><strong>Feature:</strong> 025-sprint-task-flagging</span>
+    <span class="pill status">draft</span>
+    
+    <span><strong>Source date:</strong> 2026-05-07T12:04:27</span>
+    <span><a href="025-sprint-task-flagging-interview.md">Open interview</a></span>
+  </div>
+  <p class="commit-policy">This brief is committed to the repo as the diffable review surface (config.brief.commitPolicy = "committed").</p>
+  <header class="intro">
+    <h1>Sprint Task Flagging</h1>
+    <p class="tagline">Feature brief — composed from the PRD, interview, and gate manifests.</p>
+    <p class="meta">Generated from 025-sprint-task-flagging-prd.md, 025-sprint-task-flagging-interview.md, and (when present) debate-log/.</p>
+  </header>
+  
+  <section id="prd">
+<h2 id="vision">Vision</h2>
+<p><code>specflow:task</code> synthesis writes a single integer <code>sprint-bucket: N</code> field on every per-task entry, derived deterministically from the dependency graph and scope-overlap. Bucket 1 always means &quot;no predecessors&quot;; bucket 2 means &quot;depends only on bucket 1&quot;; etc. The heuristic is documented in <code>plugins/specflow/templates/task/sprint-bucket-heuristic.md</code> (chain-don&#x27;t-absorb, mirroring 029&#x27;s doctrine doc pattern); <code>task/SKILL.md</code> Phase B.4 carries one-line citations. The field is reproducible — given the same dependency graph, scope surfaces, and task IDs, two synthesis runs produce identical bucket assignments — and the future sprint-skill (020) reads it without recomputing topology. The field is read-only at the documentation level; the skill does not police hand-edits.</p>
+<h2 id="problem">Problem</h2>
+<p><code>specflow:task</code> § Phase B writes per-task entries with <code>Anchor / Scope / Acceptance / Depends on / context-budget-estimate / Notes</code> (post-029). 020-sprint-skill (the planner) needs to know which tasks can be batched into a sprint together — i.e. which tasks share a topological layer with no shared <code>Depends on:</code> edges and disjoint <code>Scope:</code> surfaces, fitting under the project&#x27;s per-task context budget. Today, 020 would have to recompute that grouping every time it runs by traversing <code>Depends on:</code> edges and inferring scope overlap — duplicating logic that lives more naturally at synthesis time, where the dependency graph and per-task budgets are already in hand.</p>
+<p>029&#x27;s § Implications #3 explicitly anticipates this feature: <em>&quot;Tasks in the same bucket don&#x27;t share context (each runs in its own window), but the bucket sizing is informed by per-task budgets so the developer doesn&#x27;t approve a sprint where any single task can&#x27;t fit.&quot;</em> The bucket field is the deterministic artefact passed from <code>specflow:task</code> to <code>specflow:sprint</code>, in the same shape as the deterministic-node-passes-artefact-to-coding-agent-node pattern from <code>knowledge/medin-archon-livestream.md</code> § Hybrid Secret.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Add a single integer field — <code>sprint-bucket: N</code> — to the per-task synthesis schema in <code>task/SKILL.md</code> Phase B.</li>
+<li>Host the bucket-assignment heuristic in <code>plugins/specflow/templates/task/sprint-bucket-heuristic.md</code> (mirrors 029&#x27;s <code>templates/admin/single-context-task.md</code> chain-don&#x27;t-absorb pattern); <code>task/SKILL.md</code> adds one-line citations from B.3 and B.4.</li>
+<li>Reject malformed dependency graphs (cycles, self-loops, dangling references, duplicate task IDs) with a deterministic <code>GRAPH-INVALID:</code> diagnostic before bucket assignment runs.</li>
+<li>Respect 029&#x27;s per-task budget: tasks whose <code>context-budget-estimate</code> exceeds the configured budget are auto-flagged for split (per 029 R4) before bucketing operates.</li>
+<li>Scope bucket numbers to the feature: bucket 1 always means &quot;no predecessors&quot; within the feature.</li>
+<li>Keep <code>task/SKILL.md</code> at or under 500 lines after additions, per the skill-size ceiling. The heuristic + worked example land in the doctrine doc, not the skill body.</li>
+</ul>
+<h2 id="non-goals">Non-goals</h2>
+<ul>
+<li>Building the sprint-skill itself (020). 025 produces the field; 020 consumes it. (Goal-level out-of-scope.)</li>
+<li>Enforcing a sprint-wide context budget cap (per 029 § Non-goals).</li>
+<li>Auto-promoting bucket numbers into Linear cycle assignments. Deferred to 020.</li>
+<li>Cross-feature bucket sharing. Cross-feature sprint planning is parked under the existing parked-memory entry; bucket numbers are feature-scoped.</li>
+<li>DAG visualisation. Visualisation belongs to the sprint-plan gate (020), not the synthesis-time field.</li>
+<li>Reserved bucket numbers (e.g. <code>sprint-bucket: 0</code> for setup tasks). Bucket 1 is the floor.</li>
+<li>Auto-detecting the optimal number of buckets vs accepting whatever the topology produces. <strong>Whether this lands in 022 or a future feature is a separate planning decision</strong> — FEATURES.md § 022 currently scopes 022 as task-merge / split / re-order, NOT bucket-count tuning. (Per DA-2.)</li>
+<li><strong>Hand-edit detection</strong>. The field is documented as read-only (R10), but <code>specflow:task</code> does NOT recompute-and-compare on every synthesis run to police hand-edits. AC-11 verifies the documentation; runtime enforcement is out of scope. (Per simplicity-r1-f1, surgical-r1-f1, DA-r1-f1.)</li>
+</ul>
+<h2 id="users">Users</h2>
+<ul>
+<li><strong>Power user — operations coordinator.</strong> Indirect. The sprint-skill (020) consumes the field to plan parallel fan-out batches; power users benefit from the resulting parallelisation.</li>
+<li><strong>Admin — platform operator.</strong> Reads the bucket assignments at the sprint-plan gate to audit whether the topological grouping makes sense.</li>
+<li><strong>Engineer using the task skill.</strong> Direct user. Sees <code>sprint-bucket: N</code> on each task at synthesis time; can review the grouping before tasks land in <code>{NNN-slug}-tasks.md</code>.</li>
+</ul>
+<p><strong>Downstream consumers (informational, NOT contract-shaping stakeholders).</strong> <code>specflow:sprint</code> (020, future) reads <code>sprint-bucket: N</code> to plan a fan-out batch. 025 writes the field per R1-R12; how 020 reads it is 020&#x27;s concern. Listing 020 here is informational and does not give it contract authority over 025&#x27;s surface. (Per DA-r1-f4.)</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><p><strong>R1.</strong> Add <code>sprint-bucket: N</code> (where <code>N</code> is a positive integer ≥ 1) as a per-task field in <code>task/SKILL.md</code> Phase B.3 write template (currently lines 174-186 — the <code>- **field:** value</code> markdown bullet pattern). The field sits alongside the existing <code>Anchor / Scope / Acceptance / Depends on / context-budget-estimate / Notes</code>.</p>
+<ul>
+<li>Trace: codebase context bullet 1; sign-off — single integer field per task.</li>
+<li>Serves goal: Outcome (the field exists) + Audience (sprint-skill consumes it).</li>
+</ul></li>
+<li><p><strong>R2.</strong> Document the bucket-assignment heuristic in <code>plugins/specflow/templates/task/sprint-bucket-heuristic.md</code> (chain-don&#x27;t-absorb mirror of 029&#x27;s <code>templates/admin/single-context-task.md</code>). The heuristic uses a single-rule fixpoint definition:</p>
+<p><strong>Canonical task ID grammar.</strong> Task IDs follow <code>T-&lt;int&gt;(\.&lt;letter&gt;)?</code> per <code>task/SKILL.md</code> Phase B convention (e.g. <code>T-1</code>, <code>T-2</code>, <code>T-3.A</code>, <code>T-3.B</code> per 029&#x27;s split flow). Task IDs are unique within a feature; bucket assignment relies on within-feature ID uniqueness.</p>
+<p><strong>Typed comparator.</strong> Same-bucket scope-overlap conflicts are resolved by a typed comparator on <code>(int, optional-letter)</code> over the ID&#x27;s grammar — NOT raw string lexicographic. <code>T-2</code> &lt; <code>T-10</code> (natural-number ordering); <code>T-3.A</code> &lt; <code>T-3.B</code> (letter ordering after equal int).</p>
+<p><strong>Single-rule definition (recursive).</strong> ``<code> bucket(T) = 1 if T has no predecessors AND no same-bucket scope conflicts with an earlier-ID task; = 1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T)) otherwise. </code>``</p>
+<p><strong>Bump iteration discipline.</strong> Bumps applied iteratively until no same-bucket scope overlap remains. In each pass, walk same-bucket task pairs in <code>(bucket-asc, T-id-asc, T-id-asc)</code> order under the typed comparator and bump the later-ID partner: <code>bucket(T_j) := bucket(T_j) + 1</code>. Repeat passes until a pass produces zero bumps (fixed point). Termination is guaranteed: each bump strictly increases bucket numbers; the topological-floor invariant bounds the maximum.</p>
+<p><strong>Topological-floor corollary</strong> (by construction): for every <code>T_j ∈ Depends-on(T_i)</code>, <code>bucket(T_j) &lt; bucket(T_i)</code> — strictly less-than (per codex-r1-f5). The heuristic does NOT need a separate runtime invariant check.</p>
+<p><strong>Per-task budget respect.</strong> Tasks whose <code>context-budget-estimate</code> exceeds the configured budget are auto-flagged for split at synthesis (per 029 R4) and never reach bucket assignment.</p>
+<ul>
+<li>Trace: interview Round 1 + Round 2; simplicity-r1-f2 (single-rule); TBC-2 (typed comparator); TBC-5 (iteration discipline); codex-r1-f5 (strict less-than).</li>
+<li>Serves goal: Outcome (heuristic is documented and reproducible) + Driving value (deterministic field).</li>
+</ul></li>
+<li><p><strong>R3.</strong> <code>task/SKILL.md</code> Phase B.4 (Self-check, where 029&#x27;s budget check already lives at line 208) gains two one-line citations: one to <code>templates/task/sprint-bucket-heuristic.md</code> for the heuristic, one to the same doc for graph-validity. No new &quot;Phase D verify-steps&quot; section is created — verify lives in B.4 + the existing &#x27;Verify before declaring done&#x27; tail (line 460).</p>
+<ul>
+<li>Trace: DA-r1-f3 (Phase D doesn&#x27;t exist; B.4 is the actual home); DA-r1-f5 (chain-don&#x27;t-absorb).</li>
+<li>Serves goal: Outcome (heuristic is invoked at the existing verify location).</li>
+</ul></li>
+<li><p><strong>R4.</strong> Bucket numbering starts at 1. Bucket 1 means &quot;no predecessors&quot; within the feature. There is no bucket 0; setup tasks (if present) land in bucket 1 by virtue of having no predecessors.</p>
+<ul>
+<li>Trace: interview Round 3.</li>
+<li>Serves goal: Outcome (deterministic numbering convention).</li>
+</ul></li>
+<li><p><strong>R5.</strong> Bucket numbers are scoped to the feature. Two features whose tasks could run in parallel do NOT share bucket numbers.</p>
+<p><strong>Hypothesis tag</strong> (per TBC-4): per the current 020 design hypothesis (FEATURES.md § 020 — open design), one Linear project maps to one specflow feature. If 020&#x27;s mapping evolves (e.g. one feature → many Linear projects, or many features → one project), 025&#x27;s feature-scoping should be re-examined.</p>
+<ul>
+<li>Trace: interview Round 3; TBC-4 (hypothesis tag).</li>
+<li>Serves goal: Outcome (feature-scoped numbering) + Driving value (avoids smuggling higher-level orchestration into 025).</li>
+</ul></li>
+<li><p><strong>R6.</strong> Bucket count is uncapped. A feature with a deep dependency graph may legitimately have many buckets. The heuristic does not tune the bucket count; it accepts whatever the topology produces.</p>
+<ul>
+<li>Trace: interview Round 1.</li>
+<li>Serves goal: Outcome.</li>
+</ul></li>
+<li><p><strong>R7.</strong> Bucket assignment runs <em>after</em> per-task budget enforcement (029 R4). Property statement: tasks whose <code>context-budget-estimate</code> exceeds the configured budget are split per 029 R4 before bucketing operates. The heuristic doc states this explicitly; no verbatim phase-listing requirement.</p>
+<ul>
+<li>Trace: codebase context bullet 3; SURG-r1-f2 (property, not control flow).</li>
+<li>Serves goal: Driving value (029&#x27;s per-task budget invariant preserved).</li>
+</ul></li>
+<li><p><strong>R8.</strong> <code>task/SKILL.md</code> total line count after the change set ≤500. The heuristic + worked example are extracted into <code>plugins/specflow/templates/task/sprint-bucket-heuristic.md</code> (chain-don&#x27;t-absorb). <code>task/SKILL.md</code> additions are limited to:</p>
+<ul>
+<li>One field-emission line in B.3 write template (<code>- **sprint-bucket:** N</code>).</li>
+<li>One one-line citation in B.3 referencing the heuristic doc.</li>
+<li>One one-line citation in B.4 self-check section.</li>
+<li>The heuristic, the worked example, the typed-comparator grammar, the iteration discipline, and the graph-validity diagnostic format ALL live in the doctrine doc — NOT in the skill body. <strong>No prose-tightening of unrelated sections.</strong></li>
+<li>Trace: codebase context bullet 6; DA-r1-f5; SURG-r1-f5.</li>
+<li>Serves goal: Driving value (skill-size ceiling; chain-don&#x27;t-absorb).</li>
+</ul></li>
+<li><strong>R9.</strong> <em>Reserved.</em> (R9 was the topological-floor invariant verify-step in earlier drafts; dropped per simplicity-r1-f3 / SURG-r1-f3 — R2&#x27;s rule guarantees the floor by construction.)</li>
+<li><p><strong>R10.</strong> The <code>sprint-bucket</code> field is documented as read-only for downstream consumers; editing the field by hand changes the topological grouping and is a <code>specflow:scope-change</code> concern. <strong>Documentation-level only</strong> — <code>task/SKILL.md</code> does NOT recompute-and-compare on every synthesis run. AC-11 verifies the documentation does not advertise hand-edit affordances; runtime enforcement is out of scope (Non-goals).</p>
+<ul>
+<li>Trace: interview Round 2; simplicity-r1-f1 + SURG-r1-f1 + DA-r1-f1 (drop runtime enforcement).</li>
+<li>Serves goal: Outcome (deterministic artefact) + Driving value (avoids circular diagnostic with <code>specflow:scope-change</code> delta-regeneration).</li>
+</ul></li>
+<li><p><strong>R11.</strong> <strong>Graph validity (pre-bucket).</strong> Before bucket assignment, <code>task/SKILL.md</code> Phase B.4 invokes a graph-validity step (cited from <code>templates/task/sprint-bucket-heuristic.md</code>) that rejects malformed dependency graphs with a deterministic diagnostic. Failure modes and diagnostics:</p>
+<ul>
+<li>Cycle (any strongly-connected component of size &gt;1) → <code>GRAPH-INVALID: cycle: T-X -&gt; T-Y -&gt; ... -&gt; T-X</code> (lists the cycle members in traversal order).</li>
+<li>Self-loop (<code>T.depends_on</code> contains <code>T</code>) → <code>GRAPH-INVALID: self-loop on T-X</code>.</li>
+<li>Duplicate task IDs → <code>GRAPH-INVALID: duplicate task ID T-X</code>.</li>
+<li>Duplicate dependency edge (<code>T.depends_on</code> contains <code>T-Y</code> more than once) → <code>GRAPH-INVALID: duplicate edge T-X -&gt; T-Y</code>.</li>
+<li>Dangling reference (a <code>Depends on:</code> ID not present in the feature) → <code>GRAPH-INVALID: T-X.depends_on references unknown task T-Y</code>.</li>
+</ul>
+<p>Diagnostic prefix is verbatim <code>GRAPH-INVALID:</code> followed by the subtype. Synthesis aborts before any <code>sprint-bucket: N</code> is written; the user is pointed to <code>specflow:scope-change</code> for legitimate dependency-graph edits.</p>
+<ul>
+<li>Trace: TBC-r1-f1; codex-r1-f1; codex-r3-f1 (duplicate-edge case); goal-driven-r1-f5.</li>
+<li>Serves goal: Outcome (heuristic well-defined on all input shapes) + Driving value (errors are deterministic and actionable).</li>
+</ul></li>
+<li><p><strong>R12.</strong> <strong>Eval extension.</strong> Extend <code>task/SKILL.md</code> <code>eval:</code> field (line 20) with two clauses:</p>
+<ol>
+<li>Every task entry in <code>{NNN-slug}-tasks.md</code> carries a <code>- **sprint-bucket:** N</code> field with <code>N &gt;= 1</code>.</li>
+<li>The strict topological-floor corollary holds: for every task <code>T_i</code> with <code>sprint-bucket: N</code>, every <code>T_j</code> listed in <code>T_i.Depends on:</code> has <code>sprint-bucket: M</code> with <code>M &lt; N</code> (strictly less-than, per R2 corollary).</li>
+</ol>
+<p>Verify mechanism: a parser pass over the synthesised tasks file emits zero violations.</p>
+<ul>
+<li>Trace: GD-r1-f1 (mandatory eval-coverage); codex-r1-f5 (strict-less-than).</li>
+<li>Serves goal: Outcome (the eval is the binary contract; without these clauses, AC-1 through AC-15 can pass on a tasks file that omits the field).</li>
+</ul></li>
+</ul>
+<h2 id="acceptance-criteria">Acceptance criteria</h2>
+<ul>
+<li><p><strong>AC-1.</strong> <code>task/SKILL.md</code> Phase B.3 write template includes the <code>- **sprint-bucket:** {int}</code> field as a sibling of the existing fields: ``<code>sh grep -qE &#x27;\*\*sprint-bucket:\*\*&#x27; plugins/specflow/skills/task/SKILL.md </code>``</p>
+<ul>
+<li>Verifies: R1.</li>
+</ul></li>
+<li><p><strong>AC-2.</strong> <code>task/SKILL.md</code> Phase B.4 contains one-line citations to <code>templates/task/sprint-bucket-heuristic.md</code> (heuristic + graph-validity), and Phase B.3 cites the heuristic doc once: ``<code>sh [ &quot;$(grep -c &#x27;templates/task/sprint-bucket-heuristic.md&#x27; plugins/specflow/skills/task/SKILL.md)&quot; -ge 3 ] </code>``</p>
+<ul>
+<li>Verifies: R3.</li>
+</ul></li>
+<li><p><strong>AC-3.</strong> A worked example in <code>templates/task/sprint-bucket-heuristic.md</code> shows three tasks: T-1 with no predecessors → <code>sprint-bucket: 1</code>; T-2 with <code>Depends on: T-1</code> → <code>sprint-bucket: 2</code>; T-10 with no <code>Depends on:</code> and disjoint <code>Scope:</code> from T-1 → <code>sprint-bucket: 1</code> (parallelism); plus a fourth task T-3 with overlapping scope to T-1 → bumped to <code>sprint-bucket: 2</code> (typed-comparator tie-break, T-1 &lt; T-3 by integer suffix). The example also demonstrates <code>T-2 &lt; T-10</code> ordering (typed comparator, NOT string lex): ``<code>sh test -f plugins/specflow/templates/task/sprint-bucket-heuristic.md grep -qE &#x27;T-1.*sprint-bucket: 1&#x27; plugins/specflow/templates/task/sprint-bucket-heuristic.md grep -qE &#x27;T-2.*sprint-bucket: 2&#x27; plugins/specflow/templates/task/sprint-bucket-heuristic.md grep -qE &#x27;T-10.*sprint-bucket: 1&#x27; plugins/specflow/templates/task/sprint-bucket-heuristic.md grep -qE &#x27;T-2 (&lt;|before) T-10&#x27; plugins/specflow/templates/task/sprint-bucket-heuristic.md </code>``</p>
+<ul>
+<li>Verifies: R2 (heuristic + comparator + worked example).</li>
+</ul></li>
+<li><strong>AC-4.</strong> <em>Reserved.</em> (AC-4 was the standalone topological-floor invariant verify-step; dropped per simplicity-r1-f3 — R2&#x27;s rule guarantees the property by construction; R12&#x27;s eval clause 2 is the runtime check.)</li>
+<li><p><strong>AC-5.</strong> A task whose <code>context-budget-estimate</code> exceeds the configured budget triggers the existing 029 R4 split flow <em>before</em> bucket assignment. Verified by fixture: ``<code>sh # Fixture: a task whose budget estimate exceeds config.task.taskBudget; with one Depends-on edge. specflow:task NNN-slug; rc=$? # Synthesis aborts with the budget-overrun warning before writing sprint-bucket on the oversize task: grep -qE &#x27;budget.*exceeds&#x27; stderr.log # The resulting tasks file (if any) does not have sprint-bucket on the oversize task: ! grep -E &#x27;T-OVERSIZE.*sprint-bucket&#x27; &quot;{NNN-slug}-tasks.md&quot; </code>``</p>
+<ul>
+<li>Verifies: R7.</li>
+</ul></li>
+<li><p><strong>AC-6.</strong> No task in any feature has <code>sprint-bucket: 0</code>: ``<code>sh ! grep -rE &#x27;\*\*sprint-bucket:\*\* 0\b&#x27; docs/specflow/features/ </code>``</p>
+<ul>
+<li>Verifies: R4.</li>
+</ul></li>
+<li><p><strong>AC-7.</strong> Two features synthesised independently each carry their own bucket numbering. Positive structural assertion: no shared file under <code>plugins/specflow/skills/</code> references both feature IDs alongside a <code>sprint-bucket</code>: ``<code>sh # featureA = 016, featureB = 017 (illustrative) ! grep -rlE &#x27;(016-brief-enhancements|017-tdd-discipline).*sprint-bucket&#x27; plugins/specflow/skills/ </code>``</p>
+<ul>
+<li>Verifies: R5.</li>
+</ul></li>
+<li><p><strong>AC-8.</strong> <code>task/SKILL.md</code> line count after the change set is ≤500: ``<code>sh [ &quot;$(wc -l &lt; plugins/specflow/skills/task/SKILL.md)&quot; -le 500 ] </code>``</p>
+<ul>
+<li>Verifies: R8.</li>
+</ul></li>
+<li><p><strong>AC-9.</strong> Two synthesis runs of <code>specflow:task</code> over the same input PRD produce identical <code>sprint-bucket: N</code> assignments. Verified via markdown-aware extraction: ``<code>sh python3 -c &#x27; import re, sys def extract(path): s = open(path).read() pairs = re.findall(r&quot;### (T-\d+(?:\.[A-Z])?)[\s\S]*?- \*\*sprint-bucket:\*\* (\d+)&quot;, s) # typed comparator sort: (int, optional-letter) def key(p): m = re.match(r&quot;T-(\d+)(?:\.([A-Z]))?&quot;, p[0]) return (int(m.group(1)), m.group(2) or &quot;&quot;) return sorted(pairs, key=key) a, b = extract(&quot;run-1.md&quot;), extract(&quot;run-2.md&quot;) sys.exit(0 if a == b else 1) &#x27; </code>`<code> Edge: a task whose </code>Notes:<code> field literally contains the string </code>sprint-bucket:<code> does NOT pollute the diff because the regex anchors on the markdown bullet </code>- <strong>sprint-bucket:</strong><code> AND on the heading </code>### T-&lt;id&gt;`.</p>
+<ul>
+<li>Verifies: R2 (reproducibility), R12 (consistent across runs).</li>
+</ul></li>
+<li><p><strong>AC-10.</strong> <code>task/SKILL.md</code> does NOT document auto-tuning, auto-detection, or DAG visualisation. Verified via closed-token-list grep, scoped to outside the explicit Non-goals call-out: ``<code>sh grep -nE -w &#x27;auto-tune|auto-detect|DAG|visuali[sz]ation|render&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/matches # All matches must be inside an explicit </code>&lt;!-- non-goal --&gt;<code> marker block (or zero matches) python3 -c &quot; import sys, re body = open(&#x27;plugins/specflow/skills/task/SKILL.md&#x27;).read() # Identify all matches and confirm each is inside a Non-goal block for line_no, line_text in [(int(l.split(&#x27;:&#x27;)[0]), l.split(&#x27;:&#x27;,1)[1]) for l in open(&#x27;/tmp/matches&#x27;).read().splitlines() if l]: pre = &#x27;\n&#x27;.join(body.splitlines()[:line_no]) if pre.rfind(&#x27;&lt;!-- non-goal --&gt;&#x27;) &lt; pre.rfind(&#x27;&lt;!-- /non-goal --&gt;&#x27;): print(f&#x27;leak at line {line_no}: {line_text}&#x27;); sys.exit(1) &quot; </code>``</p>
+<ul>
+<li>Verifies: R6 + Non-goals (DAG viz, auto-tuning).</li>
+</ul></li>
+<li><p><strong>AC-11.</strong> <code>task/SKILL.md</code> does not document hand-editing of <code>sprint-bucket: N</code>. Verified by grep absence: ``<code>sh ! grep -qE &#x27;edit.*sprint-bucket|hand-edit|manually set sprint-bucket&#x27; plugins/specflow/skills/task/SKILL.md </code>``</p>
+<ul>
+<li>Verifies: R10.</li>
+</ul></li>
+<li><strong>AC-12.</strong> <em>Reserved.</em> (AC-12 was the recompute-and-compare verify-step for hand-edit detection; dropped per simplicity-r1-f1 / SURG-r1-f1 / DA-r1-f1.)</li>
+<li><p><strong>AC-13.</strong> Phase ordering — bucket assignment after budget check — is verified by both documentation AND an execution-order fixture:</p>
+<ul>
+<li><strong>Doc</strong> — <code>templates/task/sprint-bucket-heuristic.md</code> § Per-task budget respect documents the ordering as a property: ``<code>sh grep -qE &#x27;budget.*before.*bucket|029 R4.*before&#x27; plugins/specflow/templates/task/sprint-bucket-heuristic.md </code>``</li>
+<li><strong>Execution</strong> — fixture per AC-5 confirms the abort happens before any <code>sprint-bucket:</code> line is written for the oversize task.</li>
+<li>Verifies: R7.</li>
+</ul></li>
+<li><p><strong>AC-14.</strong> Graph-validity step rejects malformed graphs with the verbatim <code>GRAPH-INVALID:</code> prefix per R11. One fixture per case: ``<code>sh # Self-loop fixture specflow:task NNN-slug-self-loop; grep -qE &#x27;^GRAPH-INVALID: self-loop on T-&#x27; stderr.log # Cycle fixture specflow:task NNN-slug-cycle; grep -qE &#x27;^GRAPH-INVALID: cycle: T-&#x27; stderr.log # Duplicate-ID fixture specflow:task NNN-slug-dup; grep -qE &#x27;^GRAPH-INVALID: duplicate task ID T-&#x27; stderr.log # Duplicate-edge fixture (per codex-r3 sharpen) specflow:task NNN-slug-dup-edge; grep -qE &#x27;^GRAPH-INVALID: duplicate edge T-.* -&gt; T-&#x27; stderr.log # Dangling-ref fixture specflow:task NNN-slug-dangle; grep -qE &#x27;^GRAPH-INVALID: T-.*references unknown task T-&#x27; stderr.log </code>`<code> Each fixture lives at </code>plugins/specflow/examples/docs/specflow/features/025-sprint-task-flagging/fixtures/&lt;case&gt;.md`.</p>
+<ul>
+<li>Verifies: R11.</li>
+</ul></li>
+<li><p><strong>AC-15.</strong> <code>task/SKILL.md</code> <code>eval:</code> field is extended per R12: ``<code>sh awk &#x27;/^eval:/&#x27; plugins/specflow/skills/task/SKILL.md &gt; /tmp/eval-line grep -qE &#x27;sprint-bucket&#x27; /tmp/eval-line grep -qE &#x27;topological-floor|sprint-bucket: M.*M &lt; N&#x27; /tmp/eval-line </code>``</p>
+<ul>
+<li>Verifies: R12.</li>
+</ul></li>
+</ul>
+<h2 id="open-questions">Open questions</h2>
+<p>None — all questions resolved during grilling and Round 2 reviewer synthesis. (R5&#x27;s hypothesis tag for the 020 mapping is documented inline; if the 020 design lands differently, R5 is reopened by <code>specflow:scope-change</code>, not as an open question here.)</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li>Interview: [<code>./025-sprint-task-flagging-interview.md</code>](./025-sprint-task-flagging-interview.md)</li>
+<li>Heuristic doc: [<code>../../templates/task/sprint-bucket-heuristic.md</code>](../../templates/task/sprint-bucket-heuristic.md) (created by this PRD; canonical home for the bucket-assignment heuristic)</li>
+<li>Tasks: [<code>./025-sprint-task-flagging-tasks.md</code>](./025-sprint-task-flagging-tasks.md) (generated by <code>specflow:task</code>)</li>
+<li>Tests: [<code>./025-sprint-task-flagging-test.md</code>](./025-sprint-task-flagging-test.md) (generated by <code>specflow:test</code>)</li>
+</ul>
+</section>
+  <section id="interview">
+<h2 id="interview">Interview</h2>
+<h3 id="goal-confirmation">Goal confirmation</h3>
+<p>The user invoked <code>specflow:prd 025-sprint-task-flagging</code> with the brief: &quot;When <code>specflow:task</code> synthesises tasks, flag which can be batched into a sprint together via a <code>sprint-bucket: N</code> field on each task. Document the bucket-assignment heuristic so the field is reproducible, not vibes.&quot;</p>
+<p>Confirmed: the goal is to extend the per-task synthesis schema with a single integer field (<code>sprint-bucket: N</code>) plus a documented heuristic in <code>task/SKILL.md</code> capturing dependency edges, parallelism opportunity, and respect for 029&#x27;s <code>context-budget-estimate</code>. Out-of-scope-at-goal-level: building the sprint-skill itself (020), enforcing a sprint-wide context budget cap (per 029 § Non-goals), or auto-promoting bucket numbers into Linear cycle assignments (deferred to 020).</p>
+<h3 id="original-request">Original request</h3>
+<blockquote><p>features.md item 2 — &quot;When tasks are generated, the AI must flag which tasks may be done within the same Sprint.&quot; Lines up with chat feedback that 020-sprint-skill needs an input format it can read; the upstream <code>specflow:task</code> synthesis is where the flag belongs because that&#x27;s where the dependency graph and per-task budgets already exist.</p></blockquote>
+<h3 id="codebase-context-pre-grilling">Codebase context (pre-grilling)</h3>
+<ul>
+<li><code>plugins/specflow/skills/task/SKILL.md</code> § Phase B writes per-task entries with <code>Anchor / Scope / Acceptance / Depends on / context-budget-estimate / Notes</code>. 029 just shipped <code>context-budget-estimate</code>; this feature appends a sibling field.</li>
+<li><code>v2/docs/FEATURES.md</code> § 020 (sprint-skill) names <code>sprint-bucket: N</code> as the input contract from 025 — the field consumer is already designed.</li>
+<li><code>v2/docs/FEATURES.md</code> § 029 § Implications #3 explicitly anticipates this feature: <em>&quot;Tasks in the same bucket don&#x27;t share context (each runs in its own window), but the bucket sizing is informed by per-task budgets so the developer doesn&#x27;t approve a sprint where any single task can&#x27;t fit.&quot;</em></li>
+<li><code>knowledge/medin-parallel-agentic-playbook.md</code> § Pillar 1 (issue-as-spec) — issues are pre-scoped so parallel agents have natural boundaries; buckets group what&#x27;s safe to fan out.</li>
+<li><code>knowledge/medin-archon-livestream.md</code> § Hybrid Secret — deterministic nodes pass artefacts between coding-agent nodes; the <code>sprint-bucket: N</code> field IS the deterministic artefact passed from <code>specflow:task</code> to <code>specflow:sprint</code>.</li>
+<li><code>task/SKILL.md</code> is currently 486 lines after 029 shipped. The 500-line ceiling (per <code>feedback_skill_size_ceiling</code>) leaves ~14 lines headroom — additions must be tight.</li>
+</ul>
+<h3 id="round-1-what-does-the-heuristic-actually-decide">Round 1 — what does the heuristic actually decide</h3>
+<p><strong>Question.</strong> A bucket number is just an int. What inputs determine which int a given task gets, and what makes the heuristic reproducible across two synthesis runs?</p>
+<p><strong>Answer.</strong> Three inputs in priority order: (1) <strong>dependency edges</strong> — tasks in bucket N+1 must not depend on bucket N+2; only on bucket N or N+1. This forces the topological floor: tasks land in the lowest bucket whose predecessors all sit in lower or same-numbered buckets. (2) <strong>Parallelism opportunity</strong> — tasks with no shared <code>Depends on:</code> edges and disjoint <code>Scope:</code> surfaces share a bucket so the sprint-skill can fan them out. (3) <strong>Per-task budget respect</strong> — the bucket count is not capped (a feature can have 4 buckets if its dependency graph is deep), but no single bucket may contain a task whose <code>context-budget-estimate</code> exceeds the configured budget — that case is already auto-flagged for split at synthesis (per 029 R4) and never reaches bucket assignment.</p>
+<h3 id="round-2-does-sprint-bucket-compete-with-depends-on-for-the-same-information">Round 2 — does sprint-bucket compete with <code>Depends on:</code> for the same information</h3>
+<p><strong>Question.</strong> <code>Depends on:</code> already encodes the edge; isn&#x27;t <code>sprint-bucket: N</code> redundant?</p>
+<p><strong>Answer.</strong> No — they encode different views. <code>Depends on:</code> is an edge list (which task before which); <code>sprint-bucket: N</code> is a topological grouping derived from the edges, with the parallelism-opportunity overlay. The sprint-skill (020) reads <code>sprint-bucket: N</code> to plan a fan-out batch; it would have to recompute the topology from <code>Depends on:</code> otherwise. Caching the grouping at synthesis time keeps 020 lightweight and gives the developer a stable artefact to review at the sprint-plan gate. The heuristic explicitly states: <code>sprint-bucket</code> is computed from <code>Depends on:</code> + scope-overlap, never asserted independently.</p>
+<h3 id="round-3-what-about-cross-feature-buckets">Round 3 — what about cross-feature buckets</h3>
+<p><strong>Question.</strong> Should two features whose tasks could run in parallel share bucket numbers (e.g. feature A&#x27;s bucket 1 and feature B&#x27;s bucket 1 are the same sprint)?</p>
+<p><strong>Answer.</strong> No — bucket numbers are scoped to the feature. Cross-feature sprint planning is parked under the existing parked-memory entry (per FEATURES.md § Parked) and out of scope for both 025 and 020. The sprint-skill (020) maps one Linear project to one specflow feature; cross-feature batching happens at a higher orchestration layer if/when promoted. Within-feature: bucket 1 always means &quot;no predecessors&quot;; bucket 2 means &quot;depends only on bucket 1&quot;; etc.</p>
+<h3 id="sign-off">Sign-off</h3>
+<p>User confirmed: single integer field per task; heuristic documented in <code>task/SKILL.md</code> Phase D verify-steps; respect for 029&#x27;s per-task budget; feature-scoped numbering. Proceed to PRD synthesis.</p>
+<h3 id="topics-not-discussed">Topics not discussed</h3>
+<ul>
+<li>Whether the heuristic should produce a visualisation (DAG render). Out of scope — visualisation belongs to the sprint-plan gate (020), not the synthesis-time field.</li>
+<li>Whether <code>sprint-bucket: 0</code> is reserved (e.g. for &quot;always run first, e.g. setup tasks&quot;). Out of scope — bucket 1 is the floor; introducing a 0 layer multiplies surface for marginal value.</li>
+<li>Whether the heuristic should auto-detect the optimal number of buckets vs accepting whatever the topology produces. Out of scope — synthesis writes the topological grouping; tuning the bucket count is a 022-cross-task-review concern (the &quot;better arrangement&quot; lens).</li>
+</ul>
+</section>
+  <section id="agent-reviews">
+<h2 id="agent-reviews">Agent reviews</h2>
+<h3 id="gate-2-prd-review">Gate 2 — PRD review</h3>
+<p><strong>Feature:</strong> 025-sprint-task-flagging <strong>Date:</strong> 2026-05-07 <strong>Reviewers:</strong> simplicity-reviewer, surgical-reviewer, think-before-coding-reviewer, goal-driven-reviewer, devils-advocate, codex</p>
+<h4 id="accepted-findings">Accepted findings</h4>
+<ul>
+<li><p><strong>simplicity-r1-f1</strong> (simplicity-reviewer, block) — R10&#x27;s recompute-and-compare hand-edit detector was defensive plumbing for an impossible-by-construction scenario, AND the recompute would false-positive on legitimate scope-change delta-regeneration paths.</p>
+<ul>
+<li>Revision applied: R10 enforcement DROPPED; AC-12 dropped. R10 retained as documentation-only (field is read-only at the doc level).</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f2</strong> (simplicity-reviewer, concern) — Two-rule formulation (topological floor + scope-overlap split) was clever where one fixpoint definition was more explicit.</p>
+<ul>
+<li>Revision applied: R2 rewritten as a single-rule fixpoint definition: <code>bucket(T) = 1 if T has no predecessors and no same-bucket scope conflicts with an earlier-ID task; otherwise bucket(T) = 1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T))</code>.</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f3</strong> (simplicity-reviewer, concern) — R9&#x27;s topological-floor invariant was guaranteed by R2&#x27;s rule construction.</p>
+<ul>
+<li>Revision applied: R9 dropped. Topological floor noted as a one-line strict-less-than corollary inside R2 (<code>bucket(T_j) &lt; bucket(T_i)</code> for every T_j in T_i.Depends-on, by construction).</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f4</strong> (simplicity-reviewer, note) — R7&#x27;s verbatim-listing requirement was speculative phase-ordering specification.</p>
+<ul>
+<li>Revision applied: R7 simplified to a behavioural property; AC-13 split into doc check + execution-order fixture (per codex-r1-f4 / goal-driven-r1-f3).</li>
+</ul></li>
+<li><p><strong>simplicity-r1-f5</strong> (simplicity-reviewer, note) — Lexicographic-vs-natural-number disambiguation was a footgun.</p>
+<ul>
+<li>Revision applied: R2 + AC-9 reworded — typed comparator over <code>(int, optional-letter)</code> per the canonical task ID grammar <code>T-&lt;int&gt;(\.&lt;letter&gt;)?</code>. AC-3 worked example demonstrates <code>T-2 &lt; T-10</code>.</li>
+</ul></li>
+<li><p><strong>surgical-r1-f1</strong> (surgical-reviewer, block) — R10&#x27;s hand-edit-detection enforcement was never requested by the user; cross-skill blast radius into specflow:scope-change.</p>
+<ul>
+<li>Revision applied: R10 + AC-11 + AC-12 dropped. Field read-only documented-only.</li>
+</ul></li>
+<li><p><strong>surgical-r1-f2, f3</strong> (surgical-reviewer, concerns) — R7&#x27;s verbatim-listing + R9&#x27;s standalone topological-floor verify were beyond the interview&#x27;s signed-off ask.</p>
+<ul>
+<li>Revisions applied: R7 simplified to property; R9 dropped (per simplicity-r1-f3).</li>
+</ul></li>
+<li><p><strong>surgical-r1-f4</strong> (surgical-reviewer, note) — AC-3&#x27;s &quot;or example fixture under examples/&quot; alternative quietly expanded the change footprint.</p>
+<ul>
+<li>Revision applied: AC-3 constrained to <code>templates/task/sprint-bucket-heuristic.md</code> (the doctrine doc). No examples/ alternative.</li>
+</ul></li>
+<li><p><strong>surgical-r1-f5</strong> (surgical-reviewer, note) — R8&#x27;s licence for prose tightening risked drive-by edits.</p>
+<ul>
+<li>Revision applied: R8 reworded with chain-don&#x27;t-absorb framing — additions limited to one field-emission line + two one-line citations; the heuristic itself extracted to <code>templates/task/sprint-bucket-heuristic.md</code> (mirrors 029&#x27;s <code>templates/admin/single-context-task.md</code>).</li>
+</ul></li>
+<li><p><strong>tbc-r1-f1</strong> (think-before-coding-reviewer, block) — DAG assumption was load-bearing but unstated.</p>
+<ul>
+<li>Revision applied: Added R11 — pre-bucketing graph-validity step rejects cycles, self-loops, dangling refs, duplicate IDs (and <strong>duplicate edges</strong> per Round 3 codex-r3-f1) with verbatim <code>GRAPH-INVALID:</code> diagnostic. AC-14 verifies via fixtures.</li>
+</ul></li>
+<li><p><strong>tbc-r1-f2</strong> (think-before-coding-reviewer, block) — Task ID format unstated; lex tie-break would break on <code>T-3.A</code> / <code>T-10</code>.</p>
+<ul>
+<li>Revision applied: R2 + AC-9 specify canonical grammar <code>T-&lt;int&gt;(\.&lt;letter&gt;)?</code> and a typed comparator over <code>(int, optional-letter)</code>.</li>
+</ul></li>
+<li><p><strong>tbc-r1-f3</strong> (think-before-coding-reviewer, concern) — Within-feature ID uniqueness assumption implicit.</p>
+<ul>
+<li>Revision applied: R2 preamble states &quot;Task IDs are unique within a feature; bucket assignment relies on within-feature ID uniqueness for the typed-comparator tie-break to be defined.&quot;</li>
+</ul></li>
+<li><p><strong>tbc-r1-f4</strong> (think-before-coding-reviewer, concern) — 020 mapping is a hypothesis, not a contract.</p>
+<ul>
+<li>Revision applied: R5 trace tagged as hypothesis: &quot;Per the current 020 design hypothesis (FEATURES.md § 020 — open design)... If 020&#x27;s mapping evolves, 025&#x27;s feature-scoping should be re-examined.&quot;</li>
+</ul></li>
+<li><p><strong>tbc-r1-f5</strong> (think-before-coding-reviewer, concern) — Bump iteration discipline unstated.</p>
+<ul>
+<li>Revision applied: R2 extended with explicit iteration rule — bumps applied iteratively until fixed point; pass order is <code>(bucket-asc, T-id-asc, T-id-asc)</code>; termination guaranteed by strict bucket-number increase + topological-floor bound.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f1</strong> (goal-driven-reviewer, block) — task/SKILL.md eval field didn&#x27;t exercise sprint-bucket.</p>
+<ul>
+<li>Revision applied: Added R12 — eval extended with two clauses: (1) every task has <code>sprint-bucket: N</code> with <code>N&gt;=1</code>; (2) strict-less-than topological floor holds for every dependency. AC-15 verifies.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f2</strong> (goal-driven-reviewer, block) — AC-9&#x27;s grep <code>^sprint-bucket:</code> doesn&#x27;t match the markdown bullet format.</p>
+<ul>
+<li>Revision applied: AC-9 rewritten with markdown-aware extraction — Python regex over <code>### T-&lt;id&gt;</code> heading + <code>- **sprint-bucket:** N</code> bullet; pairs sorted by typed comparator; diff between two runs returns empty.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f3</strong> (goal-driven-reviewer, block) — AC-13 verified doc, not execution.</p>
+<ul>
+<li>Revision applied: AC-13 split into doc check (heuristic doc lists ordering as property) + execution-order fixture (oversize task aborts before any sprint-bucket: N is written for that task).</li>
+</ul></li>
+<li><strong>goal-driven-r1-f4</strong> (goal-driven-reviewer, block) — AC-12 hand-edit diagnostic under-specified. (Moot; AC-12 dropped.)</li>
+<li><p><strong>goal-driven-r1-f5</strong> (goal-driven-reviewer, concern) — Edge cases (self-loop / cycle / duplicate / dangling) had no AC.</p>
+<ul>
+<li>Revision applied: AC-14 covers four malformed-graph cases (now five with codex-r3 duplicate-edge addition) with verbatim <code>GRAPH-INVALID:</code> prefix.</li>
+</ul></li>
+<li><p><strong>goal-driven-r1-f6</strong> (goal-driven-reviewer, concern) — AC-7 / AC-10 absence-of-text checks were soft.</p>
+<ul>
+<li>Revision applied: AC-7 rewritten as positive structural assertion (no shared file under skills/ references both feature IDs alongside sprint-bucket); AC-10 rewritten with closed token list scoped to outside Non-goals call-out.</li>
+</ul></li>
+<li><strong>da-r1-f1</strong> (devils-advocate, block) — R10 enforcement breaks scope-change delta-regeneration. (Moot; R10/AC-12 dropped.)</li>
+<li><p><strong>da-r1-f2</strong> (devils-advocate, concern) — 022 doesn&#x27;t actually own auto-tuning.</p>
+<ul>
+<li>Revision applied: Non-goals reworded — &quot;Auto-detecting the optimal number of buckets is out of scope; whether it lands in 022 or a future feature is a separate planning decision (FEATURES.md § 022 currently scopes 022 as task-merge / split / re-order, NOT bucket-count tuning).&quot;</li>
+</ul></li>
+<li><p><strong>da-r1-f3</strong> (devils-advocate, concern) — task/SKILL.md doesn&#x27;t have a &quot;Phase D verify-steps&quot; section.</p>
+<ul>
+<li>Revision applied: All &quot;Phase D verify-steps&quot; references replaced with &quot;Phase B.4 self-check&quot; (where 029&#x27;s budget check already lives at line 208). Heuristic extracted to doctrine doc.</li>
+</ul></li>
+<li><p><strong>da-r1-f4</strong> (devils-advocate, note) — 020 listed as a User leaks consumer concerns.</p>
+<ul>
+<li>Revision applied: 020 moved to &quot;Downstream consumers (informational)&quot; note that explicitly disclaims contract authority.</li>
+</ul></li>
+<li><p><strong>da-r1-f5</strong> (devils-advocate, note) — R8&#x27;s 14-line headroom claim unrealistic.</p>
+<ul>
+<li>Revision applied: Heuristic + worked example extracted to <code>templates/task/sprint-bucket-heuristic.md</code> per chain-don&#x27;t-absorb. task/SKILL.md additions limited to one field-emission line + two one-line citations.</li>
+</ul></li>
+<li><strong>codex-r1-f1</strong> (codex, block) — Graph-validity invariant unstated. (Same as tbc-r1-f1; resolved by R11/AC-14.)</li>
+<li><strong>codex-r1-f2</strong> (codex, concern) — AC-9 needed canonical (task_id, bucket) pairs sorted by typed comparator. (Resolved by AC-9 markdown-aware extraction.)</li>
+<li><strong>codex-r1-f3</strong> (codex, concern) — Lex vs natural-number disambiguation. (Same as simplicity-r1-f5.)</li>
+<li><strong>codex-r1-f4</strong> (codex, concern) — AC-13 doc-only. (Same as goal-driven-r1-f3.)</li>
+<li><p><strong>codex-r1-f5</strong> (codex, block) — Topological floor allowed <code>≤ N</code> (same-bucket dependencies); should be strict <code>&lt; N</code>.</p>
+<ul>
+<li>Revision applied: R2 corollary states strict-less-than (<code>bucket(T_j) &lt; bucket(T_i)</code> by construction). R12 eval clause 2 mirrors with <code>M &lt; N</code>. AC-15 verify uses strict less-than.</li>
+</ul></li>
+<li><p><strong>codex-r3-f1</strong> (codex Round 3, sharpen) — R11 graph-validity missed duplicate dependency edges.</p>
+<ul>
+<li>Revision applied: R11 extended with fifth subtype <code>GRAPH-INVALID: duplicate edge T-X -&gt; T-Y</code>. AC-14 extended with duplicate-edge fixture invocation.</li>
+</ul></li>
+</ul>
+<h4 id="rejected-findings">Rejected findings</h4>
+<p>None — every Round-1 finding either accepted or made moot by the substantive Round-2 dropping of R10 enforcement (which cascaded across simplicity-r1-f1 / surgical-r1-f1 / da-r1-f1 / goal-driven-r1-f4).</p>
+<h4 id="escalated-to-human">Escalated to human</h4>
+<p>None.</p>
+<h4 id="closing-decision">Closing decision</h4>
+<p>Gate 2 status: <strong>passed-with-revisions</strong></p>
+<p>PRD revisions applied across all 31 Round-1 findings + 1 Round-3 sharpen. Strong convergence — every reviewer accepted the writer&#x27;s defence by Round 3. Major substantive revisions: R10 enforcement dropped (avoids circular diagnostic with scope-change); R9 dropped (R2 guarantees by construction); single-rule fixpoint definition for R2; canonical task ID grammar <code>T-&lt;int&gt;(\.&lt;letter&gt;)?</code> with typed comparator; graph-validity step (R11/AC-14) covering five malformed-graph cases; eval field extended (R12/AC-15); markdown-aware AC-9 extraction; Phase B.4 (not Phase D) is the home for verify-steps; heuristic extracted to <code>templates/task/sprint-bucket-heuristic.md</code> (chain-don&#x27;t-absorb).</p>
+<p>PRD is fit to proceed to <code>specflow:task</code>. No human intervention required to clear Gate 2.</p>
+<p>— Orchestrator, 2026-05-07</p>
+</section>
+  <footer>
+    Feature brief · composed from <code>025-sprint-task-flagging-prd.md</code>, <code>025-sprint-task-flagging-interview.md</code>, and the gate debate logs. Markdown is the source of truth.
+  </footer>
+</main>
+</div>
+</body>
+</html>

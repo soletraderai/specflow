@@ -1,0 +1,54 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "round": 1,
+  "feature": "025-sprint-task-flagging",
+  "lens": "Does every requirement and AC trace directly to the user's request and the confirmed Goal?",
+  "findings": [
+    {
+      "id": "surgical-r1-f1",
+      "severity": "block",
+      "claim": "R10 + AC-11 + AC-12 introduce a hand-edit-detection enforcement mechanism (recompute-on-every-synthesis, diff against existing file, abort with diagnostic, route user to specflow:scope-change) that the user never requested.",
+      "evidence": "Interview Goal confirmation names three deliverables: (1) the integer field, (2) the documented heuristic, (3) respect for 029's per-task budget. Round 2's wording — 'sprint-bucket is computed from Depends on: + scope-overlap, never asserted independently' — is a characterisation of how the field is *derived*, not a request for runtime enforcement against hand-edits. R10 promotes that characterisation into: a recompute-and-diff verify step on every synthesis run, an abort path with a named diagnostic, and a routing decision pointing the user at another skill (specflow:scope-change). AC-12 makes the diagnostic format load-bearing (must name task ID + existing value + recomputed value + the cross-skill pointer). Nothing in the interview, the Goal section, or the Sign-off authorises this surface. Blast radius: every future synthesis run on an existing tasks file now goes through a recompute-and-compare step + an abort path; it also implicitly couples 025 to specflow:scope-change's contract.",
+      "remedy": "Drop R10, AC-11, AC-12. The 'computed not asserted' contract is documented in R3 and R2 already. If hand-edit detection is genuinely needed, it's a separate feature with its own interview — not a quiet rider on 025's surface."
+    },
+    {
+      "id": "surgical-r1-f2",
+      "severity": "concern",
+      "claim": "R7 + AC-13 promote 'budget-respect is input #3 of the heuristic' into a verbatim phase-ordering list with abort/re-route semantics inside task/SKILL.md Phase D — going past what the interview asked for.",
+      "evidence": "Interview Round 1 lists three inputs in priority order; input #3 is 'per-task budget respect' with the note 'no single bucket may contain a task whose context-budget-estimate exceeds the configured budget — that case is already auto-flagged for split at synthesis (per 029 R4) and never reaches bucket assignment.' That is a property statement. R7 turns it into a verbatim three-step ordered list ((a) budget check → (b) bucket assignment → (c) topological-floor invariant) with explicit abort+re-route semantics ('aborts and re-routes through (a)'). AC-13 then locks the verbatim ordering in the verify-steps. The interview never asked for a phase-ordering machine; it asked for the budget invariant to hold. R7's machinery is a 'while I was here' formalisation that bolts new control flow onto Phase D.",
+      "remedy": "Restate R7 as 'tasks whose context-budget-estimate exceeds the configured budget are split per 029 R4 before bucketing operates' (a property, matching the interview). Drop AC-13 or fold it into AC-5 as a property check, not a verbatim-text-ordering check."
+    },
+    {
+      "id": "surgical-r1-f3",
+      "severity": "concern",
+      "claim": "R9 + AC-4 promote R2's heuristic-input-#1 (topological floor) into a standalone verify step with a stable name ('topological-floor invariant'), duplicating the heuristic into a second verify-surface that the interview did not request.",
+      "evidence": "R2's input #1 already states the topological floor as the heuristic's first computation. R9 re-states it as a separate binary verify step in Phase D, and AC-4 requires the verify step to carry a stable label. The interview's Sign-off names 'heuristic documented in task/SKILL.md Phase D verify-steps' — singular: the heuristic itself. Promoting one of the heuristic's inputs into a second-named verify step adds verify surface beyond what was asked for; it also drives bytes against the 500-line ceiling (R8) on a check the heuristic already implies.",
+      "remedy": "Either drop R9 (the heuristic in R2 already encodes the floor), or fold it into AC-2's heuristic-documentation check rather than carving a new R+AC pair."
+    },
+    {
+      "id": "surgical-r1-f4",
+      "severity": "note",
+      "claim": "AC-3's worked example may land in 'plugins/specflow/examples/' as a fixture file, expanding the change footprint beyond task/SKILL.md without the interview asking for it.",
+      "evidence": "AC-3 reads '...in task/SKILL.md (or an example fixture under plugins/specflow/examples/)...'. The interview's Sign-off scopes the change to task/SKILL.md only. Allowing a fixture file as an alternative landing site quietly expands the surface area of acceptable implementations to include a directory the interview never named.",
+      "remedy": "Constrain AC-3 to task/SKILL.md only ('...lives in task/SKILL.md, in Phase D verify-steps or in a dedicated subsection cited from Phase B'). Drop the 'or an example fixture' alternative."
+    },
+    {
+      "id": "surgical-r1-f5",
+      "severity": "note",
+      "claim": "R8 authorises 'existing prose tightening' inside task/SKILL.md as part of the change set in service of the 500-line ceiling — risking style-normalisation drift on prose unrelated to sprint-bucket.",
+      "evidence": "R8: 'Existing prose tightening is part of the work — the file is currently at 486 lines with ~14 lines headroom (per the skill-size ceiling).' This is an explicit licence to edit prose outside the sprint-bucket additions. The skill-size ceiling is a real project rule (per memory feedback_skill_size_ceiling), but the surgical principle is that when an in-scope change pushes a file past a ceiling, the right move is to chain a separate skill-size pass (or split a sub-skill) — not to smuggle unrelated prose edits under the same change set.",
+      "remedy": "Reword R8: 'task/SKILL.md line count after the change set remains <=500. If the additions push the file over the ceiling, the change set MUST split into a follow-up sub-skill or a separate prose-tightening pass — do not co-mingle prose edits unrelated to sprint-bucket with the sprint-bucket additions.' This keeps the ceiling as a constraint without authorising drive-by edits."
+    }
+  ],
+  "out_of_scope_audit": {
+    "no_sprint_skill_build": "respected — 020 is named only as consumer",
+    "no_sprint_wide_budget_cap": "respected — R7 explicitly does NOT enforce one",
+    "no_linear_cycle_promotion": "respected — not present",
+    "no_cross_feature_buckets": "respected — R5 + AC-7 explicitly forbid",
+    "no_dag_visualisation": "respected — AC-10 explicitly forbids",
+    "no_reserved_bucket_0": "respected — R4 + AC-6 explicitly forbid",
+    "no_auto_tuning_bucket_count": "respected — R6 + AC-10 explicitly forbid"
+  },
+  "summary": "Goal-level out-of-scope is well-respected — the seven explicit forbiddings each map to a guarding R or AC. The surgical-changes concerns lie in additions *beyond* the interview's signed-off ask: R10's hand-edit-detection enforcement mechanism (block — never requested, cross-skill blast radius), R7's verbatim phase-ordering machinery (concern — promotes a property to control flow), R9's standalone topological-floor verify step (concern — duplicates R2), AC-3's optional fixture-file landing site (note), and R8's licence for unrelated prose tightening (note)."
+}

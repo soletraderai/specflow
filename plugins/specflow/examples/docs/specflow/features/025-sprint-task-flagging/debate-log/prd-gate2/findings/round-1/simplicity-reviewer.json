@@ -1,0 +1,49 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "025-sprint-task-flagging",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "severity": "block",
+      "anti_pattern": "defensive error handling for impossible scenario",
+      "claim": "R10 + AC-12 mandate a recompute-and-compare hand-edit detector that runs on every synthesis run, aborting with a diagnostic if the existing tasks file's sprint-bucket values disagree with the recomputed ones. This is defensive plumbing for a scenario the surface already discourages: the field is computed from Depends-on + Scope, the skill writes it, and AC-11 already forbids documenting hand-edits. A reviewer cannot distinguish 'a user hand-edited the field' from 'the heuristic itself changed between releases' from this check — both look like a mismatch, and the diagnostic blames the user. Per Simplicity First: 'No error handling for impossible scenarios … No flexibility or configurability that wasn't requested.' The interview never asked for an enforcement check; it stated the field is derived. R3 + AC-9 (determinism) already give consumers the trust property. The recompute step is overhead added on top of an already-deterministic artefact.",
+      "evidence": "PRD R10: 'on every synthesis run, the skill recomputes sprint-bucket: N from Depends on: + scope-overlap and compares against the existing {NNN-slug}-tasks.md file.' AC-12 promotes this to a Phase D verify-step. The interview only said 'sprint-bucket is computed from Depends on: + scope-overlap, never asserted independently' — i.e. the writer never asserts independently, not that the reader must police drift. AC-11 already forbids documenting a hand-edit affordance, which is the real safeguard. Compare the simpler stance the same PRD takes on context-budget-estimate (029) — that field is also derived, also written by the skill, and there is no recompute-and-compare step.",
+      "proposed_change": "Drop R10's enforcement clause and AC-12 entirely. Keep R10's first sentence (the field is read-only / written by specflow:task) and AC-11 (no documented hand-edit affordance). Tasks already have a recompute path: re-running specflow:task regenerates the file. If a downstream consumer (020) wants to validate, that's 020's concern. This removes one verify-step from Phase D, ~6-10 lines from task/SKILL.md (helping R8's ≤500 ceiling), and the diagnostic-message specification work."
+    },
+    {
+      "id": "simplicity-r1-f2",
+      "severity": "concern",
+      "anti_pattern": "premature abstraction (two-rule formulation where one inline rule suffices)",
+      "claim": "R2 splits the heuristic into 'topological floor' (input #1) and 'scope-overlap split' (input #2), presented as two named overlays. The split reads more abstract than the underlying rule actually is. A single inline definition — 'bucket(T) = 1 + max(bucket(D) for D in Depends-on(T) ∪ ScopeConflict(T))' where ScopeConflict(T) is the set of same-bucket tasks with overlapping Scope and lexicographically earlier ID — collapses the two rules into one fixpoint definition. The two-rule framing forces the reader (and the implementer) to track 'compute pass 1, then apply overlay pass 2' when there is no semantic reason to. Per Simplicity First's 'Explicit beats clever … Local reasoning beats cross-file elegance': in this case the two-rule split is the clever framing; the inline definition is more explicit because it states the answer directly without the 'overlay' metaphor.",
+      "evidence": "PRD R2 inputs #1 and #2 plus AC-9's restatement: 'bucket(T) = 1 + max(bucket(D) for D in T.depends_on) (or 1 if no dependencies); same-bucket scope-overlap conflicts are resolved by lexicographic tie-break on task ID (the later ID is bumped).' The two formulations describe the same computation; the second is the simpler one. Phase D verify-steps then have to document the overlay-pass ordering as load-bearing prose, which costs lines against the ≤500 ceiling (R8).",
+      "proposed_change": "Rewrite R2 as a single rule: 'bucket(T) = 1 if T has no predecessors and no same-bucket scope conflicts with an earlier-ID task; otherwise bucket(T) = 1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T)).' Drop the 'overlay' framing. Phase D documents one rule plus one worked example (already covered by AC-3). Saves prose lines and removes the 'pass 1 then pass 2' mental model from the skill."
+    },
+    {
+      "id": "simplicity-r1-f3",
+      "severity": "concern",
+      "anti_pattern": "redundant verify-step (R9 duplicates what R2 mathematically guarantees)",
+      "claim": "R9 + AC-4 add a 'topological-floor invariant' verify-step that checks: every T_j in T_i.Depends-on has sprint-bucket ≤ N. But R2's rule definition (bucket(T) = 1 + max(bucket(D) for D in Depends-on)) makes this invariant true by construction — there is no path through the synthesis algorithm that produces a violating output. Adding a verify-step to check a property the algorithm guarantees is defensive code for an impossible scenario. Per Simplicity First: 'Do not add error handling for scenarios that cannot happen given the call sites.'",
+      "evidence": "If bucket(T_i) = 1 + max(bucket(D) for D in T_i.Depends-on), then for any T_j in T_i.Depends-on, bucket(T_j) ≤ max(...) < 1 + max(...) = bucket(T_i). The strict-less-than is automatic; the ≤ N check in R9 is trivially satisfied by any output of the rule. The only failure mode is 'somebody hand-edited the file', which is finding-1's territory and already addressed there.",
+      "proposed_change": "Drop R9 and AC-4. Or, if the writer wants the invariant documented for human readers, fold it into R2 as a one-line corollary ('Note: by construction, every T_j in Depends-on(T_i) has bucket(T_j) < bucket(T_i)') rather than promoting it to a runtime verify-step. Saves one Phase D verify-step and the ordered-phase plumbing in R7 (which would collapse to two steps: budget check, then bucketing)."
+    },
+    {
+      "id": "simplicity-r1-f4",
+      "severity": "note",
+      "anti_pattern": "speculative phase-ordering specification",
+      "claim": "R7 specifies a three-step phase ordering ((a) budget check → (b) bucket assignment → (c) topological-floor invariant check) and AC-13 demands this ordering be 'verbatim listed.' If finding-3 lands (drop R9), this collapses to two steps; if finding-1 lands (drop R10's enforcement), there's no third runtime step at all. The 'verbatim listed' requirement is itself prescriptive prose on top of an already-thin contract — the skill author can pick a sensible order without a PRD requirement mandating the listing format. The interview never asked for verbatim ordering documentation; only for the budget-respect property.",
+      "evidence": "R7 trace cites '029 § Implications #3 … bucket sizing is informed by per-task budgets' and 'Interview Round 1 input #3.' The interview sentence is: 'no single bucket may contain a task whose context-budget-estimate exceeds the configured budget — that case is already auto-flagged for split at synthesis (per 029 R4) and never reaches bucket assignment.' That's a behavioural property, not a verbatim-listing requirement. The verbatim-list mandate is the PRD's addition, not the user's.",
+      "proposed_change": "Soften AC-13 from 'verbatim listed in that order' to 'documented such that bucket assignment runs after budget enforcement.' Drop the prescription that the list be word-for-word in a particular shape. The reproducibility property (AC-9) and the budget-respect property (AC-5) are already binary-checkable without prose-level prescription."
+    },
+    {
+      "id": "simplicity-r1-f5",
+      "severity": "note",
+      "anti_pattern": "configurability not requested (lexicographic tie-break documented as a ranking system)",
+      "claim": "R2 input #2 specifies the tie-break as 'lexicographic ordering on task IDs (T1 < T2 < ... < T10 — i.e. natural-number ordering on the integer suffix).' This is two specifications of the same thing — 'lexicographic' and 'natural-number ordering on the integer suffix' — because plain lexicographic on strings would order T10 < T2. The PRD covers the discrepancy with a parenthetical. Simpler to state the rule directly as 'when two same-bucket tasks have overlapping Scope, the task with the higher integer suffix is bumped' without the lexicographic-vs-natural disambiguation. Saves a line and removes a footgun (a future implementer who writes a string-sort would be technically conformant to 'lexicographic' but would produce T10 < T2 which is not what the PRD means).",
+      "evidence": "PRD R2 input #2: 'Lexicographic ordering on task IDs (T1 < T2 < ... < T10 — i.e. natural-number ordering on the integer suffix) is the deterministic tie-break.' AC-9 restates this as 'lexicographic tie-break on task ID (the later ID is bumped)' without the disambiguation, which would be a literal bug if read alone.",
+      "proposed_change": "Replace 'lexicographic ordering on task IDs (...)' with 'numeric ordering on the task ID's integer suffix (T2 before T10).' Update AC-9 to match. One sentence, no parenthetical, no internal contradiction between R2 and AC-9."
+    }
+  ]
+}

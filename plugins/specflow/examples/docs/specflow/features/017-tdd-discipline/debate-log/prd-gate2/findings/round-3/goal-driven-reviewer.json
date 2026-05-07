@@ -1,0 +1,76 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "feature": "017-tdd-discipline",
+  "gate": "prd-gate2",
+  "round": 3,
+  "lens": "Could a fresh agent run this verify step in isolation and tell me unambiguously whether it passed?",
+  "findings": {
+    "gd-r1-f1": {
+      "decision": "sharpen",
+      "severity": "concern",
+      "ac_or_r": "AC-1",
+      "round_2_status": "Round 2 accepted with revision_applied: 'AC-1 rewritten with a sort-by-line-number assertion that the three cycle markers appear in canonical order.'",
+      "verdict": "Partially addressed. The PRD AC-1 (lines 119-125) now greps for `tdd-discipline.md|Red sub-step|Green sub-step|Refactor sub-step` with `-n` line numbers, AND adds a `[ \"$(grep -c ...)\" -ge 3 ]` count assertion. However, the order check is delegated to a 'Manual check' comment ('Manual check: first three cycle-step references appear in Red/Green/Refactor order with strictly increasing line numbers.'). A 'manual check' comment is NOT a binary, fresh-agent-runnable assertion — it requires a human to interpret 'first three' across mixed pattern matches. The Round 1 proposal called for a deterministic shell pipeline (sort -n -t: -k1) that emits the three lines in order — that pipeline has not been implemented.",
+      "claim": "AC-1 still leans on a 'Manual check' comment for the order assertion. A fresh agent running this verify step receives mixed grep output (some lines match `tdd-discipline.md`, some match `Red sub-step`, etc.) and has no mechanical rule for extracting 'the first three cycle-step references' from the stream. The binary contract is incomplete.",
+      "evidence": "PRD line 122: `# Manual check: first three cycle-step references appear in Red/Green/Refactor order with strictly increasing line numbers.` — this is prose-as-spec, not a shell assertion. Compare AC-3 (lines 134-138), which IS a deterministic pipeline (awk-extract block, then three grep -q assertions). AC-1 should match that rigour.",
+      "proposed_change": "Replace the 'Manual check' comment with a deterministic three-line assertion. Example: `grep -nE '\\b(Red sub-step|Green sub-step|Refactor sub-step)\\b' plugins/specflow/skills/develop/SKILL.md | head -3 | awk -F: '{print $2}' | grep -E 'Red sub-step' && ...` — or simpler, three sequential `awk` extractions with line-number capture. Critical: the order check must be a shell exit code, not a comment to a human reader."
+    },
+    "gd-r1-f2": {
+      "decision": "accept",
+      "severity": "resolved",
+      "ac_or_r": "AC-3",
+      "round_2_status": "Round 2 accepted with revision_applied: 'AC-3 rewritten as two-part grep: (1) Status: red (failing) + refuse substring within 30 lines after the Green sub-step heading; (2) tddRequired conditional within same range.'",
+      "verdict": "Fully addressed. AC-3 (PRD lines 133-140) now extracts the Green block via `awk '/Green sub-step/,/Refactor sub-step|## Phase E/'` and runs three grep -q assertions: (a) `Status: red (failing)`, (b) `refuse|refuses|refusal|block`, (c) `tddRequired.*(true|false)`. All three are binary shell exit codes. A fresh agent can run this verify step in isolation and get unambiguous pass/fail.",
+      "claim": "Resolution confirmed. AC-3 is now a deterministic three-step pipeline with binary observables. The Round 1 proposal's intent (refusal-mechanism codified as text + tddRequired conditional wired) is satisfied.",
+      "evidence": "PRD lines 134-138 implement the exact pattern proposed in Round 1, with the additional improvement of using awk range-extract to scope the search to the Green block (cleaner than `grep -A 30`).",
+      "proposed_change": "None. Finding closed."
+    },
+    "gd-r1-f3": {
+      "decision": "accept",
+      "severity": "resolved",
+      "ac_or_r": "AC-8",
+      "round_2_status": "Round 2 accepted with revision_applied: 'AC-8 replaced with concrete-substring absence + positive-input-list test.'",
+      "verdict": "Fully addressed. AC-8 (PRD lines 194-200) drops the over-broad bare `manifest` token and now uses qualified concrete substrings: `manifest-stub`, `per-task manifest scratch`, `cycle marker`, `red:.*passed`, `green:.*passed`. The Round 1 false-positive concern (Phase E body legitimately references 'Gate 5 manifest' / 'manifest path') is eliminated because the qualified forms cannot collide with the pre-existing Gate-4/5/feature-level manifest references.",
+      "claim": "Resolution confirmed. The absence test now distinguishes 'Gate 5 manifest' (legitimate, pre-existing) from 'per-task manifest scratch' / 'manifest-stub' (the leak 017 forbids). A fresh agent runs the awk-extract + negated grep and gets binary pass/fail with no false-positives on unchanged text.",
+      "evidence": "PRD line 197: `! grep -qE 'manifest-stub|per-task manifest scratch|cycle marker|red:.*passed|green:.*passed' /tmp/phase-e` — qualified forms only.",
+      "proposed_change": "None. Finding closed."
+    },
+    "gd-r1-f4": {
+      "decision": "accept",
+      "severity": "resolved",
+      "ac_or_r": "AC-11",
+      "round_2_status": "Round 2 accepted with revision_applied: 'AC-11 split: (11a) grep develop/SKILL.md Refactor body for hard-block message + halt token; (11b) fixture file at plugins/specflow/examples/.../017-tdd-discipline/fixtures/refactor-new-file-block.md exists with worked narrative ending in the halt-message string.'",
+      "verdict": "Fully addressed. The PRD now carries AC-11a (lines 219-225) and AC-11b (lines 227-233). 11a awk-extracts the Refactor section from the doctrine doc and asserts both the literal halt message AND a halt anchor (`halt|halts|refuse|refuses`). 11b asserts the fixture file exists at the named path AND contains both the halt message and the `refactor: failed (new-file-attempted)` outcome line. Both anchors are file-system observable binary checks. Note Round 2 also demoted R11 from runtime hard-block to documented discipline + manifest outcome (per simplicity-r1-f5 / DA-5), which makes the binary checks even cleaner — no runtime fixture or oracle needed.",
+      "claim": "Resolution confirmed. The split into 11a/11b matches the Round 1 proposal exactly, with the additional simplification that R11's runtime hard-block is now documented-only (no need for a runtime fixture exercising 'halt' behaviour). A fresh agent can run both AC-11a and AC-11b shell pipelines in isolation.",
+      "evidence": "PRD lines 219-233 implement the proposed structure. The doctrine doc target (`plugins/specflow/templates/admin/tdd-discipline.md`) replaces the Round 1 proposal's `develop/SKILL.md` target — consistent with R11's demotion and the doctrine-doc-as-canonical-home pattern.",
+      "proposed_change": "None. Finding closed."
+    },
+    "gd-r1-f5": {
+      "decision": "accept",
+      "severity": "resolved",
+      "ac_or_r": "AC-2",
+      "round_2_status": "Round 2 accepted with revision_applied: 'AC-2 tightened (same as tbc-r1-f4).' AC-2 amended to specify grep against develop/SKILL.md prose with 10-line proximity to a verb anchor.",
+      "verdict": "Fully addressed. AC-2 (PRD lines 127-131) now requires the literal invocation `specflow:test {NNN-slug} --plan-only --task T{N}` to appear within 10 lines of a verb anchor (`invoke|fire|run|execute`). The grep pipeline `grep -B 0 -A 10 -E '\\b(invoke|fire|run|execute)\\b' ... | grep -qE 'specflow:test ... --plan-only --task T\\{N\\}'` is a binary shell pipeline with deterministic exit code.",
+      "claim": "Resolution confirmed. The verb-anchor proximity requirement closes the Round 1 false-positive (string appearing in a comment / negative example). A fresh agent runs the two-stage grep and gets unambiguous pass/fail.",
+      "evidence": "PRD lines 128-130 implement the exact verb-anchor + proximity pattern proposed in Round 1.",
+      "proposed_change": "None. Finding closed."
+    },
+    "gd-r1-f6": {
+      "decision": "sharpen",
+      "severity": "concern",
+      "ac_or_r": "eval-coverage / R13 / AC-12",
+      "round_2_status": "Round 2 accepted with revision_applied: 'Added R13: extends both eval fields. develop's eval asserts the manifest-stub regex per task; test's eval asserts --task T{N} writes Status: red (failing). AC-12 verifies.'",
+      "verdict": "Mostly addressed but AC-12 has a verify-step weakness. R13 (PRD lines 107-111) is correctly drafted — both eval fields gain the requisite TDD-discipline assertions, and the regex contract is precise (anchored, named outcome enum, ISO-8601 timestamp pattern). AC-13 (R14, pre-implementation test) is also added per codex-r1-f4. However, AC-12's verify (lines 235-240) uses two `grep -qE` patterns with `|` alternation: `eval:.*manifest-stub|eval:.*\\^red:\\s+\\(passed` and `eval:.*--task T\\{N\\}|eval:.*Status: red \\(failing\\)`. The alternation means either side passing satisfies the AC, but R13's contract requires BOTH the manifest-stub clause AND the regex clause for develop, AND BOTH the `--task T{N}` clause AND the `Status: red (failing)` clause for test. The current AC-12 grep can pass on a SKILL.md whose eval contains only one half of each pair — which is the eval-coverage anti-pattern this finding exists to prevent.",
+      "claim": "AC-12 under-verifies R13. The `|` alternation in each grep allows partial implementation to pass the binary check. A fresh agent running AC-12 against a SKILL.md whose develop eval mentions `manifest-stub` but omits the regex (or vice versa) gets a passing exit code, when R13's contract demands both substrings appear together.",
+      "evidence": "PRD line 237: `grep -qE 'eval:.*manifest-stub|eval:.*\\^red:\\\\s\\+\\(passed' plugins/specflow/skills/develop/SKILL.md` — the `|` makes this an OR. R13 (line 108) reads: 'the per-task manifest scratch ... contains a line matching the regex `^red:\\s+(passed|failed|skipped...)\\s+\\([0-9T:Z-]+\\)\\s+—\\s+.+$` AND equivalent regexes for green: and refactor:' — the contract is conjunctive, not disjunctive.",
+      "proposed_change": "Split AC-12 into AC-12a (develop eval) and AC-12b (test eval), each with conjunctive grep assertions: `grep -q 'manifest-stub' eval-block && grep -qE '\\^red:\\\\s\\+' eval-block && grep -qE '\\^green:\\\\s\\+' eval-block && grep -qE '\\^refactor:\\\\s\\+' eval-block` for develop; `grep -qE '--task T\\{N\\}' eval-block && grep -q 'Status: red (failing)' eval-block` for test. Use awk to extract the eval: field block first, then each grep is a binary AND. This matches R13's conjunctive contract and prevents the half-implementation passing case."
+    }
+  },
+  "summary": {
+    "accepted_resolved": ["gd-r1-f2", "gd-r1-f3", "gd-r1-f4", "gd-r1-f5"],
+    "sharpen_outstanding": ["gd-r1-f1", "gd-r1-f6"],
+    "outcome": "Four of six findings fully resolved by Round 2 revisions. Two require sharpening: (gd-r1-f1) AC-1's order-of-cycle-citations check still relies on a 'Manual check' comment instead of a deterministic shell pipeline — the binary contract is incomplete. (gd-r1-f6) AC-12's grep alternation under-verifies R13's conjunctive eval-coverage contract — partial eval implementations would pass the AC. Both are mechanical fixes to verify-step text, not architectural reopens.",
+    "goal_driven_compliance": "The PRD now covers eval-coverage (R13/AC-12), pre-implementation test execution (R14/AC-13 — Pocock-failure-mode prevention), and worked-fixture coverage (AC-7a/7b/7c, AC-11b). The remaining gaps are local to AC-1 and AC-12 verify-step rigour — the goal-driven principle (could a fresh agent run this verify in isolation?) is satisfied for 11 of 13 ACs and partially satisfied for the remaining two."
+  }
+}

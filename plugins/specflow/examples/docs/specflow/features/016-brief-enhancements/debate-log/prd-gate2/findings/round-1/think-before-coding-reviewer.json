@@ -1,0 +1,59 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "feature": "016-brief-enhancements",
+  "gate": "prd-gate2",
+  "round": 1,
+  "findings": [
+    {
+      "id": "TBC-1",
+      "severity": "block",
+      "title": "R8/AC-3 assume current SKILL.md is at or under 500 lines — it is already 524",
+      "where": "PRD R8 and AC-3 (line-count ceiling)",
+      "observation": "R8 says 'brief/SKILL.md total line count after additions remains ≤500 lines' and AC-3 verifies via `wc -l`. The unstated assumption is that the file currently sits at or below 500. It does not — `wc -l plugins/specflow/skills/brief/SKILL.md` returns 524. So the ceiling is already breached before any new block ships, and the AC-3 prose-tightening targets must absorb both the existing overshoot (~24 lines) and the new block CSS rule-sets (likely 60–100+ lines for four kinds). The interview never resolved 'what if current count already exceeds the ceiling.' If wrong, the entire feature blocks at AC-3 verification with no fall-back articulated.",
+      "load_bearing": true,
+      "cross_reference": "Interview codebase context bullet 4 says 'must keep the file under 500 lines after additions' — phrased as if current is under. SKILL.md is 524.",
+      "proposed_change": "Add an explicit baseline statement to R8: 'Current `brief/SKILL.md` is 524 lines (verified at PRD time); the change set must net-reduce by at least 24 + new-block-cost lines.' Add a quantified prose-tightening budget to AC-3: state the expected CSS rule-set cost per new block (e.g. ~15–25 lines) so the cap arithmetic is visible. If the arithmetic doesn't close, surface that the simpler approach is to chain — extract a `brief-blocks` sub-skill — rather than aggressive prose deletion that risks losing semantic guard-rails."
+    },
+    {
+      "id": "TBC-2",
+      "severity": "block",
+      "title": "PRD silently drops Slack from the resolved source-type icon set",
+      "where": "PRD Goals bullet 5 and R2",
+      "observation": "Interview Round 3 (Resolved): 'a small set of known source-type icons (Linear, Doc, Design, GitHub, **Slack**) is shipped as inline base64 in the brief skill itself.' The PRD lists only `linear | doc | design | github` in both Goals and R2 — Slack has been dropped without callout. This is a silent assumption: either the author decided Slack is out (consistent with decision-log 2026-03-22 'Slack removed from the stack') or it's an oversight. If wrong, downstream task/test work will either implement Slack and fail review, or omit it and miss a resolved interview commitment. Either way the PRD hides the choice.",
+      "load_bearing": true,
+      "cross_reference": "Interview Round 3 lists Slack explicitly. Decision log entry 'Slack removed from the stack' (2026-03-22) provides a plausible rationale, but the PRD does not cite it.",
+      "proposed_change": "Either (a) restore Slack in R2's icon list to match the interview's resolved set, or (b) add an explicit Non-goal: 'Slack source-type icon — dropped vs interview Round 3 because Slack is no longer part of the team's working set per decision-log 2026-03-22 \"Slack removed from the stack\".' Pick one and state the tradeoff."
+    },
+    {
+      "id": "TBC-3",
+      "severity": "concern",
+      "title": "R7 silently extends the strip-rule to four new blocks; interview only resolved it for :::key-features",
+      "where": "PRD R7, AC-4, AC-7",
+      "observation": "Interview Round 2 only resolves the strip-rule for `:::key-features` ('the brief skill strips it from the rendered PRD prose'). R7 generalises 'the four new block kinds … are stripped from the rendered PRD body prose, exactly as the four existing blocks.' This is a load-bearing extension — for `:::resources` and `:::key-decisions` it's plausibly correct (consistency with existing four). For `:::phase-split` it is less obviously right: a phase-split note like 'Sprint 2 ships R1-R5' is arguably useful in PRD prose AND in the visual abstract. The PRD assumes 'same as existing four' without articulating the tradeoff for each new kind.",
+      "load_bearing": false,
+      "cross_reference": "Interview Round 2 (Resolved) — speaks only of `:::key-features`. Not in 'Topics not discussed' either — silence-by-oversight rather than silence-by-choice.",
+      "proposed_change": "Add a one-line tradeoff articulation to R7: 'All four new kinds are stripped from PRD prose because the brief skill's existing strip-rule is per-block-kind, not per-semantic-class; treating Phase-split differently from Key-features would require a second strip mode and breaks the \"same input bytes → same HTML output\" symmetry across the eight kinds.' Or, if the user wants Phase-split visible in PRD prose too, flag it as an open question."
+    },
+    {
+      "id": "TBC-4",
+      "severity": "concern",
+      "title": "R9 claims `title=`/`subtitle=` consistency 'across all eight blocks' — existing four don't uniformly support it",
+      "where": "PRD R9",
+      "observation": "R9 asserts 'consistent attribute surface across all eight blocks' and traces to interview 'Topics not discussed' ('Assumed yes — consistency with the existing four blocks'). But reading `brief/SKILL.md` as cited: `:::flow` has `title=` and `subtitle=` (lines 131); `:::comparison` has `title=` (line 150) but the documented example does not use `subtitle=`; `:::scope` (lines 173-188) has no `title=`/`subtitle=` at all in the documented grammar; `:::tree` (line 198) has `title=` but not `subtitle=`. So 'consistent' is not factually consistent — the interview's assumed-yes is built on a false premise about the baseline. If the assumption is wrong, AC-9 will pass for new blocks but the heterogeneity across all eight stays.",
+      "load_bearing": false,
+      "cross_reference": "SKILL.md lines 131, 150, 173-188, 198. Interview 'Topics not discussed' bullet 1.",
+      "proposed_change": "Restate R9 with the actual baseline: 'The four new blocks support `title=` and `subtitle=` (matching `:::flow`'s most-complete pattern). The existing four blocks remain as-is — `:::scope` does not gain a `title=`; `:::tree` does not gain `subtitle=`. \"Consistent\" means the new four follow the most-complete pattern, not that all eight have identical attribute surfaces.' Or, if the goal is to harmonise the existing four too, declare it as a follow-up out-of-scope item."
+    },
+    {
+      "id": "TBC-5",
+      "severity": "concern",
+      "title": "R2 / AC-6 don't specify the inline base64 icon payloads — undefined source/format",
+      "where": "PRD R2 and AC-6",
+      "observation": "R2 says 'a small set of inline base64 icons for `linear | doc | design | github` ships in the brief skill itself.' AC-6 says the `src` attribute starts with `data:image/`. But: (a) which icon format — SVG-base64 is byte-cheap and crisp at any size; PNG is fixed-size and bigger; (b) where do the source icons come from — open-source brand assets carry licensing constraints, especially Linear's and GitHub's marks; (c) how big is the payload added to SKILL.md (relevant to R8's line-count ceiling — a single base64 PNG can be 2–4 KB on one line). The interview (Round 3) only resolved 'inline base64'. Format, sourcing, and per-icon byte budget are silent assumptions.",
+      "load_bearing": false,
+      "cross_reference": "Interview Round 3 — resolves 'inline base64' but no format/source/size. Not in 'Topics not discussed' either.",
+      "proposed_change": "Add to R2: '(a) icons are inline SVG-base64 (not PNG) for crisp rendering at any pill size and minimal byte cost; (b) icons are author-drawn monochrome glyphs in the brand's silhouette, not the official brand mark — avoids trademark/licensing entanglement; (c) each icon adds at most one line to `brief/SKILL.md`, counted against R8's ceiling.' If any of these tradeoffs aren't right, surface them as the question to resolve before tasks."
+    }
+  ]
+}

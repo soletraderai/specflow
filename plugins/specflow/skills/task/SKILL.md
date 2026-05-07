@@ -17,7 +17,7 @@ produces:
   - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/manifest.md
   - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/findings/
   - docs/specflow/admin/task-history.json
-eval: tasks file exists with one task per PRD requirement; coverage matrix shows 100% PRD-requirement coverage and zero orphan tasks; every task acceptance is binary; Gate 3 debate manifest closes with Orchestrator sign-off entry; any user-driven recut wrote a record to task-history.json.
+eval: tasks file exists with one task per PRD requirement; coverage matrix shows 100% PRD-requirement coverage and zero orphan tasks; every task acceptance is binary; Gate 3 debate manifest closes with Orchestrator sign-off entry; any user-driven recut wrote a record to task-history.json; when {NNN-slug}-tasks.md has 3+ tasks, the closing Gate 3 manifest contains a Cross-task findings H2 section (or the literal `Cross-task review skipped:` line for sub-threshold runs); the manifest's writer_id, cross_task_reviewer_id, and applier_id fields are populated and pairwise distinct in the green path (022-cross-task-review v2.5.0); every task entry carries a `sprint-bucket: N` field with N >= 1, AND for every T_i with sprint-bucket: N every T_j in T_i.Depends on: has sprint-bucket: M with M < N (topological-floor corollary, strictly less-than per 025-sprint-task-flagging v2.5.0).
 ---
 
 # specflow:task
@@ -32,6 +32,7 @@ This is a **5-phase orchestrator**. Phase E delegates to forked sub-agents (the 
 
 The user invokes you with a feature ID:
 - `specflow:task {NNN}` or `specflow:task {NNN-slug}` — the feature must already have a PRD that closed Gate 2.
+- `specflow:task --apply-cross-task-feedback {NNN-slug}` — applier-mode entry point (per 022-cross-task-review). Skips Phases A / B / C / D / E entirely and enters Phase F (cross-task feedback application). Orchestrator-internal contract; not typically invoked manually.
 - `/specflow:task` with no argument — ask the user which feature.
 
 **Resume logic.** Before starting Phase A, detect the situation:
@@ -42,6 +43,7 @@ The user invokes you with a feature ID:
    - `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with a `**passed**`, `**passed-with-revisions**`, or `**passed-with-escalations**` closing decision.
    - If not closed (or status `failed`), refuse: *"PRD has not closed Gate 2 (status: `{status}`). Resolve Gate 2 before tasking. Re-run `specflow:prd {NNN-slug}` to resume."*
 3. Determine the resume point:
+   - **`--apply-cross-task-feedback` flag present** → skip Phases A / B / C / D / E entirely and jump to Phase F. Phase F's precondition check runs first (per `templates/task/cross-task-review.md`); on missing inputs, refuse with the canonical diagnostic.
    - **No tasks file** → start Phase A.
    - **Tasks file exists, no Gate 3 manifest** → resume Phase E.
    - **Tasks file + Gate 3 manifest exist** → ask the user: *"This feature appears tasked (Gate 3 closed). What do you want to do? (1) re-run Gate 3 with the existing tasks, (2) regenerate tasks from scratch — old tasks archived, (3) `specflow:scope-change` if the PRD itself needs revision."*
@@ -178,6 +180,8 @@ gate3: ./debate-log/tasks-gate3/manifest.md
 - **Acceptance:** {binary pass/fail check. Cite AC-N from the PRD if applicable.}
 - **Depends on:** {T-id of any task that must complete first, or "none"}
 - **context-budget-estimate:** {int_tokens — sum of PRD slice + task spec + matched lessons + manifest scaffold + codebase-context payload + test plan, per `templates/admin/single-context-task.md`}
+- **sprint-bucket:** {positive integer ≥ 1 — derived deterministically from the dependency graph + scope-overlap per `templates/task/sprint-bucket-heuristic.md` (per 025-sprint-task-flagging v2.5.0)}
+- **prior-lessons:** {array of L-NNN ids that shaped this task, per the lessons registry query at A.4 (per 018-lessons-registry v2.6.0); empty array `[]` when no lessons apply}
 - **Notes:** {gotchas, rule-registry entries that apply, decision-log references; or "none"}
 
 ### T2 — {short title}
@@ -206,6 +210,10 @@ Before surfacing intent summaries, verify:
 3. **Binary acceptance** — every task's *Acceptance* line passes the binary test (could a fresh agent run the check and report pass/fail unambiguously). If not, sharpen the acceptance line.
 4. **No requirement contradicts the goal's Out-of-scope-at-goal-level** — re-read the interview's Goal section and cross-check.
 5. **Budget self-check (per 029-single-context-task).** For each task, verify `context-budget-estimate` ≤ `config.json.task.contextBudget` (default 80,000 tokens). Tasks over budget are auto-flagged: append an inline note `> Budget overrun: estimate {N}K vs budget {M}K — split required before develop.` under the task block AND surface a chat-line prompt directing the user to `specflow:scope-change` for the recut. The over-budget task remains in the file with the warning so the recut is auditable. Citation: `templates/admin/single-context-task.md` for the estimation algorithm and the no-mid-task-compaction rationale.
+
+6. **Graph-validity check (per 025-sprint-task-flagging).** Before bucket assignment, walk the per-task `Depends on:` lists and reject malformed graphs with deterministic `GRAPH-INVALID:` diagnostics — cycle, self-loop, duplicate task IDs, duplicate dependency edge, dangling reference. On any failure, abort synthesis before any `sprint-bucket: N` is written; point the user to `specflow:scope-change` for legitimate dependency-graph edits. Diagnostic format documented in `templates/task/sprint-bucket-heuristic.md`.
+
+7. **Sprint-bucket assignment (per 025-sprint-task-flagging).** Apply the single-rule heuristic from `templates/task/sprint-bucket-heuristic.md`: `bucket(T) = 1` for tasks with no predecessors and no same-bucket scope conflict; otherwise `1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T))`. Apply bump iteration to fixed point. Bucket assignment runs AFTER step 5 (budget self-check) — oversize tasks never reach bucketing.
 
 If any check fails, fix the tasks file before proceeding.
 
@@ -379,9 +387,39 @@ In your own forked context, read every Round-1 finding via command substitution 
 
 If accepting: actually edit `{NNN-slug}-tasks.md` to apply the revision. If revisions are substantial, re-run Phase B.4 self-check before continuing.
 
+### E.4.5 — Cross-task review (per 022-cross-task-review v2.5.0)
+
+This sub-phase fires only when the post-Round-2 `{NNN-slug}-tasks.md` carries 3 or more tasks (counted by `### T-` headings). When fewer than 3 tasks exist, skip this sub-phase entirely and write to the manifest's "Cross-task findings" section a single line: `Cross-task review skipped: task count {N} below threshold (3)`.
+
+When firing, run a three-round mini-debate. The reviewer (`cross-task-reviewer`) and the applier (`specflow:task --apply-cross-task-feedback`) each run in their own forked sub-agent in a fresh context window. The original Phase E.4 orchestrator does NOT respond to or auto-apply cross-task findings — only the dedicated applier does. Full operational contract in `templates/task/cross-task-review.md`.
+
+#### E.4.5.1 — Cross-task R1 fire
+
+Dispatch a forked sub-agent reading `admin/agents/standard/principles/cross-task-reviewer.md`, the post-Round-2 `{NNN-slug}-tasks.md`, the PRD, the interview, and the Gate 2 manifest. The reviewer writes findings to `debate-log/tasks-gate3/findings/round-1/cross-task-reviewer.json` with per-finding `lens` field (`coherence | better-arrangement`).
+
+#### E.4.5.2 — Applier R2 response + apply
+
+Re-invoke `specflow:task --apply-cross-task-feedback {NNN-slug}` in a fresh context window. The applier reads the cross-task R1 findings + the post-Round-2 tasks.md + the PRD/interview, decides accept / reject / scope-change-required per finding, applies accepted changes to tasks.md, and writes its decisions to `debate-log/tasks-gate3/findings/round-2/cross-task-responses.json`.
+
+#### E.4.5.3 — Cross-task R3 sharpen
+
+Re-dispatch the cross-task reviewer (fresh forked sub-agent) reading its R1 findings + the applier's R2 responses + the post-applier tasks.md. May sharpen any rejection with new evidence or escalated severity. Writes to `debate-log/tasks-gate3/findings/round-3/cross-task-reviewer.json`.
+
+#### E.4.5.4 — Applier final pass
+
+If any sharpens, re-invoke the applier on the sharpened findings. Decisions append to `cross-task-responses.json`. Unresolved findings escalate to the manifest's Cross-task Escalations sub-section. Phase E.4.5.4 must complete writing the post-applier tasks.md before Phase E.5 starts.
+
+**Sub-agent dispatch failure fallback.** If any sub-agent fails to return a valid finding/response JSON (network drop, harness crash, malformed JSON, missing finding file), log the failure to `debate-log/tasks-gate3/findings/round-{N}/cross-task-{role}.failure.json`. The gate escalates as `passed-with-escalations` (NOT failed); the manifest closer notes *"Cross-task review unavailable: {reason}; per-task review remains authoritative for this run."*
+
 ### E.5 Round 3 — Reviewers sharpen or accept
 
-Re-dispatch each reviewer (fresh forked context) with their Round-1 finding + the Round-2 response. Each writes to `debate-log/tasks-gate3/findings/round-3/{reviewer-name}.json` per the schema in their role file.
+Phase E.5 fires AFTER Phase E.4.5 closes. Re-dispatch each per-task reviewer (fresh forked context) with their Round-1 finding + the Round-2 response, against the **post-applier** `{NNN-slug}-tasks.md`. Each writes to `debate-log/tasks-gate3/findings/round-3/{reviewer-name}.json` per the schema in their role file.
+
+Hybrid R3 surface (per 022-cross-task-review):
+
+- Sharpen R1 findings whose anchored T-id still exists in the post-applier tasks.md (standard R3 sharpen).
+- Treat R1 findings whose T-id was merged-out / dropped as auto-resolved — recorded in manifest as `resolved-by-cross-task-merge: T{N}->T{M}` or `resolved-by-cross-task-drop: T{N}` per finding.
+- Net-new findings on tasks introduced by the applier (e.g. a merged T3+T7 → new T3.5) are recorded as `round-3-net-new` per-task findings AND require a one-pass orchestrator response (no R4 sharpen — net-new findings are themselves an exit lever).
 
 If any sharpen: re-edit the tasks file one more time and record the revision in `debate-log/tasks-gate3/findings/round-3/ai-revision.md`.
 
@@ -394,8 +432,11 @@ Now act as the Orchestrator (per `lifecycle/orchestrator.md` closer logic). Read
 
 **Feature:** NNN-slug
 **Date:** {YYYY-MM-DD}
-**Reviewers:** {comma-separated list}
+**Reviewers:** {comma-separated list, including cross-task-reviewer when 3+ tasks}
 **Artefact under review:** {NNN-slug}-tasks.md
+**writer_id:** {opaque value generated at synthesis dispatch time}
+**cross_task_reviewer_id:** {opaque value generated at E.4.5.1 dispatch time, or empty if skipped}
+**applier_id:** {opaque value generated at E.4.5.2 dispatch time, or empty if skipped}
 
 ## Accepted findings
 - **{finding-id}** ({reviewer}, {severity}) — {claim}
@@ -412,18 +453,34 @@ Now act as the Orchestrator (per `lifecycle/orchestrator.md` closer logic). Read
   - Reason: reviewers and writer did not converge in 3 rounds; surfaced for human decision.
   - Recommendation: {one-line suggested resolution}
 
+## Cross-task findings
+
+### Accepted findings
+- **{finding-id}** (cross-task-reviewer, lens: coherence|better-arrangement, {severity}) — {claim}
+  - Evidence: {evidence}
+  - Revision applied: {description}
+
+### Rejected findings
+- **{finding-id}** (cross-task-reviewer, lens: ..., {severity}) — {claim}
+  - Evidence: {evidence}
+  - Reason for rejection: {applier rationale}
+
+### Escalated to human
+- **{finding-id}** (cross-task-reviewer, lens: ..., {severity}) — {claim}
+  - Reason: {scope-change-required diagnostic, sub-agent-failure fallback, or unconverged block}
+
+(When `Cross-task review skipped: task count {N} below threshold (3)`, the three sub-headings above are replaced by that single line.)
+
 ## Closing decision
 
-Gate 3 status: **passed | passed-with-escalations | failed**
+Gate 3 status: **passed | passed-with-revisions | passed-with-escalations | failed**
 
-{One paragraph closing rationale by the Orchestrator. If passed: tasks fit to proceed
-to specflow:develop (Phase 2) or specflow:test (Phase 3). If escalations: list items
-the human must resolve. If failed: list blocking findings and what must change.}
+{One paragraph closing rationale by the Orchestrator. Names which lens(es) drove the status — e.g. "passed-with-escalations: per-task PASSED; cross-task escalated 1 block-severity coherence finding". If passed: tasks fit to proceed to specflow:develop or specflow:test. If escalations: list items the human must resolve. If failed: list blocking findings and what must change.}
 
 — Orchestrator, {YYYY-MM-DD}
 ```
 
-Apply the orchestrator's pass/fail rules from `lifecycle/orchestrator.md` (FAIL on any unresolved `block`; HUMAN-DECISION-NEEDED on any unconverged `block`; PASS otherwise).
+Apply the orchestrator's pass/fail rules from `lifecycle/orchestrator.md` (FAIL on any unresolved `block`; HUMAN-DECISION-NEEDED on any unconverged `block`; PASS otherwise). The FAIL rule applies to the UNION of per-task and cross-task findings — a `block`-severity finding from EITHER lens triggers the same status. The closing rationale paragraph names which lens(es) drove the status.
 
 ### E.7 Final disposition
 
@@ -442,6 +499,48 @@ rm -rf admin/scratch/{NNN-slug}-tasks
 ```
 
 (Retain on failure for debugging.)
+
+---
+
+## Phase F — Cross-task feedback application (per 022-cross-task-review)
+
+This phase fires only when `specflow:task` is invoked with `--apply-cross-task-feedback {NNN-slug}`. Phases A / B / C / D / E are skipped entirely. Full operational contract in `templates/task/cross-task-review.md`.
+
+### F.1 Precondition check
+
+Phase F's first action is a precondition check on three inputs:
+
+1. The post-Round-2 `{NNN-slug}-tasks.md`.
+2. The cross-task findings JSON at `debate-log/tasks-gate3/findings/round-1/cross-task-reviewer.json` (or `round-3/...` for the final pass).
+3. The PRD + interview for coverage-matrix validation.
+
+On missing `cross-task-reviewer.json`, refuse with the canonical sentinel: *"Cross-task review has not fired for this feature. Run `specflow:task {NNN-slug}` from Phase E to produce the findings, then re-invoke `--apply-cross-task-feedback`."* On missing tasks.md or PRD, refuse with the analogous diagnostic. The chain-skip-Phase-A behaviour assumes the parent run guaranteed chain verification; manual standalone invocation is an unsupported entry point in v2.5.
+
+### F.2 Per-finding decision + apply
+
+For each finding in the input JSON, decide one of: `"decision": "accepted"`, `"decision": "rejected"`, or `"decision": "scope-change-required"`. Write decisions to `debate-log/tasks-gate3/findings/round-2/cross-task-responses.json` with the schema documented in `templates/task/cross-task-review.md`.
+
+`accepted` decisions produce in-place edits to `{NNN-slug}-tasks.md` (merge / split / reorder / add). After each edit, re-verify the coverage matrix (Phase B.4 logic re-applied — forward + reverse coverage; binary acceptance; budget self-check per 029-single-context-task).
+
+`rejected` decisions stand. `scope-change-required` decisions halt application for that finding and route to `specflow:scope-change`.
+
+PRD-coverage-changing findings (add missing task with new R/AC anchor; merge-with-coverage-ambiguity; drop-with-coverage-hole) MUST be flagged `scope-change-required`; the applier does NOT modify the PRD's coverage matrix on the fly.
+
+### F.3 Hard-cap enforcement (per 029-R4)
+
+The applier MUST decline any merge whose combined `context-budget-estimate` would exceed the configured per-task budget cap. **Phase F reads `config.task.contextBudget` from the active config at Phase F entry** — never from a value embedded in the Round-1 finding, tasks.md, or synthesis-time snapshot. Such mergers are flagged `scope-change-required` with rationale `merge would violate 029 R4 hard-cap (combined budget {N}K > cap {C}K) — re-synthesis required`.
+
+### F.4 Sprint-bucket recompute (per 025)
+
+When the applier accepts a merge or split:
+
+- **Merge** — the merged task's `sprint-bucket` is recomputed via 025's heuristic at `templates/task/sprint-bucket-heuristic.md` against the merged scope (NOT inherited). If recompute would alter buckets outside the merged component, flag `scope-change-required` with rationale `merge bucket-recompute creates graph-wide bucket drift — re-synthesis required`.
+- **Split** — each child task re-runs the heuristic.
+- **Audit** — pre-edit and post-edit bucket values for each affected task ID are recorded in `cross-task-responses.json` under the finding's `bucket_audit` field.
+
+### F.5 Final disposition
+
+Tell the user *"Cross-task feedback application complete. {N} findings accepted; {M} rejected; {K} routed to scope-change. Tasks.md updated; coverage matrix re-verified."* Phase F returns control to the parent Gate 3 orchestration (Phase E.5 / E.6 continues).
 
 ---
 

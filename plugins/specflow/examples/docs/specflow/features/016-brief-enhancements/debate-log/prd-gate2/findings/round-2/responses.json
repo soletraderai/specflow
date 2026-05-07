@@ -1,0 +1,157 @@
+{
+  "round": 2,
+  "gate": "prd-gate2",
+  "feature": "016-brief-enhancements",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "push_back",
+      "rationale": "Interview 'Topics not discussed' explicitly resolved: 'Assumed yes — consistency with the existing four blocks; spelled out at PRD-synthesis time per block'. The user-confirmed resolution stands; R9 is not speculative configurability."
+    },
+    "simplicity-r1-f2": {
+      "decision": "push_back",
+      "rationale": "Interview Round 3 verbatim: 'OR a small set of known source-type icons (Linear, Doc, Design, GitHub, Slack) is shipped as inline base64 in the brief skill itself ... explicit `icon=` attribute on a resource line overrides.' Both paths user-confirmed. The override is not speculative."
+    },
+    "simplicity-r1-f3": {
+      "decision": "accept",
+      "rationale": "AC-3 over-prescribed the prose-tightening tactics. Demoting to a binary line-count check + non-binding implementation notes.",
+      "revision_applied": "AC-3 rewritten to one binary check (≤500 lines); prescriptive (a)/(b) tactics removed; baseline 524-line reality added; chain-don't-absorb path moved to Open questions, no longer an in-AC escape clause."
+    },
+    "simplicity-r1-f4": {
+      "decision": "push_back",
+      "rationale": "R5 documents that the existing block contract applies to the new four blocks; AC-11 is the binary check that the new blocks honour each contract clause. Per Goal-Driven Reviewer's mandatory eval-coverage matrix, every requirement must trace to a binary AC — collapsing R5 / dropping AC-11 would violate that."
+    },
+    "SURG-1": {
+      "decision": "accept",
+      "rationale": "AC-3 was smuggling a refactor of the existing four blocks under the cover of a line cap. Per skill-size-ceiling memory feedback, chain-don't-absorb is the right path when bolting on grows past the ceiling.",
+      "revision_applied": "R8 rewritten to acknowledge 524-line baseline as the pre-change state; AC-3 demoted to ≤500 binary check WITH an Open Question surfacing the chain-don't-absorb risk explicitly. Existing four blocks' grammar examples and CSS comments declared out of scope (Non-goals)."
+    },
+    "SURG-2": {
+      "decision": "accept",
+      "rationale": "Branching ship-or-block decisions inside an AC inverts the AC contract. Strip the conditional and surface as an Open Question.",
+      "revision_applied": "Conditional-clause stripped from AC-3; chain-don't-absorb risk moved to Open Questions section."
+    },
+    "SURG-3": {
+      "decision": "accept",
+      "rationale": "Slack drop was silent. CONTEXT.md and decision-log 2026-03-22 justify the drop; that justification belongs in R2's trace.",
+      "revision_applied": "R2 trace block extended to cite decision-log 2026-03-22 (Slack removed from the stack) as the rationale for the four-icon set vs the interview's five."
+    },
+    "SURG-4": {
+      "decision": "push_back",
+      "rationale": "R10 binds the new blocks to the existing unsupported-kind fallback. Without the requirement, a reviewer reading the PRD has no record that the fallback's surface is widening from 4 to 8 kinds. The proposed fold-into-AC-4 is fine in principle but loses the requirement-level commitment."
+    },
+    "SURG-5": {
+      "decision": "push_back",
+      "rationale": "R5 + AC-11 ARE the consistency line — they pick the high-leverage edge cases (closer, attribute, whitespace). The reviewer's symmetric reading (every existing rule needs a per-new-block AC) would explode the AC list. Selective re-statement of the load-bearing rules is the right cut."
+    },
+    "TBC-1": {
+      "decision": "accept",
+      "rationale": "The 524-line baseline was a load-bearing unstated assumption. Surfacing it explicitly with a quantified budget and a chain-don't-absorb fallback path.",
+      "revision_applied": "R8 now states the 524-line baseline; Open Questions surfaces the chain-don't-absorb risk; if the line-cap arithmetic doesn't close after a measured prose-tightening pass, the change set blocks pre-merge with the chain-don't-absorb feature creation as the resolution."
+    },
+    "TBC-2": {
+      "decision": "accept",
+      "rationale": "Slack drop tradeoff was unstated. Same revision as SURG-3.",
+      "revision_applied": "R2 trace cites decision-log 2026-03-22; CONTEXT.md Stack-section confirmation added."
+    },
+    "TBC-3": {
+      "decision": "push_back",
+      "rationale": "Interview Round 1 sign-off: 'four new blocks ... render in the brief's Visual abstract' covers all four. Phase-split-in-PRD-prose was not raised in interview; treating it differently from the other three would require a separate strip mode and break the per-kind symmetry of the existing strip rule (brief/SKILL.md:71)."
+    },
+    "TBC-4": {
+      "decision": "accept",
+      "rationale": "R9's 'consistent across all eight blocks' is factually wrong about the baseline. Sharpen to 'new four follow the most-complete pattern; existing four unchanged'.",
+      "revision_applied": "R9 restated: the new four support title= and subtitle= (matching :::flow's most-complete pattern); existing four blocks remain as-is. AC-9 amended to assert the new-four scope only."
+    },
+    "TBC-5": {
+      "decision": "accept",
+      "rationale": "Icon format/source/byte-cost were silent assumptions. Pinning the format prevents downstream task-skill from making a different choice.",
+      "revision_applied": "R2 extended with three concrete sub-clauses: SVG-base64 format; author-drawn monochrome glyphs (avoids brand-mark licensing); each icon ≤1 line in SKILL.md (counted against R8 ceiling)."
+    },
+    "GDR-1": {
+      "decision": "accept",
+      "rationale": "The skill's eval field must enumerate the new block kinds for a fresh agent to know the bar.",
+      "revision_applied": "Added a new R11 (and AC-15) requiring the brief skill's frontmatter eval: field to enumerate the eight kinds and assert the strip-rule + selector-presence binary checks."
+    },
+    "GDR-2": {
+      "decision": "accept",
+      "rationale": "AC-4's prose-described HTML shapes need concrete grep assertions; selector names need to be frozen.",
+      "revision_applied": "AC-4 rewritten as four selector-grep assertions with frozen class names: .key-features / .feature-card; .resources / .resource-card; .key-decisions; .phase-split / .phase-col.this-phase / .phase-col.next-phase."
+    },
+    "GDR-3": {
+      "decision": "accept",
+      "rationale": "AC-11 edge cases needed executable assertions, not behavioural descriptions.",
+      "revision_applied": "AC-11 split into three executable sub-assertions: unclosed (exit non-zero + stderr regex); nested ::: (exit 0 + grep counts); malformed attribute (exit 0 + title slot empty)."
+    },
+    "GDR-4": {
+      "decision": "accept",
+      "rationale": "'Visually distinct' is the canonical soft-verification anti-pattern. Replace with column-count + class-grep.",
+      "revision_applied": "AC-10 replaced with four greps: scope renders 3 columns; phase-split renders 2 columns; phase-split has no 'out' column; column counts pass."
+    },
+    "GDR-5": {
+      "decision": "accept",
+      "rationale": "AC-1 / AC-2 were soft presence claims; tightened to concrete grep loops with negative assertions.",
+      "revision_applied": "AC-1 and AC-2 rewritten as for-loops over the four new kinds with grep assertions on the SKILL.md source; AC-2 also includes a negative assertion (no external <link rel='stylesheet'> added)."
+    },
+    "GDR-6": {
+      "decision": "accept",
+      "rationale": "Coverage matrix gap — R5 whitespace, R5 source-order, R7 strip rule for all four new kinds, R9 subtitle=, R10 binary command. All needed concrete ACs.",
+      "revision_applied": "Added AC-12 (R5 whitespace + source-order); AC-13 (R7 strip rule for all four new kinds via DOM-scoped assertion); AC-14 (R9 subtitle=); AC-8 hardened with grep regex for literal 'Unsupported visual block' + ordering."
+    },
+    "DA-1": {
+      "decision": "accept",
+      "rationale": "Same as TBC-1 / SURG-1. Baseline acknowledgement + measured budget.",
+      "revision_applied": "R8/AC-3 + Open Questions absorbed the change."
+    },
+    "DA-2": {
+      "decision": "accept",
+      "rationale": "Architectural gotcha — the 4-kind list is hardcoded at four call-sites in brief/SKILL.md. They must update in lockstep or the skill ships an internally contradictory contract.",
+      "revision_applied": "Added R12 / AC-16 enumerating the four call-sites (brief/SKILL.md:28, :68, :237, :513) and requiring the post-change file to have zero references to the four-kind-only supported set."
+    },
+    "DA-3": {
+      "decision": "accept",
+      "rationale": "Same as TBC-2 / SURG-3.",
+      "revision_applied": "R2 trace cites decision-log 2026-03-22."
+    },
+    "DA-4": {
+      "decision": "accept",
+      "rationale": "TOC inflation is a real cross-block blast-radius concern. Pin block titles to a non-heading element so they don't accumulate in the sidebar TOC.",
+      "revision_applied": "R9 amended: block titles render as <div class='block-title'> styled to look like a heading, NOT <h2>/<h3>. Added AC-17 asserting block titles do not appear in the TOC sidebar."
+    },
+    "DA-5": {
+      "decision": "accept",
+      "rationale": "AC numbering was out of order (AC-11 before AC-9/AC-10).",
+      "revision_applied": "AC numbering renumbered sequentially after the new ACs are added."
+    },
+    "codex-r1-f1": {
+      "decision": "accept",
+      "rationale": "Mobile breakpoint coverage missing — the existing breakpoints at 1100px and 860px must absorb the new blocks. mobile-warehouse-operator profile (admin/profiles.json) is a real audience.",
+      "revision_applied": "Added AC-18 requiring the four new selectors to participate in the existing @media breakpoints with no overflow at 360px viewport width."
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-6 was too loose; format must be pinned to one of {SVG, PNG, WebP} to keep cross-browser behaviour predictable.",
+      "revision_applied": "AC-6 tightened to assert src matches '^data:image/(svg\\\\+xml|png);base64,' (SVG-base64 default per TBC-5; PNG-base64 fallback for any binary glyph)."
+    },
+    "codex-r1-f3": {
+      "decision": "accept",
+      "rationale": "icon= override needs validation/fallback rules; otherwise implementations diverge.",
+      "revision_applied": "Added R13 + AC-19 specifying override validation: accept only data:image/(svg+xml|png);base64,...; HTML-escape the attribute value; fall back to the source-type pill icon on malformed override (no abort, since interview Round 3's tone was forgiving)."
+    },
+    "codex-r1-f4": {
+      "decision": "accept",
+      "rationale": "Field emission order needs to be pinned to grammar order, not implementation map iteration.",
+      "revision_applied": "R6 amended: 'Field emission order is fixed by the documented grammar — Decision/Why/Source columns in :::key-decisions; resource card sub-elements; emitted HTML attributes — never by object/map iteration order.'"
+    },
+    "codex-r1-f5": {
+      "decision": "accept",
+      "rationale": "AC-7's 'appears once' was DOM-scoping ambiguous. Replace with section-id-scoped assertion.",
+      "revision_applied": "AC-7 rewritten as DOM-scoped: within section#visual-abstract, exactly one .key-features root; within section#prd, zero matches for the literal :::key-features fenced block source; matches inside <style> blocks ignored."
+    },
+    "codex-r1-f6": {
+      "decision": "accept",
+      "rationale": "Same as DA-5.",
+      "revision_applied": "AC numbering renumbered."
+    }
+  },
+  "summary": "Accepted 21 of 25 findings. Four push-backs: simplicity-r1-f1 (R9 user-confirmed in interview), simplicity-r1-f2 (R2 icon override user-confirmed), simplicity-r1-f4 (R5+AC-11 are the load-bearing consistency line), SURG-4 (R10 commits to the widened fallback surface), SURG-5 (selective re-statement is the right cut), TBC-3 (interview signed off all four blocks render in Visual abstract). PRD revised inline to address the 524-line baseline reality, the silent Slack drop, the AC binarity gaps, the four-callsite hardcoded-list gotcha, the TOC inflation risk, and the icon format/override validation gaps. Final AC count: 19 (renumbered AC-1 through AC-19)."
+}

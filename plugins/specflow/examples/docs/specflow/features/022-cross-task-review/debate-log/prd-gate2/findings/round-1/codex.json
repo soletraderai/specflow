@@ -1,0 +1,58 @@
+{
+  "reviewer": "codex",
+  "principle": "cross-provider-skepticism",
+  "round": 1,
+  "gate": "prd-gate2",
+  "feature": "022-cross-task-review",
+  "findings": [
+    {
+      "id": "codex-r1-f1",
+      "severity": "block",
+      "evidence": "AC-15 Collision-detection unit fixture; R7 best-effort manifest field; current task/SKILL.md Phase E.6 is inline closer prose, not a named parser component",
+      "claim": "AC-15 requires a 'Closer parser run against the unit fixture' to surface FRESH-CONTEXT-VIOLATION, but the PRD never creates a separable closer-parser component; the current closer is inline prose in task/SKILL.md Phase E.6, so the unit fixture is untestable as written.",
+      "proposed_change": "Either add an explicit requirement to create a named closer-parser/verifier entry point (with input manifest fragment path and output diagnostics), then have AC-15 invoke it, or rewrite AC-15 as a fixture-level manifest-generation check performed by the implemented Phase E.6/Phase F closer flow rather than a unit parser."
+    },
+    {
+      "id": "codex-r1-f2",
+      "severity": "block",
+      "evidence": "AC-5 and AC-6 use awk '/^## Phase F/,/^## /' against task/SKILL.md",
+      "claim": "The Phase F acceptance checks are shell-unpassable: the start pattern '^## Phase F' also matches the end pattern '^## ', so awk emits only the Phase F heading and none of the Phase F body; AC-5 and AC-6 then grep an empty body for inputs and decision schema.",
+      "proposed_change": "Replace the extraction with a strict next-heading boundary, for example: `awk 'found && /^## /{exit} /^## Phase F/{found=1} found{print}' plugins/specflow/skills/task/SKILL.md > /tmp/phase-f`, then run the existing greps against `/tmp/phase-f`."
+    },
+    {
+      "id": "codex-r1-f3",
+      "severity": "concern",
+      "evidence": "R7 cross_task_reviewer_id says the reviewer echoes the dispatched ID and 'The orchestrator records the echoed value, NOT a runtime-introspected ID'; PRD is silent on server-side re-validation of echoed IDs against a dispatch manifest",
+      "claim": "Echoing `agent_id` creates a spoofing surface: a malicious or buggy reviewer can echo a colliding or incorrect ID, and the orchestrator is instructed to record the echoed value rather than validate it against the value it dispatched.",
+      "proposed_change": "Change R7 to require a dispatch manifest keyed by round/reviewer/finding-file path, and require the closer to compare each echoed `agent_id` to the orchestrator-generated expected ID. On mismatch, record `AGENT-ID-MISMATCH` as an escalation and ignore the echoed value for identity/dedup decisions."
+    },
+    {
+      "id": "codex-r1-f4",
+      "severity": "concern",
+      "evidence": "R7 writer_id/cross_task_reviewer_id/applier_id timestamp+4-hex-suffix scheme; R7 collision handling only says gate close surfaces FRESH-CONTEXT-VIOLATION as an escalation",
+      "claim": "The timestamp+4-hex-suffix scheme is only best-effort, not actually collision-resistant for concurrent forked sub-agents dispatched in the same millisecond; R7 defines post-hoc collision surfacing but no generate-time detection and retry path.",
+      "proposed_change": "Require the orchestrator/applier to maintain an in-run set of generated IDs and regenerate on collision before dispatch/write. Increase entropy to at least 96 bits (for example UUIDv4 or 24 hex chars), and keep the close-time FRESH-CONTEXT-VIOLATION only as a corruption/fixture diagnostic."
+    },
+    {
+      "id": "codex-r1-f5",
+      "severity": "concern",
+      "evidence": "R9 hard-cap enforcement at the applier; R5 Phase F fresh invocation; PRD is silent on whether Phase F reads config.task.contextBudget at execution time or snapshots an earlier value",
+      "claim": "R9 requires the applier to decline merges over the configured 029 cap, but the PRD does not specify whether Phase F reads `config.task.contextBudget` at applier execution time; a stale synthesis-time snapshot could silently bypass a runtime override.",
+      "proposed_change": "Add to R9/R5: `Phase F MUST read config.task.contextBudget from the active config at Phase F entry, after the fresh applier invocation starts; it MUST NOT use a value embedded in the Round-1 finding, tasks.md, or synthesis context except as display evidence.` Add an AC that changes the fixture config between synthesis and apply and verifies the Phase F value is used."
+    },
+    {
+      "id": "codex-r1-f6",
+      "severity": "concern",
+      "evidence": "R6/R9 allow coverage-preserving merges to be accepted and applied; PRD is silent on merged-task sprint-bucket resolution; 025-sprint-task-flagging R10 documents sprint-bucket as read-only/scope-change concern",
+      "claim": "When the applier merges tasks such as T3+T7, the PRD does not define what `sprint-bucket` the merged task carries, creating an interaction conflict with 025's derived read-only bucket field.",
+      "proposed_change": "Add a merge-bucket rule to Phase F, preferably: after any accepted merge/split/reorder, recompute `sprint-bucket` for the affected task graph using `templates/task/sprint-bucket-heuristic.md`; if recomputation changes buckets outside the affected component or creates graph ambiguity, mark the finding `scope-change-required` instead of editing in place."
+    },
+    {
+      "id": "codex-r1-f7",
+      "severity": "note",
+      "evidence": "R2 threshold gate; AC-14 threshold-skip fixture",
+      "claim": "The threshold-skip focus area is adequately covered: R2 defines the <3-task skip rule and manifest line, and AC-14 verifies the explicit 2-task fixture plus absence of cross-task files across rounds 1, 2, and 3.",
+      "proposed_change": "No change required."
+    }
+  ]
+}

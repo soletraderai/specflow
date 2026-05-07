@@ -93,6 +93,20 @@ Distill the design folder into 1-3 codebase-context bullets prefixed `Design int
 
 Distill what you saw (codebase + design when present) into bullet points for the *Codebase context* section. Be concrete: cite file paths, line counts, conventions detected, prior PRD references, design-folder references.
 
+### A.3.5 Query the lessons registry (per 018-lessons-registry v2.6.0)
+
+After A.3 (codebase context) and before A.4 (interview file write), query `admin/lessons.json` per the algorithm in `templates/admin/lessons-registry.md`:
+
+1. Compute the feature's tag profile from the original user request, the codebase-context bullets just gathered, and any linked Linear issue tags (when MCP available).
+2. Query active lessons by tag-overlap with the profile; rank by `tag_overlap_count × confidence_weight × recency_decay`; cap at `config.json.prd.maxLessonsSurfaced` (default 5).
+3. If matches found, surface inline as a "What we've learned before that applies here" section in the interview's Codebase context. Each surfaced lesson lists `id`, `outcome`, `tags`, and a one-line `lesson` summary.
+
+Surfaced lessons that survive grilling sign-off propagate into Phase B as constraints. The user can correct/dismiss any non-applicable ones during grilling.
+
+If no matches, note: *"No prior lessons match this feature's tag profile."* Continue.
+
+Citation: `templates/admin/lessons-registry.md` § Read path → Path 1.
+
 ### A.4 Write the interview file preamble
 
 Use Write tool to create `docs/specflow/features/NNN-{slug}/NNN-{slug}-interview.md` with this exact structure:
@@ -110,6 +124,12 @@ Use Write tool to create `docs/specflow/features/NNN-{slug}/NNN-{slug}-interview
 - {bullet 4 — applicable rule from registry}
 - {bullet 5 — relevant decision-log entry}
 - ... (5-10 bullets typical; more if the feature touches a lot)
+
+### What we've learned before that applies here (per 018-lessons-registry)
+
+{If A.3.5 surfaced lessons, list them here — one bullet per lesson:
+- L-NNN ({outcome}, tags: {a, b, c}) — {one-line lesson}
+If no matches, omit this subsection entirely.}
 
 ## Goal (confirmed before grilling)
 [TBD — articulating below; user confirms before this section is filled]

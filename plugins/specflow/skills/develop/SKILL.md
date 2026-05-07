@@ -23,7 +23,7 @@ produces:
   - docs/specflow/features/{NNN-slug}/debate-log/develop-gate5/findings/
   - docs/specflow/admin/scratch/{NNN-slug}-develop/
   - docs/specflow/admin/task-history.json
-eval: lane-assignments.json exists with one entry per task in the feature's tasks file; for every task, lane-recheck-{task-id}.json exists in the scratch directory before Gate 4 opens; Gate 4 manifest closes with passed | passed-with-revisions | passed-with-escalations; Gate 5 manifest closes with passed | passed-with-revisions | passed-with-escalations; every task in the tasks file has a corresponding entry in admin/task-history.json with the six development-time fields populated (lane_assigned, ai_assistance_level, elapsed_minutes, what_worked, what_didnt_work, blast_radius_outcome).
+eval: lane-assignments.json exists with one entry per task in the feature's tasks file; for every task, lane-recheck-{task-id}.json exists in the scratch directory before Gate 4 opens; Gate 4 manifest closes with passed | passed-with-revisions | passed-with-escalations; Gate 5 manifest closes with passed | passed-with-revisions | passed-with-escalations; every task in the tasks file has a corresponding entry in admin/task-history.json with the six development-time fields populated (lane_assigned, ai_assistance_level, elapsed_minutes, what_worked, what_didnt_work, blast_radius_outcome); for every Yellow-lane task and every Green-lane task with config.develop.tddRequired === true, the per-task manifest stub at admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md contains a line matching the regex ^red:\s+(passed|failed|skipped \((config|trivial|human-led Red lane)\))\s+\([0-9T:Z-]+\)\s+—\s+.+$ and equivalent regexes for green: and refactor: (017-tdd-discipline v2.5.0).
 ---
 
 # specflow:develop
@@ -109,6 +109,28 @@ If MCP unavailable, print the chat-only line: `[linear status: T{N} → In Progr
 ### A.5 Tell the user what you're doing
 
 *"Read the PRD, tasks file, and Gate 3 manifest. Environment: agent-teams `{present|absent}`; Linear MCP `{available|absent}`; Codex CLI `{available|absent}`. Lane-triaging {N} tasks now."*
+
+### A.5.5 Sprint plan via specflow:sprint (per 020-sprint-skill v2.7.0)
+
+Before lane triage, fork `specflow:sprint {NNN-slug}` as a sub-skill. Sprint pulls the mapped Linear project (when MCP available), reconciles drift, filters to the in-scope batch via `sprint-bucket: N` and `config.json.develop.maxIssuesPerSprint` (default 5), synthesises a sprint plan with per-stage team assignments per `templates/admin/stage-teams.md` (per 026-agent-teams-per-stage), presents the sprint-plan gate to the developer, and on approval creates a git work-tree at `admin/scratch/{NNN-slug}-sprint/worktree/`.
+
+Sprint returns the structured result:
+
+```json
+{
+  "feature": "{NNN-slug}",
+  "manifest_path": "features/{NNN-slug}/debate-log/sprint-plan/manifest.md",
+  "tasks_in_scope": ["T-1", "T-2", "T-3"],
+  "worktree_path": "admin/scratch/{NNN-slug}-sprint/worktree",
+  "team_assignments": { "T-1": {...}, "T-2": {...}, "T-3": {...} }
+}
+```
+
+The in-scope tasks become the set Phase B (lane triage) operates over. Tasks outside the sprint stay in `tasks.md` for the next session. The team assignments inform Phase B.4's agent-composition decision per task — Phase B.4 reads the resolved team-assignment block instead of computing the team from scratch (per 026).
+
+If the developer defers at the sprint-plan gate, develop exits without entering Phase B; nothing is written.
+
+Skill body for sprint: `skills/sprint/SKILL.md`.
 
 ### A.6 Context-budget pre-flight (per 029-single-context-task)
 
@@ -303,6 +325,7 @@ The Gate 4 reviewer set is exactly:
 - `principles/surgical-reviewer.md`
 - `principles/think-before-coding-reviewer.md` — **load-bearing at Gate 4** (plan-level unstated assumptions surface here).
 - `principles/goal-driven-reviewer.md` — **load-bearing at Gate 4** (cross-checks PRD anchor against cited R-ID; flags orphan ACs).
+- `principles/edge-case-reviewer.md` — **load-bearing at Gate 4 for blindspot coverage** (per 028-edge-case-reviewer v2.6.0). Deliberately NOT goal-aware; runs in fresh context per 027; findings carry `recommendation` + `reasoning` and are advisory (orchestrator decides accept / reject / defer-to-misc).
 
 Codex does NOT join Gate 4 in v1 — there is no `config.json.develop.codexAtGate4` knob. Setting the field has no observable effect.
 
@@ -400,6 +423,14 @@ For each task whose Gate 4 closed with passed/passed-with-revisions/passed-with-
 
 > **Single context window per task.** Phases D / E / F for a given task run in one agent context window — no mid-task compaction, no cross-session resumption mid-implementation. If context approaches the cliff during execution, escalate to the developer (same three-option prompt as A.6); never compact silently. Compaction during develop is a defect signal, not a recovery move. Full contract in `templates/admin/single-context-task.md` (per 029-single-context-task).
 
+> **Red → Green → Refactor cycle.** Inside the single context window, the agent's work follows Pocock's Red → Green → Refactor cycle (per 017-tdd-discipline). The cycle is *internal* to the task (not phase-numbered). Cycle markers (`red:` / `green:` / `refactor:`) write to `admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md` for retro audit; Phase E (Gate 5) reviewers do NOT see them. Full contract in `templates/admin/tdd-discipline.md`.
+
+**Red sub-step.** The agent invokes `specflow:test {NNN-slug} --plan-only --task T{N}` to write the per-task plan section into `{NNN-slug}-test.md` with the primary AC's case marked `Status: red (failing)`. The agent then runs the targeted test command (e.g. `vitest run path/to/test`) against the pre-implementation state and captures the failing exit + stderr to `admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log`. **A pre-implementation pass is an invalid Red artefact** and refuses to enter Green — the agent halts and surfaces to the developer. Manifest marker: `red: passed (...)` once the failing exit is captured.
+
+**Green sub-step.** Yellow lane refuses to enter Green without the Red artefact (the per-task plan section in `{NNN-slug}-test.md` containing at least one case marked `Status: red (failing)` AND the captured pre-implementation failing exit). Green lane behaviour is gated on `config.develop.tddRequired` — when `tddRequired: true` (the default), Green refuses to enter without the failing test, identically to Yellow. When `tddRequired: false`, Green may skip the Red sub-step and the per-task manifest stub records `red: skipped (config) (...)` alongside the operator's strong-CI-signal attestation. The knob applies to Green only. The agent writes the simplest change that makes the failing test pass; re-runs the same targeted test command (exit 0); appends to the trace log. Manifest marker: `green: passed (...)`.
+
+**Refactor sub-step.** Bounded structural improvement under the green test as guard. Three explicit bounds (full contract in `templates/admin/tdd-discipline.md`): (a) no new behaviour, (b) no new files, (c) no scope creep / route to `specflow:scope-change`. Refactor is optional for trivial tasks. Manifest marker: `refactor: passed (...)` or `refactor: skipped (trivial) (...)` or `refactor: failed (new-file-attempted) (...)` per the outcome enum.
+
 ### D.1 Green-lane batched execution
 
 Green-qualifying tasks whose dependencies are all satisfied (mechanical: `Depends on:` chain resolves to either shipped tasks or other tasks in the same batch) are grouped into a batch. The batch cap is `config.json.develop.greenBatchCap` defaulting to `3` — projects with strong CI signal can raise it. Tasks beyond the cap land in the next batch.
@@ -425,6 +456,8 @@ The skill does not auto-default; an empty input or any input not matching `resum
 
 Yellow-qualifying tasks run one at a time, with the agent and human paired in real time. The agent emits the plan (already done at B.1.1 / C), executes the change in a forked sub-agent context, and surfaces every machine-check result as it lands. The human reviews each step in real time; the agent waits for explicit go-ahead before opening a PR.
 
+Yellow lane is mandatory tests-first — Yellow refuses to enter the Green cycle step without the Red artefact (the per-task plan section in `{NNN-slug}-test.md` containing at least one case marked `Status: red (failing)` AND the captured pre-implementation failing exit). Cycle marker contract per `templates/admin/tdd-discipline.md`.
+
 Yellow batch size is 1 — never grouped. Yellow-lane sign-off is per-task, not batched.
 
 ### D.3 Red-lane human-led with bounded AI assistance
@@ -432,6 +465,8 @@ Yellow batch size is 1 — never grouped. Yellow-lane sign-off is per-task, not 
 Red-qualifying tasks are surfaced to the user with the per-task plan and lane evidence. The skill does NOT execute the change autonomously. The user leads; the AI assists on bounded subtasks the user explicitly delegates (e.g. *"draft the test fixture for the new endpoint"*, *"sketch the regex"*).
 
 Red-lane plans always pick a single specialised agent (per R9, T9). Multi-agent composition is short-circuited.
+
+When AI assists by drafting or changing testable code in a Red-lane task, EITHER the human supplies a Red artefact before any AI Green-like implementation assistance OR the per-task manifest stub records `red: skipped (human-led Red lane) (...)` and **no `green:` marker is emitted by the skill** — the audit signal stays honest. The TDD discipline is not enforced by the skill in Red lane; the human leads.
 
 The user owns the PR open + Verifier invocation manually. The skill records the lane, plan, gate manifests, and Verifier outcome in the same shape as Green/Yellow, but the agent execution step is human-driven.
 
@@ -462,6 +497,7 @@ Standard set (always):
 - `principles/surgical-reviewer.md`
 - `principles/think-before-coding-reviewer.md`
 - `principles/goal-driven-reviewer.md` — **load-bearing at Gate 5 when Codex absent** (code-vs-plan acceptance is its lens).
+- `principles/edge-case-reviewer.md` — **load-bearing at Gate 5 for blindspot coverage** (per 028-edge-case-reviewer v2.6.0). Deliberately NOT goal-aware; runs in fresh context per 027; findings carry `recommendation` + `reasoning` and are advisory (orchestrator decides accept / reject / defer-to-misc).
 
 Codex (when `cli.codex.available: true`):
 - Invoked via `codex review` per the orchestrator-pattern fork convention. Codex reads the diff + plan via command substitution and writes its findings to `debate-log/develop-gate5/findings/round-1/codex.json` in the same shape as the other reviewers. Codex is **load-bearing at Gate 5 when present** — it covers cross-provider concerns the same-provider DA cannot cover by definition.

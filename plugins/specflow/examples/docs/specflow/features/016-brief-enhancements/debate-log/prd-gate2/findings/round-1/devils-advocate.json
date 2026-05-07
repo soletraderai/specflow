@@ -1,0 +1,41 @@
+{
+  "reviewer": "devils-advocate",
+  "concern": "broad-challenge",
+  "findings": [
+    {
+      "id": "DA-1",
+      "severity": "block",
+      "evidence": "wc -l plugins/specflow/skills/brief/SKILL.md returns 524. PRD R8 and AC-3 state the file must remain at or under 500 lines after additions, framing the work as 'existing prose tightening is part of the work'. The PRD treats the 500-line cap as a post-additions constraint, but the file is already 24 lines over the ceiling before any new block grammar, CSS, or HTML template additions are introduced. AC-3's named tightening targets (collapsing block-grammar examples lines 130-141, 150-163, 173-188, 198-207; extracting CSS comment headers) are speculative line-budget plays — they are not measured against the actual deletion savings, which look unlikely to absorb the existing 24-line debt PLUS four new block grammar sections PLUS four new CSS rule-sets PLUS the §HTML Template additions for new placeholders.",
+      "claim": "The skill-size ceiling is treated as a future constraint when it is already breached. AC-3's escape hatch ('routes to a follow-up chain-don't-absorb feature') is a real risk this PRD silently accepts — the most likely outcome is the change set ships in this feature and overshoots the ceiling, which the skill-size-ceiling memory feedback explicitly forbids ('skills become a new skill or agent chained in, not bolted onto existing skill'). The PRD should not absorb four new blocks + grammar + CSS into a file already at 524 lines without a concrete line-budget table proving the tightening absorbs both the existing overshoot and the new additions.",
+      "proposed_change": "Add a baseline acknowledgement to R8/AC-3 that brief/SKILL.md is currently 524 lines (24 over the ceiling pre-change). Either (a) include a measured line-budget table in AC-3 showing existing-debt removal + new-section additions netting ≤500, or (b) split this feature: ship the prose-tightening pass as a prerequisite micro-feature first, then add the four blocks. Without one of these, AC-3's escape clause ('routes to a follow-up chain-don't-absorb feature') is the likely path."
+    },
+    {
+      "id": "DA-2",
+      "severity": "block",
+      "evidence": "brief/SKILL.md hardcodes the four-kind list at four separate call-sites: line 28 (intro paragraph: 'compiling structured visual blocks (:::flow, :::comparison, :::scope, :::tree)'), line 68 (Step 3: '{kind} is one of flow | comparison | scope | tree'), line 237 (markdown rules: 'Visualisations belong in :::flow|comparison|scope|tree blocks'), and line 513 ('Only flow, comparison, scope, tree are supported'). PRD R7 says 'the strip rule's surface widens from four kinds to eight' but only references brief/SKILL.md:71 as the single point of change. R5 mentions extending § Visual Block Grammar at the §-level. The PRD treats the kind-list expansion as one edit when the actual blast radius is at least four locations plus the new §HTML Template CSS additions plus the unsupported-block fallback message at line 214.",
+      "claim": "Architectural gotcha: the change is described as additive ('extend grammar', 'widen strip rule') but the actual touch-set spans four hardcoded list call-sites that must remain consistent. If any of the four lists drift (e.g. line 513 stays 'four block kinds', line 68 says 'eight'), the skill ships an internally contradictory contract. R7 and R10 read the strip rule and unsupported-block fallback as single locations when they are duplicated text the AI must keep in sync.",
+      "proposed_change": "Add a concrete callsite list to R7 (and a new R covering doc-internal consistency): brief/SKILL.md:28, :68, :237, :513 all carry the four-kind list and must be updated to the eight-kind list in lockstep. Add an AC that greps for any four-kind-only mention after the change set ('grep -n flow.*comparison.*scope.*tree brief/SKILL.md returns no occurrences referencing the supported set')."
+    },
+    {
+      "id": "DA-3",
+      "severity": "concern",
+      "evidence": "Interview Round 3 explicitly lists the source-type icons as 'Linear, Doc, Design, GitHub, Slack ... is shipped as inline base64 in the brief skill itself'. PRD R2 lists 'linear | doc | design | github' — Slack is dropped silently. CONTEXT.md line 29 ('Tooling: ... Slack-free (decision logged 2026-03-22)') and decision-log entry 'Slack removed from the stack' (2026-03-22) explicitly remove Slack from the team's working set. The PRD's drop is correct against the codebase truth but is an unflagged divergence from the upstream interview.",
+      "claim": "Cross-artefact drift: PRD silently amended an interview-confirmed decision without citing the decision-log entry that justifies the change. The principle reviewers won't catch this because each block looks consistent in isolation; only a cross-artefact reader notices the interview said five icons, the PRD ships four, and the decision-log entry that resolves the conflict is uncited. This is exactly the failure mode the decision log exists to prevent — silent rationale decay.",
+      "proposed_change": "Update R2's trace block to add: 'Slack dropped from the source-type icon set per decision-log 2026-03-22 (Slack removed from the stack); CONTEXT.md Stack section confirms Slack-free tooling.' Either keep the four-icon set with this citation or surface as an open question if reintroducing Slack is preferred."
+    },
+    {
+      "id": "DA-4",
+      "severity": "concern",
+      "evidence": "PRD R9 / AC-9 state '`title=\"...\"` … produces compiled HTML in which the title text appears verbatim (`<h3>` or `<h2>` per the new CSS rule-set)'. brief/SKILL.md Step 6 builds the TOC from 'H2 and H3 headings across the whole brief (Visual abstract, PRD body, Interview, Agent reviews)'. The existing Visual abstract section already has `<h2>Visual abstract</h2>` (template line in the section wrappers). If new blocks emit `<h2>` or `<h3>` for their titles, every titled block adds an entry to the sidebar TOC. The existing four blocks (`:::flow`, `:::comparison` with `title=`) would be affected by the same rule today, but no current example exercises this — `brief/SKILL.md:131` shows `:::flow title=\"Field tech happy path\"` which would need to either be a non-heading or already silently inflate the TOC.",
+      "claim": "Architectural gotcha: AC-9's choice between `<h3>` and `<h2>` is treated as a CSS-rule-set detail, but it directly affects the sidebar TOC's contents — the principle reviewers reading per-block won't catch the global TOC blast-radius. If `:::key-features` titles render as `<h3>`, the TOC sidebar will accumulate 'Key features', 'Resources', 'Key decisions', 'This phase / Next phase' under the Visual abstract group, expanding the sidebar in every brief without an explicit decision to do so. The interview did not discuss whether block titles should appear in the TOC.",
+      "proposed_change": "Pin block titles to a non-heading element (e.g. `<div class=\"block-title\">` styled to look like a heading) so they do not enter the TOC, OR explicitly accept the TOC-inflation behaviour with an AC that exercises it ('a brief with all four new blocks plus :::flow has eight Visual-abstract entries in the TOC'). State the decision; do not leave it as an undecided CSS detail."
+    },
+    {
+      "id": "DA-5",
+      "severity": "note",
+      "evidence": "PRD § Acceptance criteria numbering runs AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-11, AC-9, AC-10. AC-11 appears before AC-9 and AC-10. The interview's 'Topics not discussed' section was resolved without a corresponding renumber pass, suggesting AC-11 was inserted late (edge cases) without re-sorting.",
+      "claim": "Minor traceability gap: out-of-order AC numbering makes 'Verifies: R5, R6, R10' references harder to read sequentially and signals the PRD was edited without a final renumber pass. Not a blocker, but noted for the upstream skill if AC ordering matters to downstream consumers (e.g. test skill mapping AC-N → test cases).",
+      "proposed_change": "Renumber AC-11 to AC-9 (and shift current AC-9 → AC-10, AC-10 → AC-11) so the sequence runs 1-11 in source order. Optional polish; does not affect the artefact's correctness."
+    }
+  ]
+}

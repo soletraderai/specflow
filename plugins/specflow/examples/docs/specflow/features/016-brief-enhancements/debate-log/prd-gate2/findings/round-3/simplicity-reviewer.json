@@ -1,0 +1,27 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "016-brief-enhancements",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "sharpen",
+      "severity": "note",
+      "claim": "R9 still mandates title=/subtitle= attribute support on all four new blocks, but only :::key-features has AC coverage (AC-9 for title=, AC-14 for subtitle=). For :::resources, :::key-decisions, :::phase-split the attribute surface is required by R9 yet exercised by no AC and demanded by no goal/user — the speculative-configurability concern survives the user's 'Assumed yes' answer because that answer was a default-consistency stance, not a per-block consumer demand.",
+      "new_evidence": "016-brief-enhancements-prd.md:86-88 (R9, post-revision) reads 'The four new blocks support the same title=...subtitle=... attribute pattern as :::flow ...'. AC-9 (line 166-171) and AC-14 (line 213-217) both scope verification to :::key-features only. AC-1 / AC-2 / AC-4 / AC-10 / AC-11 / AC-12 / AC-13 / AC-17 / AC-18 / AC-19 do not assert title=/subtitle= behaviour on :::resources, :::key-decisions, or :::phase-split. CORE_PRINCIPLES.md line 34 — 'Do not introduce config knobs without a concrete second consumer demanding them' — applies per-block-kind, not per-block-grammar-family.",
+      "proposed_change": "Either (a) narrow R9's scope to 'The :::key-features block supports title= / subtitle= attributes (matching :::flow's most-complete pattern); :::resources / :::key-decisions / :::phase-split do not — they have no consumer in this PRD'; or (b) keep R9's four-block surface but add per-kind AC coverage (one AC per block-kind asserting either the rendered title-slot OR explicit non-support). Path (a) is the simplicity-first cut; path (b) preserves the consistency stance but makes the configurability concrete. Picking neither leaves R9 broader than the AC matrix verifies, which is the exact 'speculative configurability' shape the principle warns against."
+    },
+    "simplicity-r1-f2": {
+      "decision": "accept",
+      "reasoning": "The override path now has a concrete consumer at R13 + AC-19 (validation regex, malformed-fallback rule, source-comment audit trail). The interview Round 3 verbatim confirms both paths. With AC-19's executable validation/fallback assertions, the dual icon-resolution surface stops being speculative — it is exercised, bounded, and verifiable. Defence holds."
+    },
+    "simplicity-r1-f3": {
+      "decision": "accept",
+      "reasoning": "AC-3 has been demoted to a single binary check (wc -l ≤ 500) per the proposed change. The prescriptive (a) shared-example-shape and (b) comment-header-extraction tactics are gone from the AC body. The 524-line baseline reality is now stated in R8, and the chain-don't-absorb fallback path is surfaced in Open Questions OQ-1 rather than smuggled into the AC. The over-prescription concern is fully resolved."
+    },
+    "simplicity-r1-f4": {
+      "decision": "accept",
+      "reasoning": "The Orchestrator's defence is sound: Goal-Driven Reviewer's coverage-matrix mandate (every requirement traces to a binary AC) tensions against pure simplicity-first surface-minimisation, and the Round 2 hardened AC-11 (three executable sub-assertions for unclosed / nested / malformed) is now doing genuine per-new-block-kind verification work — exit-code on unclosed, grep counts on nested, empty-title-slot absence on malformed. These edge cases are load-bearing enough that selective re-statement at the new-block surface is the right cut. The mild-violation note in Round 1 was the right severity, and the post-revision shape no longer warrants escalation."
+    }
+  }
+}

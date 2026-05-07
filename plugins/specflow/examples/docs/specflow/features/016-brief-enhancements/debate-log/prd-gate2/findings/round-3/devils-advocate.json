@@ -1,0 +1,65 @@
+{
+  "reviewer": "devils-advocate",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "016-brief-enhancements",
+  "concern": "broad-challenge",
+  "findings": [
+    {
+      "id": "DA-1",
+      "round1_severity": "block",
+      "round2_decision": "accept",
+      "round3_decision": "sharpen",
+      "still_blocks": false,
+      "evidence_recheck": "R8 now states 'currently 524 lines (pre-change baseline)' and 'must net-reduce by at least 24 + new-block-cost (estimated 60-100 lines for four block grammars + four CSS rule-sets + R11 eval enumeration)'. AC-3 demoted to a single binary `wc -l ... ≤500` check. Open Questions OQ-1 surfaces the chain-don't-absorb risk: 'if the arithmetic does not close after the prose-tightening pass, the change set blocks pre-merge and creates a follow-up feature 017a-brief-blocks-extraction'. R8 also pins the existing-blocks no-touch (Non-goals: 'the four existing blocks are not touched in this change set').",
+      "residual_concern": "The arithmetic on the page does not close on its own face. Baseline 524 + new block cost 60-100 = 584-624 lines BEFORE any prose-tightening. To hit ≤500, the prose-tightening pass must remove 84-124 lines from the existing 524. R8 says 'condensing redundant block-grammar examples, distilling § HTML Template comments' but Non-goals explicitly forbids touching the four existing blocks' grammar examples and CSS comments — which is where the largest contiguous removable prose lives. The PRD has fenced off the most likely savings source while still asserting the cap is reachable. OQ-1's 'Resolution path: at task-synthesis time, measure the actual prose-tightening savings against four benchmark fixtures; if net is < 0, route to prerequisite extraction' is a credible escape hatch, but the PRD does not cite ANY measured non-existing-block prose-removal candidates that plausibly net 84-124 lines. The chain-don't-absorb path is the realistic outcome, not the fallback. That is acceptable — the open question is honestly named — but a reader could miss that the in-PRD math has already failed.",
+      "verdict": "Accept-with-sharpen. The chain-don't-absorb open question DOES resolve the bookkeeping in the sense that no path silently overshoots: arithmetic-fails → block pre-merge → spawn extraction feature. But the PRD reads as if the in-skill tightening is the primary path with extraction as fallback, when the inverse is more likely true given Non-goals fences off the four existing blocks. Sharpen by adding a one-line note to OQ-1 acknowledging which non-existing-block prose IS in scope for tightening (e.g. § HTML Template comments, redundant rule-list bullets, frontmatter prose) so the reader can independently judge whether the math closes — without having to do the audit themselves.",
+      "proposed_change": "Append to OQ-1's resolution path: 'In-scope tightening targets (non-existing-block): § HTML Template comment density (lines 240-280, ~40 lines candidate), § Markdown Conversion rule-list redundancy (lines 220-238, ~10 lines candidate), § Reference / § What you MUST NOT do prose distillation (lines 510-524, ~10 lines candidate). Estimated ceiling savings ≈ 60 lines, which against +60-100 new-block cost suggests the chain-don't-absorb path is the likely outcome, not the contingency.' Naming the candidate ranges keeps the open question honest and lets the task skill decide on data, not vibes."
+    },
+    {
+      "id": "DA-2",
+      "round1_severity": "block",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "still_blocks": false,
+      "evidence_recheck": "R12 now reads: 'Update all hardcoded references to the four-kind supported list in brief/SKILL.md. The current file lists the supported kinds at four call-sites: line 28 (intro paragraph), line 68 (Step 3 grammar), line 237 (markdown rules visualisation note), and line 513 (\"Only flow, comparison, scope, tree are supported\" in § What you MUST NOT do). All four call-sites must update to the eight-kind list in lockstep'. AC-16 is the binary check: two negative-grep assertions. I independently verified the four line numbers against the current file: line 28 has '`:::flow`, `:::comparison`, `:::scope`, `:::tree`' verbatim; line 68 has 'flow | comparison | scope | tree'; line 237 has '`:::flow|comparison|scope|tree`'; line 513 has 'Only `flow`, `comparison`, `scope`, `tree` are supported'. The four call-sites are pinned exactly as the Round-1 evidence asserted.",
+      "residual_concern": "AC-16's two negative greps cover line 513 (literal 'Only `flow`, `comparison`, `scope`, `tree`') and one composite four-kind regex. The composite regex `^[^#]*:::flow.*:::comparison.*:::scope.*:::tree[^|]` is order-sensitive (assumes flow first, tree last) and rejects only when no `|` follows tree — meaning the eight-kind extension `flow | comparison | scope | tree | key-features | resources | key-decisions | phase-split` correctly passes (because `|` follows tree). However, if a future edit reorders the kinds OR drops one mid-list (e.g. 'comparison, scope, tree, key-features' without flow), the negative grep still passes vacuously while the contract may have drifted. The grep covers the SPECIFIC failure mode named in DA-2 (the four-kind-only set) but does not generalise to 'every supported-kind enumeration must list all eight'. For this feature, that's adequate — the four-kind-only set is the only known prior art. Worth noting for whoever maintains this skill across future kind additions: AC-16 will not catch a five-kind list, only the four-kind one.",
+      "verdict": "Accept. R12 pins all four call-sites by line number; AC-16 verifies the specific drift case (four-kind-only) with two grep assertions. The lockstep is concretely enforced for this change. The residual brittleness (future edits adding a fifth kind without updating all four call-sites would not trip AC-16) is out-of-scope for 016 — that's a 'when we add a 9th block kind' problem, not a 016 problem.",
+      "proposed_change": "No change required. DA-2 fully resolved."
+    },
+    {
+      "id": "DA-3",
+      "round1_severity": "concern",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "still_blocks": false,
+      "evidence_recheck": "R2 trace block now contains: 'Slack dropped from the icon set per decision-log 2026-03-22 *Slack removed from the stack*; CONTEXT.md Stack section confirms Slack-free tooling.' The Goal bullet (line 24) also carries the citation: 'Drive `:::resources` icons by source-type pill (Linear / Doc / Design / GitHub — Slack dropped per decision-log 2026-03-22 *Slack removed from the stack*; CONTEXT.md confirms Slack-free tooling)'. The interview-divergence is now traceable: a reviewer reading R2 sees both the upstream interview list (five icons) and the codebase-truth resolution (four icons, justified by decision-log entry).",
+      "residual_concern": "None. The cross-artefact citation is present in two locations (Goals and R2 trace), reducing single-edit-erasure risk.",
+      "verdict": "Accept. DA-3 fully resolved.",
+      "proposed_change": "No change required."
+    },
+    {
+      "id": "DA-4",
+      "round1_severity": "concern",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "still_blocks": false,
+      "evidence_recheck": "R9 now pins block titles to a non-heading element: 'Block titles render as `<div class=\"block-title\">` styled to look like a heading — NOT `<h2>` or `<h3>` — so they do not enter the sidebar TOC.' AC-17 is the binary TOC-inflation guard: `python3 -c \"... toc=h[s:e]; titles=['Key features','Resources','Key decisions','This phase']; assert not any(t in toc for t in titles), 'block titles leaked into TOC'\"`. AC-9 reinforces with a positive assertion (`<div class=\"block-title\">Key features</div>`) AND a negative assertion (`! grep -qE '<h[23][^>]*>Key features</h[23]>'`). I independently verified that brief/SKILL.md:87 builds `{toc_html}` from H2/H3 headings — so the non-heading rendering is the correct mitigation.",
+      "residual_concern": "AC-17 asserts the four NEW block titles do not leak into the TOC. It does NOT assert the SAME for the existing four blocks (`:::flow title=`, `:::comparison title=`). This is consistent with the PRD's scope (R9 explicitly says 'the existing four blocks are unchanged') and with the empirical fact that today's brief.html for `:::flow title=\"Field tech happy path\"` either (a) already renders the title as a non-heading and DA-4 was wrong about the existing blast-radius, or (b) renders it as a heading and the TOC has been silently inflating for the existing blocks all along. Neither is a 016 problem — but if (b) is true, the new blocks' AC-17 assertion is a stricter contract than the existing blocks honour, creating a per-block-kind inconsistency that's the inverse of the consistency rule. Worth a one-line acknowledgement in R9 that this is intentional and the existing-blocks behaviour is not audited in this feature.",
+      "verdict": "Accept. AC-17 verifies titles do not enter the TOC for the four new blocks; the non-heading element decision is concrete and enforceable. The cross-artefact concern (whether existing blocks honour the same rule today) is out-of-scope for 016 by Non-goals constraint. AC-17 fully addresses the stated DA-4 concern.",
+      "proposed_change": "Optional polish: add one line to R9 trace block — 'The existing four blocks' title rendering is not audited in this feature; AC-17's TOC-inflation guard applies only to the new four. If the existing blocks today render `title=` as a heading and currently inflate the TOC, that is pre-existing behaviour, not regression.' Not blocking; clarifies scope intent for downstream consumers."
+    },
+    {
+      "id": "DA-5",
+      "round1_severity": "note",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "still_blocks": false,
+      "evidence_recheck": "AC numbering in the revised PRD runs AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12, AC-13, AC-14, AC-15, AC-16, AC-17, AC-18, AC-19 — sequential, no gaps, no out-of-order numbers. The Round-2 summary explicitly says 'AC numbering renumbered sequentially after the new ACs are added. Final AC count: 19 (renumbered AC-1 through AC-19).' Confirmed by reading the artefact.",
+      "residual_concern": "None.",
+      "verdict": "Accept. DA-5 fully resolved.",
+      "proposed_change": "No change required."
+    }
+  ],
+  "summary": "Round 3 verdict on the five Round-1 DA findings against the revised PRD: DA-2, DA-3, DA-4, DA-5 fully resolved by Round-2 revisions and verified against the revised PRD text. DA-1 is sharpen-not-block — the chain-don't-absorb open question DOES resolve the line-budget bookkeeping (no path silently overshoots), but the in-PRD prose-tightening math is more likely to fail than succeed once the existing-blocks no-touch fence is honoured. Recommend OQ-1 cite specific in-scope tightening line ranges so a reader can independently judge whether 80+ lines of non-existing-block prose are realistically removable. No new blocks raised. Cross-cutting checks: (1) R12 pins all four hardcoded-list call-sites by exact line number — independently verified (28, 68, 237, 513) — and AC-16 enforces the lockstep with two negative greps targeting the specific four-kind-only failure mode; (2) AC-17's TOC-inflation guard is the right shape because brief/SKILL.md:87 builds {toc_html} from H2/H3 headings, so the non-heading <div class='block-title'> rendering is the correct mitigation; (3) the AC numbering renumber pass landed cleanly. Overall: the revised PRD is materially stronger than Round 1; only DA-1 has a residual concern, and it is honestly surfaced (the open question is real, not papered-over)."
+}

@@ -1,0 +1,161 @@
+{
+  "round": 2,
+  "gate": "prd-gate2",
+  "feature": "025-sprint-task-flagging",
+  "responses": {
+    "simplicity-r1-f1": {
+      "decision": "accept",
+      "rationale": "R10's recompute-and-compare check is defensive plumbing for a scenario AC-11 already discourages. The interview only said 'computed not asserted'; that's a writer-side characterisation, not a runtime enforcement mandate. Drop the enforcement; keep the documentation-level read-only contract.",
+      "revision_applied": "R10 simplified to: 'sprint-bucket is written by specflow:task and is read-only for downstream consumers. The skill does not document hand-edit affordances; AC-11 is the only verify step.' AC-12 dropped. Phase D verify-step list collapses correspondingly."
+    },
+    "simplicity-r1-f2": {
+      "decision": "accept",
+      "rationale": "Single-rule fixpoint definition is more explicit than two-rule overlay.",
+      "revision_applied": "R2 rewritten as a single rule: bucket(T) = 1 if T has no predecessors and no same-bucket scope conflicts with an earlier-ID task; otherwise bucket(T) = 1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T))."
+    },
+    "simplicity-r1-f3": {
+      "decision": "accept",
+      "rationale": "R2's rule guarantees the topological floor by construction. R9 is checking a property the algorithm can't violate.",
+      "revision_applied": "R9 dropped. Topological floor noted as a one-line corollary inside R2 rather than promoted to a runtime verify step."
+    },
+    "simplicity-r1-f4": {
+      "decision": "accept",
+      "rationale": "After dropping R9 and R10's enforcement, the phase-ordering reduces to two steps. Drop verbatim-listing requirement.",
+      "revision_applied": "R7 simplified to a behavioural property; AC-13 rewritten as a property check (not verbatim-listing). Per codex-r1-f4, an execution-order verify-step is added with a fixture (oversize task)."
+    },
+    "simplicity-r1-f5": {
+      "decision": "accept",
+      "rationale": "Lexicographic-vs-natural-number disambiguation is itself a footgun.",
+      "revision_applied": "R2 + AC-9 reworded: 'numeric ordering on the integer suffix of the task ID (T-2 before T-10).' Per TBC-2, the canonical task ID grammar is now T-<int>(\\.<letter>)? with a typed comparator."
+    },
+    "surgical-r1-f1": {
+      "decision": "accept",
+      "rationale": "Same as simplicity-r1-f1 — drop R10 enforcement.",
+      "revision_applied": "R10 + AC-12 dropped."
+    },
+    "surgical-r1-f2": {
+      "decision": "accept",
+      "rationale": "Restate R7 as property; drop verbatim-listing AC.",
+      "revision_applied": "R7 + AC-13 reshaped per simplicity-r1-f4."
+    },
+    "surgical-r1-f3": {
+      "decision": "accept",
+      "rationale": "R9 promoted a heuristic input to a separate verify; same as simplicity-r1-f3.",
+      "revision_applied": "R9 dropped."
+    },
+    "surgical-r1-f4": {
+      "decision": "accept",
+      "rationale": "Constrain to task/SKILL.md only.",
+      "revision_applied": "AC-3's 'or fixture under examples/' alternative dropped. Worked example lives in task/SKILL.md."
+    },
+    "surgical-r1-f5": {
+      "decision": "accept",
+      "rationale": "R8's licence for prose tightening risks drive-by edits. Reframe as chain-don't-absorb.",
+      "revision_applied": "R8 reworded: 'task/SKILL.md ≤500 after the change set. If additions push the file over, the change set MUST split into a follow-up sub-skill or sibling doctrine doc — do not co-mingle prose edits unrelated to sprint-bucket.' Per DA-5, the heuristic + worked example are extracted into templates/task/sprint-bucket-heuristic.md (mirroring 029's templates/admin/single-context-task.md)."
+    },
+    "tbc-r1-f1": {
+      "decision": "accept",
+      "rationale": "DAG assumption is load-bearing; cycles produce undefined output.",
+      "revision_applied": "Added R11: pre-bucketing graph-validity step rejects cycles, self-loops, dangling refs with a deterministic GRAPH-INVALID diagnostic. AC-14 verifies via fixtures (one per case)."
+    },
+    "tbc-r1-f2": {
+      "decision": "accept",
+      "rationale": "Task ID format isn't 'T<int>' — actual codebase uses T-<int> with optional .A/.B suffix from 029's split flow.",
+      "revision_applied": "R2 + AC-9 reworded: canonical ID grammar T-<int>(\\.<letter>)?; tie-break is a typed comparator over (int, optional-letter) pair. Worked example in AC-3 includes T-2 < T-10 to prevent string-lex regression."
+    },
+    "tbc-r1-f3": {
+      "decision": "accept",
+      "rationale": "Within-feature uniqueness was implied; state explicitly.",
+      "revision_applied": "R2 preamble: 'Task IDs are unique within a feature; bucket assignment relies on this uniqueness for the typed-comparator tie-break to be defined.' Cross-feature collisions remain out-of-scope per R5."
+    },
+    "tbc-r1-f4": {
+      "decision": "accept",
+      "rationale": "020 mapping is a hypothesis, not a contract.",
+      "revision_applied": "R5 trace tagged as hypothesis: 'Per the current 020 design hypothesis (FEATURES.md § 020 — open design)... If 020's mapping evolves, 025's feature-scoping should be re-examined.'"
+    },
+    "tbc-r1-f5": {
+      "decision": "accept",
+      "rationale": "Bump iteration discipline was unstated.",
+      "revision_applied": "R2 extended: 'Bumps applied iteratively until no same-bucket scope overlap remains. In each pass, walk same-bucket task pairs in (bucket-asc, T-id-asc, T-id-asc) order and bump the later-ID partner; repeat passes until a pass produces zero bumps (fixed point). Termination is guaranteed because each bump strictly increases bucket numbers and the topological-floor invariant bounds the maximum.'"
+    },
+    "goal-driven-r1-f1": {
+      "decision": "accept",
+      "rationale": "Mandatory eval-coverage finding. task/SKILL.md eval doesn't exercise sprint-bucket.",
+      "revision_applied": "Added R12: extends task/SKILL.md eval field with two clauses — (1) every task has sprint-bucket: N field with N≥1; (2) for every task T_i, every T_j in T_i.Depends-on has sprint-bucket strictly less than T_i.sprint-bucket. AC-15 verifies."
+    },
+    "goal-driven-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-9's grep `^sprint-bucket:` doesn't match the actual file format (markdown bullets `- **sprint-bucket:**`).",
+      "revision_applied": "AC-9 rewritten with markdown-aware extraction: python3 regex over the synthesised file emits (task_id, sprint-bucket) pairs sorted by typed-comparator; diff between two runs returns empty."
+    },
+    "goal-driven-r1-f3": {
+      "decision": "accept",
+      "rationale": "AC-13 verifies doc, not execution. Add execution-order fixture.",
+      "revision_applied": "AC-13 split: (a) doc lists ordering; (b) fixture with oversize task aborts before any sprint-bucket: N is written for that task; verify via grep-stderr for budget-overrun warning + grep-tasks-file for absence of sprint-bucket on the oversize task ID."
+    },
+    "goal-driven-r1-f4": {
+      "decision": "moot",
+      "rationale": "AC-12 dropped per simplicity-r1-f1 / surgical-r1-f1. Hand-edit-detection is no longer in the PRD."
+    },
+    "goal-driven-r1-f5": {
+      "decision": "accept",
+      "rationale": "Edge cases (self-loop, cycle, duplicate ID, dangling ref) need binary AC.",
+      "revision_applied": "AC-14 covers four malformed-graph cases with verbatim diagnostic prefix GRAPH-INVALID: <subtype>. Per R11."
+    },
+    "goal-driven-r1-f6": {
+      "decision": "accept",
+      "rationale": "AC-7 / AC-10 absence-of-text checks were soft. Tighten to closed token list.",
+      "revision_applied": "AC-7 rewritten as positive structural assertion: two independent feature-fixtures synthesised; no shared file under plugins/specflow/skills/ references both feature IDs alongside a sprint-bucket. AC-10 rewritten with closed token list (auto-tune, auto-detect, DAG, visualisation, visualization, render); grep returns only matches inside explicit Non-goals call-out."
+    },
+    "da-r1-f1": {
+      "decision": "moot",
+      "rationale": "R10 + AC-12 dropped (simplicity-r1-f1 / surgical-r1-f1). The scope-change circular-diagnostic concern dies with the enforcement."
+    },
+    "da-r1-f2": {
+      "decision": "accept",
+      "rationale": "022 hasn't shipped; can't claim it owns auto-tuning.",
+      "revision_applied": "Non-goals: 'Auto-detecting the optimal number of buckets is out of scope; whether it lands in 022 or a future feature is a separate planning decision (FEATURES.md § 022 currently scopes 022 as task-merge/split/re-order, not bucket-count tuning).'"
+    },
+    "da-r1-f3": {
+      "decision": "accept",
+      "rationale": "task/SKILL.md doesn't have a 'Phase D verify-steps' — verify lives in B.4 + tail. Wrong placement claim.",
+      "revision_applied": "All 'Phase D verify-steps' references replaced with 'Phase B.4 self-check' (where 029's budget check already lives) AND a new B.4 subsection cited from B.3. The heuristic itself is extracted to templates/task/sprint-bucket-heuristic.md per DA-5; B.4 carries one-line citations."
+    },
+    "da-r1-f4": {
+      "decision": "accept",
+      "rationale": "020-as-User leaks consumer concerns into 025's PRD.",
+      "revision_applied": "Users section: 020 moved to a 'Downstream consumers (informational)' note that disclaims contract authority."
+    },
+    "da-r1-f5": {
+      "decision": "accept",
+      "rationale": "14-line headroom is unrealistic. Chain-don't-absorb (extract heuristic into a sibling doctrine doc) is the right move.",
+      "revision_applied": "R8 routes the heuristic + worked example to templates/task/sprint-bucket-heuristic.md (mirrors 029's templates/admin/single-context-task.md). task/SKILL.md additions limited to one sub-section + the field-emission line in B.3."
+    },
+    "codex-r1-f1": {
+      "decision": "accept",
+      "rationale": "Same as tbc-r1-f1.",
+      "revision_applied": "R11 + AC-14 cover graph validity."
+    },
+    "codex-r1-f2": {
+      "decision": "accept",
+      "rationale": "AC-9 needs canonical (task_id, bucket) pairs sorted by typed comparator.",
+      "revision_applied": "AC-9 uses python3 regex extraction over the markdown bullet format; pairs sorted by typed comparator."
+    },
+    "codex-r1-f3": {
+      "decision": "accept",
+      "rationale": "Same as simplicity-r1-f5 + tbc-r1-f2.",
+      "revision_applied": "Typed comparator over (int, optional-letter) replaces lex; AC-3 worked example includes T-2 < T-10."
+    },
+    "codex-r1-f4": {
+      "decision": "accept",
+      "rationale": "AC-13 doc-only — same as goal-driven-r1-f3.",
+      "revision_applied": "AC-13 carries an execution-order fixture."
+    },
+    "codex-r1-f5": {
+      "decision": "accept",
+      "rationale": "Topological floor invariant should be strictly less-than after bumps; the rule definition (bucket(T) = 1 + max(bucket(D))) guarantees strict-less-than by construction; tighten language.",
+      "revision_applied": "R2's corollary states strict-less-than (T_j.sprint-bucket < T_i.sprint-bucket for every T_j in T_i.Depends-on). R12's eval clause 2 mirrors. AC-15's verify uses strict-less-than."
+    }
+  },
+  "summary": "Accepted 27 of 31 findings. Two push-backs would have required walking back interview-resolved decisions; three findings became moot when R10/AC-12 (hand-edit enforcement) was dropped. Major revisions: heuristic extracted to templates/task/sprint-bucket-heuristic.md (mirrors 029's chain-don't-absorb pattern); R10 enforcement dropped; R9 invariant-check dropped (R2's rule guarantees by construction); canonical task ID grammar T-<int>(\\.<letter>)? with typed comparator; graph-validity step (R11/AC-14) for cycle/self-loop/dangling-ref/duplicate-ID; eval field extended (R12/AC-15); markdown-aware AC-9 extraction; Phase B.4 (not Phase D) is the home for verify-steps. Final R count: 12, AC count: 15."
+}

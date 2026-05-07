@@ -1,0 +1,56 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "feature": "017-tdd-discipline",
+  "gate": "prd-gate2",
+  "round": 3,
+  "lens": "Does every requirement and AC trace directly to the user's request and the confirmed Goal? Has the revised PRD respected the surgical bound, or has the response opened new adjacent surfaces?",
+  "findings": {
+    "surgical-r1-f1": {
+      "round1_severity": "block",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "round3_status": "resolved",
+      "rationale": "Round 2 accepted the move out of `{NNN-slug}-tasks.md`. Revised PRD R9 (lines 85-93) lands the stub at `admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md` (one file per task). AC-7c (lines 184-192) verifies the new path AND grep-asserts that `task/SKILL.md` does NOT contain `Per-task manifest stub|manifest-stub` — the negative-broadcast check the original blocker demanded. R9 also correctly notes the stub path 'lives in scratch (NOT in {NNN-slug}-tasks.md) so it does not broadcast into every downstream skill that reads tasks.md'. The schema-ownership refinement (017 owns interim stub only; 019 owns canonical with adapter, per codex-r1-f2) is a strict improvement on the original block — it removes the cross-feature schema pre-claim that the original finding implicitly worried about. Tasks.md remains untouched. The resolution is clean and surgical.",
+      "residual_risk": "None at PRD time. Develop-time risk: the migration adapter (R9) lives in 019 — if 019's PRD lands without honouring the 017 stub schema, the doctrine doc reopens. Open Question OQ-1 (line 260) names this exact contract and binds it to 019's PRD synthesis — adequately surfaced.",
+      "follow_up": "None for 017. 019's PRD synthesis must cite R9 verbatim from `templates/admin/tdd-discipline.md`."
+    },
+    "surgical-r1-f2": {
+      "round1_severity": "concern",
+      "round2_decision": "push_back",
+      "round3_decision": "sharpen",
+      "round3_status": "partially-resolved",
+      "rationale": "Round 2 push-back is partially defensible: the user's original request DOES say `TDD should inherit Matt Pocock's Red, Green approach` — that is closer to a principle than I originally credited. However, the revised PRD has materially shrunk the surface in a way that addresses the core surgical concern even while keeping the principle: R12 (lines 103-105) is now ONE PARAGRAPH (≤8 lines) citing `templates/admin/tdd-discipline.md` as the doctrine home, NOT the 30-line section the original R12 budgeted. AC-9 (lines 202-209) hard-bounds the section at ≤10 lines via `wc -l` check. The doctrine doc absorbs the operational detail (chain-don't-absorb pattern from 029, per DA-2). This collapses the blast-radius from 'every skill's preamble grows by 30 lines' to 'every skill's preamble grows by ≤8 lines, citing a doctrine path'. That is surgical-by-construction: the principle entry is a pointer, not a body. SHARPEN: I accept R12 stays, but flag that the trace bullet (line 104) still cites `codebase context bullet 3` alongside the user request — the user-request citation is the load-bearing one; the codebase-context bullet should be dropped or demoted to 'supporting observation' so the trace reads cleanly as user-derived, not reviewer-observation-derived.",
+      "residual_risk": "Low. The ≤8-line cap + doctrine-doc citation pattern means the principle is structurally constrained against future creep. Develop-time risk: the develop-time agent must enforce the line cap (AC-9 does this via `[ \"$(wc -l < /tmp/tdd-section)\" -le 10 ]`).",
+      "follow_up": "Minor PRD wording tweak (optional, not blocking): drop or demote the `codebase context bullet 3` half of R12's trace so the trace reads `original user request — *TDD should inherit Matt Pocock's Red, Green approach*` only. Strengthens the trace audit but does not change the AC."
+    },
+    "surgical-r1-f3": {
+      "round1_severity": "concern",
+      "round2_decision": "push_back",
+      "round3_decision": "sharpen",
+      "round3_status": "partially-resolved",
+      "rationale": "Round 2 push-back invokes Goal-Driven coverage (gd-r1-f6) — both skip outcomes (Yellow happy path AC-7a; Green skip-config AC-7b) need binary checks. That is a defensible coverage argument and I accept the principle: covering both outcomes is goal-driven-mandated. HOWEVER, the surgical bound has shifted in the revised PRD: the worked examples are now FIXTURES under `plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/` (AC-7a line 168, AC-7b line 177), NOT inline prose in `develop/SKILL.md` body. This is a material improvement — the `develop/SKILL.md` skill-size ceiling is preserved (the user-feedback constraint I originally cited), and the fixture path is 017-owned (under the feature's own examples directory). The fixture-path choice respects surgical bounds: a new directory entry under examples/, but it is namespaced under 017's feature folder, so it does not pollute the wider examples tree. SHARPEN: AC-7a/AC-7b are accepted in their fixture form, BUT the develop-time agent must NOT inline the worked examples back into `develop/SKILL.md` body during implementation — the AC explicitly tests for `test -f` against the fixture path, not for inline content in the SKILL. Add a develop-time hint to R9 / R13 reminding the implementer that the examples live in fixtures, not in the skill body.",
+      "residual_risk": "Low at PRD time. Develop-time risk: a future agent could `add an inline example for clarity` to `develop/SKILL.md` while implementing. The AC binds the fixture path, not the SKILL body, so the AC will pass either way — but adding both would defeat the skill-size bound. Recommend the develop-time skill-size check (which the develop pipeline already runs) catches inline expansion.",
+      "follow_up": "Optional: add a one-line note to R12 or the Non-goals (line 33-41) stating `worked examples for the cycle live in fixtures under the feature's examples/ folder; develop/SKILL.md and templates/admin/tdd-discipline.md do not inline them`. Strengthens the surgical bound for the develop-time agent."
+    },
+    "surgical-r1-f4": {
+      "round1_severity": "concern",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "round3_status": "resolved",
+      "rationale": "Round 2 accepted the tightening. Revised AC-5 (lines 151-156) now reads cleanly: `config.develop.tddRequired` is documented in `develop/SKILL.md` Phase D body (matching the existing `greenBatchCap` precedent at line 405), with `No admin/config.json schema declaration required` stated explicitly. The grep verification at line 153 binds the contract to a single path — `develop/SKILL.md` only. The `or admin/config.json schema` ambiguity from Round 1 is fully removed. R6 (lines 71-75) consistently routes the knob through `develop/SKILL.md` Phase D body. The schema-creep precedent risk is closed. Resolution is exact-on-target.",
+      "residual_risk": "None.",
+      "follow_up": "None."
+    },
+    "surgical-r1-f5": {
+      "round1_severity": "note",
+      "round2_decision": "accept",
+      "round3_decision": "accept",
+      "round3_status": "resolved",
+      "rationale": "Round 2 accepted the edit-bound clause. Revised R8 (lines 81-83) carries the explicit clause: `Edits bounded to lines 39, 51, 214; Phase B's case-derivation logic and B.3's write template unchanged in shape — only the per-task filter, the Status: red (failing) default, and the B.5 skip are added.` This pins the surgical contract for the develop-time agent exactly as the Round 1 remediation requested. The B.5-skip addition (per TBC-5) is a separate concern from the surgical bound but does not violate it — it is a documented mode behaviour at the same edit site (line 51 region), not a wholesale Phase B rewrite. AC-6 (lines 159-163) verifies the three additions (`--task T{N}`, `Status: red (failing)`, `Phase B.5.*skip`) without prescribing how Phase B's general behaviour changes — appropriately surgical.",
+      "residual_risk": "None at PRD time. Develop-time risk: the implementer should still verify a clean diff against the three named line ranges; no compensating refactor in Phase B.",
+      "follow_up": "None for the PRD. Develop-time hint: when the test-skill edit lands, run a diff-only check against `test/SKILL.md` lines outside 39/51/214 to confirm no adjacent edits crept in."
+    }
+  },
+  "summary": "Three of five findings fully resolved (surgical-r1-f1, f4, f5) — accept. Two findings (surgical-r1-f2, f3) sharpen rather than accept-or-block: the response materially reduced blast radius in both cases (R12 capped at ≤8 lines via AC-9; worked examples moved to 017-owned fixtures), so the original 'concern' severity is downgraded to 'partially-resolved' rather than re-blocking. Both sharpen items are minor PRD wording tweaks (drop codebase-context-bullet from R12 trace; add a Non-goal line forbidding inline duplication of the fixture content into develop/SKILL.md) — neither blocks Gate 2 sign-off. The major Round 2 revisions (stub moved to admin/scratch/, doctrine doc at templates/admin/tdd-discipline.md, AC-5 tightened to develop/SKILL.md only) all address the surgical lens correctly. PRD is surgically clean for sign-off; no remaining blockers."
+}

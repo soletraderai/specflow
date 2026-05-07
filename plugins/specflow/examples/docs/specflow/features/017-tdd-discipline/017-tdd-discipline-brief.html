@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDD Discipline</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #1a1a1a;
+    background: #fafaf7;
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    padding: 32px 24px;
+    background: #1a2632; color: #d8d8d4;
+    border-right: 1px solid #283442;
+  }
+  nav.toc h2 { margin: 0 0 4px; font-size: 18px; color: #fff; letter-spacing: -0.01em; }
+  nav.toc .subtitle { margin: 0 0 24px; font-size: 12px; color: #88a; text-transform: uppercase; letter-spacing: 0.08em; }
+  nav.toc ul { list-style: none; padding: 0; margin: 0 0 24px; }
+  nav.toc ul ul { margin: 4px 0 12px 12px; padding-left: 12px; border-left: 1px solid #2a3a4a; }
+  nav.toc li { margin: 6px 0; }
+  nav.toc a { color: #c8d0d8; text-decoration: none; font-size: 14px; line-height: 1.4; display: block; padding: 2px 0; transition: color 0.15s; }
+  nav.toc a:hover { color: #6cb6ff; }
+  nav.toc ul ul a { font-size: 13px; color: #98a4b0; }
+  nav.toc .toc-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #5a6878; margin: 16px 0 6px; font-weight: 600; }
+  .toc-empty { color: #98a4b0; font-size: 13px; margin: 0; }
+  main { max-width: 980px; padding: 56px 56px 96px; }
+  .source-strip {
+    margin: -24px 0 32px; padding: 10px 14px;
+    border: 1px solid #d8d8d0; border-radius: 6px; background: #fff;
+    color: #4a5868; font-size: 13px;
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+  }
+  .source-strip strong { color: #1a2632; }
+  .source-strip a { color: #245f8f; text-decoration: none; }
+  .source-strip a:hover { color: #6cb6ff; }
+  .drift-banner {
+    margin: -24px 0 24px; padding: 14px 18px;
+    border-left: 4px solid #c8965a; border-radius: 0 6px 6px 0;
+    background: #faf4ec; color: #5a3a10; font-size: 14px;
+  }
+  .commit-policy {
+    margin: -16px 0 32px; padding: 8px 14px;
+    border-left: 3px solid #6a9a5a; border-radius: 0 4px 4px 0;
+    background: #f0f5ec; color: #3a5a2a; font-size: 13px;
+  }
+  .commit-policy-derived { border-left-color: #c8965a; background: #faf4ec; color: #5a3a10; }
+  header.intro { border-bottom: 1px solid #d8d8d0; padding-bottom: 32px; margin-bottom: 48px; }
+  header.intro h1 { font-size: 44px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.02em; color: #1a2632; }
+  header.intro .tagline { font-size: 20px; color: #4a5868; margin: 0; font-style: italic; }
+  header.intro .meta { margin-top: 16px; font-size: 13px; color: #888; }
+  section { margin-bottom: 56px; }
+  h2 { font-size: 30px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #1a2632; letter-spacing: -0.015em; color: #1a2632; scroll-margin-top: 32px; }
+  h3 { font-size: 22px; font-weight: 600; margin: 32px 0 12px; color: #243446; scroll-margin-top: 32px; }
+  h4 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; color: #2c3e50; }
+  p { margin: 0 0 16px; }
+  strong { color: #1a2632; font-weight: 600; }
+  em { color: #4a5868; }
+  a { color: #245f8f; }
+  a:hover { color: #6cb6ff; }
+  code { font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace; background: #f0eee8; color: #2a3540; padding: 1px 6px; border-radius: 3px; font-size: 0.92em; }
+  pre { background: #1e2a36; color: #d8e0e8; padding: 16px 20px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 16px 0; }
+  pre code { background: transparent; color: inherit; padding: 0; font-size: 13px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  input[type="checkbox"] { margin-right: 8px; }
+  blockquote { border-left: 3px solid #d8d4c4; padding: 4px 16px; margin: 16px 0; color: #4a5868; font-style: italic; }
+  .callout { border-left: 4px solid; padding: 14px 18px; margin: 20px 0; border-radius: 0 4px 4px 0; font-size: 15px; }
+  .callout.note { border-color: #5a8db8; background: #eef4fa; }
+  .callout.warning { border-color: #c8965a; background: #faf4ec; }
+  .callout.tip { border-color: #6a9a5a; background: #f0f5ec; }
+  .callout-title { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .callout.note .callout-title { color: #2a5a8a; }
+  .callout.warning .callout-title { color: #8a5a1a; }
+  .callout.tip .callout-title { color: #3a6a2a; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid #e0dccc; text-align: left; vertical-align: top; }
+  th { background: #f0ece0; font-weight: 600; color: #1a2632; }
+  img { max-width: 100%; height: auto; border: 1px solid #e0dccc; border-radius: 6px; background: #fff; }
+  details { border-top: 1px solid #d8d4c4; border-bottom: 1px solid #d8d4c4; padding: 12px 0; margin: 24px 0; }
+  summary { cursor: pointer; color: #1a2632; font-weight: 700; }
+  hr { border: none; border-top: 1px solid #d8d4c4; margin: 32px 0; }
+  footer { border-top: 1px solid #d8d4c4; padding-top: 24px; margin-top: 64px; font-size: 13px; color: #888; }
+
+  /* Status / type pills in the source strip */
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pill.status { background: #e5efe2; color: #3a6a2a; }
+  .pill.type { background: #f0ece0; color: #5a5040; }
+
+  @media (max-width: 860px) {
+    .layout { display: block; }
+    nav.toc { position: relative; height: auto; max-height: none; padding: 24px; }
+    main { max-width: none; padding: 36px 24px 72px; }
+    header.intro h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc">
+  <h2>017-tdd-discipline</h2>
+  <p class="subtitle">Feature brief</p>
+  <div class="toc-section">Contents</div>
+  <ul>
+    <li><a href="#vision">Vision</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#non-goals">Non-goals</a></li>
+    <li><a href="#users">Users</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#acceptance-criteria">Acceptance criteria</a></li>
+    <li><a href="#open-questions">Open questions</a></li>
+    <li><a href="#see-also">See also</a></li>
+    <li><a href="#interview">Interview</a>
+      <ul>
+        <li><a href="#goal-confirmation">Goal confirmation</a></li>
+        <li><a href="#original-request">Original request</a></li>
+        <li><a href="#codebase-context-pre-grilling">Codebase context (pre-grilling)</a></li>
+        <li><a href="#round-1-what-does-tests-first-mean-across-the-lanes">Round 1 — what does &quot;tests-first&quot; mean across the lanes</a></li>
+        <li><a href="#round-2-what-is-the-artefact-contract-for-the-red-phase">Round 2 — what is the artefact contract for the Red phase</a></li>
+        <li><a href="#round-3-what-does-refactor-mean-in-a-single-context-window">Round 3 — what does &quot;Refactor&quot; mean in a single context window</a></li>
+        <li><a href="#round-4-manifest-markers-and-gate-5-visibility">Round 4 — manifest markers and Gate 5 visibility</a></li>
+        <li><a href="#sign-off">Sign-off</a></li>
+        <li><a href="#topics-not-discussed">Topics not discussed</a></li>
+      </ul>
+    </li>
+    <li><a href="#agent-reviews">Agent reviews</a>
+      <ul>
+        <li><a href="#gate-2-prd-review">Gate 2 — PRD review</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+<main>
+  <div class="source-strip">
+    <span><strong>Feature:</strong> 017-tdd-discipline</span>
+    <span class="pill status">draft</span>
+    <span><strong>Source date:</strong> 2026-05-07T12:03:19+10:00</span>
+    <span><a href="017-tdd-discipline-interview.md">Open interview</a></span>
+  </div>
+  <p class="commit-policy">This brief is committed to the repo as the diffable review surface (config.brief.commitPolicy = "committed").</p>
+  <header class="intro">
+    <h1>TDD Discipline</h1>
+    <p class="tagline">Feature brief — composed from the PRD, interview, and gate manifests.</p>
+    <p class="meta">Generated from 017-tdd-discipline-prd.md, 017-tdd-discipline-interview.md, and (when present) debate-log/.</p>
+  </header>
+  <section id="prd">
+    <h2 id="vision">Vision</h2>
+    <p><code>specflow:develop</code> adopts Pocock's Red → Green → Refactor cycle as the canonical implementation pattern inside whatever lane (D.1 Green / D.2 Yellow / D.3 Red) a task lands in. The cycle is <em>internal</em> to a task's single context window (per 029): the Red sub-step writes a failing test before any code lands; the Green sub-step makes it pass with the simplest change; the Refactor sub-step is bounded structural improvement under the green test as guard. The cycle's contract lives in <code>plugins/specflow/templates/admin/tdd-discipline.md</code> (chain-don't-absorb, mirroring 029's doctrine doc); <code>develop/SKILL.md</code> carries one-line citations per lane sub-phase. The cycle is mandatory on Yellow, configurable on Green via <code>config.develop.tddRequired</code> (default <code>true</code>), and skipped on Red lane (PROTECTED_PATHS_REQUIRE_RED_LANE — human-led). Cycle markers (red / green / refactor) write to per-task scratch (<code>admin/scratch/{NNN-slug}-develop/</code>) so retro readers can audit; Phase E (Gate 5 code-vs-plan) and Phase F (Verifier + PR) remain unchanged in scope and do not see the markers.</p>
+    <p><strong>Blast radius.</strong> Five files + one doctrine doc + one scratch path: <code>develop/SKILL.md</code> (sub-step citations), <code>test/SKILL.md</code> (<code>--plan-only --task</code> flag extension), <code>CORE_PRINCIPLES.md</code> (one-paragraph TDD principle citing the doctrine doc), <code>admin/config.json</code> schema (one new field), the new <code>templates/admin/tdd-discipline.md</code>, and the per-task scratch path. Lane stays Yellow: CORE_PRINCIPLES.md gets one paragraph (not 30 lines), the doctrine doc absorbs the cycle contract, and Red lane bypasses TDD enforcement so PROTECTED_PATHS_REQUIRE_RED_LANE is unaffected.</p>
+
+    <h2 id="problem">Problem</h2>
+    <p><code>specflow:develop</code> Phase D today (<code>develop/SKILL.md:397-444</code>) expresses lane execution as &quot;execute the change set then review the diff&quot; — there is no explicit failing-test-first discipline at the task level. AI agents in this position routinely cheat the test-write step by writing the test <em>after</em> the implementation, against the implementation's actual behaviour, which produces tests that are tautological with the code (<code>knowledge/pocock-ai-coding-real-engineers.md</code> § Phase 5 names this failure mode verbatim). The tests then pass on first run for the wrong reason — they encode what the code does, not what it should do.</p>
+    <p><code>CORE_PRINCIPLES.md</code> carries Think-Before-Coding, Simplicity, Surgical, and Goal-Driven, but no TDD principle. The 029 doctrine landed the single-context-per-task contract (<code>templates/admin/single-context-task.md</code>) but did not specify the cycle structure inside the window. This feature adds the cycle contract as the missing operational principle, hosts it in a doctrine doc mirroring 029's pattern, and binds <code>specflow:develop</code> to honour it.</p>
+
+    <h2 id="goals">Goals</h2>
+    <ul>
+      <li>Add Pocock's Red → Green → Refactor cycle as the canonical implementation pattern inside <code>specflow:develop</code>'s lane sub-phases (D.1 Green / D.2 Yellow / D.3 Red, where appropriate). The cycle is internal to a task's single context window — it does NOT replace or rename the lane sub-phases.</li>
+      <li>Host the cycle contract in <code>plugins/specflow/templates/admin/tdd-discipline.md</code> (chain-don't-absorb pattern, mirrors 029's <code>templates/admin/single-context-task.md</code>). <code>develop/SKILL.md</code> adds one-line citations per lane sub-phase; CORE_PRINCIPLES.md adds a one-paragraph principle entry citing the doctrine.</li>
+      <li>Make the cycle mandatory on Yellow (paired-HITL); configurable on Green via <code>config.develop.tddRequired</code> (default <code>true</code>); skipped on Red lane (human-led, PROTECTED_PATHS_REQUIRE_RED_LANE).</li>
+      <li>Surface explicit <code>red</code> / <code>green</code> / <code>refactor</code> markers in per-task scratch (<code>admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md</code>, one file per task) so retro readers can audit whether the cycle held. 019-per-task-manifest absorbs from this scratch path.</li>
+      <li>Extend <code>specflow:test</code> so <code>--plan-only --task T{N}</code> writes the per-task plan section into <code>{NNN-slug}-test.md</code> and marks the primary AC's test case as <code>Status: red (failing)</code> by default. The <code>--task</code> co-flag SKIPS Phase B.5 (Codex pass + user prompt) — the per-task slice inherits the feature-level B.5 outcome.</li>
+      <li>Bound the Refactor sub-step at the documentation level: no new behaviour, no new files, no scope creep — Refactor wanting to add a file or change scope routes to <code>specflow:scope-change</code>. Violations are documented post-hoc in the manifest as <code>refactor: failed (new-file-attempted)</code>.</li>
+      <li>Pre-implementation test must actually fail: after the Red sub-step writes the test, the targeted test command runs against the pre-implementation state and the failing exit + stderr is captured before Green sub-step entry. This is the Pocock failure-mode prevention.</li>
+    </ul>
+
+    <h2 id="non-goals">Non-goals</h2>
+    <ul>
+      <li>Changing test runners. Vitest stays for unit + integration; Playwright stays for e2e (per <code>admin/environment.json</code>). (Goal-level out-of-scope.)</li>
+      <li>Introducing a new test format. Existing test conventions (<code>__tests__/</code> co-location per <code>rules/guidelines.md</code> PREFER_LOCAL_TESTS) are unchanged.</li>
+      <li>Changing lane-precedence rules. Red lane is human-led; Yellow lane is paired-HITL; Green lane is batched parallel. The TDD configurable knob applies inside Green only.</li>
+      <li>Renaming or renumbering Phase D's lane sub-phases (D.1 Green / D.2 Yellow / D.3 Red, currently at <code>develop/SKILL.md:403, 424, 430</code>). The cycle steps (Red / Green / Refactor) are <em>internal</em> to a task's execution within whatever lane it landed on — they are NOT phase-numbered headings, they are cycle steps documented in the doctrine doc.</li>
+      <li>Per-task overrides for <code>tddRequired</code>. The config is project-wide.</li>
+      <li>Surfacing the Red artefact in the PR description. The Red artefact lives in <code>{NNN-slug}-test.md</code> and is linked from the manifest scratch.</li>
+      <li>Splitting the Phase E (Gate 5) review into Red / Green / Refactor sub-reviews. Phase E reviews the final shipped diff; the cycle markers are retro-audit only.</li>
+      <li>Adding runtime detection logic for &quot;Refactor created a new file&quot; inside D.3. The bound is documented; violations are recorded post-hoc as a manifest outcome value (R11), not detected mid-cycle.</li>
+    </ul>
+
+    <h2 id="users">Users</h2>
+    <ul>
+      <li><strong>Power user — operations coordinator.</strong> Indirect: power users benefit from higher test quality.</li>
+      <li><strong>Admin — platform operator.</strong> Reads the per-task manifest scratch during retro to audit whether the cycle held; values the explicit markers as a synthesis trace.</li>
+      <li><strong>Engineer using the develop skill.</strong> Direct user. The Red sub-step forces a failing-test-first commit; the Green sub-step narrows their decision space; the Refactor sub-step has the green test as guardrail.</li>
+    </ul>
+
+    <h2 id="requirements">Requirements</h2>
+    <ul>
+      <li>
+        <p><strong>R1.</strong> Create <code>plugins/specflow/templates/admin/tdd-discipline.md</code> as the cycle's canonical home. The doctrine doc states: (a) the Red → Green → Refactor cycle is internal to a task's single context window (per 029); (b) Red writes a failing test before any code lands and the failing exit must be captured pre-implementation; (c) Green writes the simplest change that makes the test pass; (d) Refactor is bounded structural improvement (no new behaviour, no new files, no scope creep); (e) markers <code>red</code> / <code>green</code> / <code>refactor</code> carry outcome + ISO-8601 timestamp + one-line note. Pattern mirrors 029's <code>templates/admin/single-context-task.md</code>.</p>
+        <ul>
+          <li>Trace: interview Round 4 sign-off; DA-2 chain-don't-absorb (mirror 029's pattern).</li>
+          <li>Serves goal: Outcome (one canonical home) + Driving value (skill-size ceiling respected).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R2.</strong> <code>develop/SKILL.md</code> Phase D body adds three one-line citations to the doctrine doc — one inside D.1 (Green-lane batched execution), one inside D.2 (Yellow-lane paired HITL), and one inside the Phase B.5/B.6 task-execution prelude that fires per task. Each citation reads <code>(see templates/admin/tdd-discipline.md for the Red → Green → Refactor cycle contract)</code>. Phase D's existing lane sub-phase numbering (D.1/D.2/D.3) is unchanged.</p>
+        <ul>
+          <li>Trace: interview Round 2; DA-1 (D.X collision avoidance — cycle steps are NOT phase-numbered).</li>
+          <li>Serves goal: Outcome (cycle is invoked at the right insertion points without replacing phase structure).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R3.</strong> The Refactor cycle step is bounded by three clauses, documented in <code>templates/admin/tdd-discipline.md</code>: (a) no new behaviour — every test that passed at Green still passes at Refactor end; (b) no new files — Refactor only modifies files Green touched; (c) no scope creep — if Refactor wants to add a file or change scope, the agent halts and routes to <code>specflow:scope-change</code>. Violations are recorded post-hoc in the per-task manifest scratch as <code>refactor: failed (new-file-attempted)</code> (or analogous outcome) — no runtime file-set diff detection.</p>
+        <ul>
+          <li>Trace: interview Round 3; DA-5 (no host for runtime detection — demote to manifest-marker outcome).</li>
+          <li>Serves goal: Outcome + Driving value (Surgical Changes binds Refactor; cycle bounded inside the single context window).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R4.</strong> Refactor is optional for trivial tasks (one-line changes that do not benefit from a structural pass). When omitted, the per-task manifest records <code>refactor: skipped (trivial)</code>.</p>
+        <ul>
+          <li>Trace: interview Round 3.</li>
+          <li>Serves goal: Outcome (structural pass is a tool, not a tax).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R5.</strong> Yellow lane refuses to enter the Green cycle step without the Red artefact (the per-task plan section in <code>{NNN-slug}-test.md</code> containing at least one case marked <code>Status: red (failing)</code> AND the captured pre-implementation failing exit per R14). Yellow is mandatory tests-first.</p>
+        <ul>
+          <li>Trace: interview Round 1, Round 2.</li>
+          <li>Serves goal: Audience (engineer using develop in Yellow gets enforced TDD).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R6.</strong> Add <code>develop.tddRequired</code> (boolean, default <code>true</code>) to <code>develop/SKILL.md</code> Phase D body. When <code>tddRequired: true</code> (default), Green lane behaves identically to Yellow. When <code>tddRequired: false</code>, Green lane may skip the Red artefact, and the per-task manifest records <code>red: skipped (config)</code>.</p>
+        <p><strong>Strong CI signal — operational definition.</strong> Per the interview Round 1 phrase, &quot;strong CI signal&quot; means: (a) every PR runs <code>vitest</code>, <code>typecheck</code>, and <code>lint</code> as required checks; (b) merge is blocked on red checks; (c) the project enforces a binary-AC convention in PRDs (every AC has a binary pass/fail criterion). The skill does NOT validate the precondition; the operator self-attests by setting <code>tddRequired: false</code>. The manifest records the attestation alongside <code>red: skipped (config)</code> so the choice is auditable.</p>
+        <ul>
+          <li>Trace: interview Round 1; TBC-2 (operationalise the phrase).</li>
+          <li>Serves goal: Driving value (knob respects projects with strong CI signal; precondition is documented, not vibes).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R7.</strong> Red lane (human-led, per <code>rules/non-negotiable.md</code> PROTECTED_PATHS_REQUIRE_RED_LANE) does not have its TDD discipline enforced by <code>specflow:develop</code> — the human leads. <strong>Extension</strong> (per codex-r1-f1): when AI assists by drafting or changing testable code in a Red-lane task, EITHER the human supplies a Red artefact before any AI Green-like implementation assistance OR the manifest records <code>red: skipped (human-led Red lane)</code> with <strong>no <code>green: passed</code> marker emitted by the skill</strong>. This prevents Red-lane work from quietly bypassing the TDD audit signal.</p>
+        <ul>
+          <li>Trace: interview Round 1; codex-r1-f1.</li>
+          <li>Serves goal: Outcome (lane semantics preserved; TDD audit signal honest in Red).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R8.</strong> Extend <code>test/SKILL.md</code> <code>--plan-only</code> mode (currently at <code>test/SKILL.md:39, 51, 214</code>) so that <code>--plan-only --task T{N}</code> writes the per-task plan section into <code>{NNN-slug}-test.md</code> and marks the primary AC's test case as <code>Status: red (failing)</code> by default. <strong>The <code>--task T{N}</code> mode SKIPS Phase B.5</strong> (Codex pass + user prompt) — the per-task slice inherits whatever B.5 outcome the feature-level test plan recorded; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time. <strong>Edits bounded</strong> to lines 39, 51, 214; Phase B's case-derivation logic and B.3's write template unchanged in shape — only the per-task filter, the <code>Status: red (failing)</code> default, and the B.5 skip are added.</p>
+        <ul>
+          <li>Trace: interview Round 2; TBC-5 (B.5 collision); SURG-5 (edit-bound clause).</li>
+          <li>Serves goal: Outcome (Red artefact contract is operational without prompt-fatigue inside Red sub-step).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R9.</strong> The per-task manifest scratch at <code>admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md</code> (one file per task) carries three markers in this exact shape (the <strong>interim stub schema</strong> 017 owns):</p>
+<pre><code>red: {outcome} ({YYYY-MM-DDTHH:MM:SSZ}) — {one-line note}
+green: {outcome} ({YYYY-MM-DDTHH:MM:SSZ}) — {one-line note}
+refactor: {outcome} ({YYYY-MM-DDTHH:MM:SSZ}) — {one-line note}
+</code></pre>
+        <p>Where <code>{outcome}</code> ∈ <code>{passed, failed, skipped (config), skipped (trivial), skipped (human-led Red lane), failed (new-file-attempted)}</code>. Markers are appended in cycle order. <strong>Schema ownership</strong> (per codex-r1-f2): 017 owns <em>only</em> this interim stub contract — semantic fields (<code>red</code> / <code>green</code> / <code>refactor</code>), outcome enum, ISO timestamp, one-line note. <strong>019 owns the canonical per-task manifest schema</strong> and provides a migration/adapter from this stub when 019 lands; 019 is NOT required to read the three-line block &quot;unchanged&quot; — 019 may transform the stub into its own format. The stub path lives in scratch (NOT in <code>{NNN-slug}-tasks.md</code>) so it does not broadcast into every downstream skill that reads tasks.md.</p>
+        <ul>
+          <li>Trace: interview Round 4; SURG-1, DA-3 (move out of tasks.md); codex-r1-f2 (017 owns interim only, 019 owns canonical).</li>
+          <li>Serves goal: Audience (admin auditing the cycle in retro) + Driving value (binary-cycle audit signal without artefact-broadcast).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R10.</strong> Phase E (Gate 5 code-vs-plan, <code>develop/SKILL.md:446-533</code>) reviews the combined Red+Green+Refactor diff as a single change set. <strong>Phase E.3 reviewer-dispatch input list does NOT include the per-task manifest scratch file or the cycle markers</strong> — Phase E reviewers see only the code diff, the per-task plan, the tasks-file entry, and their own role definition. Phase F (Verifier + PR) is unchanged in scope.</p>
+        <ul>
+          <li>Trace: interview Round 4; TBC-3 (positive-input-list test, not absence-of-string grep).</li>
+          <li>Serves goal: Outcome (Phase E stays lean per 027 fresh-context; cycle structure does not leak into dumb-zone review).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R11.</strong> Refactor's &quot;no new files&quot; rule is documented-discipline-only (no runtime detection in D.3). When violated, the per-task manifest records <code>refactor: failed (new-file-attempted)</code> so retros catch the violation post-hoc. The cycle contract states &quot;no new files in Refactor&quot; as a discipline; agents that want to add a file route to <code>specflow:scope-change</code>.</p>
+        <ul>
+          <li>Trace: interview Topics not discussed (hard-block decision); DA-5 (no runtime host); simplicity-r1-f5.</li>
+          <li>Serves goal: Outcome (cycle bounds enforced via retro audit, not runtime detection).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R12.</strong> Add a &quot;TDD&quot; section to <code>CORE_PRINCIPLES.md</code>. Section is <strong>one paragraph</strong> (≤8 lines, not 30) summarising Pocock's Red → Green → Refactor framing with the canonical Pocock quote from <code>knowledge/pocock-software-fundamentals-matter-more.md</code> § Failure Mode 3 cited verbatim, and citing <code>templates/admin/tdd-discipline.md</code> as the canonical contract. Pattern: principle entry is short; doctrine doc is the home for the operational details.</p>
+        <ul>
+          <li>Trace: original user request — <em>&quot;TDD should inherit Matt Pocock's Red, Green approach&quot;</em>; codebase context bullet 3.</li>
+          <li>Serves goal: Outcome (principle adopted; doctrine doc keeps the file tight) + Driving value (downstream skills cite the principle by name).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R13.</strong> Extend the <code>eval:</code> field of both <code>develop/SKILL.md</code> and <code>test/SKILL.md</code> to exercise the new TDD discipline.</p>
+        <ul>
+          <li><code>develop/SKILL.md</code> eval (line 26) gains: &quot;for every Yellow-lane task and every Green-lane task with <code>config.develop.tddRequired === true</code>, the per-task manifest scratch at <code>admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md</code> contains a line matching the regex <code>^red:\s+(passed|failed|skipped \((config|trivial|human-led Red lane)\))\s+\([0-9T:Z-]+\)\s+—\s+.+$</code> and equivalent regexes for <code>green:</code> and <code>refactor:</code>.&quot;</li>
+          <li><code>test/SKILL.md</code> eval (line 19) gains: &quot;when invoked with <code>--plan-only --task T{N}</code>, the per-task plan section written into <code>{NNN-slug}-test.md</code> contains at least one test case marked <code>Status: red (failing)</code>.&quot;</li>
+          <li>Trace: GD-r1-f6 (mandatory eval-coverage).</li>
+          <li>Serves goal: Outcome (the eval is the binary contract; without these clauses, AC-1 through AC-13 can pass on a SKILL.md that no longer behaves correctly at runtime).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>R14.</strong> <strong>Pre-implementation test execution.</strong> After authoring the test in the Red sub-step and before Green entry, the targeted test command (e.g. <code>vitest run path/to/test</code>) runs against the pre-implementation state and captures the failing exit + stderr in <code>admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log</code>. Green may flip <code>Status: green (passing)</code> only when the same command subsequently exits 0. <strong>A pre-implementation pass blocks as an invalid Red artefact</strong> — the test was written after the implementation (the Pocock failure mode <code>knowledge/pocock-ai-coding-real-engineers.md</code> § Phase 5 names verbatim).</p>
+        <ul>
+          <li>Trace: codex-r1-f4.</li>
+          <li>Serves goal: Outcome (cycle integrity is verifiable, not a doc convention).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2 id="acceptance-criteria">Acceptance criteria</h2>
+    <ul>
+      <li>
+        <p><strong>AC-1.</strong> <code>develop/SKILL.md</code> Phase D body cites <code>templates/admin/tdd-discipline.md</code> exactly three times (one citation each in D.1 Green-lane body, D.2 Yellow-lane body, and the Phase B.5/B.6 prelude). The citations appear in canonical cycle order — the file's first three matches of <code>tdd-discipline.md</code> reference Red, then Green, then Refactor in that order. Verified:</p>
+<pre><code class="language-sh">grep -nE 'tdd-discipline\.md|Red sub-step|Green sub-step|Refactor sub-step' plugins/specflow/skills/develop/SKILL.md | head -10
+# Manual check: first three cycle-step references appear in Red/Green/Refactor order with strictly increasing line numbers.
+[ &quot;$(grep -c 'templates/admin/tdd-discipline.md' plugins/specflow/skills/develop/SKILL.md)&quot; -ge 3 ]
+</code></pre>
+        <ul>
+          <li>Verifies: R2 (citations exist) + R1 (doctrine doc home).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-2.</strong> <code>develop/SKILL.md</code> D.1 (Green-lane) body or the Phase B.5/B.6 prelude contains the literal invocation <code>specflow:test {NNN-slug} --plan-only --task T{N}</code> within 10 lines of a verb anchor (<code>invoke</code>, <code>fire</code>, <code>run</code>, <code>execute</code>):</p>
+<pre><code class="language-sh">grep -B 0 -A 10 -E '\b(invoke|fire|run|execute)\b' plugins/specflow/skills/develop/SKILL.md | grep -qE 'specflow:test \{NNN-slug\} --plan-only --task T\{N\}'
+</code></pre>
+        <ul>
+          <li>Verifies: R8.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-3.</strong> <code>develop/SKILL.md</code> Green-cycle-step entry is gated by a verify clause: within 30 lines after the Green sub-step citation, the file contains BOTH the literal substring <code>Status: red (failing)</code> AND a refusal anchor (<code>refuse</code>, <code>refuses</code>, <code>refusal</code>, <code>block</code>) AND a <code>tddRequired</code> conditional clause:</p>
+<pre><code class="language-sh">awk '/Green sub-step/,/Refactor sub-step|## Phase E/' plugins/specflow/skills/develop/SKILL.md &gt; /tmp/green-block
+grep -q 'Status: red (failing)' /tmp/green-block
+grep -qE 'refuse|refuses|refusal|block' /tmp/green-block
+grep -qE 'tddRequired.*(true|false)' /tmp/green-block
+</code></pre>
+        <ul>
+          <li>Verifies: R5, R6.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-4.</strong> <code>templates/admin/tdd-discipline.md</code> Refactor section lists three explicit bounds — (a) no new behaviour, (b) no new files, (c) no scope creep / route to <code>specflow:scope-change</code>. Each bound on its own bulleted line:</p>
+<pre><code class="language-sh">awk '/^## Refactor/,/^## /' plugins/specflow/templates/admin/tdd-discipline.md &gt; /tmp/refactor-block
+grep -qE '^- .*no new behaviour' /tmp/refactor-block
+grep -qE '^- .*no new files' /tmp/refactor-block
+grep -qE '^- .*specflow:scope-change' /tmp/refactor-block
+</code></pre>
+        <ul>
+          <li>Verifies: R3, R11.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-5.</strong> <code>config.develop.tddRequired</code> is documented in <code>develop/SKILL.md</code> Phase D body (matching the existing <code>greenBatchCap</code> precedent at line 405). The doc names the boolean type, the default <code>true</code>, and the Green-lane scope of the knob. Verified by grep against <code>develop/SKILL.md</code>:</p>
+<pre><code class="language-sh">grep -qE 'config\.develop\.tddRequired.*boolean.*default[: ]+true' plugins/specflow/skills/develop/SKILL.md
+</code></pre>
+        <p>No <code>admin/config.json</code> schema declaration required.</p>
+        <ul>
+          <li>Verifies: R6.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-6.</strong> <code>test/SKILL.md</code> <code>--plan-only</code> mode documentation lists <code>--task T{N}</code> as a valid co-flag and names the Red-artefact contract:</p>
+<pre><code class="language-sh">grep -qE -- '--plan-only.*--task T\{N\}' plugins/specflow/skills/test/SKILL.md
+grep -q 'Status: red (failing)' plugins/specflow/skills/test/SKILL.md
+grep -qE 'Phase B\.5.*skip' plugins/specflow/skills/test/SKILL.md
+</code></pre>
+        <ul>
+          <li>Verifies: R8.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-7a.</strong> A worked example fixture exists at <code>plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/yellow-happy-path.md</code> showing a Yellow-lane manifest stub with three <code>passed</code> markers carrying R9's exact schema-shape:</p>
+<pre><code class="language-sh">test -f plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/yellow-happy-path.md
+grep -qE '^red: passed \([0-9T:Z-]+\) — ' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/yellow-happy-path.md
+grep -qE '^green: passed \([0-9T:Z-]+\) — ' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/yellow-happy-path.md
+grep -qE '^refactor: passed \([0-9T:Z-]+\) — ' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/yellow-happy-path.md
+</code></pre>
+        <ul>
+          <li>Verifies: R9 (cycle-held happy path).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-7b.</strong> A worked example fixture exists at <code>plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/green-skip-config.md</code> showing a Green-lane task with <code>tddRequired: false</code> carrying <code>red: skipped (config) (...)</code>, <code>green: passed (...)</code>, <code>refactor: skipped (trivial) (...)</code>:</p>
+<pre><code class="language-sh">test -f plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/green-skip-config.md
+grep -qE '^red: skipped \(config\) \([0-9T:Z-]+\) — ' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/green-skip-config.md
+grep -qE '^refactor: skipped \(trivial\) \([0-9T:Z-]+\) — ' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/green-skip-config.md
+</code></pre>
+        <p>Exercises both <code>skipped (config)</code> (R6) and <code>skipped (trivial)</code> (R4).</p>
+        <ul>
+          <li>Verifies: R4, R6, R9.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-7c.</strong> The per-task manifest scratch path is <code>admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md</code> (one file per task). Verified by grep against the doctrine doc:</p>
+<pre><code class="language-sh">grep -qE 'admin/scratch/\{NNN-slug\}-develop/manifest-stub-\{task-id\}\.md' plugins/specflow/templates/admin/tdd-discipline.md
+</code></pre>
+        <p>Tasks.md is NOT touched — verified by grep absence:</p>
+<pre><code class="language-sh">! grep -qE 'Per-task manifest stub|manifest-stub' plugins/specflow/skills/task/SKILL.md
+</code></pre>
+        <ul>
+          <li>Verifies: R9 (scratch-path home; tasks.md untouched).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-8.</strong> Phase E (Gate 5, <code>develop/SKILL.md:446-533</code>) reviewer-dispatch input list (the bullets passed to each forked reviewer sub-agent) does NOT include the per-task manifest scratch or the cycle markers:</p>
+<pre><code class="language-sh">awk '/^## Phase E/,/^## Phase F/' plugins/specflow/skills/develop/SKILL.md &gt; /tmp/phase-e
+! grep -qE 'manifest-stub|per-task manifest scratch|cycle marker|red:.*passed|green:.*passed' /tmp/phase-e
+</code></pre>
+        <p>Phase E.3 reviewers see only: code diff, per-task plan, tasks-file entry, role definition.</p>
+        <ul>
+          <li>Verifies: R10.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-9.</strong> <code>CORE_PRINCIPLES.md</code> carries a &quot;TDD&quot; principle entry that is one paragraph (≤8 lines) and cites <code>templates/admin/tdd-discipline.md</code> as the doctrine home. The verbatim Pocock quote from <code>knowledge/pocock-software-fundamentals-matter-more.md</code> § Failure Mode 3 appears in the entry:</p>
+<pre><code class="language-sh">awk '/^## TDD/,/^## /' plugins/specflow/CORE_PRINCIPLES.md &gt; /tmp/tdd-section
+[ &quot;$(wc -l &lt; /tmp/tdd-section)&quot; -le 10 ]
+grep -q 'templates/admin/tdd-discipline.md' /tmp/tdd-section
+grep -q 'TDD forces the LLM to really take small steps' /tmp/tdd-section
+</code></pre>
+        <ul>
+          <li>Verifies: R12.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-10.</strong> <code>develop/SKILL.md</code> Red-lane handoff path (the existing flow under PROTECTED_PATHS_REQUIRE_RED_LANE) is unchanged in scope, AND the cycle-marker contract for AI-assisted Red-lane tasks is documented:</p>
+<pre><code class="language-sh">awk '/^### D\.3 Red-lane/,/^### |^## Phase E/' plugins/specflow/skills/develop/SKILL.md &gt; /tmp/d3
+! grep -qE 'tddRequired|Status: red \(failing\) check' /tmp/d3
+grep -qE 'human-led Red lane' /tmp/d3
+</code></pre>
+        <ul>
+          <li>Verifies: R7.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-11a.</strong> <code>templates/admin/tdd-discipline.md</code> Refactor section contains the literal halt message AND a halt anchor:</p>
+<pre><code class="language-sh">awk '/^## Refactor/,/^## /' plugins/specflow/templates/admin/tdd-discipline.md &gt; /tmp/refactor-block
+grep -q 'Refactor cannot add files; route to specflow:scope-change' /tmp/refactor-block
+grep -qE 'halt|halts|refuse|refuses' /tmp/refactor-block
+</code></pre>
+        <ul>
+          <li>Verifies: R11 (documented discipline).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-11b.</strong> A worked-fixture file at <code>plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/refactor-new-file-block.md</code> shows a worked task narrative ending in the halt message:</p>
+<pre><code class="language-sh">test -f plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/refactor-new-file-block.md
+grep -q 'Refactor cannot add files; route to specflow:scope-change' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/refactor-new-file-block.md
+grep -qE 'refactor: failed \(new-file-attempted\)' plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/refactor-new-file-block.md
+</code></pre>
+        <ul>
+          <li>Verifies: R11 (post-hoc audit + worked fixture).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-12.</strong> <code>develop/SKILL.md</code> and <code>test/SKILL.md</code> <code>eval:</code> fields are extended per R13.</p>
+<pre><code class="language-sh">grep -qE 'eval:.*manifest-stub|eval:.*\^red:\\s\+\(passed' plugins/specflow/skills/develop/SKILL.md
+grep -qE 'eval:.*--task T\{N\}|eval:.*Status: red \(failing\)' plugins/specflow/skills/test/SKILL.md
+</code></pre>
+        <ul>
+          <li>Verifies: R13.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>AC-13.</strong> Pre-implementation test trace exists. Given a fixture Yellow-lane task that authors a failing test and runs the targeted test command pre-implementation:</p>
+<pre><code class="language-sh">ls admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log
+grep -qE 'exit (1|[1-9][0-9]*)' admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log
+</code></pre>
+        <p>And given the same fixture progressed through Green:</p>
+<pre><code class="language-sh">grep -q 'exit 0' admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log  # appended after Green
+</code></pre>
+        <p>An invalid Red artefact (test passes pre-implementation) blocks Green entry:</p>
+<pre><code class="language-sh"># Fixture: test that passes against pre-implementation state
+specflow:develop NNN-slug; rc=$?; [ $rc -ne 0 ] &amp;&amp; grep -q 'invalid Red artefact' stderr.log
+</code></pre>
+        <ul>
+          <li>Verifies: R14.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2 id="open-questions">Open questions</h2>
+    <ul>
+      <li><strong>OQ-1: 017→019 absorption contract.</strong> R9 declares 017 owns the interim stub schema and 019 owns the canonical per-task manifest. The migration adapter from stub to canonical lives in 019's PRD. <strong>Decision needed before 019's PRD synthesis:</strong> the absorption contract must be documented in 019 citing 017's R9 schema verbatim from <code>templates/admin/tdd-discipline.md</code>. If 019 lands with a structurally different schema, R9's stub becomes legacy noise; the doctrine doc reopens.</li>
+    </ul>
+
+    <h2 id="see-also">See also</h2>
+    <ul>
+      <li>Interview: <a href="./017-tdd-discipline-interview.md"><code>./017-tdd-discipline-interview.md</code></a></li>
+      <li>Doctrine doc: <a href="../../templates/admin/tdd-discipline.md"><code>../../templates/admin/tdd-discipline.md</code></a> (created by this PRD; canonical home for the cycle contract)</li>
+      <li>Tasks: <a href="./017-tdd-discipline-tasks.md"><code>./017-tdd-discipline-tasks.md</code></a> (generated by <code>specflow:task</code>)</li>
+      <li>Tests: <a href="./017-tdd-discipline-test.md"><code>./017-tdd-discipline-test.md</code></a> (generated by <code>specflow:test</code>)</li>
+    </ul>
+  </section>
+  <section id="interview">
+    <h2>Interview</h2>
+    <h2 id="goal-confirmation">Goal confirmation</h2>
+    <p>The user invoked <code>specflow:prd 017-tdd-discipline</code> with the brief: &quot;Development needs to enforce TDD; tests-first must precede code execution. Adopt Matt Pocock's Red, Green, Refactor framing as the canonical TDD shape across <code>specflow:develop</code>.&quot;</p>
+    <p>Confirmed: the goal is to reframe <code>specflow:develop</code> Phases D / E / F as Pocock's <strong>Red → Green → Refactor</strong>, make tests-first mandatory for the Yellow lane and configurable for the Green lane, surface explicit <code>red</code> / <code>green</code> / <code>refactor</code> markers in the per-task manifest, and extend <code>specflow:test</code> so the Red phase can write a failing test plan artefact without executing. Out-of-scope-at-goal-level: changing test runners; introducing a new test format; changing the lane-precedence rules.</p>
+
+    <h2 id="original-request">Original request</h2>
+    <blockquote>
+      <p>&quot;Development needs to implore TDD; we must pass off work to another agent to review externally then provide feedback.&quot; Plus: &quot;TDD should inherit Matt Pocock's Red, Green approach.&quot; — chat feedback. Pocock's framing is the canonical TDD shape across the specflow knowledge base (<code>pocock-software-fundamentals-matter-more.md</code> and <code>pocock-ai-coding-real-engineers.md</code>).</p>
+    </blockquote>
+
+    <h2 id="codebase-context-pre-grilling">Codebase context (pre-grilling)</h2>
+    <ul>
+      <li><code>plugins/specflow/skills/develop/SKILL.md</code> Phases D (lane execution, lines 397-444), E (Gate 5 code-vs-plan, lines 446-533), F (Verifier + PR, lines 537-633) currently express implementation as &quot;execute the change set then review the diff&quot; — with no explicit failing-test-first discipline. The 029 doctrine landed in v2.5.0 added Phase A.6 (context-budget pre-flight) and a single no-mid-task-compaction reminder at Phase D entry (line 401).</li>
+      <li><code>plugins/specflow/skills/test/SKILL.md</code> already has <code>--plan-only</code> mode (lines 39, 51, 214) that generates the test plan without executing. The slot exists; this feature anchors it as the Red-phase artefact contract used by develop.</li>
+      <li><code>plugins/specflow/CORE_PRINCIPLES.md</code> has four principles (Think-Before-Coding, Simplicity, Surgical, Goal-Driven) but no TDD section. Adding a TDD section keeps it tight and bounded.</li>
+      <li><code>knowledge/pocock-software-fundamentals-matter-more.md</code> § Failure Mode 3 carries the canonical Pocock quote: <em>&quot;TDD forces the LLM to really take small steps. You create a test first. You make that test pass and then you refactor the code to make it nicer and consider the design.&quot;</em> This is the verbatim source.</li>
+      <li><code>knowledge/pocock-ai-coding-real-engineers.md</code> § Phase 5 names the four-step shape (write failing test → confirm fails for the right reason → make it pass → refactor) and the AI-cheating failure mode (test written <em>after</em> implementation) the rule prevents.</li>
+      <li><code>knowledge/pocock-real-feature-build.md</code> § QA carries the AFK Ralph + edge-cases-surfaced-only-in-QA stance — the test-plan artefact catches what grilling missed.</li>
+      <li>029-single-context-task locked the rule that Red → Green → Refactor for one task runs in one agent context window. 017 is the implementation contract that gives the single window its three internal sub-phases.</li>
+    </ul>
+
+    <h2 id="round-1-what-does-tests-first-mean-across-the-lanes">Round 1 — what does &quot;tests-first&quot; mean across the lanes</h2>
+    <p><strong>Question.</strong> Yellow lane has paired-HITL execution; Green lane has batched parallel execution. Is tests-first mandatory for both, or lane-dependent?</p>
+    <p><strong>Answer.</strong> Yellow lane: mandatory tests-first; the Yellow paired-HITL boundary already accepts the latency cost of an extra step, and Yellow tasks have weak verifiability axes that benefit most from binary-pass criteria written before code. Green lane: configurable via <code>config.json.develop.tddRequired</code> (default <code>true</code>). Projects with strong CI signal and binary-AC-heavy task lists may opt out for Green tasks where the test plan would be redundant with the AC itself; projects with looser ACs keep it on. Red lane is human-led — TDD is the human's choice; the skill does not force it. The configurable knob applies only to Green; Yellow and Red are fixed.</p>
+
+    <h2 id="round-2-what-is-the-artefact-contract-for-the-red-phase">Round 2 — what is the artefact contract for the Red phase</h2>
+    <p><strong>Question.</strong> What does the Red phase produce, and where does it live?</p>
+    <p><strong>Answer.</strong> The Red phase fires <code>specflow:test {NNN-slug} --plan-only --task T{N}</code> against the task. The flag re-derives the test plan (Phase B of test) without executing (skips Phase C), writing the per-task plan section into <code>{NNN-slug}-test.md</code>. The plan must include at least one failing test case for the task's primary AC and must mark the case as <code>Status: red (failing)</code> until the Green sub-phase confirms it passes. The plan artefact is the Red sub-phase's deliverable; Phase E (now Green) cannot enter without the artefact. Yellow lane: blocking — develop refuses to enter Green without the Red artefact. Green lane with <code>tddRequired: false</code>: the Red artefact may be skipped, but the manifest records <code>red: skipped (config)</code> so the omission is auditable.</p>
+
+    <h2 id="round-3-what-does-refactor-mean-in-a-single-context-window">Round 3 — what does &quot;Refactor&quot; mean in a single context window</h2>
+    <p><strong>Question.</strong> Pocock's Refactor step in a human-IDE workflow is &quot;make the code nicer, consider the design.&quot; Inside a single agent context window (per 029), what bounds the Refactor sub-phase?</p>
+    <p><strong>Answer.</strong> Refactor is the structural improvement pass with the Green test as guard. Bounded by: (a) no new behaviour — every test that passed at Green must still pass; (b) no new files — Refactor only modifies files Green touched; (c) no scope creep — the simplicity-first and surgical-changes principles bind the same as in Green. If Refactor wants to add a file or change scope, it routes to <code>specflow:scope-change</code>, not silent expansion. The manifest entry <code>refactor</code> carries the diff delta from Green-end to Refactor-end so the structural change is visible. Refactor is optional for trivial tasks (one-line changes that don't benefit from a structural pass); the manifest records <code>refactor: skipped (trivial)</code> when omitted.</p>
+
+    <h2 id="round-4-manifest-markers-and-gate-5-visibility">Round 4 — manifest markers and Gate 5 visibility</h2>
+    <p><strong>Question.</strong> Should Gate 5 (code-vs-plan) review the Red, Green, and Refactor diffs separately, or as a single combined diff?</p>
+    <p><strong>Answer.</strong> Single combined diff for Gate 5. The Red/Green/Refactor markers are <em>internal</em> to the task's single context window — they help the agent (and the retro reader) see the cycle structure, but Gate 5's reviewers see the assembled change set. The per-task manifest (019, future) carries the three markers (<code>red</code>, <code>green</code>, <code>refactor</code>) with timestamps and outcome notes, so retro consumers can audit whether the cycle held. Gate 5 reviewers do NOT replay the Red→Green transition; they review the final shipped diff against the plan. This keeps Gate 5 lean (per 027 fresh-context contract) and avoids re-running the cycle in dumb-zone review territory.</p>
+
+    <h2 id="sign-off">Sign-off</h2>
+    <p>User confirmed: Phases D/E/F reframed as Red → Green → Refactor; Yellow mandatory tests-first; Green configurable via <code>config.json.develop.tddRequired</code>; manifest carries three markers per task; <code>specflow:test --plan-only</code> is the Red artefact contract; Refactor is bounded to no-new-behaviour; Gate 5 reviews the combined diff. Proceed to PRD synthesis.</p>
+
+    <h2 id="topics-not-discussed">Topics not discussed</h2>
+    <ul>
+      <li>Whether <code>tddRequired: false</code> should require a per-task override flag for the Green tasks that opt out. Out of scope — the config is project-wide; per-task overrides multiply surface for marginal flexibility.</li>
+      <li>Whether to surface the Red artefact in the PR description. Considered, deferred — Gate 5's combined-diff stance keeps the PR description clean; the Red artefact lives in <code>{NNN-slug}-test.md</code> and is linked from the manifest.</li>
+      <li>Whether Refactor's &quot;no new files&quot; rule should hard-block or warn-and-continue. Decided: hard-block — Refactor adding a new file is by definition new behaviour, not structural improvement; route to <code>specflow:scope-change</code>.</li>
+    </ul>
+  </section>
+  <section id="agent-reviews">
+    <h2>Agent reviews</h2>
+    <h3 id="gate-2-prd-review">Gate 2 — PRD review</h3>
+    <p><strong>Feature:</strong> 017-tdd-discipline<br>
+    <strong>Date:</strong> 2026-05-07<br>
+    <strong>Reviewers:</strong> simplicity-reviewer, surgical-reviewer, think-before-coding-reviewer, goal-driven-reviewer, devils-advocate, codex</p>
+
+    <h4>Accepted findings</h4>
+    <ul>
+      <li>
+        <p><strong>simplicity-r1-f5</strong> (simplicity-reviewer, note) — Refactor's &quot;no new files&quot; hard-block had no detection host inside D.3.</p>
+        <ul>
+          <li>Revision applied: R11 demoted to documented-discipline + manifest outcome value <code>refactor: failed (new-file-attempted)</code>. AC-11 split into AC-11a (doctrine-doc grep) + AC-11b (worked fixture).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r1-f2</strong> (simplicity-reviewer, concern) — TDD section in CORE_PRINCIPLES.md duplicated develop/SKILL.md content.</p>
+        <ul>
+          <li>Revision applied: Created <code>templates/admin/tdd-discipline.md</code> as the cycle's canonical home (mirrors 029's <code>templates/admin/single-context-task.md</code>). CORE_PRINCIPLES.md gets a one-paragraph (≤8 lines) entry citing the doctrine doc. develop/SKILL.md gets one-line citations per cycle reference.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>surgical-r1-f1</strong> (surgical-reviewer, block) — R9 stub-section in <code>{NNN-slug}-tasks.md</code> broadcasts markers into a published artefact every downstream skill reads.</p>
+        <ul>
+          <li>Revision applied: Stub moved to <code>admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md</code> (one file per task). Tasks.md untouched.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>surgical-r1-f4</strong> (surgical-reviewer, concern) — AC-5's &quot;or admin/config.json schema&quot; alternative invited schema creep.</p>
+        <ul>
+          <li>Revision applied: AC-5 tightened to develop/SKILL.md only, matching the existing greenBatchCap precedent.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>surgical-r1-f5</strong> (surgical-reviewer, note) — R8 needed an explicit edit-bound clause.</p>
+        <ul>
+          <li>Revision applied: R8 amended — edits scoped to test/SKILL.md lines 39, 51, 214; Phase B's case-derivation logic and B.3's write template unchanged in shape.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-r1-f1</strong> (think-before-coding-reviewer, block) — 017→019 absorption contract was unstated.</p>
+        <ul>
+          <li>Revision applied: Stub moved to scratch (per surgical-r1-f1); R9 reworded to declare 017 owns interim stub schema only, 019 owns canonical with migration adapter; Open Question OQ-1 surfaces the 017→019 contract resolution requirement before 019's PRD synthesis.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-r1-f2</strong> (think-before-coding-reviewer, block) — &quot;Strong CI signal&quot; was a phrase, not a definition.</p>
+        <ul>
+          <li>Revision applied: R6 extended with operational definition — (a) every PR runs vitest + typecheck + lint as required checks; (b) merge blocked on red checks; (c) project enforces binary-AC convention. Operator self-attests; manifest records attestation alongside <code>red: skipped (config)</code>.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-r1-f3</strong> (think-before-coding-reviewer, block) — AC-8's grep for &quot;manifest&quot; false-positives on Gate 5's existing manifest.md references.</p>
+        <ul>
+          <li>Revision applied: AC-8 rewritten as positive-input-list assertion — Phase E.3 reviewer-dispatch input list does NOT include the per-task manifest scratch or the cycle markers. Phase E reviewers see only code diff, per-task plan, tasks-file entry, role definition.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-r1-f4</strong> (think-before-coding-reviewer, concern) — AC-2's verification mechanism was ambiguous.</p>
+        <ul>
+          <li>Revision applied: AC-2 amended — grep against develop/SKILL.md prose with 10-line proximity to a verb anchor (invoke / fire / run / execute).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>TBC-r1-f5</strong> (think-before-coding-reviewer, concern) — <code>--task T{N}</code> mode would fire test/SKILL.md Phase B.5's user prompt inside develop's Red sub-step.</p>
+        <ul>
+          <li>Revision applied: R8 amended — <code>--task T{N}</code> mode skips Phase B.5; per-task slice inherits the feature-level B.5 outcome; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>gd-r1-f1, gd-r1-f2, gd-r1-f3, gd-r1-f4, gd-r1-f5</strong> (goal-driven-reviewer, blocks/concerns) — AC binarity gaps across AC-1 (no order assertion), AC-3 (narrative refusal), AC-8 (false-positive grep), AC-11 (no fixture path), AC-2 (verb-anchor missing).</p>
+        <ul>
+          <li>Revisions applied: AC-1 sort-by-line-number assertion; AC-3 two-part grep (Status: red (failing) + refuse + tddRequired conditional within 30 lines after Green sub-step); AC-8 input-list test (above); AC-11 split into 11a/11b with fixture file path; AC-2 verb-anchor proximity.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>gd-r1-f6</strong> (goal-driven-reviewer, block) — Mandatory eval-coverage. develop and test SKILL.md eval fields didn't exercise the TDD discipline.</p>
+        <ul>
+          <li>Revision applied: Added R13 — both eval fields extended with manifest-stub regex + <code>Status: red (failing)</code> write check. AC-12 verifies the eval extensions.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>devils-advocate-r1-f1</strong> (devils-advocate, block) — D.1/D.2/D.3 numbering collision: existing develop/SKILL.md uses those headings for lane execution (Green/Yellow/Red).</p>
+        <ul>
+          <li>Revision applied: Cycle steps RENAMED to &quot;Red sub-step / Green sub-step / Refactor sub-step&quot; (no D.X numbering). The cycle is internal to a task's execution within whatever lane it landed on. R1/R2/R3 + AC-1 wording uses cycle-step terminology, NOT phase-numbering.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>devils-advocate-r1-f2</strong> (devils-advocate, concern) — 029's chain-don't-absorb pattern not followed; cycle absorbed into develop/SKILL.md instead of doctrine doc.</p>
+        <ul>
+          <li>Revision applied: Created <code>plugins/specflow/templates/admin/tdd-discipline.md</code> (cycle's canonical home). develop/SKILL.md adds three cycle-step citations + one-line invocation contracts; CORE_PRINCIPLES.md gets one-paragraph entry citing doctrine.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>devils-advocate-r1-f3</strong> (devils-advocate, block) — Stub in tasks.md broadcasts to every downstream skill.</p>
+        <ul>
+          <li>Revision applied: Stub moved to admin/scratch/ (same as surgical-r1-f1).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>devils-advocate-r1-f4</strong> (devils-advocate, concern) — Blast radius (CORE_PRINCIPLES.md cache invalidation, schema coupling) under-acknowledged.</p>
+        <ul>
+          <li>Revision applied: Vision now carries an explicit &quot;Blast radius&quot; note enumerating five files + scratch + doctrine + CORE_PRINCIPLES. Lane stays Yellow because: CORE_PRINCIPLES gets one paragraph (not 30 lines); doctrine doc absorbs cycle contract; Red lane bypasses TDD enforcement so PROTECTED_PATHS_REQUIRE_RED_LANE unaffected.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>devils-advocate-r1-f5</strong> (devils-advocate, concern) — R11's hard-block detection had no host.</p>
+        <ul>
+          <li>Revision applied: R11 demoted to documented-discipline + manifest outcome value (same as simplicity-r1-f5).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f1</strong> (codex, concern) — Red lane TDD opt-out (R7) creates protected-path tasks bypassing Red artefact entirely.</p>
+        <ul>
+          <li>Revision applied: R7 extended — when AI assists with testable code in Red lane, EITHER human supplies Red artefact OR manifest records <code>red: skipped (human-led Red lane)</code> with no <code>green: passed</code> marker emitted.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f2</strong> (codex, concern) — 017 pre-claimed canonical schema ownership for 019.</p>
+        <ul>
+          <li>Revision applied: R9 reworded — 017 owns interim stub contract only; 019 owns canonical schema with migration adapter from stub.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>codex-r1-f3</strong> (codex, note) — AC-1 grep order assertion missing. (Same as gd-r1-f1.)</p>
+      </li>
+      <li>
+        <p><strong>codex-r1-f4</strong> (codex, block) — <code>Status: red (failing)</code> is a doc marker, not runner output. Pocock failure mode (test-after-implementation) is not actually prevented.</p>
+        <ul>
+          <li>Revision applied: Added R14 + AC-13 — pre-implementation test command runs against pre-implementation state; failing exit + stderr captured in <code>admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log</code>. Green may flip Status: green (passing) only after same command exits 0. A pre-implementation pass blocks as invalid Red artefact.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>Rejected findings</h4>
+    <ul>
+      <li>
+        <p><strong>simplicity-r1-f1</strong> (simplicity-reviewer, concern) — <code>tddRequired</code> knob speculative configurability.</p>
+        <ul>
+          <li>Reason for rejection: Interview Round 1 explicitly resolved as a configurable knob with default <code>true</code>; user-confirmed at sign-off. TBC-2's separate concern about &quot;strong CI signal&quot; being undefined was addressed by adding the operational definition (R6 extension). The reviewer's Round 3 sharpen (&quot;defer to OQ&quot;) asks the orchestrator to walk back a user-confirmed interview decision; declined.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r1-f3</strong> (simplicity-reviewer, concern) — Three-line manifest schema over-spec.</p>
+        <ul>
+          <li>Reason for rejection: Three lines are user-readable in retro at a glance; per-step ISO timestamp is the audit-grade signal R14 provides. Single-line collapse would push retro readers to a render layer the doctrine doc doesn't currently specify. Reviewer Round 3 maintained the sharpen; surfaced as escalation.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r1-f4</strong> (simplicity-reviewer, note) — Three worked-example fixtures duplicate.</p>
+        <ul>
+          <li>Reason for rejection: Per Goal-Driven Reviewer's coverage-matrix mandate, both <code>skipped (config)</code> and <code>skipped (trivial)</code> outcomes need binary ACs (AC-7a, AC-7b). Reviewer Round 3 conceded conditionally on f1 resolving; if f1 escalates, f4 escalates with it.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>surgical-r1-f2</strong> (surgical-reviewer, concern) — TDD section in CORE_PRINCIPLES.md is adjacent-fix creep.</p>
+        <ul>
+          <li>Reason for rejection: Original user request invoked Pocock framing — <em>&quot;TDD should inherit Matt Pocock's Red, Green approach&quot;</em>. Principle-level adoption is in scope. The verbatim cycle contract was moved to the doctrine doc per the chain-don't-absorb pattern (resolves the cross-file abstraction concern).</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>surgical-r1-f3</strong> (surgical-reviewer, concern) — AC-7a/7b worked examples decorative.</p>
+        <ul>
+          <li>Reason for rejection: Per Goal-Driven Reviewer's gd-r1-f6 finding, both skip outcomes must be exercised — examples ARE the binary check.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>Escalated to human</h4>
+    <ul>
+      <li>
+        <p><strong>simplicity-r3-f1</strong> (simplicity-reviewer, concern) — Defer the <code>tddRequired</code> knob until a concrete second consumer demands it.</p>
+        <ul>
+          <li>Reason: reviewer and writer did not converge in 3 rounds; reviewer wants to walk back the user's interview Round 1 sign-off (&quot;Green lane: configurable via <code>config.json.develop.tddRequired</code> (default <code>true</code>)&quot;). Orchestrator declines to override interview-confirmed decisions in Gate 2.</li>
+          <li>Recommendation: stand on the user's interview sign-off. If the user wants to defer the knob, route through <code>specflow:scope-change</code>, not Gate 2.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r3-f3</strong> (simplicity-reviewer, concern) — Collapse the three-line manifest schema to a single line.</p>
+        <ul>
+          <li>Reason: reviewer argues R14's pre-implementation test trace duplicates the per-step ISO timestamps; orchestrator argues three lines are user-readable in retro at a glance. Schema-readability tradeoff; reviewer and writer did not converge.</li>
+          <li>Recommendation: the user weighs the readability/storage tradeoff. If single-line is preferred, the doctrine doc's R9 section is the natural home for the change.</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>simplicity-r3-f4</strong> (simplicity-reviewer, note) — Drop AC-7b. (Conditional on simplicity-r3-f1.)</p>
+        <ul>
+          <li>Reason: convergent only if the knob escalation resolves toward defer. Surfaced as conditional escalation.</li>
+          <li>Recommendation: defer until simplicity-r3-f1 resolves.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>Closing decision</h4>
+    <p>Gate 2 status: <strong>passed-with-escalations</strong></p>
+    <p>PRD revisions applied across 22 of 28 Round-1 findings + Round-3 absorbed all convergent sharpens via the substantive Round-2 restructure (cycle steps renamed; doctrine doc created; stub moved to scratch; pre-implementation test execution added; eval extensions; protected-path Red artefact requirement; canonical schema ownership clarified). Three rejections (simplicity-r1-f1, simplicity-r1-f2, simplicity-r1-f3) are user-confirmed interview decisions; three Round-3 sharpens (simplicity-r3-f1, f3, f4) did not converge and challenge interview-confirmed decisions or substantive readability tradeoffs.</p>
+    <p>PRD is fit to proceed to <code>specflow:task</code> after the three simplicity-reviewer escalations are resolved by the human (decisions on tddRequired knob retention, three-line schema retention, AC-7b retention). All three are user-product-decisions, not technical defects.</p>
+    <p>— Orchestrator, 2026-05-07</p>
+  </section>
+  <footer>
+    Feature brief · composed from <code>017-tdd-discipline-prd.md</code>, <code>017-tdd-discipline-interview.md</code>, and the gate debate logs. Markdown is the source of truth.
+  </footer>
+</main>
+</div>
+</body>
+</html>

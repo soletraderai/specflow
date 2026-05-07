@@ -1,0 +1,84 @@
+{
+  "reviewer": "goal-driven-reviewer",
+  "principle": "goal-driven-execution",
+  "round": 3,
+  "summary": "Round 2 accepted all six GDR findings and applied substantive revisions that materially raised the binary-verifiability bar. Re-running the binary test on each Round-1 issue: GDR-1 (eval enumeration via R11/AC-15), GDR-2 (AC-4 four selector greps with frozen names), GDR-4 (AC-10 column-counts replace 'visually distinct'), and GDR-5 (AC-1/AC-2 for-loops with negative assertion) are now genuinely binary — a fresh agent can run them in isolation. Three issues remain after applying the binary test to the new ACs: (1) AC-15's enumerate-the-eight regex is fragile — the proposed pattern accepts curly-brace + comma-separated form only and will collapse if the eval prose uses a different separator; (2) AC-11's malformed-attribute sub-assertion ('title slot empty') uses a negative-presence check that can pass for the wrong reason — if the block-title element is absent for any other reason, the assertion still passes; the original GDR-3 pass-text was sharper; (3) AC-13's strip-rule check substring-tests `:::kind` inside the prd-section range, but the prd section in the compiled HTML has had block markers HTML-escaped or wrapped — the literal `:::key-features` may not survive verbatim into the prd section, making the check vacuously true. Also flagging AC-19's source-comment assertion as judgement-laden (the comment-format string is implementation-prescriptive, not contract-binary). Overall posture: the rewrite did not hide judgement; the new ACs are markedly tighter than Round 1, but four sharpenings remain.",
+  "findings": [
+    {
+      "id": "GDR-1",
+      "round_1_severity": "block",
+      "round_3_decision": "accept",
+      "round_3_severity": "resolved",
+      "title": "Skill `eval:` field does not enumerate the four new block kinds",
+      "round_2_revision": "Added R11 + AC-15 requiring eval: field to enumerate eight kinds and assert per-kind selector-presence + per-kind PRD-section-absence.",
+      "rationale": "R11's prose contract is now explicit ('enumerate {flow, comparison, scope, tree, key-features, resources, key-decisions, phase-split} and assert per-kind selector presence under <section id=\"visual-abstract\"> AND per-kind absence under <section id=\"prd\">'). A fresh agent reading R11 knows exactly what eight kinds must appear. The eval-as-binary-contract intent of GDR-1 is satisfied at the requirement level. AC-15's regex implementation has a separate fragility issue — see GDR-7 below — but the requirement is sound."
+    },
+    {
+      "id": "GDR-2",
+      "round_1_severity": "block",
+      "round_3_decision": "accept",
+      "round_3_severity": "resolved",
+      "title": "AC-4 hides judgement inside 'produces the documented HTML shape' parenthetical",
+      "round_2_revision": "AC-4 rewritten as four selector-grep assertions with frozen class names matching R1-R4.",
+      "rationale": "AC-4 now contains four concrete `grep -qE` invocations against `brief.html` with section-id-scoped patterns. Selector names are frozen at R1-R4 and re-asserted in AC-4. A fresh agent runs the four greps; pass/fail is unambiguous. Binary test passes."
+    },
+    {
+      "id": "GDR-3",
+      "round_1_severity": "block",
+      "round_3_decision": "sharpen",
+      "round_3_severity": "concern",
+      "title": "AC-11 malformed-attribute sub-assertion uses absence-of-block-title as a proxy and can pass for the wrong reason",
+      "round_2_revision": "AC-11 split into three sub-assertions: unclosed (exit non-zero + stderr regex), nested ::: (exit 0 + zero `^:::$` lines + exactly one .key-features), malformed attribute (exit 0 + .resources present + no empty block-title element).",
+      "rationale": "Unclosed-block and nested-::: sub-assertions are sharp and pass the binary test. The malformed-attribute sub-assertion (`! grep -qE '<div class=\"block-title\"[^>]*></div>' brief.html`) checks for an EMPTY block-title element — but if the block-title element is omitted entirely (R9's stated behaviour when no title= attribute is present), the negative-grep passes vacuously. A fixture without title= and a fixture with `title=` (no value) produce identical compiled HTML under that assertion, so the AC does not actually verify the malformed-attribute path.",
+      "proposed_binary_verify_step": "Replace the malformed-attribute sub-assertion with a positive+negative pair that distinguishes the two failure modes:\n```sh\n# fixture A: :::resources with NO title attribute → no block-title element at all\n# fixture B: :::resources title= (malformed, no value) → no block-title element at all AND a stderr/source-comment trace\nspecflow:brief NNN-slug-malformed && \\\n  grep -qE '<div class=\"resources\">' brief.html && \\\n  ! grep -qE '<div class=\"block-title\"' brief.html && \\\n  grep -qE '<!-- malformed attribute ignored: title= -->' brief.html\n```\nThe source-comment trace is the binary witness that the malformed attribute was *seen and ignored*, not just absent. Without that witness the AC cannot distinguish 'attribute was malformed and ignored' from 'attribute was never present', and R5's 'malformed attribute ignored, not fatal' is not actually verified."
+    },
+    {
+      "id": "GDR-4",
+      "round_1_severity": "block",
+      "round_3_decision": "accept",
+      "round_3_severity": "resolved",
+      "title": "AC-10 'visually distinct shapes' is not binary",
+      "round_2_revision": "AC-10 replaced with two structural greps + one negative grep (no 'out' column on phase-split) + two column-count assertions (3 for scope, 2 for phase-split).",
+      "rationale": "All five assertions are runnable in isolation by a fresh agent. The 'visually distinct' weasel is gone; the binary witnesses are class-presence + column-count. Binary test passes."
+    },
+    {
+      "id": "GDR-5",
+      "round_1_severity": "concern",
+      "round_3_decision": "accept",
+      "round_3_severity": "resolved",
+      "title": "AC-1 / AC-2 are soft presence claims with no command",
+      "round_2_revision": "AC-1 and AC-2 rewritten as for-loops over the four new kinds with grep assertions on SKILL.md; AC-2 includes a negative assertion (no external <link rel='stylesheet'>).",
+      "rationale": "Both ACs now contain executable shell with frozen kind names and frozen selector names. The 'analogous selector names' weasel from Round 1 is gone (R1-R4 freeze the names; AC-1/AC-2 reference them verbatim). Binary test passes."
+    },
+    {
+      "id": "GDR-6",
+      "round_1_severity": "concern",
+      "round_3_decision": "sharpen",
+      "round_3_severity": "concern",
+      "title": "AC-13 strip-rule check substring-tests inside compiled HTML and can pass vacuously if the marker is HTML-escaped or stripped before reaching the prd section",
+      "round_2_revision": "Added AC-12 (R5 whitespace + source-order), AC-13 (R7 strip rule for all four new kinds), AC-14 (R9 subtitle=). AC-8 hardened with grep regex.",
+      "rationale": "AC-12, AC-14, AC-8 hardening all pass the binary test cleanly. AC-13's check `':::${kind}' not in h[s:e]` is the issue: the strip rule's job is to remove the BLOCK from the prose body, but the literal `:::key-features` source token would not normally appear in the compiled HTML even WITHOUT a strip rule (markdown compilation does not preserve fenced markers verbatim into output unless they are inside `<pre>`/`<code>`). The assertion can pass for the wrong reason — i.e. it passes when the strip rule is broken, because the compiler ate the marker anyway. The Round 1 GDR-6 proposed exactly this Python check; my own proposed step had the same flaw and I should have caught it. The correct binary witness is *content* from inside the block, not the fence marker.",
+      "proposed_binary_verify_step": "Replace AC-13 with a content-leak assertion. Each fixture block contains a marker string in its body that would NEVER legitimately appear in PRD prose:\n```sh\n# Fixture body uses a unique sentinel per block, e.g.:\n#   :::key-features\n#   - kf-sentinel-9f3a | description\n#   :::\n#   :::resources\n#   - rs-sentinel-9f3a | https://example.com\n#   :::\n#   :::key-decisions\n#   - kd-sentinel-9f3a | reason | source\n#   :::\n#   :::phase-split\n#   - ps-sentinel-9f3a (this-phase)\n#   :::\nfor sentinel in kf-sentinel-9f3a rs-sentinel-9f3a kd-sentinel-9f3a ps-sentinel-9f3a; do\n  python3 -c \"import sys; h=open('brief.html').read(); ps=h.find('<section id=\\\"prd\\\">'); pe=h.find('</section>',ps); prd=h[ps:pe]; va=h[h.find('<section id=\\\"visual-abstract\\\">'):h.find('</section>',h.find('<section id=\\\"visual-abstract\\\">'))]; sys.exit(0 if '${sentinel}' in va and '${sentinel}' not in prd else 1)\" || exit 1\ndone\n```\nThe sentinel must appear in the visual-abstract section AND must NOT appear in the prd section. This is the genuine binary witness that the strip rule (a) included the block in the visual-abstract render and (b) removed it from the prd-prose render. A broken strip rule that left the block content in the prd body would fail this check; the existing AC-13 would not catch it."
+    },
+    {
+      "id": "GDR-7",
+      "round_1_severity": "n/a (new)",
+      "round_3_decision": "sharpen",
+      "round_3_severity": "concern",
+      "title": "AC-15 eval-enumeration regex is too brittle to be a binary contract for R11",
+      "round_2_revision": "AC-15: `grep -qE 'eval:.*\\{flow.*comparison.*scope.*tree.*key-features.*resources.*key-decisions.*phase-split\\}' plugins/specflow/skills/brief/SKILL.md`",
+      "rationale": "R11 is a sound requirement; AC-15 is the binary witness that R11 holds, but the regex assumes the eval prose uses a `{kind1, kind2, ...}` curly-brace listing format. The eval: field is YAML frontmatter prose, not a fixed-format token. If the implementer writes `eval: every block kind (flow / comparison / scope / tree / key-features / resources / key-decisions / phase-split) renders deterministically...` — which would satisfy R11 perfectly — AC-15 fails. The AC is testing prose surface, not the contract.",
+      "proposed_binary_verify_step": "Replace AC-15 with a presence-check loop that does not constrain the punctuation, plus the per-kind selector-presence and per-kind PRD-section-absence assertions that R11 actually mandates:\n```sh\n# (a) every kind name appears in the eval: line\nawk '/^eval:/{flag=1; print; next} flag && /^[a-z_]+:/{flag=0} flag' plugins/specflow/skills/brief/SKILL.md > /tmp/eval-block.txt\nfor kind in flow comparison scope tree key-features resources key-decisions phase-split; do\n  grep -qE \"\\\\b${kind}\\\\b\" /tmp/eval-block.txt || exit 1\ndone\n# (b) eval references the visual-abstract section AND the prd-section absence rule\ngrep -qE 'visual-abstract' /tmp/eval-block.txt\ngrep -qE 'prd' /tmp/eval-block.txt\n```\nThis lets the implementer write the eval in natural prose while still binding R11's two contractual obligations: enumerate the eight kinds AND state the per-kind dual-section assertion."
+    },
+    {
+      "id": "GDR-8",
+      "round_1_severity": "n/a (new)",
+      "round_3_decision": "sharpen",
+      "round_3_severity": "concern",
+      "title": "AC-19's source-comment format is implementation-prescriptive, not contract-binary",
+      "round_2_revision": "AC-19 added: valid override produces <img src=...override...>; malformed override falls back AND the compiled HTML carries `<!-- icon override fallback: ... -->` comment.",
+      "rationale": "The valid-override branch is binary-clean. The malformed-override branch asserts a specific HTML-comment string `<!-- icon override fallback: .* -->`. R13 says 'fallback is recorded in the compiled HTML's source comment so a reviewer can audit which icons used the override path' — but neither R13 nor AC-19 explains what the comment must contain. A fresh agent cannot tell whether `<!-- fallback used -->` or `<!-- icon override fallback for resource[2]: malformed data URI -->` is the contract. The grep accepts either, so the AC is technically binary, but the contract surface is under-specified — two compliant implementations can produce mutually-incompatible comment text and a future regression test cannot pin one shape.",
+      "proposed_binary_verify_step": "Pin the comment shape to a contract: each fallback comment MUST contain the resource title (or 1-indexed position) AND the literal phrase 'fallback':\n```sh\n# malformed override fixture: :::resources with one entry whose icon= is http(s)\n# resource title 'Linear board' on the malformed line\ngrep -qE '<!--[^-]*Linear board[^-]*fallback[^-]*-->' brief.html\n# OR by position if title not present:\ngrep -qE '<!--[^-]*resource\\[[0-9]+\\][^-]*fallback[^-]*-->' brief.html\n```\nAlternative: drop the comment requirement from R13 and replace with a `data-icon-fallback=\"true\"` attribute on the offending `<a class=\"resource-card\">`. Attribute is greppable with a single fixed pattern; comment text is prose. A `data-` attribute is the more conventional HTML-binary witness and avoids the comment-format under-specification."
+    }
+  ]
+}

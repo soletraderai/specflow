@@ -101,6 +101,17 @@ For each task in a feature, `specflow:develop` orchestrates:
 
 A 10-task feature should run end-to-end in ≤30K parent-context tokens. Without this pattern it would run at ≥150K and start hitting context limits mid-feature.
 
+## Reviewer fresh-context dispatch (per 027-reviewer-context-isolation v2.6.0)
+
+When the orchestrator dispatches reviewers in a multi-agent debate gate (Gate 2 / Gate 3 / Gate 4 / Gate 5):
+
+- **Each reviewer invocation is a fresh subagent spawn.** No carryover of conversation state from the writer's context.
+- **Input is explicit, file-listed, never inferred.** Pass ONLY the artefact under review + its declared dependencies (interview, prior gate manifest, role-definition file). NEVER the writer's chat or scratchpad.
+- **`writer_id` and `reviewer_ids` differ pairwise.** The gate manifest carries an `agent_id` per slot; pairwise non-equality is verified at gate close. Any collision is a `FRESH-CONTEXT-VIOLATION` and aborts the gate.
+- **Reviewer role-defs forbid consulting the writer's chat.** Each principle reviewer's role file under `admin/agents/standard/principles/` carries the line *"You read only: [the artefact under review] and [the declared inputs]."*
+
+Full contract in `templates/admin/reviewer-isolation.md`.
+
 ## Skill author checklist
 
 Before shipping a skill that orchestrates others:
@@ -110,6 +121,7 @@ Before shipping a skill that orchestrates others:
 - [ ] Sub-skills return distilled results (one path or one structured summary), not raw payloads.
 - [ ] Scratch directory is named per orchestration (`admin/scratch/{orchestration-id}/`), cleaned up on success.
 - [ ] `/specflow:budget` shows the parent context staying under 15K after 3 sub-skill steps.
+- [ ] Every reviewer dispatch in a multi-agent gate honours the fresh-context contract (per `templates/admin/reviewer-isolation.md`).
 
 ## Reference
 

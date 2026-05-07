@@ -341,6 +341,17 @@ Then write `docs/specflow/admin/config.json`:
   "brief": {
     "commitPolicy": "committed"
   },
+  "task": {
+    "contextBudget": 80000,
+    "maxLessonsSurfaced": 5
+  },
+  "prd": {
+    "maxLessonsSurfaced": 5
+  },
+  "develop": {
+    "maxIssuesPerSprint": 5,
+    "tddRequired": true
+  },
   "skills": {
     "prd":          { "enabled": true },
     "task":         { "enabled": true },
@@ -355,7 +366,8 @@ Then write `docs/specflow/admin/config.json`:
     "agent":        { "enabled": true },
     "insights":     { "enabled": true },
     "prune":        { "enabled": true },
-    "optimize":     { "enabled": true }
+    "optimize":     { "enabled": true },
+    "sprint":       { "enabled": true }
   },
   "teams": {}
 }
@@ -364,6 +376,8 @@ Then write `docs/specflow/admin/config.json`:
 `confidentialPaths` is the rule-based confidentiality globs that drive Red-lane assignment in `specflow:develop`. Seed empty; populate when the user knows what their auth/secrets/billing/schema surfaces are.
 
 `brief.commitPolicy` ∈ `committed | derived`. Default `committed`. The choice is read by `specflow:brief` to emit a one-line policy banner in the rendered HTML and to drive the `.gitignore` write at setup time. Resolution citation: `v2/docs/PRD.md` § Resolved decisions — 011-brief-commit-policy v2.4.0.
+
+`task.contextBudget` is the per-task token ceiling for the single-context-window rule (per 029-single-context-task v2.5.0). Default `80000` — sits inside the smart zone with headroom for tool-call output. Tasks whose `context-budget-estimate` exceeds this value auto-flag at synthesis (`specflow:task` Phase B.4) and route to `specflow:scope-change` for splitting. Lower the value on token-sensitive providers; raise it cautiously and only after empirical evidence the smart zone is wider than 80K on your stack. Estimation algorithm and no-mid-task-compaction contract live in `templates/admin/single-context-task.md`.
 
 `skills.{name}.enabled` toggles individual skills on/off at the project level. Default `true` for every shipped skill. Each skill checks its toggle in its Phase A pre-flight and refuses with a one-line message when disabled (e.g. *"`specflow:develop` is disabled in this project (config.skills.develop.enabled = false). Re-enable in admin/config.json or invoke a different skill."*). The resolver contract is documented in `templates/admin/skill-toggles.md`. Setup leaves all skills enabled by default; users disable selectively (for example, an org that uses GitHub Copilot for implementation might disable `specflow:develop` but keep `specflow:prd` + `specflow:task` + `specflow:test`). Resolution citation: `v2/docs/PRD.md` § Resolved decisions — 012-config-skill-toggles v2.4.0.
 

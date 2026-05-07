@@ -9,7 +9,7 @@ requires:
   - docs/specflow/admin/config.json (optional; reads brief.commitPolicy)
 produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html
-eval: features/NNN-{slug}/{NNN-slug}-brief.html exists; a second compose from unchanged sources is byte-identical; sidebar TOC links resolve; every structured visual block in the PRD renders deterministically into the Visual abstract section; rendered HTML carries a one-line policy banner reflecting config.brief.commitPolicy (011-brief-commit-policy v2.4.0).
+eval: features/NNN-{slug}/{NNN-slug}-brief.html exists; a second compose from unchanged sources is byte-identical; sidebar TOC links resolve; every structured visual block in the PRD renders deterministically into the Visual abstract section; rendered HTML carries a one-line policy banner reflecting config.brief.commitPolicy (011-brief-commit-policy v2.4.0); for the eight block kinds {flow, comparison, scope, tree, key-features, resources, key-decisions, phase-split} each kind's selector renders inside <section id="visual-abstract"> and the literal `:::{kind}` marker does not appear inside <section id="prd"> (016-brief-enhancements v2.5.0).
 ---
 
 # specflow:brief
@@ -25,7 +25,7 @@ features/NNN-{slug}/debate-log/tasks-gate3/manifest.md (optional, summarised in 
 features/NNN-{slug}/NNN-{slug}-brief.html
 ```
 
-Markdown is the source of truth. The brief is a derived artefact — it composes the existing files into one browser-readable view; it never rewords or paraphrases the source content. PRD prose appears verbatim. Interview Q&A appears verbatim. The only interpretive step is compiling structured visual blocks (`:::flow`, `:::comparison`, `:::scope`, `:::tree`) into HTML/CSS visuals — and that compilation is deterministic per the rules below.
+Markdown is the source of truth. The brief is a derived artefact — it composes the existing files into one browser-readable view; it never rewords or paraphrases the source content. PRD prose appears verbatim. Interview Q&A appears verbatim. The only interpretive step is compiling structured visual blocks (`:::flow`, `:::comparison`, `:::scope`, `:::tree`, `:::key-features`, `:::resources`, `:::key-decisions`, `:::phase-split`) into HTML/CSS visuals — and that compilation is deterministic per the rules below.
 
 No build step, package install, network call, script tag, or external asset is allowed. Compose directly in the current runtime and write the final HTML file to disk.
 
@@ -65,7 +65,7 @@ The output must be byte-identical for unchanged inputs.
    - Derive `{status}` and `{type}` from PRD frontmatter if present (`status:`, `type:`); else omit those fields from the source strip.
 
 3. Extract structured visual blocks.
-   - Scan the PRD body for fenced blocks delimited by `:::{kind}` … `:::` where `{kind}` is one of `flow | comparison | scope | tree`.
+   - Scan the PRD body for fenced blocks delimited by `:::{kind}` … `:::` where `{kind}` is one of `flow | comparison | scope | tree | key-features | resources | key-decisions | phase-split`.
    - Each block keeps its position in the source. Compile each block to its HTML form per "Visual block grammar" below.
    - Record the compiled visual blocks in source order. They populate the **Visual abstract** section at the top of the brief.
    - Strip the same blocks from the PRD body content before rendering it as prose. (They appear in the Visual abstract; not duplicated in the PRD body.)
@@ -121,7 +121,7 @@ The output must be byte-identical for unchanged inputs.
 
 ## Visual Block Grammar
 
-Four block kinds. Each opens with `:::{kind}` (optionally followed by space-separated `key="value"` attributes), holds a structured body, and closes with `:::`. Lines outside these blocks are normal markdown.
+Eight block kinds. Each opens with `:::{kind}` (optionally followed by space-separated `key="value"` attributes), holds a structured body, and closes with `:::`. Lines outside these blocks are normal markdown. Block titles render as `<div class="block-title">` (NOT `<h2>`/`<h3>`) so they do not enter the sidebar TOC.
 
 ### `:::flow`
 
@@ -209,11 +209,78 @@ Capability or decision tree across N stages. Each stage is one `## {question}` b
 
 Compiles to a horizontal three-column decision tree (`cap-tree` / `cap-q`). `→ next` advances to the next column; terminal branches show their outcome inline.
 
+### `:::key-features`
+
+Non-technical feature overview. One feature per `- {title} | {description}` line. Lives at the top of the Visual abstract.
+
+```
+:::key-features title="Key features"
+- Live 2D preview | High-fidelity floor-plan render during scan.
+- Per-room USDZ | Download segmented rooms as USDZ files.
+- Append re-walk | Add a missed room without restarting.
+:::
+```
+
+Compiles to `<div class="key-features">` containing one `<article class="feature-card">` per line (title + one-line description; no meta tail). Optional `subtitle="..."` renders as `<div class="block-subtitle">`.
+
+### `:::resources`
+
+Link cards with source-type pill icons. One resource per `- {title} | {url}` line; optional ` | source="{linear|doc|design|github}"` to override hostname-based detection; optional ` | icon="data:image/(svg+xml|png);base64,..."` for explicit override.
+
+```
+:::resources title="Resources"
+- Linear ENG-123 | https://linear.app/team/issue/ENG-123
+- Design v2 | https://figma.com/file/abc | source="design"
+- README | ./docs/STRUCTURE.md | source="doc"
+:::
+```
+
+Compiles to `<div class="resources">` containing one `<a class="resource-card">` per line (icon + title + source-type pill). Built-in inline SVG-base64 icons ship for `linear | doc | design | github`. Malformed `icon=` overrides (non-base64, http(s), other MIME types) fall back to the source-type default; the compiled HTML carries an `<!-- icon override fallback: ... -->` comment recording the fallback.
+
+### `:::key-decisions`
+
+Decision table exposing the synthesis trace. One decision per `- {decision} | {why} | {source}` line. Compiles to `<table class="key-decisions">` with three `<th>` columns in fixed order: Decision | Why | Source.
+
+```
+:::key-decisions title="Key decisions"
+- Linear over Jira | Better MCP integration. | Round 2
+- No JS in brief | Self-contained byte-determinism. | Round 3
+- 80K context budget | Inside Pocock smart-zone. | Decision-log 2026-04-22
+:::
+```
+
+Source column accepts plain text or an explicit markdown link the author wrote; the brief skill does not auto-resolve to `decision-log.md`.
+
+### `:::phase-split`
+
+Two-column iteration boundary inside a single version: `this:` (shipping now) on the left; `next:` (parked / next iteration) on the right. Each column is a flat list, one item per line.
+
+```
+:::phase-split title="Iteration boundary"
+this:
+- Live 2D preview
+- Per-room USDZ
+next:
+- Mid-scan crash recovery
+- Multi-floor support
+:::
+```
+
+Compiles to `<div class="phase-split">` containing `<div class="phase-col this-phase">` + `<div class="phase-col next-phase">`. Visually distinct from `:::scope`'s three-column shape — `:::phase-split` shows the iteration boundary inside a single version, `:::scope` shows the whole-feature scope.
+
+### Resource icon set (`:::resources`)
+
+Built-in monochrome SVG-base64 icons ship in this skill body for `linear | doc | design | github`. Each icon is an author-drawn glyph in the brand silhouette (NOT the official trademark). Hostname-based detection picks the icon by URL (`linear.app` → linear; `figma.com` / `*.sketch` → design; `github.com` → github; everything else → doc); `source="..."` overrides hostname detection; `icon="data:image/(svg+xml|png);base64,..."` overrides both. Slack is NOT in the icon set (decision-log 2026-03-22 *Slack removed from the stack*; CONTEXT.md confirms Slack-free tooling).
+
+The four built-in icons are 24×24 monochrome SVGs encoded as base64. Authors add new built-ins by emitting one inline SVG-base64 glyph per source-type into the brief skill itself; new built-ins must be ≤200 bytes encoded to keep the file self-contained per § Determinism.
+
 ### Strict rules
 
-- Block kinds outside the four above are rendered as plain `<pre>` with a `Unsupported visual block` warning above. They are never silently dropped.
+- Block kinds outside the eight above are rendered as plain `<pre>` with a `Unsupported visual block` warning above. They are never silently dropped.
 - An unclosed block (missing trailing `:::`) is a fatal error — abort compose with a clear file:line message.
 - Whitespace inside blocks is preserved as authored; the compiled HTML normalises only the surrounding indentation.
+- The four new blocks support the same `title="..."` / `subtitle="..."` attribute pattern as `:::flow`. Block titles render as `<div class="block-title">` styled as a heading but NOT as `<h2>`/`<h3>` — they do not enter the sidebar TOC.
+- The eight kinds enumerated above are the supported set. Step 3's strip rule applies to all eight — blocks appear inside the Visual abstract and never duplicate inside the PRD body.
 
 ## Markdown Conversion Rules
 
@@ -388,8 +455,45 @@ When a drift banner is required, insert the drift banner block (defined below) a
   .pill.status { background: #e5efe2; color: #3a6a2a; }
   .pill.type { background: #f0ece0; color: #5a5040; }
 
+  /* Block titles (non-heading, non-TOC) */
+  .block-title { font-size: 16px; font-weight: 700; color: #1a2632; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .block-subtitle { font-size: 13px; color: #5a6878; margin: 0 0 14px; font-style: italic; }
+
+  /* Visual abstract — :::key-features */
+  .key-features { display: grid; grid-template-columns: repeat(var(--n,3), 1fr); gap: 14px; margin: 0 0 36px; }
+  .feature-card { background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; padding: 16px 18px; border-top: 3px solid #5a8db8; }
+  .feature-card .feature-title { font-size: 16px; font-weight: 700; color: #1a2632; margin: 0 0 6px; }
+  .feature-card .feature-desc { font-size: 13px; color: #4a5868; margin: 0; line-height: 1.5; }
+
+  /* Visual abstract — :::resources */
+  .resources { display: grid; grid-template-columns: repeat(var(--n,3), 1fr); gap: 12px; margin: 0 0 36px; }
+  .resource-card { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; padding: 12px 14px; text-decoration: none; color: #1a2632; }
+  .resource-card img { width: 24px; height: 24px; flex: 0 0 24px; border: none; background: transparent; border-radius: 0; }
+  .resource-card .resource-title { font-size: 14px; font-weight: 600; flex: 1; }
+  .resource-card .resource-pill { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: #f0ece0; color: #5a5040; padding: 2px 7px; border-radius: 3px; }
+
+  /* Visual abstract — :::key-decisions */
+  table.key-decisions { width: 100%; margin: 0 0 36px; border-collapse: collapse; font-size: 14px; background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; overflow: hidden; }
+  table.key-decisions th { background: #f0ece0; color: #1a2632; font-weight: 700; text-align: left; padding: 10px 14px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  table.key-decisions td { padding: 12px 14px; border-top: 1px solid #ece6d8; vertical-align: top; color: #3a4858; }
+  table.key-decisions td:first-child { font-weight: 600; color: #1a2632; }
+
+  /* Visual abstract — :::phase-split */
+  .phase-split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 0 0 36px; }
+  .phase-col { background: #fff; border: 1px solid #d8d4c4; border-radius: 8px; padding: 16px 18px; }
+  .phase-col.this-phase { border-top: 3px solid #6a9a5a; }
+  .phase-col.next-phase { border-top: 3px solid #c8965a; }
+  .phase-col h4 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .phase-col.this-phase h4 { color: #3a6a2a; }
+  .phase-col.next-phase h4 { color: #8a5a1a; }
+  .phase-col ul { padding: 0; margin: 0; list-style: none; }
+  .phase-col li { font-size: 13px; color: #3a4858; padding: 5px 0 5px 18px; position: relative; line-height: 1.4; }
+  .phase-col li::before { position: absolute; left: 0; top: 5px; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; }
+  .phase-col.this-phase li::before { content: "+"; color: #6a9a5a; }
+  .phase-col.next-phase li::before { content: "›"; color: #c8965a; }
+
   @media (max-width: 1100px) {
-    .modes-row, .scope, .cap-tree, .journey { grid-template-columns: 1fr; }
+    .modes-row, .scope, .cap-tree, .journey, .key-features, .resources, .phase-split { grid-template-columns: 1fr; }
     .cap-q { border-right: none; border-bottom: 1px dashed #c8c2b4; }
     .cap-q:last-child { border-bottom: none; }
     .stage { border-right: none; border-bottom: 1px solid #ece6d8; }
@@ -400,6 +504,7 @@ When a drift banner is required, insert the drift banner block (defined below) a
     nav.toc { position: relative; height: auto; max-height: none; padding: 24px; }
     main { max-width: none; padding: 36px 24px 72px; }
     header.intro h1 { font-size: 34px; }
+    .key-features, .resources, .phase-split { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -510,7 +615,7 @@ find features -path 'features/[0-9][0-9][0-9]-*/[0-9][0-9][0-9]-*-brief.html' -p
 ## What you MUST NOT do
 
 - **Do not paraphrase or summarise the PRD body, interview, or manifest content.** Faithful render only. The only interpretive step is compiling the four structured visual block kinds.
-- **Do not invent visual block kinds.** Only `flow`, `comparison`, `scope`, `tree` are supported. Other `:::xxx` blocks render as a `<pre>` with a "Unsupported visual block" warning.
+- **Do not invent visual block kinds.** Only `flow`, `comparison`, `scope`, `tree`, `key-features`, `resources`, `key-decisions`, `phase-split` are supported. Other `:::xxx` blocks render as a `<pre>` with a "Unsupported visual block" warning.
 - **Do not pull in external assets.** No CDN, no script tags, no external CSS. Self-contained file only.
 - **Do not run a build step or install packages.** Compose markdown to HTML in the current runtime.
 - **Do not modify the source markdown.** Brief is read-only on its inputs.

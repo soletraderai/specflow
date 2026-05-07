@@ -1,0 +1,55 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "017-tdd-discipline",
+  "findings": [
+    {
+      "id": "simplicity-r1-f1",
+      "round_2_decision": "push_back",
+      "round_3_decision": "sharpen",
+      "severity": "concern",
+      "evidence": "Round 2 cited interview Round 1 as user-confirmed resolution of `tddRequired`. Re-reading the revised PRD: R6 still introduces a config knob whose ONLY justification is a hypothetical 'project with strong CI signal and binary-AC-heavy task lists.' The dogfood project (this repo, the PRD's only concrete consumer) defaults to `true` and has no demonstrated demand for `false`. The interview cite confirms the *user said the words* but does not constitute a concrete second consumer. Simplicity First says: 'Do not introduce config knobs without a concrete second consumer demanding them.' The interview is the *first* consumer asking for the knob; there is no second project on file demanding the opt-out. Furthermore, R6 grew in Round 2 with the operational definition of 'strong CI signal' (three sub-clauses: PR vitest+typecheck+lint required, merge-blocked on red, binary-AC convention) plus operator self-attestation plus manifest attestation recording — the surface inflated rather than contracted. AC-5 (config doc), AC-7b (worked fixture for Green skip), AC-3's `tddRequired` conditional clause, and the `skipped (config)` outcome value in R9's enum all exist solely to feed this still-speculative knob.",
+      "claim": "The push-back conflates 'user mentioned it in interview' with 'concrete second consumer.' The interview cite is the demand for the knob; it is not a separate consumer validating the demand. Simplicity First explicitly anticipates this case: a user can ask for configurability speculatively, and the principle says wait for a second project to prove the need. Round 2's response to TBC-2 (operationalising 'strong CI signal') made the knob *more* expensive, not cheaper — three preconditions plus self-attestation plus manifest recording. The escape hatch is now load-bearing in five places (R6, R9 enum, AC-3 conditional, AC-5, AC-7b) and the only consumer of the `false` branch is hypothetical.",
+      "proposed_change": "SHARPEN: Defer the knob. Replace R6 with a one-sentence statement in R5: 'Green-lane tasks inherit Yellow's tests-first contract — the Red artefact is mandatory across both batched lanes.' Drop AC-5, AC-7b, AC-3's conditional clause, and the `skipped (config)` enum value in R9. Add an Open Question: 'OQ-2: Green-lane TDD opt-out — re-evaluate at Phase 3 retro. If a project ships with strong CI signal and demonstrates the opt-out demand, R6 lands then with the demand cited.' If the user pushes back a third time, accept and move on — but the simplicity-first record should reflect that this knob ships speculatively."
+    },
+    {
+      "id": "simplicity-r1-f2",
+      "round_2_decision": "push_back_partial",
+      "round_3_decision": "accept",
+      "severity": "concern",
+      "evidence": "Round 2 created `templates/admin/tdd-discipline.md` (mirror of 029's `single-context-task.md`), demoted CORE_PRINCIPLES.md to a one-paragraph (≤8 lines) entry citing the doctrine, and demoted develop/SKILL.md to one-line citations per cycle reference. AC-9 caps the CORE_PRINCIPLES entry at 10 lines. The chain-don't-absorb pattern is honoured. The original concern (cross-file abstraction inflating CORE_PRINCIPLES) is materially addressed — one paragraph is the right size for a rule-of-rules entry, and the doctrine doc is the canonical home for the cycle contract.",
+      "claim": "Round 2's revision applied the proposed_change in spirit: doctrine doc absorbs the cycle contract, CORE_PRINCIPLES gets a citation-paragraph, develop/SKILL.md gets one-line citations. Skill-size ceiling is respected. Acceptable.",
+      "proposed_change": "Accept Round 2's resolution. Note for the record: CORE_PRINCIPLES.md is loaded into every skill prompt (per DA-4), so even one paragraph carries cache-invalidation cost — but a one-paragraph principle entry is the proportionate price for a genuinely cross-cutting discipline, and the doctrine doc keeps the operational details out of the prompt cache."
+    },
+    {
+      "id": "simplicity-r1-f3",
+      "round_2_decision": "push_back",
+      "round_3_decision": "sharpen",
+      "severity": "concern",
+      "evidence": "Round 2 kept the three-line schema citing 'readability for retro consumers' and 'each line carries timing for one cycle step.' Re-reading the revised PRD: R9 still specifies three separate lines, each with `{outcome} ({YYYY-MM-DDTHH:MM:SSZ}) — {one-line note}`. R14 (added in Round 2) introduces a SECOND timestamp source: `red-test-trace-{task-id}.log` carries the actual exit code + stderr from the pre-implementation test run. The .log is the audit-grade timing signal; the manifest stub's three ISO-8601 timestamps duplicate it less precisely. Furthermore, codex-r1-f2 (accepted in Round 2) demoted 017's ownership to *interim stub schema* and handed canonical-schema ownership to 019 with a migration adapter — meaning the three-line shape is no longer load-bearing for 019 (019 may transform into its own format). The schema-coordination cost did NOT stay 'the same either way' as the push-back claimed; codex-r1-f2's resolution made the stub explicitly throwaway, which weakens the readability argument for three lines.",
+      "claim": "With R14 carrying the precise timing trace and codex-r1-f2 making the stub a throwaway interim, three timestamped lines per task is over-spec for a one-reader retro audit. The readability claim is real but cheap to honour with a single line. The three-line shape persists from a Round 1 design where the manifest was the canonical home; Round 2 changed that and the schema didn't get re-simplified.",
+      "proposed_change": "SHARPEN: Collapse R9's three-line shape to a single line per task: `tdd: {red-outcome}/{green-outcome}/{refactor-outcome} ({YYYY-MM-DDTHH:MM:SSZ}) — {one-line cycle note}`. The single ISO timestamp is the task-completion timestamp. The per-step timing detail lives in `red-test-trace-{task-id}.log` (R14) where it actually matters. Update AC-7a, AC-7b accordingly; AC-12 regex collapses to one line. If readability genuinely degrades for retro consumers, add a multi-line *rendering* convention in the doctrine doc (Markdown bullets) without changing the storage schema. If the user pushes back again, accept — but record that the three-line shape is paying for readability we could get for free with a render layer."
+    },
+    {
+      "id": "simplicity-r1-f4",
+      "round_2_decision": "push_back",
+      "round_3_decision": "sharpen",
+      "severity": "note",
+      "evidence": "Round 2 cited Goal-Driven Reviewer's coverage-matrix mandate (gd-r1-f6) to justify keeping AC-7a (Yellow happy path) AND AC-7b (Green skip outcomes). Re-reading: AC-7a, AC-7b, AC-7c, AC-11b are now FOUR fixture files at `plugins/specflow/examples/docs/specflow/features/017-tdd-discipline/fixtures/`. AC-7c is technically a doctrine-doc grep + tasks.md absence grep (no fixture file), so three fixture files. If simplicity-r1-f1 lands as proposed (drop the knob), AC-7b's `skipped (config)` half disappears — leaving only the `skipped (trivial)` half (R4), which is one outcome value, exercisable in a comment line on AC-7a's fixture rather than a separate fixture. The four worked-example proliferation is downstream of the knob's surface, not an independent design choice.",
+      "claim": "AC-7b's coverage-mandate justification is conditional on the knob existing. If simplicity-r1-f1 sharpens (knob deferred), AC-7b collapses naturally — `skipped (trivial)` becomes a one-line variant inside AC-7a's fixture. If the knob stays, AC-7b stays. This finding is now downstream of f1's resolution.",
+      "proposed_change": "SHARPEN (conditional on f1): If the knob is deferred per f1, fold `skipped (trivial)` coverage into AC-7a's fixture as a comment-annotated variant line (`# alternate refactor outcome for trivial-task variant: refactor: skipped (trivial) (...)`). Drop AC-7b. If the knob stays, accept Round 2's resolution — both fixtures are warranted by the coverage matrix."
+    },
+    {
+      "id": "simplicity-r1-f5",
+      "round_2_decision": "accept",
+      "round_3_decision": "accept",
+      "severity": "note",
+      "evidence": "Round 2 demoted R11 to documented-prose-only with a manifest outcome value `refactor: failed (new-file-attempted)` recorded post-hoc. AC-11 split into AC-11a (doctrine-doc halt-message grep) + AC-11b (worked fixture). No runtime file-set diff detection in D.3. The proposed_change landed substantively.",
+      "claim": "Round 2's resolution matches the proposed_change. The cycle bound is preserved as discipline + retro audit signal; no bespoke detection logic was added to D.3. Acceptable.",
+      "proposed_change": "Accept Round 2's resolution. R11 is now correctly sized — discipline-level statement plus post-hoc manifest outcome value, no runtime detection surface."
+    }
+  ],
+  "summary": "Round 3 stance: 2 accepts (f2, f5), 3 sharpens (f1, f3, f4). f2 and f5 landed substantively in Round 2 — doctrine doc absorbs cycle contract, R11 demoted to documented discipline. f1 stands: `tddRequired` knob is still speculative configurability with no concrete second consumer; the interview cite is the demand, not a separate validator; Round 2's TBC-2 resolution inflated the knob's surface (operational preconditions + self-attestation + manifest attestation) rather than contracting it. f3 stands: with R14's `.log` carrying the precise timing trace and codex-r1-f2 making the stub explicitly throwaway, three timestamped lines per task is over-spec — collapse to one line and render multi-line if needed. f4 is conditional on f1: knob-driven AC-7b proliferation collapses if f1 sharpens. Simplicity First applied: defer config knobs without concrete second consumers; collapse schemas whose load-bearing role was reduced by other findings."
+}

@@ -1,0 +1,45 @@
+{
+  "reviewer": "simplicity-reviewer",
+  "principle": "simplicity-first",
+  "round": 3,
+  "gate": "prd-gate2",
+  "feature": "025-sprint-task-flagging",
+  "findings": {
+    "simplicity-r1-f1": {
+      "round_2_decision": "accept",
+      "round_3_verdict": "accept",
+      "verification": "Confirmed in revised PRD. R10 (lines 106-108) is now documentation-only: 'task/SKILL.md does NOT recompute-and-compare on every synthesis run. AC-11 verifies the documentation does not advertise hand-edit affordances; runtime enforcement is out of scope (Non-goals).' AC-12 (line 225) is explicitly Reserved with attribution to simplicity-r1-f1 / SURG-r1-f1 / DA-r1-f1. Non-goals section (line 38) calls hand-edit detection out by name. The defensive recompute-and-compare plumbing is gone; the documentation-level read-only contract remains via R10 + AC-11. Phase D verify-step list collapses correspondingly (R3 now points to Phase B.4, the actual home).",
+      "residual_concern": "none",
+      "follow_up": "none — finding fully landed."
+    },
+    "simplicity-r1-f2": {
+      "round_2_decision": "accept",
+      "round_3_verdict": "accept",
+      "verification": "R2 (lines 54-72) is now a single-rule fixpoint: 'bucket(T) = 1 if T has no predecessors AND no same-bucket scope conflicts with an earlier-ID task; = 1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T)) otherwise.' The 'topological floor' / 'scope-overlap split' two-overlay framing is gone. The previous 'overlay pass 1, then pass 2' mental model is replaced by an explicit recursive definition + a documented bump-iteration discipline (lines 64-66) that reaches a fixed point. Phase B.4 carries one-line citations only; the heuristic itself lives in templates/task/sprint-bucket-heuristic.md per R8 / DA-r1-f5.",
+      "residual_concern": "minor — the bump-iteration discipline (R2 line 66) re-introduces a 'walk same-bucket pairs in order, repeat until zero bumps' procedure that is operationally a multi-pass algorithm, even though the rule itself is single-rule. This is acceptable: it's the implementation contract for reaching the fixpoint and is necessary for AC-9 reproducibility (TBC-r1-f5). Not a Simplicity-First violation — it's the minimum specification for determinism.",
+      "follow_up": "none — finding fully landed; the iteration-discipline addition is independently motivated by TBC-r1-f5 (termination + determinism) and does not undo the simplification."
+    },
+    "simplicity-r1-f3": {
+      "round_2_decision": "accept",
+      "round_3_verdict": "accept",
+      "verification": "R9 is now Reserved (line 104) with attribution to simplicity-r1-f3 / SURG-r1-f3. The topological-floor property is folded into R2 as a one-line corollary (lines 67-68): 'for every T_j ∈ Depends-on(T_i), bucket(T_j) < bucket(T_i) — strictly less-than (per codex-r1-f5). The heuristic does NOT need a separate runtime invariant check.' AC-4 is correspondingly Reserved (line 152). The runtime invariant check is gone; the property still gets a binary contract via R12 / AC-15 (eval-coverage), which is the right shape — it lives in the eval, not as a duplicated verify-step.",
+      "residual_concern": "none — R12 / AC-15 is not a re-introduction of R9. R12 is the eval-coverage contract that GD-r1-f1 demanded independently; without it, AC-1 through AC-15 could pass on a tasks file that omits the field entirely. The previous R9 was a per-synthesis-run runtime check; R12 is the eval-extension that turns the property into a binary AC. Different mechanism, different motivation.",
+      "follow_up": "none — finding fully landed."
+    },
+    "simplicity-r1-f4": {
+      "round_2_decision": "accept",
+      "round_3_verdict": "accept",
+      "verification": "R7 (lines 92-94) is now a behavioural property: 'Bucket assignment runs after per-task budget enforcement (029 R4). Property statement: tasks whose context-budget-estimate exceeds the configured budget are split per 029 R4 before bucketing operates. The heuristic doc states this explicitly; no verbatim phase-listing requirement.' AC-13 (lines 227-233) splits into (a) doc-property check via grep on the heuristic doc + (b) execution-order fixture (oversize-task abort before any sprint-bucket: N is written). The 'verbatim listed in that order' prescription is gone. Per goal-driven-r1-f3, the execution fixture closes the doc-only verification gap.",
+      "residual_concern": "none — the execution fixture from goal-driven-r1-f3 is independently motivated (binary execution check, not just doc presence) and does not undo the simplification of dropping the verbatim-listing AC.",
+      "follow_up": "none — finding fully landed."
+    },
+    "simplicity-r1-f5": {
+      "round_2_decision": "accept",
+      "round_3_verdict": "accept",
+      "verification": "R2 now defines a 'Canonical task ID grammar' (line 56: T-<int>(\\.<letter>)?) and a 'Typed comparator' (line 58: comparator on (int, optional-letter), with explicit examples T-2 < T-10 and T-3.A < T-3.B). The lexicographic-vs-natural-number disambiguation parenthetical is replaced by a typed comparator over the actual ID grammar. AC-9 (lines 184-200) implements the comparator via python3 regex and a sort key returning (int, optional-letter) — matching R2's spec exactly. AC-3 (lines 142-149) includes a worked example demonstrating T-2 < T-10 specifically to prevent string-lex regression. The footgun (a future implementer writing string sort and being technically conformant) is closed — there is no 'lexicographic' phrasing left to misread.",
+      "residual_concern": "none — TBC-r1-f2's task-ID grammar fix (T-<int> not T<int>, and .A/.B suffix from 029 split flow) is properly integrated. The typed comparator is a stricter and clearer formulation than my R1 proposal of 'numeric ordering on the integer suffix' and correctly handles the 029 split-suffix case (T-3.A vs T-3.B) which my R1 proposal would have missed.",
+      "follow_up": "none — finding fully landed; revision is stronger than the original proposal."
+    }
+  },
+  "summary": "All five Round-1 findings are accepted in Round 3 with no residual concerns. The revisions land cleanly: (f1) R10's runtime enforcement + AC-12 are dropped, leaving documentation-level read-only via R10 + AC-11; (f2) R2 is a single-rule fixpoint with bump-iteration discipline + chain-don't-absorb extraction to templates/task/sprint-bucket-heuristic.md; (f3) R9 / AC-4 dropped, property kept as R2 corollary + R12/AC-15 eval-coverage (independently motivated by GD-r1-f1); (f4) R7 reshaped as behavioural property + execution-order fixture (independently motivated by goal-driven-r1-f3); (f5) typed comparator over (int, optional-letter) grammar is stronger than my original 'numeric suffix' proposal because it correctly handles 029's T-3.A / T-3.B split-suffix case. No re-opens; no sharpens needed."
+}

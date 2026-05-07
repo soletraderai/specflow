@@ -1,0 +1,37 @@
+{
+  "reviewer": "surgical-reviewer",
+  "principle": "surgical-changes",
+  "feature": "016-brief-enhancements",
+  "gate": "prd-gate2",
+  "round": 3,
+  "findings": [
+    {
+      "id": "SURG-1",
+      "decision": "accept",
+      "reasoning": "Round 2 fully addressed the smuggled refactor concern. The revised PRD demotes AC-3 to a single binary line-count check (line 125: 'wc -l plugins/specflow/skills/brief/SKILL.md returns ≤500 after the change set. Binary check; the prescriptive prose-tightening tactics that lived in the previous draft of this AC have been demoted to non-binding implementation notes (see R8)'). The prescriptive tactics — collapsing block-grammar examples and stripping CSS comment headers — have been removed from AC-3 entirely. R8 (line 82) now acknowledges the 524-line baseline, scopes prose tightening, and explicitly forbids touching the four existing blocks' grammar examples and CSS comments ('the four existing blocks' grammar examples and CSS comments MUST NOT be touched (Non-goals constraint)'). Non-goals (line 35) carries the symmetric prohibition: 'Reformatting the four existing blocks' grammar examples or stripping their CSS section comments is out of scope — chain-don't-absorb applies.' Surgical-changes contract is honoured: the change set is bounded to the four new blocks; existing surface is explicitly out-of-scope; chain-don't-absorb path lives in Open Questions, not as a smuggled in-AC refactor."
+    },
+    {
+      "id": "SURG-2",
+      "decision": "accept",
+      "reasoning": "Round 2 fully addressed the AC-embedded escape-hatch concern. AC-3 (line 125) is now a clean binary check with no conditional ship-or-block branching — the previous 'If after both passes the file still exceeds 500 lines, the change set blocks and routes to a follow-up chain-don't-absorb feature' clause has been stripped. The chain-don't-absorb contingency now lives in Open Questions OQ-1 (lines 262-263) with explicit binary resolution paths ('split into two PRs: extraction first, then 016 lands in the smaller brief-blocks skill' vs '016 lands monolithic-but-over-cap and 017a follows') and a measured resolution gate ('at task-synthesis time, measure the actual prose-tightening savings against four benchmark fixtures; if net is < 0, route to prerequisite extraction'). Branching scope decisions are now where they belong — Open Questions resolved at sign-off, not runtime branches inside an AC."
+    },
+    {
+      "id": "SURG-3",
+      "decision": "accept",
+      "reasoning": "Round 2 fully addressed the silent Slack drop. R2 (line 57) now carries the explicit one-line trace: 'Slack dropped from the icon set per decision-log 2026-03-22 *Slack removed from the stack*; CONTEXT.md Stack section confirms Slack-free tooling.' The Goals section (line 24) carries the same trace at the goal level: 'Linear / Doc / Design / GitHub — Slack dropped per decision-log 2026-03-22 *Slack removed from the stack*; CONTEXT.md confirms Slack-free tooling.' The narrowing is no longer silent; it traces to a real-world stack decision rather than a quiet edit. Surgical-changes contract is honoured: every changed line traces to the user's confirmed Goal, with the divergence from the interview Round-3 verbatim explicitly accounted for."
+    },
+    {
+      "id": "SURG-4",
+      "decision": "sharpen",
+      "severity": "note",
+      "new_evidence": "Round 2 push-back rationale: 'Without the requirement, a reviewer reading the PRD has no record that the fallback's surface is widening from 4 to 8 kinds.' But the revised R10 (line 90) reads: 'Unsupported block kinds (anything outside the eight listed) continue to render as <pre> with the existing \"Unsupported visual block\" warning, never silently dropped. The new blocks expand the supported list; the unknown-block fallback's surface widens to eight but its behaviour is unchanged.' The 'surface widens to eight' commitment is fully captured by R12/AC-16 (line 98 onwards: 'Update all hardcoded references to the four-kind supported list … all four call-sites must update to the eight-kind list in lockstep; the post-change file has zero references to the four-kind-only set'). R12 is the substantive widening commitment; R10 is its conditional-mirror restating that the fallback behaviour didn't change. Additionally, AC-8 (line 161-163) tests for a `:::xyzzy` fallback — but the test is identical regardless of whether the supported list has 4 or 8 kinds; nothing about AC-8 verifies the widening, only the unchanged fallback. The push-back's claim ('the requirement-level commitment to the widened surface') is actually carried by R12, not R10.",
+      "claim": "R10 + AC-8 are still defensive restatement once R12/AC-16 entered the PRD. The widening commitment lives in R12 ('all four call-sites must update to the eight-kind list … the post-change file has zero references to the four-kind-only set') and AC-16 (line 225-229: '! grep -nE … the four-kind-only set'). R10 + AC-8 verify that the unchanged unknown-block fallback still works for non-supported kinds — pure regression coverage of an existing rule. Two requirements/ACs covering the same widening scope is a redundancy the surgical-changes lens flags. Severity is now 'note' (not 'block' or 'concern'): the harm is small (a defensive but harmless requirement) and the push-back has rhetorical merit, but the redundancy with R12/AC-16 makes R10 demote-able rather than indispensable.",
+      "proposed_change": "Either: (a) demote R10 to a single sentence inside R12 ('R12 also implicitly preserves the unknown-block fallback at brief/SKILL.md:214 for kinds outside the eight'), and fold AC-8's grep into AC-16 (negative assertion: 'a `:::xyzzy` fixture compiles to a <pre> carrying \"Unsupported visual block\"'); or (b) keep R10/AC-8 but add an explicit cross-reference at the top of R10 noting that the widening commitment is R12's job and R10 is the regression-coverage clause. Pick (a) for surgical economy, (b) for explicit traceability. Either way, eliminate the redundancy in the surface that two requirements both claim authorship of."
+    },
+    {
+      "id": "SURG-5",
+      "decision": "accept",
+      "reasoning": "Round 2 push-back rationale ('R5 + AC-11 ARE the consistency line — they pick the high-leverage edge cases') has been substantively reinforced by the Round-2 revisions. AC-11 (lines 183-196) is no longer prose 'edge-case extensions of the existing contract' — it is now three executable sub-assertions: unclosed (exit non-zero + stderr regex), nested ::: (exit 0 + grep counts), malformed attribute (exit 0 + title slot empty). AC-12 (lines 198-203) adds a fourth executable check for source-order + whitespace verbatim. AC-13 (lines 205-210) adds an executable check for the strip rule extension across all four new kinds. The selective re-statement is now a coherent battery of executable spot-checks on the load-bearing rules (closer enforcement, attribute parsing, whitespace verbatim, source-order, strip rule), each with a binary verification step. Round 1's complaint that 'the line is arbitrary' no longer holds — the line is now drawn around 'rules with non-trivial blast radius if they regress for new blocks' (closer, attribute parsing, whitespace, source-order, strip rule) versus 'rules with regression coverage already in the existing test surface' (image asset resolution, link resolution). Surgical-changes contract is honoured: the AC battery is sized to the new-block scope, not exhaustively re-litigated against every existing rule."
+    }
+  ]
+}

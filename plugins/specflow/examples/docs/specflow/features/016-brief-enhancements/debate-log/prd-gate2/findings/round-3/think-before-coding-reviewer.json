@@ -1,0 +1,32 @@
+{
+  "reviewer": "think-before-coding-reviewer",
+  "principle": "think-before-coding",
+  "feature": "016-brief-enhancements",
+  "gate": "prd-gate2",
+  "round": 3,
+  "findings": {
+    "TBC-1": {
+      "decision": "accept",
+      "reasoning": "Round 2 applied the revision well. R8 now states the 524-line baseline verbatim ('The file is currently 524 lines (pre-change baseline)'); the net-reduction arithmetic is visible (24 + new-block-cost, with a quantified estimate of 60-100 lines); AC-3 is demoted to a binary wc -l ≤500 check; the chain-don't-absorb fallback is surfaced as OQ-1 with a concrete resolution path (measure savings against four benchmark fixtures at task-synthesis time, route to prerequisite extraction if net < 0). The Goals bullet 3 mirrors the same baseline statement, so the unstated assumption is no longer load-bearing. OQ-1 even names the candidate sibling skill (`brief-blocks/SKILL.md`) and feature number (017a). Think-before-coding satisfied — the assumption is now stated, traced, and has a documented escape hatch."
+    },
+    "TBC-2": {
+      "decision": "accept",
+      "reasoning": "Round 2 cited decision-log 2026-03-22 'Slack removed from the stack' inline in the Goals bullet 5 and again in R2 sub-clause 5, plus the CONTEXT.md Stack-section confirmation. The Slack drop is no longer silent — both the rationale and its source are now visible to a downstream reviewer. The four-icon set (linear | doc | design | github) is consistent across Goals and R2. Tradeoff is articulated: the interview's five-icon set was authored before the team's tooling change; the brief skill follows current tooling. Acceptable resolution."
+    },
+    "TBC-3": {
+      "decision": "sharpen",
+      "claim": "R7's 'exactly as the four existing blocks' language is correct for symmetry but the PRD prose still does not spell out the per-kind tradeoff — specifically, Phase-split content (e.g. 'Sprint 2 ships R1-R5') is arguably useful for a PRD reader who is not opening the brief HTML. R7 now says 'no consumer behaviour beyond \"blocks render in the Visual abstract, not in PRD prose\" is changed' which is true mechanically but glosses over the per-kind semantic question. Round 2's push-back invoked 'per-kind symmetry of the existing strip rule (brief/SKILL.md:71)' — that's the architectural reason, not the user-facing one.",
+      "new_evidence": "Re-reading the existing strip rule at brief/SKILL.md:71, it is indeed kind-keyed (a list of block names), not semantically gated. Splitting Phase-split out would require either (a) a per-kind opt-out flag, or (b) a second strip mode keyed on block semantics. Both add surface to the rule. So the architectural argument from Round 2 holds — but the PRD should make the tradeoff visible to a downstream reader who might wonder 'why doesn't Phase-split appear in the PRD body, that would be useful?'",
+      "proposed_change": "Add one sentence to R7: 'For :::phase-split specifically: a phase note like \"Sprint 2 ships R1-R5\" is useful in the brief Visual abstract but kept out of the PRD prose because the strip rule is per-kind, not per-semantic-class — splitting Phase-split out would require a second strip mode and break the 8-kind symmetry. If a reader needs phase information in PRD prose, they can author it as plain Markdown; the :::phase-split block remains brief-only.' This converts the implicit tradeoff into an explicit one without changing the resolved behaviour.",
+      "load_bearing": false
+    },
+    "TBC-4": {
+      "decision": "accept",
+      "reasoning": "Round 2 rewrote R9 to honestly reflect the baseline: 'The four new blocks support the same title=/subtitle= attribute pattern as :::flow (the most-complete existing pattern at brief/SKILL.md:131)' and explicitly states 'The existing four blocks are unchanged; \"consistent\" means the new four follow the most-complete pattern, not that all eight have identical attribute surfaces.' This corrects the false-baseline premise from Round 1. Bonus: the DA-4 TOC concern was folded in (block titles render as <div class=\"block-title\">, not <h2>/<h3>), and AC-17 enforces the TOC negative assertion. AC-9 and AC-14 cover the title= and subtitle= paths separately. Sharp resolution."
+    },
+    "TBC-5": {
+      "decision": "accept",
+      "reasoning": "Round 2 pinned all three sub-clauses: SVG-base64 format (R2 sub-clause 2 + AC-6 regex 'data:image/(svg\\+xml|png);base64,'), author-drawn monochrome glyphs (R2 sub-clause 3, with brand-mark licensing rationale), and the per-icon line budget (R2 sub-clause 4, ≤1 line each, counted against R8 ceiling). codex-r1-f3's R13 + AC-19 also pin override validation (data: URI only, fallback on malformed, source-comment audit trail). Format/source/byte-cost are no longer silent assumptions. The AC-6 regex even allows PNG-base64 as a documented fallback for any binary glyph the author-drawn SVG approach can't capture. Tight resolution."
+    }
+  }
+}
