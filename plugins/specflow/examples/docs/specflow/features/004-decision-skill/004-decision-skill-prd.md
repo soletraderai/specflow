@@ -1,4 +1,5 @@
 ---
+templateVersion: v2.3
 feature: 004-decision-skill
 status: draft
 created: 2026-05-06

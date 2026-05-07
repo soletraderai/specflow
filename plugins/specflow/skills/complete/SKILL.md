@@ -398,6 +398,14 @@ The form aligns with the user-visible feedback surface; the four resolved tokens
 
 For successful writes that elevated: append on a second line: *"Decision-log entry: `{title}`."*
 
+### H.2.1 Lessons-registry feedback prompt
+
+After the chat-line summary (and the optional decision-log line), emit one additional non-blocking line on every successful retro:
+
+*"Anything that was marked done that turned out wrong on review? Run `specflow:test {NNN-slug} --feedback` to capture it. Adds the gap to `admin/lessons.json` so future features inherit the lesson."*
+
+Soft prompt only — no answer is captured here, no blocking question. The user either invokes `--feedback` next or doesn't. The reminder exists to raise the floor on remembering the loop is available, since the value of the lessons registry compounds with use over a project's lifetime. See `skills/test/SKILL.md` Phase D for the feedback flow itself.
+
 ### H.3 Structured failure on every refused exit (per AC-15 / Goal Outcome surface (d))
 
 The five refusal sentinel chat lines (each defined inline at its phase) are the only failure surfaces; the skill never silently exits:

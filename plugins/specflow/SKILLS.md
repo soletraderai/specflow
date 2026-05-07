@@ -13,11 +13,11 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 ## Phase 1 — Foundation
 
 ### `specflow:setup` 🔧
-- **Purpose:** initialise specflow in a project — folders, profiles, environment inventory, rules seeding.
+- **Purpose:** initialise specflow in a project — folders, profiles, environment inventory, rules seeding, self-learning corpus seeding.
 - **Triggers:** "set up specflow", "/specflow:setup", first-run detection (no `admin/` folder).
-- **Produces:** `docs/specflow/admin/` with config/profiles/environment/rules/agents; empty `features/`, `misc-task/`, `docs/`; CONTEXT.md template; standard agents copied in.
+- **Produces:** `docs/specflow/admin/` with config/profiles/environment/rules/agents; empty `features/`, `misc-task/`, `docs/`; CONTEXT.md template; standard agents copied in; `admin/lessons.json` seeded as `[]` (the project's self-learning corpus).
 - **Requires:** Playwright CLI (hard); detects Codex, MCPs, plugins, agents.
-- **Eval:** `admin/environment.json` exists, has detected stack, hard requirements satisfied.
+- **Eval:** `admin/environment.json` exists, has detected stack, hard requirements satisfied; `admin/lessons.json` exists.
 
 ### `specflow:prime` ✅
 - **Purpose:** prime the codebase context for an upcoming piece of work.
@@ -49,11 +49,11 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 - **Eval:** `NNN-{slug}-brief.html` opens cleanly in a browser; deterministic re-compose produces byte-identical output for unchanged inputs; sidebar TOC links resolve.
 
 ### `specflow:task` 🔧
-- **Purpose:** user-facing entry point for task generation. 5-phase orchestrator: read PRD/interview/Gate-2 manifest → synthesise tasks with forward + reverse coverage → surface 3-5 intent summaries in chat → capture user overrides to `task-history.json` → fire Gate 3 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature.
+- **Purpose:** user-facing entry point for task generation. 5-phase orchestrator: read PRD/interview/Gate-2 manifest → query `admin/lessons.json` for matched prior gaps and surface them → synthesise tasks with forward + reverse coverage → surface 3-5 intent summaries in chat → capture user overrides to `task-history.json` → fire Gate 3 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature.
 - **Triggers:** `specflow:task {NNN-slug}`, "create tasks for X", "/specflow:task".
-- **Produces:** `features/NNN-{slug}/{NNN-slug}-tasks.md` (frontmatter + coverage matrix + tasks); 2-sentence intent summaries for 3-5 highlighted tasks (chat-only, not in file); override records appended to `admin/task-history.json`; `features/NNN-{slug}/debate-log/tasks-gate3/manifest.md`.
-- **Requires:** PRD + interview + Gate 2 manifest with passed status; `admin/rules/`; `admin/task-history.json`; optionally `admin/decision-log.md`.
-- **Eval:** tasks file exists with one task per PRD requirement; coverage matrix shows 100% PRD-requirement coverage and zero orphan tasks; every task acceptance is binary; Gate 3 manifest closes with Orchestrator sign-off; any user-driven recut wrote a record to `task-history.json`.
+- **Produces:** `features/NNN-{slug}/{NNN-slug}-tasks.md` (frontmatter + coverage matrix + tasks; tasks tagged with `lesson-anchor: L-NNN` where applicable); 2-sentence intent summaries for 3-5 highlighted tasks (chat-only, not in file); override records appended to `admin/task-history.json`; `features/NNN-{slug}/debate-log/tasks-gate3/manifest.md`.
+- **Requires:** PRD + interview + Gate 2 manifest with passed status; `admin/rules/`; `admin/task-history.json`; `admin/lessons.json` (self-learning corpus, queried on entry); optionally `admin/decision-log.md`.
+- **Eval:** tasks file exists with one task per PRD requirement; coverage matrix shows 100% PRD-requirement coverage and zero orphan tasks; every task acceptance is binary; Gate 3 manifest closes with Orchestrator sign-off; any user-driven recut wrote a record to `task-history.json`; every matched active lesson is either anchored to a task or recorded as user-accepted-uncovered.
 
 ### `specflow:design` 🆕
 - **Purpose:** generate HTML/CSS mockups for a feature, grounded in the live codebase. 5-phase orchestrator: pre-flight + target detection (web/mobile, frame) + mini-interview → value extraction with codebase-truth audit trail (every colour/spacing/etc. cited file:line in the comment block) → generate current.html + proposed.html → Playwright iteration loop (per-iteration decision-capture log entry, empty *Why* is a verify-step failure) → optional Codex semantic review.
@@ -70,11 +70,11 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 - **Eval:** every task has a Linear ID in the Export Map; round-trip status updates work.
 
 ### `specflow:test` 🔧
-- **Purpose:** verification cadence skill — three-phase orchestrator: read PRD/tasks/pages → synthesise test plan with one binary case per AC + coverage matrix → execute (full / targeted / plan-only) capturing artefacts. Idempotent on plan synthesis, append-only on the execution log. Designed to be invoked many times over a feature's life, not once.
-- **Triggers:** `specflow:test {NNN-slug}` (full), `specflow:test {NNN-slug} --targeted T1,AC-2`, `specflow:test {NNN-slug} --plan-only`.
-- **Produces:** `features/NNN-{slug}/{NNN-slug}-test.md` (frontmatter + coverage matrix + test cases + append-only execution log); artefacts (screenshots, runner output, logs) in `features/NNN-{slug}/assets/`; pass/fail summary in chat with concrete failure references.
-- **Requires:** PRD + tasks closed Gate 3; `admin/pages.json` (UI scenarios); `admin/environment.json` (Playwright + detected runners). Refuses if Gate 3 not closed.
-- **Eval:** every PRD acceptance criterion has a test case; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact referenced from the test plan.
+- **Purpose:** verification cadence skill AND project self-learning entry point. Four-mode orchestrator: full / targeted / plan-only run a 3-phase flow (read PRD/tasks/pages → query `admin/lessons.json` for matched prior gaps → synthesise test plan with one binary case per AC + a covering case per matched lesson → execute capturing artefacts); `--feedback` runs a 4-step lesson-capture flow (Phase D) for gaps that escaped the gates, writing them to `lessons.json` and back-filling the test plan with a covering case so the same gap can't pass next time. Designed to be invoked many times over a feature's life, not once. Owns the lessons-registry schema (defined in this skill's body).
+- **Triggers:** `specflow:test {NNN-slug}` (full), `specflow:test {NNN-slug} --targeted T1,AC-2`, `specflow:test {NNN-slug} --plan-only`, `specflow:test {NNN-slug} --feedback`.
+- **Produces:** `features/NNN-{slug}/{NNN-slug}-test.md` (frontmatter + coverage matrix + test cases tagged with `Source: AC-N` or `Source: lesson L-NNN` + append-only execution log); artefacts in `features/NNN-{slug}/assets/`; on `--feedback` also: appended/superseded entry in `admin/lessons.json` (with `.bak`), appended `escaped-issue` row in `admin/task-history.json`; pass/fail summary in chat.
+- **Requires:** PRD + tasks closed Gate 3; `admin/pages.json` (UI scenarios); `admin/environment.json` (Playwright + detected runners); `admin/lessons.json` (self-learning corpus). Refuses if Gate 3 not closed.
+- **Eval:** every PRD acceptance criterion has a test case; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact referenced from the test plan; lesson-query in B.0 surfaces matched active lessons; `--feedback` produces a schema-valid lessons.json entry plus a covering test case tagged with the lesson id.
 
 ### `specflow:misc` 🆕
 - **Purpose:** single-task workflow for bugs, small fixes, and out-of-scope-but-shouldn't-be-lost observations. Two invocation modes — interactive (user-driven) and auto (structured payload from another skill, typically the Surgical Reviewer flagging a rule violation that should not be fixed inline). Initialises the rolling file if missing, allocates the next MISC-NNN id, appends the entry, optionally saves assets, updates the Quick reference + Export map tables.
@@ -155,11 +155,11 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 ## Phase 3 — Memory
 
 ### `specflow:complete` 🆕
-- **Purpose:** retro skill — captures task outcome at completion; feeds the self-learning loop.
+- **Purpose:** retro skill — captures task outcome at completion; feeds the self-learning loop. Final chat-line includes a soft prompt to run `specflow:test {slug} --feedback` for any gap discovered on review.
 - **Triggers:** "/specflow:complete {task-id}", invoked manually or via Linear webhook.
-- **Produces:** entry in `task-history.json`; significant patterns appended to `decision-log.md`.
+- **Produces:** entry in `task-history.json`; significant patterns appended to `decision-log.md`; soft chat-line reminder about `--feedback` after every successful retro.
 - **Requires:** completed task with PRD anchor.
-- **Eval:** entry has all required fields (id, scope, AI assistance level, what worked, what didn't, blast-radius outcome).
+- **Eval:** entry has all required fields (id, scope, AI assistance level, what worked, what didn't, blast-radius outcome); feedback-prompt chat-line emitted on every successful retro write.
 
 ### `specflow:decision` 🆕
 - **Purpose:** lightweight skill for users to manually log a decision out-of-band.

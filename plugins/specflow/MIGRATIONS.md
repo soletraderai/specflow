@@ -230,7 +230,15 @@ The decline-streak windows (7-day operator-avoid, 30-day target-skip) and unique
 - `admin/scratch/optimize.lock` — created during an optimize run.
 - `admin/optimize-runs.jsonl` — append-only run history with `merge_decision` field updated through human review.
 
-**No schema changes to existing files.** Migration does not modify `task-history.json`, `decision-log.md`, `rules/*`, `agents/index.json`, or any other pre-existing surface. The existing schemas are forward-compatible with the new consumer skills.
+**Lessons registry (the project self-learning corpus):**
+- `admin/lessons.json` — new file, seeded as `[]`. Mutable JSON array of lesson entries; schema and lifecycle defined in `skills/test/SKILL.md` § Lessons registry. Status values: `active | superseded | resolved | promoted-to-rule`. Kinds: `escape | success | rule-candidate`. Tags drawn from a controlled vocabulary derived from `environment.json` (stack), `profiles.json` + `glossary.md` (domain), and a canonical surface set (`ui`, `data-model`, `api`, `auth`, `migration`, `infra`, `cli`, `docs`).
+- `specflow:test` gains `--feedback` mode (Phase D) for capturing gaps that escaped the gates, and Phase B.0 lesson query before plan synthesis. Feedback writes one lesson + one covering test case + one `task-history.json` attribution row, atomically with `lessons.json.bak`.
+- `specflow:task` gains A.4 lesson query before task derivation; matched lessons become `lesson-anchor: L-NNN` fields on derived tasks.
+- `specflow:complete` gains H.2.1 soft chat-line reminder pointing the user at `specflow:test {slug} --feedback` after every successful retro write.
+- `specflow:setup` seeds `admin/lessons.json` as `[]` during first-run scaffold; verify step 9.2 includes the new file.
+- Promotion path: a lesson reaching 3 occurrences across distinct features auto-prompts for promotion to `admin/rules/guidelines.md`. Promoted rules are then read by `specflow:prd` and `specflow:task` on every future feature, so the lesson graduates from "heads-up" to "non-negotiable on relevant features." This path is the data input that `/insights` later consumes for cross-project pattern detection (the lessons corpus is the substrate; `/insights` does the higher-order clustering).
+
+**No schema changes to existing files.** Migration does not modify `task-history.json`, `decision-log.md`, `rules/*`, `agents/index.json`, or any other pre-existing surface. The existing schemas are forward-compatible with the new consumer skills. The new `admin/lessons.json` is a new file alongside, not a modification of an existing one.
 
 **Convention additions (no schema change but enforced by skills):**
 - `/insights` mints promotion proposals by appending to the rules registry through `specflow:decision`'s mirror schema (audit-trail entry per accepted promotion).
@@ -241,8 +249,9 @@ The decline-streak windows (7-day operator-avoid, 30-day target-skip) and unique
 
 1. **Backup.** Copy `admin/config.json` to `admin/config.json.bak` before modifying.
 2. **Add config keys.** Insert the `insights`, `prune`, and `optimize` blocks under the top level of `config.json` with the defaults listed above. Pause and ask the user to confirm or edit the per-target budget cap and the prune thresholds before writing — those are project-taste, not auto-imposed. The `insights.cadence` and `optimize.judgementWords` defaults can be accepted or edited inline; the hardcoded thresholds (3-observation promotion, 7/30-day decline windows) are not surfaced as knobs.
-3. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.3.0`.
-4. **Verify.** Run `specflow:doctor`. Confirm the new config keys exist with the expected types; confirm `specflowVersion` is stamped; confirm the existing surfaces (`task-history.json`, `decision-log.md`, `rules/*`, `agents/index.json`) are untouched.
+3. **Seed `lessons.json`.** Write `[]` to `docs/specflow/admin/lessons.json` if missing. If a project somehow has a pre-existing `lessons.json`, do NOT overwrite — surface a one-line note in the migration summary and continue.
+4. **Stamp version.** Update `admin/config.json.specflowVersion` to `2.3.0`.
+5. **Verify.** Run `specflow:doctor`. Confirm the new config keys exist with the expected types; confirm `lessons.json` exists and parses as an array; confirm `specflowVersion` is stamped; confirm the existing surfaces (`task-history.json`, `decision-log.md`, `rules/*`, `agents/index.json`) are untouched.
 
 ### Reversibility
 
@@ -254,6 +263,7 @@ The decline-streak windows (7-day operator-avoid, 30-day target-skip) and unique
 - `admin/config.json.insights.minCorpusSize` (integer) and `insights.cadence` (string ∈ four documented values) exist.
 - `admin/config.json.prune.thresholds.{decisionLog,guidelines,taskHistory}` blocks exist with the expected sub-keys.
 - `admin/config.json.optimize.{targetCapUsd, judgementWords}` exist with the expected types.
+- `admin/lessons.json` exists; parses as a JSON array; ready for `specflow:test --feedback` writes and `specflow:test` / `specflow:task` reads.
 - `admin/config.json.specflowVersion === "2.3.0"`.
 - `specflow:doctor` passes; new config blocks validate; existing surfaces report no drift.
 
@@ -263,6 +273,80 @@ The decline-streak windows (7-day operator-avoid, 30-day target-skip) and unique
 - **User declines all `prune.thresholds` defaults.** Pause; let the user edit each. The defaults are calibrated for projects with quarterly cadences; projects on monthly cadences may want shorter windows.
 - **Pre-2.3.0 project has no `/insights`/`/prune`/`/optimize` runs.** Expected — the on-demand directories don't exist yet. Migration succeeds; first run of each skill creates its directories.
 - **`specflow:doctor` reports drift.** Migration succeeds the file-write step but surfaces the doctor report; user resolves before declaring the migration complete.
+
+---
+
+## v2.3 → v2.4
+
+The Sprint 1 sweep release. Closes the three remaining v2.x open PRD questions and pre-emptively mitigates two structural risks surfaced by the v2.4+ master plan. No skill ships from scratch; all changes are additive across `setup`, `prd`, `task`, `test`, `develop`, `brief` SKILL.md bodies plus two new doctrine docs and a worked-example versioning policy.
+
+### Scope
+
+**Config schema additions** (`admin/config.json`):
+
+- `brief.commitPolicy` — string ∈ `committed | derived`. Default `committed`. Drives `specflow:brief` policy banner + setup-time `.gitignore` write. Closes 011-brief-commit-policy.
+- `skills.{name}.enabled` — block of per-skill toggle objects. Default seeds every shipped skill with `{ "enabled": true }`. Drives Phase A.0 toggle-check across skills (demonstrated in `specflow:develop` for v2.4; other skills adopt the pattern incrementally as touched). Closes 012-config-skill-toggles.
+
+**Skill body changes** (no new skills):
+
+- `specflow:setup` Phase 8.2 — prompts user for brief commit policy; writes the new config block; appends `*-brief.html` to `.gitignore` idempotently when user picks `derived`. Phase 8.3 documents `pages.json` lazy-population (no future `specflow:pages` skill ships — closes 009-pages-policy).
+- `specflow:test` Phase C.2.1 — new sub-step lazy-populates `admin/pages.json` from Playwright-visited routes on UI test runs. Frontmatter `produces:` gains `admin/pages.json (lazy-appended on first UI run per route; never duplicates)`.
+- `specflow:prd` Phase A.3 — ingests feature-local `design/` folder (`proposed.html`, `iteration-log.md`, `current.html`) when present; surfaces `Design intent (from design/):` bullets in *Codebase context*. Silent no-op when absent. Closes 010-design-readback.
+- `specflow:task` Phase A.2.5 — partitions iteration-log entries by timestamp vs PRD frontmatter date; tasks gain `design-decision: iteration-N` field when matched; uncovered post-PRD entries surface scope-change candidate prompt.
+- `specflow:brief` step 9 — reads `config.json.brief.commitPolicy` (default `committed` when absent for v2.3 backward-compat); renders one-line policy banner near top of HTML. Frontmatter `requires:` gains `admin/config.json (optional)`; `eval` extends to verify the banner.
+- `specflow:develop` Phase A.0 — new sub-step before A.1 reading `admin/config.json.skills.develop.enabled`; refuses with the canonical message and returns when disabled. Treats missing field as enabled. Demonstrates the toggle pattern; other skills adopt it incrementally.
+
+**New doctrine docs** (under `plugins/specflow/templates/admin/`):
+
+- `skill-toggles.md` — resolver contract for `config.json.skills.{name}.enabled` (canonical refusal message format, backward-compat semantics, chain-breakage by design, upgrade handling).
+- `example-versioning.md` — worked-example versioning policy (`templateVersion: vX.Y` frontmatter field, backfill / grandfather / retire decisions, audit script). Mitigates Risk A from master plan.
+- `team-review-bridge.md` — `agent-teams:team-review` ↔ Gate-5 manifest mapping (severity table, field table, dedup rules, when-to-invoke trigger). Mitigates Risk B from master plan.
+
+**Worked-example backfill:**
+
+- All v2.0-v2.3 worked-example PRDs (`001-design-skill` through `008-optimize-skill`) gain `templateVersion: v2.3` frontmatter. Informational tag — content unchanged. Sprint 2 (the first real template-changing release) triggers the first audit run.
+
+**New worked examples** (Sprint 1 features):
+
+- `010-design-readback/` — full PRD + interview + tasks + Gate 2 manifest + design folder demonstrating the readback.
+- `011-brief-commit-policy/` — full PRD + interview + tasks + Gate 2 manifest demonstrating the config knob.
+- `012-config-skill-toggles/` — full PRD + interview + tasks + Gate 2 manifest demonstrating the toggle pattern.
+- `013-example-migration-policy/` — full PRD + interview + tasks + Gate 2 manifest demonstrating the versioning policy.
+- `014-team-bridge-spec/` — full PRD + interview + tasks (with sample `team-review` → Gate-5 translation) + Gate 2 manifest.
+
+(009-pages-policy ships as a decide-not-build PRD-level closure; no worked-example folder needed — the resolution lives in `v2/docs/PRD.md` § Resolved decisions.)
+
+**PRD § Open questions** — eight of nine resolved through the v2.x ship cycle; the remaining one (009-pages-policy original) closes here. v2.4.0 leaves `Open questions` empty. Refinements surface as new PRDs going forward.
+
+### Steps the upgrade skill will execute
+
+1. **Backup** `admin/config.json.bak`.
+2. **Read** existing `admin/config.json`. If `brief` block is absent, prompt the user with the brief commit-policy question per `setup/SKILL.md` Phase 8.2; default `committed`. Write the new `brief.commitPolicy` field. If user picks `derived`, append `*-brief.html` to project `.gitignore` (create if absent; idempotent — never duplicate).
+3. **Seed** the `skills` block: for every shipped v2.4 skill not already present, add `{ "enabled": true }`. Preserve any user-set toggles. Warn (one-line chat) but never delete orphan toggles for skills removed in this version (none in v2.3 → v2.4).
+4. **Tag** existing worked examples — one-shot awk pass adding `templateVersion: v2.3` to every PRD frontmatter under `examples/docs/specflow/features/00[1-8]-*/` that doesn't already carry the field. (No-op for projects that haven't installed worked examples directly; primarily relevant for plugin contributors.)
+5. **Stamp** `admin/config.json.specflowVersion` to `2.4.0`.
+6. **Verify.** Run `specflow:doctor`. Confirm new config keys exist with expected types; confirm existing surfaces (`task-history.json`, `decision-log.md`, `lessons.json`, `rules/*`, `agents/index.json`, `pages.json`) are untouched.
+
+### Reversibility
+
+- `config.json.bak` retained until next successful upgrade or explicit `/specflow:upgrade --clean-backups`. To roll back: restore the `.bak`, downgrade the plugin version. The `*-brief.html` `.gitignore` line can be hand-removed if the user reverts to `committed` post-upgrade.
+- No source markdown is modified by this migration. PRD bodies, interviews, manifests, and registry files are untouched.
+- The `templateVersion` frontmatter field is informational; removing it has no functional effect.
+
+### Verify
+
+- `admin/config.json.brief.commitPolicy ∈ { "committed", "derived" }`.
+- `admin/config.json.skills` exists with at least the v2.4 shipped skill names, each as `{ "enabled": true | false }`.
+- `admin/config.json.specflowVersion === "2.4.0"`.
+- Project `.gitignore` contains `*-brief.html` exactly once (only when `commitPolicy === "derived"`).
+- `specflow:doctor` passes; new config blocks validate; existing surfaces report no drift.
+
+### Failure modes
+
+- **User declines the brief commit-policy prompt.** Use the default (`committed`) and proceed; the choice can be edited in `config.json` later. Surface a one-line note: *"Default brief.commitPolicy: committed. Edit `admin/config.json.brief.commitPolicy` to change."*
+- **Project `.gitignore` is read-only or absent and uncreatable.** Pause; surface the failure path; let the user create the file manually with the snippet, then resume.
+- **Existing v2.3 project has a `skills` block already (impossible per current schema, but guard against future schema drift).** Preserve it byte-for-byte; do not seed duplicates.
+- **Worked-example backfill on a project that has cloned the plugin examples into its own repo.** The backfill targets the plugin's `examples/`, not the user's `docs/specflow/features/`. User-authored worked examples are never touched.
 
 ---
 

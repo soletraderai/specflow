@@ -84,7 +84,14 @@ Then inspect the codebase based on the user's overview:
 - Grep for adjacent concepts.
 - Identify prior PRDs in `docs/specflow/features/*/` whose slugs touch adjacent domains (Glob, then read the relevant `prd.md` files).
 
-Distill what you saw into bullet points for the *Codebase context* section. Be concrete: cite file paths, line counts, conventions detected, prior PRD references.
+**Design folder readback (when present).** If `docs/specflow/features/NNN-{slug}/design/` exists, ingest it as a load-bearing input — `specflow:design` may already have produced component decisions that constrain the requirements (010-design-readback, v2.4.0). Read in parallel:
+- `design/{slug}-proposed.html` — the proposed-state mockup. Extract the comment-block listing of values pulled from the live design system (colours, typography, spacing tokens) and the proposed component boundaries. These are constraints, not suggestions.
+- `design/{slug}-iteration-log.md` — every entry's *Why* field is a decision the proposed.html embodies. Decisions cited from `prd-clarification` triggers are forward references to requirements that should appear; decisions cited from `user-feedback` or `codex-review` triggers are constraints the requirements must respect.
+- `design/{slug}-current.html` — only if the user's overview references a *change* (so the diff between current and proposed is itself the requirements scope).
+
+Distill the design folder into 1-3 codebase-context bullets prefixed `Design intent (from design/):`. If `design/` is absent, skip this step silently — design is optional.
+
+Distill what you saw (codebase + design when present) into bullet points for the *Codebase context* section. Be concrete: cite file paths, line counts, conventions detected, prior PRD references, design-folder references.
 
 ### A.4 Write the interview file preamble
 
@@ -312,6 +319,24 @@ Before handing off to Phase D (Gate 2), verify:
 5. **ACs cross-checked against Phase 1 skill schemas they depend on.** For every AC that names another specflow skill (e.g. `specflow:misc --auto`, `specflow:linear`, `specflow:brief`), open that skill's SKILL.md and verify the AC's named fields exist in the documented payload schema. If the AC references fields the schema doesn't include, EITHER edit the AC to use only existing fields OR add an explicit "Schema dependency" note naming the schema gap and the enhancement PRD that must land first. Don't smuggle a Phase 1 schema change into a downstream PRD's AC.
 
 If any check fails, fix the PRD before proceeding.
+
+### C.4 Pre-Gate-2 Codex adversarial pass
+
+Before Gate 2 opens, run a programmatic Codex adversarial pass against the PRD body and capture verbatim output as a file artefact at `features/{NNN-slug}/debate-log/prd-gate2/pre-gate-codex.md`. The multi-agent panel (D.2) then reviews a sharpened artefact; the user can revise the PRD inline before the panel fires.
+
+If `admin/environment.json` has `cli.codex.available: false`, write the file with one line — *"Codex CLI not detected — pre-gate pass skipped. Install via `/codex:setup` for full coverage."* — and proceed to D.1. The in-gate Codex reviewer (D.2) follows the same env gating.
+
+Otherwise:
+
+1. Pre-create the debate-log folder if it doesn't exist: `mkdir -p features/{NNN-slug}/debate-log/prd-gate2`. (D.1 also runs `mkdir -p`; both are idempotent.)
+2. Bash-invoke `codex adversarial-review` against the PRD body per the orchestrator-pattern fork convention (mirrors develop Phase E.2's in-gate `codex review` invocation). Frame the prompt to challenge the Vision-to-Goal trace, requirement traceability, AC binarity, and any unstated assumptions. Capture stdout to the file path above.
+3. On invocation failure (auth, network, exec error), write the error verbatim to the same path with prefix *"Codex pass failed at runtime:"* and continue to step 4.
+4. Tell the user: *"Pre-gate Codex pass written to `{path}`. Reply `continue` to proceed to Gate 2, `revise: <description>` to address a specific gap inline before Gate 2 fires, `escalate` to re-grill on a specific gap, or `skip` to proceed without revisions."*
+
+On `continue`: append `— User reviewed; no revisions, {YYYY-MM-DD}.` to the file. Proceed to D.1.
+On `revise: <description>`: edit `{NNN-slug}-prd.md` to address the named gap, re-run C.3 self-check, then re-prompt at C.4 (the file shows the original Codex output; revisions land in the PRD itself).
+On `escalate`: re-invoke `/grill {NNN-slug}` for a targeted round, then loop back to C.1 once the new Resolved line is appended.
+On `skip`: append `— User skipped without revisions, {YYYY-MM-DD}.` to the file. Proceed to D.1.
 
 ---
 

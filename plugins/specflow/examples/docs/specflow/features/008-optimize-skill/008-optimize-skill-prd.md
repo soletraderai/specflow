@@ -1,4 +1,5 @@
 ---
+templateVersion: v2.3
 feature: 008-optimize-skill
 status: draft
 created: 2026-05-06

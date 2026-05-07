@@ -6,9 +6,10 @@ phase: 1
 requires:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-interview.md
+  - docs/specflow/admin/config.json (optional; reads brief.commitPolicy)
 produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html
-eval: features/NNN-{slug}/{NNN-slug}-brief.html exists; a second compose from unchanged sources is byte-identical; sidebar TOC links resolve; every structured visual block in the PRD renders deterministically into the Visual abstract section.
+eval: features/NNN-{slug}/{NNN-slug}-brief.html exists; a second compose from unchanged sources is byte-identical; sidebar TOC links resolve; every structured visual block in the PRD renders deterministically into the Visual abstract section; rendered HTML carries a one-line policy banner reflecting config.brief.commitPolicy (011-brief-commit-policy v2.4.0).
 ---
 
 # specflow:brief
@@ -100,6 +101,9 @@ The output must be byte-identical for unchanged inputs.
 9. Emit HTML.
    - Fill the template exactly once.
    - Show the drift banner only when an existing brief HTML file is present and its mtime is older than the latest source mtime at the start of the compose. A fresh successful compose should omit the banner on the next unchanged run.
+   - Read `docs/specflow/admin/config.json` if present and resolve `brief.commitPolicy` (default `committed` when absent). Render a one-line policy banner at the top of the brief, just below the source strip:
+     - `committed` → `<p class="commit-policy">This brief is committed to the repo as the diffable review surface (config.brief.commitPolicy = "committed").</p>`
+     - `derived` → `<p class="commit-policy commit-policy-derived">This brief is gitignored as a derived artefact — regenerate via <code>specflow:brief NNN-{slug}</code> (config.brief.commitPolicy = "derived").</p>`
    - Write to `features/NNN-{slug}/NNN-{slug}-brief.html`.
    - Verify: `test -f "features/NNN-{slug}/NNN-{slug}-brief.html"`.
 

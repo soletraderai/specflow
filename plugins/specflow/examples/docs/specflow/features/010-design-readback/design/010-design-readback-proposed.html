@@ -1,0 +1,53 @@
+<!--
+  Design extracted from live design-system values:
+  - Colours: --bg #f7f5f1, --ink #1a1a1a, --rule #e5e1d8, --accent #2f6b5e
+  - Typography: serif "Iowan Old Style"; sans "Inter"; mono "SF Mono"
+  - Spacing tokens: 8/12/16/24/32 (px) — observed in admin styles
+  - Component boundaries proposed: codebase-context-bullet (Phase A.3 surface),
+    iteration-readback-bullet (Phase A.2.5 surface). Both render as list items
+    inside the existing PRD-section list grammar — no new component shapes.
+
+  This mockup is a discussion artefact, not a final design.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>010 — design-readback proposed</title>
+<style>
+  :root {
+    --bg: #f7f5f1;
+    --ink: #1a1a1a;
+    --ink-mute: #7a7a7a;
+    --rule: #e5e1d8;
+    --accent: #2f6b5e;
+    --accent-soft: #d8e6e2;
+    --serif: "Iowan Old Style", "Charter", Georgia, serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+    --mono: "SF Mono", Menlo, monospace;
+  }
+  body { margin: 0; font-family: var(--sans); color: var(--ink); background: var(--bg); padding: 32px; line-height: 1.55; }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: 32px; margin: 0 0 8px; }
+  .lede { font-family: var(--serif); color: var(--ink-mute); margin: 0 0 24px; }
+  .pane { background: white; border: 1px solid var(--rule); padding: 16px 24px; border-radius: 4px; max-width: 720px; }
+  .heading { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-mute); margin: 0 0 12px; }
+  ul { padding-left: 20px; margin: 0; }
+  li { margin: 8px 0; }
+  .design-bullet { color: var(--accent); }
+  .design-bullet::before { content: "Design intent (from design/): "; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-right: 6px; color: var(--accent); }
+</style>
+</head>
+<body>
+<h1>Codebase context — proposed rendering</h1>
+<p class="lede">How a PRD's <em>Codebase context</em> section will read after Phase A.3 ingests the design folder.</p>
+<div class="pane">
+  <p class="heading">Codebase context</p>
+  <ul>
+    <li>Existing notification-popover component lives at <code>app/components/NotificationsPopover.tsx</code> (94 lines, three render branches).</li>
+    <li>Theme tokens for the popover surface come from <code>app/styles/tokens.ts</code> — colours, spacing, typography exposed as CSS variables.</li>
+    <li class="design-bullet">Proposed mockup pulls accent green <code>#2f6b5e</code> directly from the live token set; component boundary is a single popover with a header+body+footer slot grammar (no new component shapes introduced).</li>
+    <li class="design-bullet">Iteration log records a post-Round-1 flip from "single notification list" to "grouped-by-day list" — entry 3, triggered by user-feedback.</li>
+  </ul>
+</div>
+</body>
+</html>

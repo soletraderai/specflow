@@ -66,6 +66,14 @@ Tell the user explicitly which phase you're starting at.
 
 ## Phase A — Pre-flight + read PRD/tasks/Gate 3
 
+### A.0 Check the skill toggle
+
+Read `admin/config.json`. If `config.skills.develop.enabled === false`, refuse with the canonical message and return:
+
+> *"`specflow:develop` is disabled in this project (`config.skills.develop.enabled = false`). Re-enable in `docs/specflow/admin/config.json` or invoke a different skill."*
+
+Treat a missing `config.skills.develop` field as `enabled: true` (backward-compat for v2.3 projects upgraded via `specflow:upgrade`). Resolver contract documented in `templates/admin/skill-toggles.md`. Citation: 012-config-skill-toggles v2.4.0.
+
 ### A.1 Verify the artefact chain
 
 Use Read tool in parallel on:

@@ -11,6 +11,7 @@ requires:
   - docs/specflow/admin/rules/guidelines.md
   - docs/specflow/admin/task-history.json
   - docs/specflow/admin/decision-log.md
+  - docs/specflow/admin/lessons.json
 produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md
   - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/manifest.md
@@ -61,6 +62,7 @@ Use Read tool in parallel on:
 - `admin/rules/guidelines.md`
 - `admin/task-history.json` (empty array `{"tasks": []}` is fine)
 - `admin/decision-log.md` (optional)
+- `admin/lessons.json` (the project's self-learning corpus; missing or `[]` is fine on a fresh project)
 
 ### A.2 Surface Gate 2 block-finding resolutions
 
@@ -69,6 +71,16 @@ If the Gate 2 manifest's status is `passed-with-revisions`, read its "PRD revisi
 Note any revisions that produced new R-level requirements; these inherit the forward-coverage rule (≥1 task per R) automatically when extracted in Phase A.3.
 
 If the manifest status is `passed` (no revisions section expected) or `passed-with-escalations`, skip this sub-step.
+
+### A.2.5 Surface design iteration-log decisions (when present)
+
+If `features/NNN-{slug}/design/{slug}-iteration-log.md` exists, read it (010-design-readback, v2.4.0). For every entry whose timestamp is *later* than the PRD's frontmatter date, the entry's *Why* field is a post-PRD decision tasks must respect — the PRD body may not reflect it yet, but the proposed.html implementation does.
+
+For each post-PRD iteration entry:
+- If the entry maps cleanly to an existing R or AC, link it: the task derived from that R gains a `design-decision: iteration-N` field referencing the log entry.
+- If the entry expresses a constraint not covered by any R, surface to the user: *"Iteration {N}'s decision ({one-line summary}) isn't covered by any PRD requirement. Proceed with the decision noted, or run `specflow:scope-change` to add a requirement?"* Default if user accepts: proceed; the decision is logged in `admin/scratch/{NNN-slug}-tasks/post-prd-design-decisions.json` and the user-facing summary lists them.
+
+If `design/` is absent or `iteration-log.md` has no entries newer than the PRD, skip silently.
 
 ### A.3 Extract the PRD's load-bearing fields
 
@@ -81,9 +93,32 @@ You need clean lists for Phase B's coverage matrix:
 
 Write a small extraction file to `admin/scratch/{NNN-slug}-tasks/prd-extracts.json` (orchestrator-pattern: scratch directory per orchestration). The reviewers in Phase E read this via command substitution.
 
-### A.4 Tell the user what you're doing
+### A.4 Query the lessons registry
 
-*"Read the PRD and interview. Synthesising tasks now — every PRD requirement gets at least one task; every task anchors to a requirement and has a binary acceptance check."*
+Read `admin/lessons.json` (or treat as `[]` if missing). Apply the query algorithm specified in `skills/test/SKILL.md` § Lessons registry → Query algorithm:
+
+1. **Build the query tag set.** PRD frontmatter (audience / domain), `environment.json` (stack), and a keyword scan of the PRD's Requirements section against the canonical surface vocabulary (`ui`, `data-model`, `api`, `auth`, `migration`, `infra`, `cli`, `docs`).
+2. **Filter.** Active lessons whose `tags` array overlaps the query tag set by ≥1 tag.
+3. **Rank.** By `occurrences.length` desc, then `first_seen` desc.
+4. **Cap.** At 5 surfaced lessons; write the full matched list to `admin/scratch/{NNN-slug}-tasks/matched-lessons.json` for audit.
+
+If matches found, surface in chat:
+
+```
+Heads up — relevant lessons from prior work on this project:
+- L-001 (Splash screen wrong font + wrong loading state) — UI tasks need a Playwright screenshot diff before Verifier passes.
+- L-007 (Token refresh silent failure) — auth tasks must include a token-expiry test case.
+
+Task synthesis below biases toward incorporating these.
+```
+
+Each matched lesson's `remediation` becomes a "must consider" line in B.1's task derivation. If an existing PRD requirement already covers a lesson, the task derived from that requirement gets a `lesson-anchor: L-NNN` field. If no existing requirement covers a lesson, surface to the user: *"L-{NNN}'s remediation isn't covered by any PRD requirement. Proceed with the lesson noted (no task), or run `specflow:scope-change` to add a requirement?"* Default if user accepts: proceed; the lesson is logged in `admin/scratch/{NNN-slug}-tasks/uncovered-lessons.json` and listed in the user-facing summary.
+
+If no matches, note: *"No prior lessons match this feature's tags."* Continue.
+
+### A.5 Tell the user what you're doing
+
+*"Read the PRD and interview. Synthesising tasks now — every PRD requirement gets at least one task; every task anchors to a requirement and has a binary acceptance check.{If lessons matched: 'Lessons L-NNN, L-NNN are being woven into the plan.'}"*
 
 ---
 
@@ -171,6 +206,24 @@ Before surfacing intent summaries, verify:
 4. **No requirement contradicts the goal's Out-of-scope-at-goal-level** — re-read the interview's Goal section and cross-check.
 
 If any check fails, fix the tasks file before proceeding.
+
+### B.5 Pre-Gate-3 Codex adversarial pass
+
+Before Phase C surfaces intent highlights, run a programmatic Codex adversarial pass against the tasks file and capture verbatim output as a file artefact at `features/{NNN-slug}/debate-log/tasks-gate3/pre-gate-codex.md`. The user reviews highlights against an already-vetted list; the multi-agent Gate 3 panel (Phase E) reviews a sharpened artefact.
+
+If `admin/environment.json` has `cli.codex.available: false`, write the file with one line — *"Codex CLI not detected — pre-gate pass skipped. Install via `/codex:setup` for full coverage."* — and proceed to Phase C. The in-gate Codex reviewer at Phase E follows the same env gating.
+
+Otherwise:
+
+1. Pre-create the debate-log folder if it doesn't exist: `mkdir -p features/{NNN-slug}/debate-log/tasks-gate3`. (E.1 also runs `mkdir -p`; both are idempotent.)
+2. Bash-invoke `codex adversarial-review` against the tasks file per the orchestrator-pattern fork convention (mirrors develop Phase E.2's in-gate `codex review` invocation). Frame the prompt to challenge whether every PRD requirement maps to a task, whether task scopes are surgical, whether dependency ordering is sound, and whether every acceptance line is binary. Capture stdout to the file path above.
+3. On invocation failure (auth, network, exec error), write the error verbatim to the same path with prefix *"Codex pass failed at runtime:"* and continue to step 4.
+4. Tell the user: *"Pre-gate Codex pass written to `{path}`. Reply `continue` to proceed to Phase C, `revise: <description>` to address a specific gap inline, `recut: <description>` to regenerate tasks against the gap, or `skip` to proceed without revisions."*
+
+On `continue`: append `— User reviewed; no revisions, {YYYY-MM-DD}.` to the file. Proceed to C.1.
+On `revise: <description>`: edit the tasks file inline to address the gap, re-run B.2 (rebuild coverage matrix) and B.4 (self-check), then re-prompt at B.5.
+On `recut: <description>`: archive the current tasks file as `{NNN-slug}-tasks.md.pre-recut.bak`, loop back to B.1 with the user's gap as additional context, run B.2/B.3/B.4 from scratch, then re-prompt at B.5.
+On `skip`: append `— User skipped without revisions, {YYYY-MM-DD}.` to the file. Proceed to C.1.
 
 ---
 
@@ -412,7 +465,8 @@ Before returning to the user with "tasks complete":
 4. `features/NNN-{slug}/debate-log/tasks-gate3/manifest.md` exists with closing decision entry signed by the Orchestrator.
 5. Gate 3 status is recorded and surfaced to the user.
 6. Any user-driven recut wrote a record to `admin/task-history.json` (verify by reading the latest entry).
-7. Scratch directory `admin/scratch/{NNN-slug}-tasks/` is cleaned up (or retained on failure).
+7. Scratch directory `admin/scratch/{NNN-slug}-tasks/` retains `matched-lessons.json` (and `uncovered-lessons.json` if any) on failure; cleaned up on success.
+8. Every lesson surfaced in A.4 either has a `lesson-anchor: L-NNN` field on the task that covers it, OR is recorded in `uncovered-lessons.json` with the user's accepted "proceed without task" decision.
 
 If any verify step fails, fix it before returning.
 
