@@ -276,7 +276,7 @@ Return the path of the result file (one line). The calling skill reads it via co
 - **Do not write entries to the Pending tasks section without also updating the Quick reference table.** They must stay in sync.
 - **Do not modify other entries when appending a new one.** Append-only — past entries stay frozen unless the user explicitly invokes a separate edit.
 - **Do not invoke `specflow:linear` automatically.** Linear export is a separate user decision.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the rolling file, or the result payload. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output, the rolling file, or the result payload. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 

@@ -181,7 +181,7 @@ After sign-off, return one line to the parent (or to the user if invoked manuall
 - **Do not pre-can the question list.** Re-evaluate after every answer (Step 7). The point is adaptive interrogation, not a fixed quiz.
 - **Do not skip the reasoning citation.** Every recommended answer cites at least one source. Recommendations without citations are themselves a failure mode this skill catches.
 - **Do not write to the PRD body, the tasks file, or anything outside the interview file.** Your scope is the interview only.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 

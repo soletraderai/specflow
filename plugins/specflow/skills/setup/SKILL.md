@@ -537,7 +537,7 @@ If any soft requirement was missing (Codex, Linear MCP, etc.), include a one-lin
 - **Do not auto-accept the rules registry without showing the user the starter set.** They need to know what's being applied to their codebase.
 - **Do not invent profiles the user didn't ask for.** Propose, get confirmation. If they say "you decide", read the codebase and propose — but still get final confirmation before writing.
 - **Do not write empty arrays where a populated one is expected.** `profiles: []`, `agents: []`, `cli: []` all fail verification. If detection genuinely returns nothing, surface that to the user as a warning before completing setup.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, in the seeded files, or in the report. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output, in the seeded files, or in the report. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 

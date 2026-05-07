@@ -46,7 +46,7 @@ Step 3 forks → reads signals.json → writes synthesis.md (1200 tokens)
 
 ### 3. Command substitution for zero-cost file injection
 
-When a step needs to inject the contents of a previous step's output file into its own prompt, use Claude Code's command substitution rather than a Read tool call.
+When a step needs to inject the contents of a previous step's output file into its own prompt, use the harness's command substitution rather than a Read tool call.
 
 ```
 !{cat admin/scratch/orchestration-42/profile.json}

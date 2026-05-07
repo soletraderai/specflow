@@ -72,7 +72,7 @@ The cross-task reviewer's better-arrangement lens consults lessons too — its t
 
 ### Path 4 — `specflow:develop` does NOT query lessons directly
 
-By design. Lessons must influence the *plan* upstream (PRD + tasks); develop executes the plan. This keeps the develop stage Claude-Code-native and avoids cross-context contamination during code execution.
+By design. Lessons must influence the *plan* upstream (PRD + tasks); develop executes the plan. This keeps the develop stage harness-native and avoids cross-context contamination during code execution.
 
 ## Query algorithm
 

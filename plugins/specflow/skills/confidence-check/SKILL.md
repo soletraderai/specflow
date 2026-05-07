@@ -179,7 +179,7 @@ Over-invocation degrades the signal — when every action prompts confidence-che
 - **Do not accept ambiguous user responses as confirmation.** "Sure?" / silence / a thumbs-up emoji are NOT yes.
 - **Do not write the action's actual code or file edits during confidence-check.** This skill is a gate, not an executor. The calling skill (or the human, on resume) does the action after `confirmed=true`.
 - **Do not log without writing.** Every confidence-check produces a log entry — even declined ones. That corpus is what Phase 3 self-learning mines.
-- **Do not mention Claude, Anthropic, or any AI tooling** in the declaration or the log. Per the project's CLAUDE.md.
+- **Do not mention the underlying AI tooling or vendor** in the declaration or the log. Per the project's CLAUDE.md.
 
 ---
 

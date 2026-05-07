@@ -178,7 +178,7 @@ Next steps you might want:
 - **Never delete from `features/`, `admin/` (other than `scratch/`), or any path outside `admin/scratch/` and the working-tree state.** Feature folders, debate logs, rule registries, etc. are user data — preserved across panic.
 - **Never push, force-push, or otherwise touch remote refs.** Local-only.
 - **Never invoke other specflow skills automatically.** Panic is read-only on the broader workflow; suggest skills, never run them.
-- **Never mention Claude, Anthropic, or any AI tooling** in the snapshot bundle, the report, or any output. Per the project's CLAUDE.md.
+- **Never mention the underlying AI tooling or vendor** in the snapshot bundle, the report, or any output. Per the project's CLAUDE.md.
 
 ---
 

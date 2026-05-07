@@ -619,7 +619,7 @@ find features -path 'features/[0-9][0-9][0-9]-*/[0-9][0-9][0-9]-*-brief.html' -p
 - **Do not pull in external assets.** No CDN, no script tags, no external CSS. Self-contained file only.
 - **Do not run a build step or install packages.** Compose markdown to HTML in the current runtime.
 - **Do not modify the source markdown.** Brief is read-only on its inputs.
-- **Do not mention Claude, Anthropic, or any AI tooling** in the brief or any output. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in the brief or any output. Per the project's CLAUDE.md, this is non-negotiable.
 
 ## Reference
 

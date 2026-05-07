@@ -214,7 +214,7 @@ When invoked by another skill (`specflow:upgrade` or `specflow:develop`):
 - **Do not invoke `specflow:upgrade` automatically.** Suggest it; never run it.
 - **Do not skip a check because it would FAIL.** Every check that's in scope runs; partial reports are useless.
 - **Do not invent fixes.** If a failure has no clear remediation path, write `Fix: {investigation needed — surface to the maintainer}`. Do not fabricate a step.
-- **Do not mention Claude, Anthropic, or any AI tooling** in the report or any output. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in the report or any output. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 

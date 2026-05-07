@@ -211,7 +211,7 @@ The number doesn't need to be perfect. The trend is the signal.
 - **Do not modify `skill-invocations.jsonl`.** Append-only by contract. Past entries are the audit trail.
 - **Do not flag a skill as leaking without citing the audit checklist.** Every `leak_signal` references `templates/orchestrator-pattern.md` so the user has a path forward.
 - **Do not invoke other skills automatically.** Budget reads and reports; remediation is user-driven.
-- **Do not mention Claude, Anthropic, or any AI tooling** outside provider names where they're a literal data source. Per the project's CLAUDE.md, the surrounding language stays neutral.
+- **Do not mention the underlying AI tooling or vendor** outside provider names where they're a literal data source. Per the project's CLAUDE.md, the surrounding language stays neutral.
 
 ---
 

@@ -28,7 +28,7 @@ The Orchestrator is the always-on planner. It owns the *plan* moment of the life
 - The Orchestrator does NOT execute work itself — it plans and delegates.
 - Plans MUST cite the PRD requirement they trace back to.
 - Plans MUST run through Gate 4 of the adversarial review chain (debate manifest) before execution begins.
-- The Orchestrator owns coordination AND closing decisions — when reviewers and the writer don't converge in 3 rounds of the debate manifest, the Orchestrator writes the closing decision entry with explicit reasoning. This replaces the old "Claude makes the final call" formulation: the call is the Orchestrator's, the reasoning is on the page.
+- The Orchestrator owns coordination AND closing decisions — when reviewers and the writer don't converge in 3 rounds of the debate manifest, the Orchestrator writes the closing decision entry with explicit reasoning. This replaces the old implicit-final-call formulation: the call is the Orchestrator's, the reasoning is on the page.
 
 ## Operational pattern (mandatory)
 

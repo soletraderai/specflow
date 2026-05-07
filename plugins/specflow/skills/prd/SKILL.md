@@ -551,7 +551,7 @@ If Gate 2 produced escalations, list them in your response so the user sees them
 - **Do not duplicate the interview's content into the PRD body.** PRD references the interview by relative path; the interview is the audit trail.
 - **Do not bypass Gate 2.** A PRD that hasn't been through Gate 2 is not a finished PRD; downstream skills (`specflow:task`) should reject it.
 - **Do not edit the Goal section.** Only `specflow:scope-change` does that.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the interview file, the PRD body, or the debate manifest. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output, the interview file, the PRD body, or the debate manifest. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 

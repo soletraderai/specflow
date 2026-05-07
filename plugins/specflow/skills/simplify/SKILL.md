@@ -281,7 +281,7 @@ Append to `admin/simplify-runs.jsonl`:
 - **Do not run on broken baselines.** A baseline that already fails any gate cannot be improved; refuse explicitly.
 - **Do not run on sweeping scopes.** 50-file cap is hard. Tighter scopes produce cleaner experiments.
 - **Do not skip the variants log.** Even on a failed run, every variant's eval gets recorded — that's the corpus Phase 3 mines.
-- **Do not mention Claude, Anthropic, or any AI tooling** in commit messages, PR descriptions, branch names, or any user-facing output. Per the project's CLAUDE.md.
+- **Do not mention the underlying AI tooling or vendor** in commit messages, PR descriptions, branch names, or any user-facing output. Per the project's CLAUDE.md.
 
 ---
 

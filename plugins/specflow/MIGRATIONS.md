@@ -15,6 +15,46 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.7.0 → v2.7.1
+
+Hardening release. No new features, no schema changes, no new files. Pure prompt-asset edits to existing skill bodies and templates.
+
+### Scope
+
+**Branding compliance:** vendor-name guardrails neutralised across 14 skill bodies + 3 templates. All `Claude, Anthropic, or any AI tooling` phrases replaced with `the underlying AI tooling or vendor`. Two incidental leaks in lifecycle/orchestrator agent docs aligned.
+
+**Sprint Phase D.3 — idempotent worktree creation:**
+- Six-state resolution (reuse / mismatch-HALT / elsewhere-HALT / leftover-HALT / attach / fresh-create) replaces single unconditional `git worktree add`.
+- Dirty-state probe with explicit `DIRTY_PROBE_STATUS` (skipped/ok/failed); never silently treats failed probes as clean.
+- Portable `run_with_timeout` helper (GNU `timeout` → `gtimeout` → POSIX `/bin/sh`-hosted watchdog with TERM→KILL escalation).
+- Path parsing handles whitespace, regex metacharacters, and literal backslash sequences (uses awk `substr` + `ENVIRON`, not `-v`).
+
+**Develop — `T_run` scope binding:**
+- New section A.6.5 binds `T_run` (sprint-mode = tasks_in_scope; feature-mode = full tasks file; per-task = [T{N}]) and persists to `admin/scratch/{NNN-slug}-develop/t-run.json`.
+- Resume logic loads `t-run.json` BEFORE artefact checks; halts on missing `t-run.json` rather than auto-widening to feature-mode.
+- Per-task loops in Phase B.1, B.1.5, D, F + final verify checklist all scope to `T_run` with symmetric out-of-scope absence assertions.
+
+### Steps
+
+1. Pull v2.7.1 (no migration script required — pure prompt-asset changes).
+2. No `admin/config.json` updates needed.
+3. No `docs/specflow/` schema changes.
+4. Existing in-flight feature folders are unaffected.
+5. The next `specflow:develop` invocation will write `t-run.json` to scratch on first sprint or feature-mode run.
+
+### Backups
+
+None required — no user data is moved or rewritten.
+
+### Verify
+
+- `plugin.json` and `marketplace.json` both report `2.7.1`.
+- `grep -r 'Claude, Anthropic' plugins/specflow/skills plugins/specflow/templates` returns zero matches.
+- `awk '/^### D\.3 /,/^### D\.4 /' plugins/specflow/skills/sprint/SKILL.md` documents probes 1–5 and states 1–6 with HALT predicates.
+- `grep -c T_run plugins/specflow/skills/develop/SKILL.md` ≥ 17.
+
+---
+
 ## v1.x → v2.0
 
 The foundation migration. Establishes the substrate every later phase depends on: feature-grouped layout, `admin/` folder, rules registry, environment inventory, standard agents, and per-feature brief composition.

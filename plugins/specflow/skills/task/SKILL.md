@@ -552,7 +552,7 @@ Tell the user *"Cross-task feedback application complete. {N} findings accepted;
 - **Do not bypass Gate 3.** A task list that hasn't been through Gate 3 is not a finished task list; downstream skills (`specflow:develop`, `specflow:test`) should reject it.
 - **Do not edit PRD requirements from this skill.** If a Gate 3 finding indicates the PRD is wrong (not just the tasks), surface it as an escalation. PRD changes go through `specflow:scope-change`.
 - **Do not write the intent summaries to a file.** They're chat-only by design.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the tasks file, the debate manifest, or `task-history.json`. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output, the tasks file, the debate manifest, or `task-history.json`. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 

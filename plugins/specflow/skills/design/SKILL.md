@@ -326,7 +326,7 @@ If the loop bailed (user said "stop", or the dev server fundamentally couldn't b
 - **Do not rewrite past iteration log entries.** Append-only. Reversals are new entries citing the original iteration number.
 - **Do not commit to a final design without user sign-off** on the iteration loop's exit (either "diff below threshold" or explicit "accept remaining drift").
 - **Do not invoke `specflow:scope-change` automatically** if Codex flags an apparent contradiction with the PRD. Surface the finding; the user decides whether the PRD or the design needs adjustment.
-- **Do not mention Claude, Anthropic, or any AI tooling** in the HTMLs (including comment blocks), the iteration log, or any output. Per the project's CLAUDE.md.
+- **Do not mention the underlying AI tooling or vendor** in the HTMLs (including comment blocks), the iteration log, or any output. Per the project's CLAUDE.md.
 
 ---
 

@@ -4,7 +4,39 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.7.0 closed Sprint 4 — the final sprint of the v2.4+ master plan. The plugin is feature-complete. Next milestone: a real consumer-project dogfood (not recursive specflow-on-itself) to surface friction the recursive dogfoods didn't catch._
+_v2.7.1 hardened the v2.7.0 ship surface against thirteen findings from a multi-round adversarial review. No new features; no contract changes. Next milestone remains: real consumer-project dogfood._
+
+## [2.7.1] — 2026-05-07
+
+Hardening release driven by a thirteen-round adversarial review of the v2.7.0 ship surface. No new features. No public-contract changes. Every change tightens an existing invariant or closes a portability gap surfaced under adversarial pressure.
+
+### Changed
+
+**Branding compliance** (the project's non-negotiable vendor-neutrality rule):
+
+- Neutralised vendor-name guardrail lines across 14 skill bodies (`brief`, `budget`, `confidence-check`, `design`, `develop`, `doctor`, `grill`, `misc`, `panic`, `prd`, `setup`, `simplify`, `task`, `test`) and 3 templates (`admin/lessons-registry.md`, `agents/standard/lifecycle/orchestrator.md`, `templates/orchestrator-pattern.md`). All guardrails now read "the underlying AI tooling or vendor" instead of naming a specific vendor. The two example-copy leaks (`examples/.../lifecycle/orchestrator.md` and `templates/.../orchestrator.md`) are aligned.
+
+**Sprint Phase D.3 — idempotent worktree creation**:
+
+- Replaced the unconditional `git worktree add` with an explicit six-state machine (reuse / branch-mismatch-or-dirty HALT / branch-elsewhere HALT / unregistered-leftover HALT / attach-existing-branch / fresh-create). State predicates use absolute paths from `git rev-parse --show-toplevel`.
+- Added `DIRTY_PROBE_STATUS` (skipped/ok/failed) so a failed `git status` probe (timeout, missing dir, permission denied) NEVER collapses to "clean reuse". State 1 (reuse) requires registered + matching branch + path-on-disk + probe-ok + empty-dirty-state — five conjuncts.
+- New `run_with_timeout` helper: GNU `timeout` / `gtimeout` (probed via `--kill-after=1 1 true` to detect non-GNU implementations and shell-function shadowing) → POSIX `/bin/sh`-hosted watchdog fallback that escalates TERM → KILL after 2s grace and normalises rc=143/137 → rc=124. Subshell function form (no `local`) so the body is POSIX-compliant. Hosting under `/bin/sh` prevents zsh's BG_NICE diagnostics from leaking into captured stderr. Verified across 4 shells × 2 PATH configs × 3 scenarios.
+- Worktree-list parsing rewritten to handle paths with whitespace, regex metacharacters (`.`, `[`, `]`), and literal backslash sequences (`\t`, `\n`). Uses `substr($0, length("worktree ")+1)` for path capture and `ENVIRON["TARGET_PATH"]` (NOT `awk -v`) to preserve byte-literal paths across the awk boundary.
+
+**Develop — `T_run` scope binding**:
+
+- New section A.6.5 "Bind T_run" — defines `T_run = sprint-mode ? tasks_in_scope : full tasks file (or [T{N}] for --task mode)`, persists to `admin/scratch/{NNN-slug}-develop/t-run.json`, and adds an explicit out-of-scope guard. Tasks not in `T_run` get no lane assignment, no recheck, no manifest stub, no Gate 4/5 manifest, no new task-history entry from this run.
+- Threaded `T_run` through every per-task loop and assertion: Phase B.1, B.1.5 (lane recheck), Phase D, Phase F closure, and the final verify checklist (5 bullets). 17 `T_run` references end-to-end.
+- Resume logic now binds `T_run` BEFORE evaluating any artefact: loads `t-run.json` if scratch exists; HALTS with explicit user prompt if `t-run.json` is missing on retry (no auto-widening to feature-mode, which would invent artefact-existence requirements for tasks the user never asked to process). Every resume predicate (B/B.1/C/D+E/F/completion) scopes to `T_run`.
+- Eval line at top of develop's frontmatter binds entries-per-task assertions to `T_run` and adds the symmetric out-of-scope absence requirement.
+
+### Why this is a 2.7.1 not a 2.8.0
+
+No new skills, no new commands, no new config keys, no breaking schema changes, no new doctrine docs. Every change either tightens an invariant the v2.7.0 release already promised (idempotency claim in sprint's eval; vendor-neutrality non-negotiable) or hardens an internal helper (timeout wrapper portability, worktree probe path-safety). Per SemVer this is a patch.
+
+### Acknowledged tradeoff (NOT a failure)
+
+- The POSIX timeout fallback cannot escape a target wedged in uninterruptible kernel state (D state — typically a hung NFS mount or buggy filesystem driver). KILL is uncatchable for normal processes but D-state is the kernel's wait, not the process's. Documented inline; mitigation: install GNU coreutils for `gtimeout` so the supervisor runs in a separate process group.
 
 ## [2.7.0] — 2026-05-08
 

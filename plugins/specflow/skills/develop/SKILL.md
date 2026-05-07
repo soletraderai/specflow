@@ -23,7 +23,7 @@ produces:
   - docs/specflow/features/{NNN-slug}/debate-log/develop-gate5/findings/
   - docs/specflow/admin/scratch/{NNN-slug}-develop/
   - docs/specflow/admin/task-history.json
-eval: lane-assignments.json exists with one entry per task in the feature's tasks file; for every task, lane-recheck-{task-id}.json exists in the scratch directory before Gate 4 opens; Gate 4 manifest closes with passed | passed-with-revisions | passed-with-escalations; Gate 5 manifest closes with passed | passed-with-revisions | passed-with-escalations; every task in the tasks file has a corresponding entry in admin/task-history.json with the six development-time fields populated (lane_assigned, ai_assistance_level, elapsed_minutes, what_worked, what_didnt_work, blast_radius_outcome); for every Yellow-lane task and every Green-lane task with config.develop.tddRequired === true, the per-task manifest stub at admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md contains a line matching the regex ^red:\s+(passed|failed|skipped \((config|trivial|human-led Red lane)\))\s+\([0-9T:Z-]+\)\s+—\s+.+$ and equivalent regexes for green: and refactor: (017-tdd-discipline v2.5.0).
+eval: define T_run = sprint-mode ? tasks_in_scope (from the sprint result payload) : every task in the feature's tasks file; lane-assignments.json exists with one entry per task in T_run; for every task in T_run, lane-recheck-{task-id}.json exists in the scratch directory before Gate 4 opens; Gate 4 manifest closes with passed | passed-with-revisions | passed-with-escalations; Gate 5 manifest closes with passed | passed-with-revisions | passed-with-escalations; every task in T_run has a corresponding entry in admin/task-history.json with the six development-time fields populated (lane_assigned, ai_assistance_level, elapsed_minutes, what_worked, what_didnt_work, blast_radius_outcome); tasks NOT in T_run (the out-of-sprint complement) have NO lane-assignment entry, NO recheck file, NO manifest stub, and NO new task-history entry from this run — they remain untouched for the next sprint; for every Yellow-lane task in T_run and every Green-lane task in T_run with config.develop.tddRequired === true, the per-task manifest stub at admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md contains a line matching the regex ^red:\s+(passed|failed|skipped \((config|trivial|human-led Red lane)\))\s+\([0-9T:Z-]+\)\s+—\s+.+$ and equivalent regexes for green: and refactor: (017-tdd-discipline v2.5.0).
 ---
 
 # specflow:develop
@@ -51,16 +51,21 @@ The user invokes you with one of:
    - `features/{NNN-slug}/{NNN-slug}-tasks.md` exists.
    - `features/{NNN-slug}/debate-log/tasks-gate3/manifest.md` exists with a `**passed**`, `**passed-with-revisions**`, or `**passed-with-escalations**` closing decision.
    - If not closed (or status `failed`), refuse with the literal sentinel from T1's acceptance: *"Gate 3 not closed for `{NNN-slug}` (status: `{status|missing}`). Resolve Gate 3 first via `specflow:task {NNN-slug}`."*
-3. Determine the resume point:
-   - **No `admin/scratch/{NNN-slug}-develop/` directory** → start Phase A (fresh run).
-   - **Scratch directory exists, no `lane-assignments.json`** → resume Phase B (lane triage).
-   - **`lane-assignments.json` exists, no `lane-recheck-{T*}.json` for some tasks** → resume Phase B.1 (mechanical recheck).
-   - **All recheck files exist, no Gate 4 manifest for some tasks** → resume Phase C (Gate 4).
-   - **Gate 4 closed for some tasks, no code change set OR no Gate 5 manifest** → resume Phase D + E for those tasks.
-   - **All gates closed, some Verifier rejections without user election** → resume Phase F at the rejection.
-   - **All tasks complete** → ask the user: *"Feature `{NNN-slug}` appears complete (every task has Gate 4 + Gate 5 + Verifier closed; task-history populated). What do you want to do? (1) re-run a specific task with `--task T{N}`, (2) inspect the manifests, (3) `specflow:scope-change` if the PRD itself needs revision."*
+3. **Bind `T_run` BEFORE evaluating resume artefacts** (per A.6.5 doctrine — resume predicates must be scoped to the run set, not the full tasks file):
+   - **Fresh run** (no `admin/scratch/{NNN-slug}-develop/` directory) → defer T_run binding to A.6.5 (sprint-mode runs Phase A.5.5 first; feature-mode binds the full tasks file).
+   - **Resuming** (scratch directory exists):
+     - If `admin/scratch/{NNN-slug}-develop/t-run.json` exists → load `task_ids` and use that as `T_run` for every check below.
+     - If `t-run.json` is missing → halt and ask the user: *"Resume detected for `{NNN-slug}` but `t-run.json` is missing. Choose: (1) re-bind as feature-mode (full tasks file), (2) re-bind as per-task `--task T{N}`, (3) discard scratch and start fresh."* Do NOT auto-default to feature-mode — the previous run may have been a partial sprint and silently widening the scope would invent artefact-existence requirements for tasks the user never asked to process.
+4. Determine the resume point — every "task" predicate below scopes to `T_run`:
+   - **No `admin/scratch/{NNN-slug}-develop/` directory** → start Phase A (fresh run); T_run binds at A.6.5.
+   - **Scratch directory exists, no `lane-assignments.json`** → resume Phase B (lane triage) for `T_run`.
+   - **`lane-assignments.json` exists, no `lane-recheck-{T*}.json` for some tasks in `T_run`** → resume Phase B.1 (mechanical recheck) for the missing-recheck subset of `T_run`.
+   - **All `T_run` recheck files exist, no Gate 4 manifest for some tasks in `T_run`** → resume Phase C (Gate 4) for the missing-gate subset of `T_run`.
+   - **Gate 4 closed for some `T_run` tasks, no code change set OR no Gate 5 manifest** → resume Phase D + E for those tasks (still inside `T_run`).
+   - **All `T_run` gates closed, some Verifier rejections without user election** → resume Phase F at the rejection.
+   - **All `T_run` tasks complete** → ask the user: *"Run for `{NNN-slug}` appears complete for the in-scope task set ({task_ids}). Tasks outside the run set were intentionally untouched. What do you want to do? (1) re-run a specific task with `--task T{N}`, (2) inspect the manifests, (3) start a new sprint via `specflow:sprint {NNN-slug}` for the next batch, (4) `specflow:scope-change` if the PRD itself needs revision."*
 
-Tell the user explicitly which phase you're starting at.
+Tell the user explicitly which phase you're starting at AND which task set is in scope (cite `T_run` task IDs).
 
 ---
 
@@ -142,6 +147,27 @@ For each in-scope task, read `context-budget-estimate` from the tasks file and m
 
 The estimation algorithm and the no-mid-task-compaction rationale live in `templates/admin/single-context-task.md` — cite, do not inline.
 
+### A.6.5 Bind `T_run` (the run-scope set)
+
+Define the set of tasks this invocation processes — every subsequent per-task loop, gate manifest, and verification check binds to `T_run`, not to the full tasks file.
+
+- **Sprint-mode** (Phase A.5.5 returned a sprint result): `T_run = result.tasks_in_scope`.
+- **Feature-mode** (no sprint result; legacy or `--feature-complete` invocation): `T_run = every task ID in {NNN-slug}-tasks.md`.
+- **Per-task mode** (`--task T{N}`): `T_run = ["T{N}"]`.
+
+Persist `T_run` to `admin/scratch/{NNN-slug}-develop/t-run.json`:
+
+```json
+{
+  "feature": "{NNN-slug}",
+  "mode": "sprint | feature | per-task",
+  "task_ids": ["T-1", "T-2", "T-3"],
+  "bound_at": "{YYYY-MM-DD HH:MM}"
+}
+```
+
+**Out-of-scope guard.** Tasks in the tasks file but NOT in `T_run` (the *out-of-sprint complement*) MUST receive no lane assignment, no recheck, no manifest stub, no Gate 4/5 manifest, and no new task-history entry from this run. They remain untouched for the next sprint. Verify this absence at the final-verify checklist.
+
 Hand off to Phase B.
 
 ---
@@ -150,7 +176,7 @@ Hand off to Phase B.
 
 ### B.1 Compute the four-axis tuple per task
 
-For each task in the tasks file:
+For each task in `T_run` (per A.6.5 — the set persisted to `admin/scratch/{NNN-slug}-develop/t-run.json`):
 
 1. **Verifiability** — AI-judged from the task's `Acceptance` field. Enum: `high` (binary check, no judgement), `medium` (binary with one ambiguous edge), `low` (judgement-dependent or non-binary). Cite the exact acceptance line.
 2. **Blast radius** — AI-judged from the task's `Scope` field. Enum: `low` (≤1 file, single module), `medium` (2-3 files, single module), `high` (>3 files OR cross-module). Cite the scope line.
@@ -216,7 +242,7 @@ Hand off to Phase B.1.
 
 ## Phase B.1 — Mechanical pre-Gate-4 lane recheck
 
-This phase fires unconditionally for every task BEFORE Gate 4 opens. It is the load-bearing addition from the dogfood Gate 2 (block tbc-r1-f1) — without it, the lane-aggressive-flag mechanism would not catch the cases where the plan's emitted content reveals more than the task scope claimed.
+This phase fires unconditionally for every task in `T_run` BEFORE Gate 4 opens. It is the load-bearing addition from the dogfood Gate 2 (block tbc-r1-f1) — without it, the lane-aggressive-flag mechanism would not catch the cases where the plan's emitted content reveals more than the task scope claimed.
 
 ### B.1.1 Emit the per-task plan (preliminary)
 
@@ -419,7 +445,7 @@ Refuse to proceed to Phase D if status is `failed`. Surface escalations to the u
 
 ## Phase D — Lane execution
 
-For each task whose Gate 4 closed with passed/passed-with-revisions/passed-with-escalations, execute according to lane.
+For each task in `T_run` whose Gate 4 closed with passed/passed-with-revisions/passed-with-escalations, execute according to lane.
 
 > **Single context window per task.** Phases D / E / F for a given task run in one agent context window — no mid-task compaction, no cross-session resumption mid-implementation. If context approaches the cliff during execution, escalate to the developer (same three-option prompt as A.6); never compact silently. Compaction during develop is a defect signal, not a recovery move. Full contract in `templates/admin/single-context-task.md` (per 029-single-context-task).
 
@@ -660,7 +686,7 @@ Pre-existing entries (created at task creation by `specflow:task` Phase D for us
 
 ### F.6 Cleanup scratch on success
 
-After all tasks complete and the per-feature run is closed:
+After all `T_run` tasks complete and the per-run closure fires (sprint-mode: end-of-sprint; feature-mode: end-of-feature):
 
 ```bash
 rm -rf admin/scratch/{NNN-slug}-develop/
@@ -702,19 +728,19 @@ The following situations are explicit failure modes the skill handles without si
 - **Do not "looks correct" verify.** Verification is mechanical or AC-citation-based — every Verifier check binds to a specific acceptance clause from the tasks file.
 - **Do not modify `tasks.md` mid-run.** Scope changes route through `specflow:scope-change`. The tasks file is the contract; in-flight edits break it.
 - **Do not fire Linear "Done" transitions.** "In Review → Done" is a human merge decision, never the skill's.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the per-task plan, the PR description, the gate manifests, the verifier failure payloads, or `task-history.json`. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output, the per-task plan, the PR description, the gate manifests, the verifier failure payloads, or `task-history.json`. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 
 ## Verify before declaring done
 
-Before returning to the user with "feature complete":
+Before returning to the user with "sprint complete" (sprint-mode) or "feature complete" (feature-mode):
 
-1. `admin/scratch/{NNN-slug}-develop/lane-assignments.json` exists with one entry per task in the feature's tasks file.
-2. For every task, `admin/scratch/{NNN-slug}-develop/lane-recheck-{task-id}.json` exists (mechanical recheck fired before Gate 4).
-3. For every task, a Gate 4 manifest exists under `features/{NNN-slug}/debate-log/develop-gate4/` with closing decision `passed`, `passed-with-revisions`, or `passed-with-escalations` (NEVER `failed`).
-4. For every task, a Gate 5 manifest exists under `features/{NNN-slug}/debate-log/develop-gate5/` with closing decision `passed`, `passed-with-revisions`, or `passed-with-escalations`.
-5. For every task, `admin/task-history.json` contains an entry with all six development-time fields populated (`lane_assigned`, `ai_assistance_level`, `elapsed_minutes`, `what_worked`, `what_didnt_work`, `blast_radius_outcome`).
+1. `admin/scratch/{NNN-slug}-develop/lane-assignments.json` exists with one entry per task in `T_run` (and zero entries for tasks NOT in `T_run`).
+2. For every task in `T_run`, `admin/scratch/{NNN-slug}-develop/lane-recheck-{task-id}.json` exists (mechanical recheck fired before Gate 4). For tasks NOT in `T_run`, no recheck file exists from this run.
+3. For every task in `T_run`, a Gate 4 manifest exists under `features/{NNN-slug}/debate-log/develop-gate4/` with closing decision `passed`, `passed-with-revisions`, or `passed-with-escalations` (NEVER `failed`). No Gate 4 manifest exists from this run for tasks outside `T_run`.
+4. For every task in `T_run`, a Gate 5 manifest exists under `features/{NNN-slug}/debate-log/develop-gate5/` with closing decision `passed`, `passed-with-revisions`, or `passed-with-escalations`. No Gate 5 manifest exists from this run for tasks outside `T_run`.
+5. For every task in `T_run`, `admin/task-history.json` contains an entry with all six development-time fields populated (`lane_assigned`, `ai_assistance_level`, `elapsed_minutes`, `what_worked`, `what_didnt_work`, `blast_radius_outcome`). Tasks outside `T_run` have NO new task-history entry from this run (any pre-existing entries are unchanged).
 6. Every per-task plan's first paragraph matches the R17 PRD-anchor format; every PR description's first paragraph mirrors it.
 7. `specflow:budget --skill specflow:develop {NNN-slug}` returns a JSON report with `parent_context_tokens < 30000` AND `max_per_gate_growth_tokens < 2000`.
 8. Scratch directory `admin/scratch/{NNN-slug}-develop/` is cleaned up on success (or retained on failure for debugging).

@@ -579,7 +579,7 @@ When an `active` lesson's `occurrences.length` reaches 3 across distinct feature
 - **Do not overwrite the execution log.** Append-only — past runs are the audit trail.
 - **Do not invent ACs.** If a test case doesn't trace to a PRD AC, surface it as a `specflow:scope-change` candidate; do not invent an AC inline.
 - **Do not invoke `specflow:scope-change` automatically.** PRD changes are user-driven decisions.
-- **Do not mention Claude, Anthropic, or any AI tooling** in any user-facing output, the test plan, the execution log, or the runner output cited in artefacts. Per the project's CLAUDE.md, this is non-negotiable.
+- **Do not mention the underlying AI tooling or vendor** in any user-facing output, the test plan, the execution log, or the runner output cited in artefacts. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
 
