@@ -110,6 +110,16 @@ If MCP unavailable, print the chat-only line: `[linear status: T{N} → In Progr
 
 *"Read the PRD, tasks file, and Gate 3 manifest. Environment: agent-teams `{present|absent}`; Linear MCP `{available|absent}`; Codex CLI `{available|absent}`. Lane-triaging {N} tasks now."*
 
+### A.6 Context-budget pre-flight (per 029-single-context-task)
+
+For each in-scope task, read `context-budget-estimate` from the tasks file and measure the actually-loaded context size for the task's payload (PRD slice + task spec + matched lessons + per-task manifest scaffold + codebase-context files + test plan). Compare:
+
+- **Within ±20%** → proceed silently to Phase B.
+- **Actual exceeds estimate by ≥20% but stays within `config.json.task.contextBudget`** → pause and surface the three-option developer prompt: *"T{N} actual context {A}K vs estimate {E}K (≥20% divergence). Choose: (1) approve the over-run (logged to `decision-log.md`), (2) drop optional context (name the payload component to drop, typically lessons or codebase-context files), (3) route to `specflow:scope-change` to split."* No auto-default; empty input re-prompts.
+- **Actual exceeds the configured budget outright** → refuse to enter Phase B for that task; route to `specflow:scope-change` non-optionally.
+
+The estimation algorithm and the no-mid-task-compaction rationale live in `templates/admin/single-context-task.md` — cite, do not inline.
+
 Hand off to Phase B.
 
 ---
@@ -387,6 +397,8 @@ Refuse to proceed to Phase D if status is `failed`. Surface escalations to the u
 ## Phase D — Lane execution
 
 For each task whose Gate 4 closed with passed/passed-with-revisions/passed-with-escalations, execute according to lane.
+
+> **Single context window per task.** Phases D / E / F for a given task run in one agent context window — no mid-task compaction, no cross-session resumption mid-implementation. If context approaches the cliff during execution, escalate to the developer (same three-option prompt as A.6); never compact silently. Compaction during develop is a defect signal, not a recovery move. Full contract in `templates/admin/single-context-task.md` (per 029-single-context-task).
 
 ### D.1 Green-lane batched execution
 

@@ -177,6 +177,7 @@ gate3: ./debate-log/tasks-gate3/manifest.md
 - **Scope:** {file paths, components, modules touched. Be specific.}
 - **Acceptance:** {binary pass/fail check. Cite AC-N from the PRD if applicable.}
 - **Depends on:** {T-id of any task that must complete first, or "none"}
+- **context-budget-estimate:** {int_tokens — sum of PRD slice + task spec + matched lessons + manifest scaffold + codebase-context payload + test plan, per `templates/admin/single-context-task.md`}
 - **Notes:** {gotchas, rule-registry entries that apply, decision-log references; or "none"}
 
 ### T2 — {short title}
@@ -204,6 +205,7 @@ Before surfacing intent summaries, verify:
 2. **Reverse traceability** — every task's *Anchor* line cites at least one valid requirement ID.
 3. **Binary acceptance** — every task's *Acceptance* line passes the binary test (could a fresh agent run the check and report pass/fail unambiguously). If not, sharpen the acceptance line.
 4. **No requirement contradicts the goal's Out-of-scope-at-goal-level** — re-read the interview's Goal section and cross-check.
+5. **Budget self-check (per 029-single-context-task).** For each task, verify `context-budget-estimate` ≤ `config.json.task.contextBudget` (default 80,000 tokens). Tasks over budget are auto-flagged: append an inline note `> Budget overrun: estimate {N}K vs budget {M}K — split required before develop.` under the task block AND surface a chat-line prompt directing the user to `specflow:scope-change` for the recut. The over-budget task remains in the file with the warning so the recut is auditable. Citation: `templates/admin/single-context-task.md` for the estimation algorithm and the no-mid-task-compaction rationale.
 
 If any check fails, fix the tasks file before proceeding.
 
