@@ -1,2 +1,13 @@
 .DS_Store
 TODO.md
+
+# Local Claude Code session state — never push.
+.claude/
+
+# Internal planning + research workspace — not part of the marketplace plugin.
+# Lives locally for development; the plugin under plugins/specflow/ is authoritative.
+v2/
+
+# Pre-v2 root changelog superseded by plugins/specflow/CHANGELOG.md.
+# Keep ignored so it doesn't get re-added by accident.
+CHANGELOG.md
