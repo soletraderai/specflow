@@ -331,17 +331,9 @@ Default is `committed`. If the user picks `derived`, append the line `*-brief.ht
 
 Then prompt for the per-task duration cap:
 
-> *"How long should a single specflow task take to complete?*
->
-> *Smaller tasks are easier to review, easier to undo, and easier to get right on the first attempt. Larger tasks let you bundle related work but raise the review burden and the cost of recovery when something needs unwinding.*
->
-> *(1) `30` — small; recommended for unfamiliar codebases or new teams.*
-> *(2) `60` — standard; the most common choice.*
-> *(3) `90` — medium; mature codebases with senior teams.*
-> *(4) `120` — large; heavy investigation work; review burden grows.*
-> *(5) `auto` — no fixed cap; the system synthesises a per-task duration estimate informationally. Sizing is enforced by the token-budget rule alone (`task.contextBudget`)."*
+> *"How long should a single specflow task take? Smaller is easier to review and undo. Pick `1` / `4` / `8` hours, or `auto` to let the token budget alone size tasks."*
 
-Map the user's choice to `task.maxDurationMinutes`: `1 → 30`, `2 → 60`, `3 → 90`, `4 → 120`, `5 → "auto"`. Default if the user skips or types something unrecognised: `60`. Reject negative integers, non-integer numbers other than `"auto"`, and integer values > 240 with a re-prompt (`"value must be one of 1-5"`).
+Map the user's choice to `task.maxDurationHours`: `1 | 4 | 8 | "auto"`. Default on skip or malformed input: `1`. Re-prompt on any other value.
 
 Then write `docs/specflow/admin/config.json`:
 
@@ -358,7 +350,7 @@ Then write `docs/specflow/admin/config.json`:
   "task": {
     "contextBudget": 80000,
     "maxLessonsSurfaced": 5,
-    "maxDurationMinutes": 60
+    "maxDurationHours": 1
   },
   "prd": {
     "maxLessonsSurfaced": 5
@@ -394,7 +386,7 @@ Then write `docs/specflow/admin/config.json`:
 
 `task.contextBudget` is the per-task token ceiling for the single-context-window rule (per 029-single-context-task v2.5.0). Default `80000` — sits inside the smart zone with headroom for tool-call output. Tasks whose `context-budget-estimate` exceeds this value auto-flag at synthesis (`specflow:task` Phase B.4) and route to `specflow:scope-change` for splitting. Lower the value on token-sensitive providers; raise it cautiously and only after empirical evidence the smart zone is wider than 80K on your stack. Estimation algorithm and no-mid-task-compaction contract live in `templates/admin/single-context-task.md`.
 
-`task.maxDurationMinutes` is the soft cap on human-time per task (in minutes), captured at setup-time via the 8.2 prompt. Integer values `30 | 60 | 90 | 120` (or the string `"auto"`) are accepted; default `60`. Read by `specflow:task` Phase B.4 step 8 to flag oversize tasks for splitting, parallel to the token-budget check at step 5. When set to `"auto"`, the duration estimate becomes informational only — no enforcement; the token-budget rule remains the sizing authority. Lower values (30) suit unfamiliar codebases / new teams where review burden dominates; higher values (90 / 120) suit mature codebases with senior reviewers. The cap is orthogonal to `contextBudget` — tokens cap the AI's context window; minutes cap human review burden. A task can pass one and fail the other.
+`task.maxDurationHours` is the soft sizing target per task in hours — `1 | 4 | 8 | "auto"`; default `1`. Captured at setup-time via the 8.2 prompt. `specflow:task` aims for tasks within the cap during synthesis; when `"auto"`, sizing falls back to `contextBudget` alone.
 
 `skills.{name}.enabled` toggles individual skills on/off at the project level. Default `true` for every shipped skill. Each skill checks its toggle in its Phase A pre-flight and refuses with a one-line message when disabled (e.g. *"`specflow:develop` is disabled in this project (config.skills.develop.enabled = false). Re-enable in admin/config.json or invoke a different skill."*). The resolver contract is documented in `templates/admin/skill-toggles.md`. Setup leaves all skills enabled by default; users disable selectively (for example, an org that uses GitHub Copilot for implementation might disable `specflow:develop` but keep `specflow:prd` + `specflow:task` + `specflow:test`). Resolution citation: `v2/docs/PRD.md` § Resolved decisions — 012-config-skill-toggles v2.4.0.
 

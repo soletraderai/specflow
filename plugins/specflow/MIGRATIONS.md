@@ -15,6 +15,35 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.9.0 → v2.9.1
+
+Simplifies the v2.9.0 duration knob per user feedback. Unit changes from minutes to hours; option set shrinks to `1 | 4 | 8 | auto`; the per-task field and B.4 self-check step are removed.
+
+### Scope
+
+- Config key renamed: `task.maxDurationMinutes` → `task.maxDurationHours`. Default `60` (mins) → `1` (hour). Options `30 / 60 / 90 / 120` → `1 / 4 / 8`.
+- Task-block field `estimated-duration-minutes` removed from B.3 template. Existing task blocks that carry the legacy field are left untouched; new tasks created post-upgrade omit it.
+- `specflow:task` Phase B.4 step 8 (Duration self-check) removed. Sizing is enforced by the existing step 5 (token-budget self-check) alone; duration is a synthesis-time target.
+
+### Steps
+
+1. Pull v2.9.1.
+2. `specflow:upgrade` rewrites `admin/config.json`: deletes `task.maxDurationMinutes` if present; writes `task.maxDurationHours: 1` if absent. User-edited values are not preserved across the rename — the conversion is intentionally lossy because the option sets don't overlap.
+3. Legacy task blocks with `estimated-duration-minutes` are left in place; the field is now a no-op.
+
+### Backups
+
+- `admin/config.json.bak` written before the key rename.
+
+### Verify
+
+- `grep -q '"maxDurationHours"' docs/specflow/admin/config.json` returns 0.
+- `grep -q '"maxDurationMinutes"' docs/specflow/admin/config.json` returns 1 (key removed).
+- `grep -n 'estimated-duration-minutes' plugins/specflow/skills/task/SKILL.md` returns no matches.
+- `grep -n 'Duration self-check' plugins/specflow/skills/task/SKILL.md` returns no matches.
+
+---
+
 ## v2.8.0 → v2.9.0
 
 Adds a new user-facing config knob for per-task duration. Additive; existing projects get a sensible default at upgrade time.

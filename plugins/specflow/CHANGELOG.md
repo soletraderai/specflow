@@ -4,7 +4,24 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.9.0 lifts the implicit per-task duration cap into a first-class user-chosen config knob. Setup now asks the user how long a task should be (30 / 60 / 90 / 120 minutes, or "auto"); `specflow:task` enforces the choice at synthesis time, parallel to the existing token-budget rule._
+_v2.9.1 simplifies v2.9.0's duration knob per user feedback — minutes become hours, the option set becomes `1 | 4 | 8 | auto`, and the per-task field plus B.4 self-check are removed. The cap is a synthesis-time sizing target read from the config, not an enforcement scaffold._
+
+## [2.9.1] — 2026-05-12
+
+### Changed
+
+- `task.maxDurationMinutes` renamed to `task.maxDurationHours`. Options: `1 | 4 | 8` or `"auto"`; default `1`. Setup prompt simplified to a single line.
+- `specflow:task` reads the value at synthesis time as a sizing target. No new task-block field; no new B.4 self-check step.
+
+### Removed
+
+- `estimated-duration-minutes` task-block field (added in v2.9.0; redundant — token-budget already drives enforcement).
+- B.4 step 8 (Duration self-check) (added in v2.9.0; redundant).
+- Setup's multi-paragraph duration prompt and the orthogonality explanation (added in v2.9.0; the simpler shape doesn't need them).
+
+### Migration
+
+- `specflow:upgrade` deletes any existing `task.maxDurationMinutes` key and writes `task.maxDurationHours: 1` if absent. `.bak` of `config.json` preserved.
 
 ## [2.9.0] — 2026-05-12
 
