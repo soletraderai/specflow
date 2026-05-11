@@ -4,7 +4,37 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.7.1 hardened the v2.7.0 ship surface against thirteen findings from a multi-round adversarial review. No new features; no contract changes. Next milestone remains: real consumer-project dogfood._
+_v2.8.0 ships `specflow:learn` — the repo-local self-learning consumer that closes the loop between `specflow:test` findings and the project's living rules + context registry. Producer integration in `specflow:test` is intentionally deferred until real-world test-run signal lands._
+
+## [2.8.0] — 2026-05-11
+
+### Added
+
+**New skill** (`plugins/specflow/skills/learn/`):
+
+- `specflow:learn` — repo-local self-learning loop. Consumes `docs/specflow/admin/plugin-findings.jsonl` (append-only structured corpus emitted by `specflow:test` or any producer); clusters deterministically by `signal_pattern` at a 3-observation threshold; auto-applies Tier-A additive rules under a per-run cap of 3. Five-phase orchestrator — A lock + corpus + registry read, B schema-validate + cluster, C tier-route (A repo-local / B plugin-level-logged / C conflict-logged), D Tier-A auto-apply with `.bak` before every write, E end-of-feature report + run log + lock release. No LLM-as-judge inside the loop. No sub-agent forking. Additive-only on every registry; existing rules and existing config keys are never mutated. The per-run cap of 3 is the safety valve for the burst case where a full-feature test run dumps 50+ findings in one shot.
+
+**Tier-A destinations:**
+
+- `admin/rules/guidelines.md` — new guideline blocks with `source_finding_ids` provenance frontmatter; conservative `paths: ["**/*"]` default the user narrows at edit-time.
+- `admin/CONTEXT.md` — new "Known weak spots" entries; section header created on first write if missing.
+- `admin/config.json` — new top-level keys only (the cluster's contributing findings must nominate `KEY=path; VALUE=<json>` for the write to land; otherwise the cluster demotes to Tier C).
+
+**Tier-B / Tier-C logging:**
+
+- `admin/scratch/plugin-candidates-{date}.md` — Tier-B clusters (categories `bug` or `architecture` — these touch the plugin itself, not the repo). Logged for manual review; the user routes plugin-repo issues from there.
+- `admin/scratch/learn-conflicts-{date}.md` — Tier-C clusters (signal-pattern collides with an existing rule id; `proposed_fix` cardinality > 2; post-write verification failed; config key already set; config cluster missing key/value nomination).
+
+**Reports:**
+
+- `admin/learn/{feature_slug | "full-corpus"}-learn-{ts}.md` — six-section end-of-feature report (Auto-applied / Hit-threshold-but-blocked / Tier-B candidates / Tier-C conflicts / Below-threshold / System-learned). Closes the user-facing loop: read the diff in your next commit to review the auto-applied changes.
+- `admin/learn/runs.jsonl` — append-only run log mirroring the `insights` and `optimize` corpus patterns.
+
+### Notes
+
+- **`specflow:test` is intentionally unchanged in this release.** The corpus (`plugin-findings.jsonl`) is producer-agnostic; the consumer is shippable on its own. The producer integration (emit one JSONL line per verification gap; invoke `specflow:learn` best-effort at end of Phase C) lands in a follow-up release once a real consumer-project test run grounds the sidecar schema against actual emitted signal — not against an imagined shape.
+- **Independent of `insights`.** Both write to `admin/rules/guidelines.md` but on different cadences and from different corpora (`insights` mines `task-history.json` for project-domain lessons monthly; `specflow:learn` mines `plugin-findings.jsonl` for process-meta findings per-test). Conflict-detection at Phase C prevents id collisions.
+- **Out of scope for v1.** Tier-B auto-PR machinery (plugin-level changes via `gh`) is intentionally deferred — the design conversation framed this loop as repo-specific, so plugin-touching changes stay manual.
 
 ## [2.7.1] — 2026-05-07
 
