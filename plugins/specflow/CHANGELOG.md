@@ -4,7 +4,33 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.8.0 ships `specflow:learn` — the repo-local self-learning consumer that closes the loop between `specflow:test` findings and the project's living rules + context registry. Producer integration in `specflow:test` is intentionally deferred until real-world test-run signal lands._
+_v2.9.0 lifts the implicit per-task duration cap into a first-class user-chosen config knob. Setup now asks the user how long a task should be (30 / 60 / 90 / 120 minutes, or "auto"); `specflow:task` enforces the choice at synthesis time, parallel to the existing token-budget rule._
+
+## [2.9.0] — 2026-05-12
+
+### Added
+
+**New config key** (`admin/config.json`):
+
+- `task.maxDurationMinutes` — integer minutes (`30 | 60 | 90 | 120`) or the string `"auto"`. Default `60`. Captured at setup time via a new 8.2 prompt; back-filled silently on upgrade. The cap is orthogonal to `task.contextBudget` — tokens cap the AI's context window, minutes cap human review burden. A task can pass one and fail the other.
+
+**New task-block field** (`{NNN-slug}-tasks.md`):
+
+- `estimated-duration-minutes` — positive integer; the AI's synthesis-time estimate of human-time to implement. Surfaces between `context-budget-estimate` and `sprint-bucket`. When `config.task.maxDurationMinutes == "auto"`, the field is informational only; otherwise it MUST be ≤ the configured cap or the task auto-flags for split via `specflow:scope-change`.
+
+### Changed
+
+**Skill body changes** (no new skills):
+
+- `specflow:setup` Phase 8.2 — new prompt between the brief-commit-policy question and the `config.json` write. Five options (`1 → 30`, `2 → 60`, `3 → 90`, `4 → 120`, `5 → "auto"`); default `60` on skip. Advises smaller tasks are easier to manage. Sub-prompt rejects malformed input with a re-prompt rather than coercing.
+- `specflow:task` Phase B.3 — task-block template adds `estimated-duration-minutes` field between `context-budget-estimate` and `sprint-bucket`.
+- `specflow:task` Phase B.4 — adds step 8 (Duration self-check), parallel to step 5 (budget self-check). When `config.task.maxDurationMinutes` is an integer, every task's `estimated-duration-minutes` MUST be ≤ the cap or it auto-flags with an inline `> Duration overrun: estimate {N} mins vs cap {M} mins — consider splitting via specflow:scope-change.` warning and a chat-line prompt. When the config value is `"auto"`, the check is skipped entirely — the estimate is informational only.
+
+### Notes
+
+- **Orthogonality.** Duration and token budget are independent sizing dimensions. A task can pass tokens and fail minutes (long human review of a small AI payload) or vice versa (heavy AI context, quick human review). Both flag; both route to `specflow:scope-change` for splitting. The user picks both knobs at setup — the token budget defaults to `80000`, the duration defaults to `60`.
+- **Auto semantics.** `"auto"` means "the system synthesises the estimate informationally but enforces nothing on human-time" — sizing authority falls back to the token-budget rule alone. It does NOT mean "the system picks a number for you to enforce against."
+- **Upgrade behaviour.** Existing projects get `task.maxDurationMinutes: 60` back-filled silently into `admin/config.json` by `specflow:upgrade` (creating the key only when absent; never overwrites a user value). Historical task files are not retroactively rewritten — only new tasks created post-upgrade carry the `estimated-duration-minutes` field.
 
 ## [2.8.0] — 2026-05-11
 

@@ -180,6 +180,7 @@ gate3: ./debate-log/tasks-gate3/manifest.md
 - **Acceptance:** {binary pass/fail check. Cite AC-N from the PRD if applicable.}
 - **Depends on:** {T-id of any task that must complete first, or "none"}
 - **context-budget-estimate:** {int_tokens — sum of PRD slice + task spec + matched lessons + manifest scaffold + codebase-context payload + test plan, per `templates/admin/single-context-task.md`}
+- **estimated-duration-minutes:** {positive integer — AI's best estimate of human-time to implement this task based on scope size, file count, novelty, and rule-applicability. When `config.task.maxDurationMinutes == "auto"`, the value is informational; otherwise it MUST be ≤ the configured cap or the task auto-flags at B.4 step 8.}
 - **sprint-bucket:** {positive integer ≥ 1 — derived deterministically from the dependency graph + scope-overlap per `templates/task/sprint-bucket-heuristic.md` (per 025-sprint-task-flagging v2.5.0)}
 - **prior-lessons:** {array of L-NNN ids that shaped this task, per the lessons registry query at A.4 (per 018-lessons-registry v2.6.0); empty array `[]` when no lessons apply}
 - **Notes:** {gotchas, rule-registry entries that apply, decision-log references; or "none"}
@@ -214,6 +215,8 @@ Before surfacing intent summaries, verify:
 6. **Graph-validity check (per 025-sprint-task-flagging).** Before bucket assignment, walk the per-task `Depends on:` lists and reject malformed graphs with deterministic `GRAPH-INVALID:` diagnostics — cycle, self-loop, duplicate task IDs, duplicate dependency edge, dangling reference. On any failure, abort synthesis before any `sprint-bucket: N` is written; point the user to `specflow:scope-change` for legitimate dependency-graph edits. Diagnostic format documented in `templates/task/sprint-bucket-heuristic.md`.
 
 7. **Sprint-bucket assignment (per 025-sprint-task-flagging).** Apply the single-rule heuristic from `templates/task/sprint-bucket-heuristic.md`: `bucket(T) = 1` for tasks with no predecessors and no same-bucket scope conflict; otherwise `1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T))`. Apply bump iteration to fixed point. Bucket assignment runs AFTER step 5 (budget self-check) — oversize tasks never reach bucketing.
+
+8. **Duration self-check.** Read `config.json.task.maxDurationMinutes` (default `60`). If the value is an integer, verify every task's `estimated-duration-minutes` ≤ the configured cap. Tasks over the cap auto-flag: append an inline note `> Duration overrun: estimate {N} mins vs cap {M} mins — consider splitting via specflow:scope-change.` under the task block AND surface a chat-line prompt directing the user to `specflow:scope-change`. The over-cap task remains in the file with the warning so the recut is auditable. If the value is the string `"auto"`, skip this check entirely — the `estimated-duration-minutes` field is informational only. Duration check is orthogonal to step 5's budget check: a task can pass tokens and fail minutes, or vice versa. Both auto-flag; both route to `specflow:scope-change` for splitting.
 
 If any check fails, fix the tasks file before proceeding.
 

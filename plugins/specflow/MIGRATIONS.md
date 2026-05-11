@@ -15,6 +15,72 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.8.0 → v2.9.0
+
+Adds a new user-facing config knob for per-task duration. Additive; existing projects get a sensible default at upgrade time.
+
+### Scope
+
+**New config key** (`admin/config.json`):
+
+- `task.maxDurationMinutes` — integer minutes (`30 | 60 | 90 | 120`) or the string `"auto"`. Default `60`. Captured at setup time via a new 8.2 prompt; back-filled silently on upgrade. Read by `specflow:task` Phase B.4 step 8 to flag oversize tasks for `specflow:scope-change` splitting, parallel to the existing token-budget check at step 5. When `"auto"`, the per-task `estimated-duration-minutes` field becomes informational only — the token-budget rule remains the sizing authority.
+
+**New task-block field** (`{NNN-slug}-tasks.md`):
+
+- `estimated-duration-minutes` — positive integer; the AI's synthesis-time estimate of human-time to implement. Surfaces between `context-budget-estimate` and `sprint-bucket`. Required for every task block.
+
+**Skill body changes:**
+
+- `specflow:setup` Phase 8.2 — new prompt between brief commit policy and config.json write. Maps user choice 1-5 to `30 / 60 / 90 / 120 / "auto"`. Default `60` on skip.
+- `specflow:task` Phase B.3 — task-block template adds `estimated-duration-minutes` field.
+- `specflow:task` Phase B.4 — adds step 8 (Duration self-check), parallel to step 5 (budget self-check). Skipped when the config value is `"auto"`.
+
+### Steps
+
+1. Pull v2.9.0.
+2. `specflow:upgrade` back-fills `task.maxDurationMinutes: 60` into existing `admin/config.json` files (creating the key only when absent; never overwrites a user value).
+3. Existing tasks files lack `estimated-duration-minutes` on prior task blocks. `specflow:task` consumers fall back to "estimate not present, skip the duration check for this task" semantics; new tasks created post-upgrade will include the field. No retroactive rewrite of historical tasks files.
+4. No data loss; no schema breakage.
+
+### Backups
+
+- `admin/config.json.bak` written before the back-fill (mirrors the v2.7.0 backup discipline).
+
+### Verify
+
+- `grep -q '"maxDurationMinutes"' docs/specflow/admin/config.json` returns 0.
+- `grep -n 'estimated-duration-minutes' plugins/specflow/skills/task/SKILL.md` shows the new field in B.3.
+- `grep -n 'Duration self-check' plugins/specflow/skills/task/SKILL.md` shows step 8 in B.4.
+
+---
+
+## v2.7.1 → v2.8.0
+
+Adds a new Phase 3 skill (`specflow:learn`). Additive; no schema changes; no migration script required for existing projects.
+
+### Scope
+
+**New skill** (`plugins/specflow/skills/learn/`):
+
+- `specflow:learn` — repo-local self-learning consumer. Reads `docs/specflow/admin/plugin-findings.jsonl` (lazy-created on first append by any producer); clusters deterministically by `signal_pattern` at a 3-observation threshold; auto-applies Tier-A additive rules under a per-run cap of 3. Tier-B (plugin-level) and Tier-C (conflict) clusters log to `admin/scratch/` for manual review.
+
+### Steps
+
+1. Pull v2.8.0.
+2. No `admin/config.json` updates required — `specflow:learn` reads existing registry files (`rules/guidelines.md`, `CONTEXT.md`, `config.json`) and writes to them additively. The corpus file is lazy-created.
+3. No existing skill bodies modified; `specflow:test` producer integration ships in a follow-up release once real-world test-run signal grounds the sidecar schema.
+
+### Backups
+
+None required — no user data is moved or rewritten.
+
+### Verify
+
+- `test -f plugins/specflow/skills/learn/SKILL.md` returns 0.
+- `plugin.json` and `marketplace.json` both report `2.8.0`.
+
+---
+
 ## v2.7.0 → v2.7.1
 
 Hardening release. No new features, no schema changes, no new files. Pure prompt-asset edits to existing skill bodies and templates.
