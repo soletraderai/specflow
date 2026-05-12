@@ -132,6 +132,14 @@ Hand off to Phase C.
 
 ### C.1 Reflect what was heard
 
+Before composing the reflection, gauge complexity. Read the four answers and decide `mode: light | full`:
+
+- **Light signals.** Verbs like *remove / rename / tweak / swap / hide / update copy*. Acceptance shape *"X is hidden" / "X reads Y" / "the image no longer appears"*. No content yet in `assets/` or `design/`. Goal fits in one paragraph. → `mode: light`.
+- **Full signals.** Verbs like *add / build / integrate / support / introduce*. Acceptance shape *"X works with Y under conditions Z"*. Reference content present in `assets/` or `design/`. Goal needs two paragraphs to express. → `mode: full`.
+- **Mixed.** When signals split, prefer `full` and flag the ambiguity in the reflection so the user can downgrade.
+
+The mode determines whether downstream skills (`specflow:prd`, `specflow:task`, `grill`) run their full review chain (`full`) or skip the heavy passes (`light`). It is not a hard threshold — the user confirms at C.2 and can override at any phase.
+
 Compose a reflection block in chat:
 
 ```
@@ -143,6 +151,8 @@ Here's what I heard:
 
 **Audience:** {audience from question 3, cited against profiles.json when matched}
 
+**Mode:** {light | full} — {one-line rationale citing the signals above}
+
 **Open questions I'd raise before PRD:**
 - {1-3 questions the AI surfaces from gaps in the answers, not yet load-bearing — to be resolved during PRD interview}
 
@@ -152,7 +162,7 @@ Here's what I heard:
 Confirm, edit, or replace.
 ```
 
-The reflection is the AI's interpretation. The user owns the goal — they can confirm verbatim, edit any field, or replace wholesale.
+The reflection is the AI's interpretation. The user owns the goal — they can confirm verbatim, edit any field (including `mode:`), or replace wholesale.
 
 ### C.2 Iterate to confirmation
 
@@ -184,6 +194,7 @@ Write to `docs/specflow/features/{NNN-slug}/{NNN-slug}-feature.md`:
 ---
 slug: {NNN-slug}
 status: kickoff
+mode: {light | full}
 created: {YYYY-MM-DD}
 goal_locked: {YYYY-MM-DD}
 ---

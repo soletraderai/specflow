@@ -4,7 +4,45 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.10.1 wires `assets/` folder readback into `specflow:prd` Phase A.3 — closes the loop where users drop YAML / HTML / JSON reference files in `assets/` and expect the PRD generator to actually read them. Mirrors the existing design-folder readback pattern._
+_v2.11.0 adds light-mode coverage — `specflow:feature` auto-detects complexity at kickoff, writes `mode: light | full` to feature.md frontmatter, and downstream `specflow:prd` / `specflow:task` / `grill` skip the heavy review chain when `light`. Proportional ceremony: full pipeline for big features, lightweight pass for trivial changes. Closes the dogfood-time friction where a "remove an image" change ran through six reviewers + multi-agent debates._
+
+## [2.11.0] — 2026-05-12
+
+### Added
+
+**Complexity-aware pipeline mode** — `mode: light | full` field in `{NNN-slug}-feature.md` frontmatter. Auto-detected by `specflow:feature` at kickoff; user confirms or overrides at the Phase C reflection step. Downstream skills read the mode at Phase A entry and skip their heavy review chain when `light`.
+
+**Detection heuristic** (`specflow:feature` Phase C.1):
+
+- Light signals: verbs like *remove / rename / tweak / swap / hide / update copy*; acceptance shape *"X is hidden" / "X reads Y"*; no content in `assets/` or `design/`; one-paragraph goal.
+- Full signals: verbs like *add / build / integrate / support / introduce*; acceptance shape *"X works with Y under conditions Z"*; reference content present; two-paragraph goal.
+- Mixed: prefer `full`; flag the ambiguity in the reflection so the user can downgrade.
+
+### Changed
+
+**`specflow:prd` Phase A.0** — extended to read `mode:` from feature.md. When `mode: light`:
+
+- Phase B (grilling) caps at 0-2 rounds (delegates to `grill` sub-skill's own mode-read).
+- Phase B.5 (Codex adversarial pass) skipped; stub `pre-gate-codex.md` written.
+- Phase D (Gate 2 multi-agent debate) skipped; stub manifest written with closing decision *"passed (light mode — no multi-agent review)"*.
+- Phase C (PRD body synthesis) and Phase E (brief render) still run.
+
+**`specflow:task`** — new A.0 step reads `mode:` from feature.md. When `mode: light`:
+
+- Phase B.5 (Codex pass) skipped; stub `pre-gate-codex.md` written.
+- Phase D (per-task reviewer multi-agent rounds) skipped.
+- Phase E.4.5 (cross-task review) skipped.
+- Phase E (Gate 3 multi-agent debate) skipped; stub manifest written.
+- Phases B.1-B.4 (coverage matrix, self-checks for budget / duration / graph-validity), B.6 (sprint-bucket assignment), Phase C (intent summaries) all still run.
+
+**`grill` sub-skill pre-flight** — adds step 6 (mode read). When `mode: light`, applies a 0-2 round cap; if no load-bearing question surfaces, writes a one-line round and proceeds to sign-off without asking anything. User can override at any round (*"switch to full"* / *"switch to light"*).
+
+### Notes
+
+- **Default behaviour preserved.** When feature.md is absent OR the `mode:` field is missing (pre-2.11.0 features), `MODE` defaults to `full` and every skill runs the legacy review chain unchanged.
+- **Override semantics.** Mode is not locked. Users can switch at any phase by editing feature.md or by telling `grill` "switch to full/light". Downstream skills read the mode on every Phase A entry, so the next invocation picks up the change.
+- **Scope.** v2.11.0 covers `feature` / `prd` / `task` / `grill` — the four skills the user hit friction on during the 2026-05-12 dogfood. `specflow:develop` / `specflow:test` retain their full reviewer flow; light-mode coverage there lands if/when friction is reported.
+- **Not a replacement for `specflow:misc`.** Misc remains the no-PRD escape hatch for true one-offs (single bullet in `000-tasks-misc-tasks.md`). Light mode is the middle ground — full pipeline with proportional ceremony.
 
 ## [2.10.1] — 2026-05-12
 

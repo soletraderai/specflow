@@ -57,16 +57,24 @@ Before A.1, check whether `specflow:feature` has already run for this feature. T
 
 When the meta file is found:
 
-1. Read it. Extract `slug`, `status`, `goal_locked` from frontmatter; extract the Goal section body (everything between `## Goal` and the next `## ` heading).
+1. Read it. Extract `slug`, `status`, `mode`, `goal_locked` from frontmatter; extract the Goal section body (everything between `## Goal` and the next `## ` heading).
 2. Verify `status: kickoff`. If `status` is beyond `kickoff` (i.e. PRD already exists), refuse: *"`{NNN-slug}` is past kickoff (status: `{status}`); a PRD already exists. Edit `{NNN-slug}-prd.md` directly or use `specflow:scope-change` for substantive changes."* Exit.
 3. Skip A.1 (slug already allocated by `specflow:feature`).
 4. Skip A.2's mkdir (folder already exists; mkdir is idempotent anyway).
 5. Skip A.5 / A.6 / A.7 (goal articulate / confirm / write) — the goal in feature.md is user-confirmed at kickoff. At A.4, populate the interview's Goal section verbatim from the feature.md Goal section.
 6. After A.7's normal hand-off point, edit `{NNN-slug}-feature.md` frontmatter: `status: prd-pending`. This is the only mutation this skill makes to feature.md.
 
-A.3 (codebase context) and A.3.5 (lessons query) still run. Phase B (grilling) reads the goal from the interview file as before; the grilling questions cover decomposition / acceptance / open questions / out-of-scope — NOT the strategic shape, which is already locked.
+A.3 (codebase context) and A.3.5 (lessons query) still run regardless of mode.
 
-When the meta file is absent, A.1-A.7 run as documented below (the pre-030 flow). `specflow:feature` is the recommended entry point but `specflow:prd` remains valid as a direct entry for quick PRDs that don't need a kickoff step.
+**Mode read (per 032-lightweight-mode v2.11.0).** Bind `MODE` from feature.md's frontmatter. Default to `full` when feature.md is absent OR when the `mode:` field is missing (backward-compatible for pre-2.11.0 features). Surface a one-line chat note: *"Mode: `{MODE}`."* When `MODE == "light"`, downstream phases skip their heavy passes:
+
+- **Phase B (grilling)** — caps at 0-2 rounds, only the most load-bearing questions. The `grill` sub-skill re-evaluates at its own pre-flight (per its 2.11.0 mode-read) and applies the cap.
+- **Phase B.5 (pre-Gate-2 Codex adversarial pass)** — skipped entirely. Write a one-line `pre-gate-codex.md` stating *"Skipped in light mode — no adversarial surface for trivial changes."* and proceed.
+- **Phase D (Gate 2 multi-agent debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/prd-gate2/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value. The PRD body still synthesises at Phase C; the brief still renders at Phase E.
+
+When `MODE == "full"`, the legacy flow runs unchanged.
+
+When the meta file is absent, A.1-A.7 run as documented below (the pre-030 flow) and `MODE` defaults to `full`. `specflow:feature` is the recommended entry point but `specflow:prd` remains valid as a direct entry for quick PRDs that don't need a kickoff step.
 
 ### A.1 Allocate feature ID and slug
 

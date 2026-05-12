@@ -54,6 +54,24 @@ Tell the user explicitly which phase you're starting at.
 
 ## Phase A — Pre-flight + read PRD/interview
 
+### A.0 Mode read (per 032-lightweight-mode v2.11.0)
+
+Before A.1, read `features/{NNN-slug}/{NNN-slug}-feature.md` if present. Extract the `mode:` frontmatter field. Bind `MODE` for this run.
+
+- `mode: light` → skip the heavy review chain. See per-phase skips below.
+- `mode: full` or feature.md absent or `mode:` field missing → run the full review chain (legacy behaviour).
+
+Surface a one-line chat note: *"Mode: `{MODE}`."*
+
+When `MODE == "light"`, the following phases skip:
+
+- **Phase B.5 (pre-Gate-3 Codex adversarial pass)** — skipped entirely. Write a one-line `pre-gate-codex.md` stating *"Skipped in light mode — no adversarial surface for trivial changes."* and proceed.
+- **Phase D (per-task reviewer rounds)** — skipped. The per-task reviewer multi-agent passes (Round 1 / 2 / 3) add no signal when the task set is 1-2 small tasks.
+- **Phase E.4.5 (cross-task review)** — skipped. Cross-task arrangement analysis on a 1-2 task set is pointless.
+- **Phase E (Gate 3 multi-agent debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/tasks-gate3/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value.
+
+Phases B.1-B.4 (coverage matrix, self-checks for budget / duration / graph-validity), B.6 (sprint-bucket assignment), and Phase C (intent summaries to the user) still run regardless of mode — they're the actual decomposition work, not review.
+
 ### A.1 Verify the artefact chain
 
 Use Read tool in parallel on:

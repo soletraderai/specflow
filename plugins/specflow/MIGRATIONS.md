@@ -15,6 +15,38 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.10.1 → v2.11.0
+
+Adds light-mode coverage across `feature` / `prd` / `task` / `grill`. Additive; backward-compatible with pre-2.11.0 features (mode defaults to `full` when absent).
+
+### Scope
+
+- New frontmatter field on `{NNN-slug}-feature.md`: `mode: light | full`. Auto-detected by `specflow:feature` Phase C.1; user confirms at reflection.
+- `specflow:feature` Phase C.1 adds complexity detection from goal answers + assets/design content.
+- `specflow:prd` Phase A.0 extended to read `mode:` and skip Phase B.5 (Codex) + Phase D (Gate 2) when `light`; Phase B (grilling) caps at 0-2 rounds.
+- `specflow:task` gains new Phase A.0 step (mode read); skips Phase B.5 (Codex) + Phase D (per-task reviewers) + Phase E.4.5 (cross-task review) + Phase E (Gate 3) when `light`.
+- `grill` sub-skill pre-flight adds step 6 (mode read); applies 0-2 round cap when `light`.
+
+### Steps
+
+1. Pull v2.11.0.
+2. No `admin/config.json` updates required.
+3. Existing feature.md files without `mode:` continue to work — every reading skill defaults to `full` when the field is missing.
+4. New features kicked off via `specflow:feature` after upgrade will carry the `mode:` field automatically.
+
+### Backups
+
+None required — no user data is moved or rewritten.
+
+### Verify
+
+- `grep -n 'Mode read (per 032-lightweight-mode' plugins/specflow/skills/prd/SKILL.md` returns a match.
+- `grep -n 'Mode read (per 032-lightweight-mode' plugins/specflow/skills/task/SKILL.md` returns a match.
+- `grep -n 'mode: {light' plugins/specflow/skills/feature/SKILL.md` returns a match (frontmatter template).
+- `plugin.json` and `marketplace.json` both report `2.11.0`.
+
+---
+
 ## v2.10.0 → v2.10.1
 
 Wires `assets/` folder readback into `specflow:prd` Phase A.3. Additive; no schema changes; no migration script required.

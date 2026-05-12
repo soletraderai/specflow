@@ -45,12 +45,19 @@ Before asking any question:
    - `docs/specflow/admin/rules/non-negotiable.md` and `guidelines.md`.
    - Any prior PRDs in `features/*/` that touch adjacent surfaces (Glob the feature directory; if a prior feature's slug overlaps with this one's domain, read its `prd.md`).
 5. Note the resolved-assumptions from any rounds already in the interview's `## Rounds` section. If rounds exist, you're extending an existing interview — do not repeat resolved questions.
+6. **Mode read (per 032-lightweight-mode v2.11.0).** Read `features/{NNN-slug}/{NNN-slug}-feature.md` if present. Extract `mode:` from frontmatter. Bind `MODE` for this run. Default to `full` when feature.md is absent or the field is missing.
+
+   When `MODE == "light"`, apply a **round cap of 0-2**: ask only the genuinely load-bearing questions (per step 1 criteria below). If no load-bearing question exists, skip grilling entirely and write a one-line round to the interview: *"Round 1 — Light mode: no load-bearing questions surfaced. Skipping to sign-off."* then proceed to sign-off. Surface a one-line chat note before the first question (or skip): *"Mode: `light` — capping grilling at 0-2 rounds."*
+
+   When `MODE == "full"`, the legacy uncapped flow runs.
+
+   The user can override at any round by typing *"switch to full"* or *"switch to light"* — update `mode:` in feature.md, surface the change in the round's Resolved line, continue.
 
 ---
 
 ## The grilling loop
 
-Repeat steps 1–7 until the user signs off.
+Repeat steps 1–7 until the user signs off (or, in light mode, until the round cap is reached).
 
 ### Step 1 — Decide what to ask next
 
