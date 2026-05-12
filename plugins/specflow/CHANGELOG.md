@@ -4,7 +4,43 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.9.1 simplifies v2.9.0's duration knob per user feedback — minutes become hours, the option set becomes `1 | 4 | 8 | auto`, and the per-task field plus B.4 self-check are removed. The cap is a synthesis-time sizing target read from the config, not an enforcement scaffold._
+_v2.10.0 adds `specflow:feature` — the kickoff step that runs first in the pipeline. Allocates the NNN-slug, scaffolds the feature folder + five subfolders, runs a four-question goal interview, and writes a slim per-feature meta file that downstream skills read. Goal is locked at kickoff; subsequent skills inherit it without re-asking._
+
+## [2.10.0] — 2026-05-12
+
+### Added
+
+**New skill** (`plugins/specflow/skills/feature/`):
+
+- `specflow:feature` — feature kickoff. Runs FIRST in the pipeline. Allocates the `NNN-slug`, scaffolds `design/`, `docs/`, `assets/`, `test/screenshots/`, `debate-log/` with `.gitkeep` in each, runs a four-question goal interview (headline goal / why now / who benefits / what does done look like), reflects what it heard, and writes `{NNN-slug}-feature.md` with the goal + open questions + folder index + status frontmatter. Four-phase orchestrator — A scaffold, B goal interview, C reflection + confirmation, D write meta file + handoff. No sub-agent forking, no multi-agent gate, no Codex pass; lightweight by design.
+
+**New per-feature artefact** (`features/{NNN-slug}/{NNN-slug}-feature.md`):
+
+- Frontmatter: `slug`, `status` (`kickoff | prd-pending | tasks-pending | development | test-pending | shipped`), `created`, `goal_locked`.
+- Body: `## Goal` (≤2 paragraphs, locked at kickoff), `## Open questions raised at kickoff` (optional, ≤3 bullets), `## PRD fields implied at kickoff` (optional, ≤3 bullets), `## Folder index` (every standard artefact path), `## Status` (ladder doc).
+- Slim by design — ~80 lines max. The folder index lives ONCE here; no per-folder READMEs (`.gitkeep` only).
+
+### Changed
+
+**Pipeline order** (corrected per user feedback):
+
+```
+specflow:setup → specflow:feature → specflow:prd → specflow:task → specflow:sprint → specflow:develop → specflow:test
+```
+
+`specflow:test` moves to last position (post-development) in the canonical doc. The testing-as-cadence design (`specflow:test` can also run mid-cycle for plan-only and per-task slices) is unchanged — only the canonical pipeline order in the README is updated.
+
+**`specflow:prd` Phase A** — new A.0 step (Feature-skill handoff). Reads `{NNN-slug}-feature.md` when present. When found, skips A.1 (slug already allocated), A.2's mkdir is idempotent, and A.5 / A.6 / A.7 (goal articulate / confirm / write) are skipped — the goal is populated verbatim from feature.md into the interview file's Goal section. The PRD grilling questions cover decomposition only; strategic shape is already locked. After the normal hand-off point, bumps `{NNN-slug}-feature.md` status to `prd-pending`.
+
+When feature.md is absent, A.1-A.7 run as before (the pre-v2.10 flow). `specflow:feature` is the recommended entry point but `specflow:prd` remains valid as a direct entry for quick PRDs.
+
+**`specflow:setup` Phase 8.2** — `skills.feature.enabled: true` seeded in the default config.json. `skills.learn.enabled: true` also seeded (caught a v2.8.0 oversight where the learn-skill toggle was missing from the default seed).
+
+### Notes
+
+- **Goal changes after kickoff** are a direct edit to `{NNN-slug}-feature.md`'s `## Goal` section. Downstream skills pick up the new value on their next read. No new skill is required; `specflow:scope-change` remains reserved for PRD-shape changes, not goal changes.
+- **Idempotent on existing features.** If `specflow:feature` is invoked on an existing feature folder without a meta file, it runs the goal interview and writes the meta file + scaffolds missing subfolders without disturbing existing artefacts. If the meta file already exists, it refuses with a documented sentinel (status `kickoff` → edit-directly hint; status beyond → goal-change-is-direct-edit hint).
+- **Skill body size.** 306 lines — well under the 500-line ceiling. No bloat-room scope creep absorbed from adjacent concerns.
 
 ## [2.9.1] — 2026-05-12
 

@@ -15,6 +15,38 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.9.1 → v2.10.0
+
+Adds `specflow:feature` as a new pipeline step (kickoff, before PRD). Additive; existing features unaffected; new features get the meta file scaffold.
+
+### Scope
+
+- New skill: `plugins/specflow/skills/feature/SKILL.md`.
+- New per-feature artefact: `features/{NNN-slug}/{NNN-slug}-feature.md`.
+- `specflow:prd` Phase A gains an A.0 step that reads feature.md when present and skips the slug allocation + goal articulate/confirm/write cycle.
+- `specflow:setup` config.json seed gains `skills.feature.enabled: true` (and `skills.learn.enabled: true` — back-fills a v2.8.0 oversight).
+- README pipeline doc reordered: `feature` first, `test` last (per pipeline correction).
+
+### Steps
+
+1. Pull v2.10.0.
+2. `specflow:upgrade` patches `admin/config.json`: adds `skills.feature.enabled: true` and `skills.learn.enabled: true` if absent. Never overwrites user values.
+3. Existing features without `{NNN-slug}-feature.md` continue to work — `specflow:prd` falls back to the pre-v2.10 A.1-A.7 flow when feature.md is absent.
+4. New features should be kicked off via `/specflow:feature {overview}` to get the goal-locked + scaffolded structure.
+
+### Backups
+
+- `admin/config.json.bak` written before the toggle back-fill.
+
+### Verify
+
+- `test -f plugins/specflow/skills/feature/SKILL.md` returns 0.
+- `grep -q '"feature":' docs/specflow/admin/config.json` returns 0.
+- `grep -q '"learn":' docs/specflow/admin/config.json` returns 0.
+- `grep -n 'A.0 Feature-skill handoff' plugins/specflow/skills/prd/SKILL.md` returns a match.
+
+---
+
 ## v2.9.0 → v2.9.1
 
 Simplifies the v2.9.0 duration knob per user feedback. Unit changes from minutes to hours; option set shrinks to `1 | 4 | 8 | auto`; the per-task field and B.4 self-check step are removed.

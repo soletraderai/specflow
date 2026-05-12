@@ -2,21 +2,22 @@
 
 > Production-grade, self-adaptive product workflow: install once globally, every project accumulates its own constitution, profiles, agents, decisions, and task history — and uses that memory to make every subsequent piece of work smarter than the last.
 
-**Current version:** `2.9.1` ([CHANGELOG](plugins/specflow/CHANGELOG.md))
+**Current version:** `2.10.0` ([CHANGELOG](plugins/specflow/CHANGELOG.md))
 
 ---
 
 ## The pipeline
 
-Specflow is a six-skill assembly line from "I want to build X" to "PR opened, Verifier passed, history updated":
+Specflow is a seven-skill assembly line from "I want to build X" to "PR opened, Verifier passed, history updated":
 
 ```
 specflow:setup     → first-run substrate (admin/, agents/, rules/, config)
+specflow:feature   → kickoff: NNN-slug allocation, folder scaffold, goal interview
 specflow:prd       → 5-phase orchestrator: interview → PRD → Gate 2 → brief
 specflow:task      → 5-phase orchestrator: tasks → cross-task review → Gate 3
-specflow:test      → test plan grounded in PRD acceptance criteria
 specflow:sprint    → batch the next N tasks, assign teams, isolate worktree
 specflow:develop   → 6-phase orchestrator: triage → Gate 4 → execute → Gate 5 → PR
+specflow:test      → test plan grounded in PRD acceptance criteria
 ```
 
 Every gate is a multi-agent debate manifest with a writer, principle reviewers, and an Orchestrator that owns the closing decision. Every artefact is a markdown file in your repo — reviewable before anything is pushed.

@@ -51,6 +51,23 @@ Tell the user explicitly which phase you're starting at.
 
 ## Phase A — Preamble + Goal confirmation
 
+### A.0 Feature-skill handoff (per 030-feature-skill v2.10.0)
+
+Before A.1, check whether `specflow:feature` has already run for this feature. The user may invoke `/specflow:prd {NNN-slug}` with an explicit slug — in that case, look for `docs/specflow/features/{NNN-slug}/{NNN-slug}-feature.md`. The user may also invoke `/specflow:prd` with no slug — in that case, skip this check and run A.1 from scratch.
+
+When the meta file is found:
+
+1. Read it. Extract `slug`, `status`, `goal_locked` from frontmatter; extract the Goal section body (everything between `## Goal` and the next `## ` heading).
+2. Verify `status: kickoff`. If `status` is beyond `kickoff` (i.e. PRD already exists), refuse: *"`{NNN-slug}` is past kickoff (status: `{status}`); a PRD already exists. Edit `{NNN-slug}-prd.md` directly or use `specflow:scope-change` for substantive changes."* Exit.
+3. Skip A.1 (slug already allocated by `specflow:feature`).
+4. Skip A.2's mkdir (folder already exists; mkdir is idempotent anyway).
+5. Skip A.5 / A.6 / A.7 (goal articulate / confirm / write) — the goal in feature.md is user-confirmed at kickoff. At A.4, populate the interview's Goal section verbatim from the feature.md Goal section.
+6. After A.7's normal hand-off point, edit `{NNN-slug}-feature.md` frontmatter: `status: prd-pending`. This is the only mutation this skill makes to feature.md.
+
+A.3 (codebase context) and A.3.5 (lessons query) still run. Phase B (grilling) reads the goal from the interview file as before; the grilling questions cover decomposition / acceptance / open questions / out-of-scope — NOT the strategic shape, which is already locked.
+
+When the meta file is absent, A.1-A.7 run as documented below (the pre-030 flow). `specflow:feature` is the recommended entry point but `specflow:prd` remains valid as a direct entry for quick PRDs that don't need a kickoff step.
+
 ### A.1 Allocate feature ID and slug
 
 If new feature:

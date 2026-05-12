@@ -360,6 +360,7 @@ Then write `docs/specflow/admin/config.json`:
     "tddRequired": true
   },
   "skills": {
+    "feature":      { "enabled": true },
     "prd":          { "enabled": true },
     "task":         { "enabled": true },
     "develop":      { "enabled": true },
@@ -372,6 +373,7 @@ Then write `docs/specflow/admin/config.json`:
     "misc":         { "enabled": true },
     "agent":        { "enabled": true },
     "insights":     { "enabled": true },
+    "learn":        { "enabled": true },
     "prune":        { "enabled": true },
     "optimize":     { "enabled": true },
     "sprint":       { "enabled": true }
