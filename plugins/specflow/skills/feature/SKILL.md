@@ -302,6 +302,7 @@ If any verify step fails, surface the failure and refuse to claim success.
 
 - **`specflow:prd`** — primary downstream consumer. Reads `{NNN-slug}-feature.md` at its Phase A entry; when present, skips slug allocation (A.1), folder creation (A.2 is idempotent), and the goal articulate/confirm/write cycle (A.5/A.6/A.7). Writes the goal verbatim from feature.md into the interview file's Goal section; bumps `status:` to `prd-pending`.
 - **`specflow:task`** — consumer of `status:`. Bumps to `tasks-pending` on Phase A entry; bumps to `development` when handing off to `specflow:develop`.
+- **`specflow:linear`** — adds `linear_project_id: {id}` to the frontmatter lazily on its first feature-mode run (Phase A). The mapping is sticky: subsequent `specflow:sprint` / `specflow:develop` runs read this field to resolve the Linear project for milestone lookups.
 - **`specflow:develop`** — bumps `status:` to `test-pending` on feature-mode completion (every task shipped).
 - **`specflow:test`** — bumps `status:` to `shipped` on full-mode pass.
 - **`specflow:setup`** — seeds `skills.feature.enabled: true` in `admin/config.json` at first-run.

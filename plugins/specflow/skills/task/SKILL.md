@@ -562,7 +562,7 @@ Apply the orchestrator's pass/fail rules from `lifecycle/orchestrator.md` (FAIL 
 
 ### E.7 Final disposition
 
-If Gate 3 status is **passed** or **passed-with-escalations**: tell the user *"Tasks synthesised and Gate 3 review complete. Status: {status}. Manifest at `debate-log/tasks-gate3/manifest.md`. Next step: `specflow:test {NNN-slug}` for verification cadence, or `specflow:develop {NNN-slug}` (Phase 2) to begin implementation."*
+If Gate 3 status is **passed** or **passed-with-escalations**: tell the user *"Tasks synthesised and Gate 3 review complete. Status: {status}. Manifest at `debate-log/tasks-gate3/manifest.md`. Next step: `specflow:linear {NNN-slug}` to set up the Linear project and export tasks. Then `specflow:develop {NNN-slug}` to begin implementation."*
 
 If escalations exist, list them in your response so the user sees them without opening the manifest.
 

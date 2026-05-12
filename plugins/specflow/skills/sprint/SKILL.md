@@ -1,6 +1,6 @@
 ---
 name: specflow:sprint
-description: Lightweight sprint planner invoked by `specflow:develop` Phase A.x. Pulls the feature's mapped Linear project, reads open issues, reconciles with local tasks.md, filters to the in-scope batch via the 025-sprint-task-flagging `sprint-bucket: N` field, synthesises a sprint plan with per-stage agent-team assignments (per 026-agent-teams-per-stage), presents the sprint-plan gate to the developer, and on approval creates git work-trees for execution. Returns the approved plan to the parent `specflow:develop` invocation.
+description: Lightweight sprint planner invoked by `specflow:develop` Phase A.x. Resolves the target `Sprint N` milestone (next-unfinished by default, or `--sprint N` explicit), pulls the milestone's issues from Linear (or local `sprint-bucket: N` tasks when MCP is absent), reconciles drift, synthesises a sprint plan with per-stage agent-team assignments (per 026-agent-teams-per-stage), presents the sprint-plan gate to the developer, and on approval creates git work-trees for execution. Returns the approved plan to the parent `specflow:develop` invocation.
 status: v2-new
 phase: 2
 requires:
@@ -30,8 +30,9 @@ The four core principles bind here as everywhere: think before coding (Linear-vs
 The user does NOT invoke this skill directly. `specflow:develop` Phase A.x calls it. If the user invokes `/specflow:sprint {NNN-slug}` standalone, refuse with: *"`specflow:sprint` is invoked by `specflow:develop` Phase A.x as a sub-step. Run `specflow:develop {NNN-slug}` to begin a sprint."*
 
 When invoked by develop:
-- Receives the feature ID as the only argument.
+- Receives the feature ID as the only argument, plus an optional `--sprint N` to target a specific `Sprint N` milestone.
 - Inherits develop's Phase A pre-flight context (PRD, tasks, Gate 3 manifest already verified).
+- When `--sprint N` is absent: resolve the target sprint as the smallest N with open issues in Linear (MCP-available path), or the smallest unfinished `sprint-bucket: N` (MCP-absent fallback). When present: target `Sprint N` / `sprint-bucket = N` directly.
 
 ---
 
@@ -41,20 +42,27 @@ When invoked by develop:
 
 Use Read tool in parallel on:
 - `features/{NNN-slug}/{NNN-slug}-tasks.md` (post-Gate-3, post-applier per 022)
+- `features/{NNN-slug}/{NNN-slug}-feature.md` (for the `linear_project_id` frontmatter field)
 - `features/{NNN-slug}/debate-log/tasks-gate3/manifest.md`
-- `admin/config.json` — read `develop.maxIssuesPerSprint` (default 5), `teams.{stage}` (per 026 default rosters)
+- `admin/config.json` — read `teams.{stage}` (per 026 default rosters)
 - `admin/environment.json` — read `mcp.linear.available` and `plugins.agent-teams`
 - `admin/task-history.json` — read shipped status per task
 
 ### A.2 Check the Linear mapping
 
-Read `features/{NNN-slug}/manifest.json` (or `features/{NNN-slug}/{NNN-slug}-prd.md` frontmatter) for the Linear project mapping. The mapping is 1:1 — one specflow feature ↔ one Linear project.
+Read `features/{NNN-slug}/{NNN-slug}-feature.md` frontmatter for the `linear_project_id` field (set lazily by `specflow:linear` on first feature-mode run). The mapping is 1:1 — one specflow feature ↔ one Linear project.
 
 If `mcp.linear.available: false` OR mapping is absent: degrade gracefully. The sprint plan is built from local `tasks.md` only; Linear sync is skipped. Surface to the developer at A.4 with a one-line note.
 
-### A.3 Tell the user what you're doing
+### A.3 Resolve the target sprint
 
-*"Sprint-planning {NNN-slug}. Linear MCP {available|absent}; agent-teams plugin {present|absent}. Filtering tasks by `sprint-bucket: N` and `develop.maxIssuesPerSprint` ({M}). Plan presented at the sprint-plan gate."*
+Determine `target_N` (the sprint this run processes):
+
+1. **`--sprint N` arg provided** — `target_N = N`. Refuse if no `Sprint N` milestone exists in Linear AND no task carries `sprint-bucket: N` locally.
+2. **No arg, MCP available** — list `Sprint *` milestones attached to the resolved `linear_project_id`. For each, check whether any of its issues are still open (Backlog / Todo / In Progress). Pick the smallest N where the milestone has at least one open issue. If every milestone is fully shipped, refuse: *"No unfinished `Sprint N` milestone in Linear for `{NNN-slug}`. Pass `--sprint N` to re-run a specific sprint, or run `specflow:scope-change` if new work is needed."*
+3. **No arg, MCP absent** — read distinct `sprint-bucket: N` values from `{NNN-slug}-tasks.md`. For each, cross-check `task-history.json` to see whether every task in that bucket is shipped. Pick the smallest N with at least one unshipped task.
+
+Surface: *"Sprint-planning {NNN-slug}, target: `Sprint {target_N}`. Linear MCP {available|absent}; agent-teams plugin {present|absent}."*
 
 ---
 
@@ -62,21 +70,22 @@ If `mcp.linear.available: false` OR mapping is absent: degrade gracefully. The s
 
 ### B.1 Linear pull (when available)
 
-When `mcp.linear.available: true`, query the mapped Linear project's open issues (status: Backlog / Todo / In Progress). Map each Linear issue to a local task by Linear-issue-ID match against `task-history.json` entries' `linearId` field.
+When `mcp.linear.available: true`, query the `Sprint {target_N}` milestone's issues attached to the resolved `linear_project_id`. Include open AND closed (the sprint plan surfaces both so the developer sees prior shipped context, but `tasks_in_scope` filters to open only). Map each Linear issue to a local task by Linear-issue-ID match against `task-history.json` entries' `linearId` field.
 
 ### B.2 Drift detection
 
-Cross-tabulate Linear issues against local tasks.md entries. Flag drift:
+Cross-tabulate the milestone's Linear issues against local tasks.md entries whose `sprint-bucket = target_N`. Flag drift:
 
-- **Local-only** — task in `tasks.md` with no matching Linear issue (synthesis-time creation, not yet pushed).
-- **Linear-only** — Linear issue with no matching local task (created in Linear directly; needs `specflow:scope-change` to propagate).
+- **Local-only** — task in `tasks.md` with `sprint-bucket = target_N` and no matching Linear issue (synthesis-time creation, not yet pushed via `specflow:linear`).
+- **Linear-only** — issue in the `Sprint {target_N}` milestone with no matching local task (created in Linear directly; needs `specflow:scope-change` to propagate).
 - **Status drift** — Linear status differs from `task-history.json`'s expected state.
+- **Milestone drift** — local task has `sprint-bucket = N` but its Linear issue is attached to a different `Sprint M` milestone. Surface; resolution is a manual Linear move or `specflow:scope-change`.
 
 Linear is the issue source of truth; local `tasks.md` carries the synthesis context (lessons, design-decision links, sprint-bucket flags). Drift findings go to the manifest's "Linear sync" section.
 
 ### B.3 In-scope batch
 
-Filter to the in-scope batch.
+The in-scope batch is the `Sprint {target_N}` milestone's open issues — the whole milestone, no cap (per 002-promote-v3-home FEEDBACK item 2: 1:1 bucket ↔ milestone mapping; agent processes the milestone as one batch).
 
 **Sprint-bucket parsing (per 033-human-readable-tasks v2.12.0).** Two task block formats may exist:
 
@@ -85,12 +94,12 @@ Filter to the in-scope batch.
 
 Detection: presence of `**Parent PRD:**` in the task block → new format; absence → legacy format. Mixed-format files are tolerated.
 
-1. Take all `tasks.md` entries with `sprint-bucket = 1` (no predecessors).
-2. If batch size < `develop.maxIssuesPerSprint`, add `sprint-bucket = 2` tasks whose dependencies are all in bucket 1 (i.e. all in this sprint's batch).
-3. Continue adding lower-priority buckets until cap reached or no more eligible tasks.
-4. Tasks with `Budget overrun` notes (per 029 R4) are excluded — they need re-synthesis first; surface to developer.
+**Membership rules:**
 
-The cap (`develop.maxIssuesPerSprint`, default 5) is the soft ceiling; the developer can adjust at the sprint-plan gate.
+1. **MCP-available path** — take every open issue in the `Sprint {target_N}` milestone; resolve each to its local task via `linearId`.
+2. **MCP-absent fallback** — take every task in `tasks.md` whose `sprint-bucket = target_N` AND whose `task-history.json` entry shows it is not yet shipped.
+3. Tasks with `Budget overrun` notes (per 029 R4) are excluded from execution — they need re-synthesis first; surface to developer.
+4. Predecessor sprints (`sprint-bucket < target_N`) must be fully shipped before `target_N` starts. If any predecessor has open work, refuse: *"`Sprint {prior_N}` has open tasks ({T-ids}). Finish or skip predecessors before running `Sprint {target_N}`; rerun develop without `--sprint` to default to the next unfinished sprint."*
 
 ---
 
@@ -114,7 +123,7 @@ Use Write tool on `features/{NNN-slug}/debate-log/sprint-plan/manifest.md`:
 
 **Date:** {YYYY-MM-DD}
 **Linear project:** {workspace}/{project} (or "not mapped — local only")
-**Cap:** {develop.maxIssuesPerSprint}
+**Target milestone:** Sprint {target_N}
 **Tasks in-scope:** {N}
 
 ## Linear sync

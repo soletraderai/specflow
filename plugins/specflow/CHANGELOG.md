@@ -4,7 +4,58 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.12.0 reshapes the task block from an 8-field bullet list to a Linear/Jira-ticket-style narrative — Parent PRD, Dependencies, conversational Current State + Expected State, plain-language Technical Implementation, an auditable Technical References list, structured Acceptance Criteria + QA Verification (Given/When/Then) + Definition of Done + User Stories Addressed. AI metadata (context-budget-estimate, sprint-bucket, prior-lessons) moves to an HTML-comment footer — load-bearing for downstream skills, invisible to humans. `specflow:task` Phase E now prompts for Linear export after Gate 3 closes. Backward-compatible — `specflow:develop`, `specflow:sprint`, and `specflow:linear` read both formats per block._
+_v2.13.0 turns `specflow:linear` into the project-setup step, not just an issue exporter. It auto-resolves the feature's Linear project (reuse-by-name if found, create-if-absent with the PRD body as the description), creates one `Sprint N` project milestone per distinct `sprint-bucket: N`, and attaches each issue to its sprint. `specflow:develop` now targets a single sprint at a time — defaults to the next unfinished `Sprint N` milestone, or `--sprint N` to jump to a specific one. The agent processes the whole milestone as one batch (no cap, 1:1 bucket ↔ milestone). And `specflow:task` Phase E.7 stops recommending `:test` as a peer next-step after Gate 3 closes — the correct handoff is `:linear` → `:develop` → `:test`._
+
+## [2.13.0] — 2026-05-12
+
+### Added
+
+**`specflow:linear` Phase A — project ensure** (feature mode only). Resolves the Linear project for the feature:
+
+1. Reads `{NNN-slug}-feature.md` frontmatter for `linear_project_id`. If present, reuses it.
+2. If absent, searches Linear for an exact-name match on `{NNN-slug}` (case-sensitive). Refuses on duplicate names.
+3. Existing project found → reuses without touching the description (append-only forever).
+4. No existing project → creates one with name = `{NNN-slug}`, description = PRD body after YAML frontmatter (first H2 is `## Vision`), team from `admin/config.json.linear.team`. Persists the returned project ID to `{NNN-slug}-feature.md` frontmatter as `linear_project_id`.
+
+**`specflow:linear` Phase B — sprint milestones** (feature mode only). Reads distinct `sprint-bucket: N` values from the tasks file, then ensures one `Sprint N` Linear project milestone per value. Additive only — existing milestones reused, never destroyed. Phase C then attaches every exported issue to its `Sprint {sprint-bucket}` milestone.
+
+**`specflow:develop --sprint N` arg.** Targets `Sprint N` explicitly (re-runs, jump-ahead, replays). Without the arg, defaults to the next unfinished `Sprint N` milestone — smallest N with at least one open issue.
+
+**`linear_project_id` field in `{NNN-slug}-feature.md` frontmatter.** Written lazily by `specflow:linear` on first feature-mode run. `specflow:sprint` and `specflow:develop` read it to resolve the Linear project for milestone lookups.
+
+### Changed
+
+**`specflow:task` Phase E.7 final disposition.** After Gate 3 closes, the close-out message now recommends `specflow:linear {NNN-slug}` (set up project + export tasks) → `specflow:develop {NNN-slug}` (implement). Test runs after development, not before; `specflow:test` is no longer surfaced as a peer next-step at task-generation time.
+
+**`specflow:sprint` target resolution.** Phase A.3 now resolves a `target_N` (the sprint this run processes):
+
+1. `--sprint N` arg present → `target_N = N`.
+2. No arg, MCP available → list `Sprint *` milestones in the project; pick smallest N with at least one open issue.
+3. No arg, MCP absent → smallest `sprint-bucket: N` with at least one unshipped task.
+
+**`specflow:sprint` in-scope batch.** Phase B.3 replaces the cap-based heuristic with milestone membership: the in-scope batch is the whole `Sprint {target_N}` milestone — no cap, no bucket-spanning. Predecessor sprints (`< target_N`) must be fully shipped before `target_N` starts.
+
+**`specflow:sprint` Linear pull.** Phase B.1 now queries the `Sprint {target_N}` milestone's issues (open AND closed for context surfacing), not the project's entire open backlog. Phase B.2 drift detection scopes to the milestone, with a new `Milestone drift` category for issues attached to the wrong `Sprint N`.
+
+### Deprecated
+
+**`config.develop.maxIssuesPerSprint`** — the cap is no longer applied. The 1:1 bucket ↔ milestone mapping means a sprint is exactly its bucket's tasks, regardless of size. The config field stays in `setup/SKILL.md`'s default scaffold to avoid migration churn for existing projects; it is now unreferenced.
+
+### Why
+
+Three friction points surfaced during the 2026-05-12 dogfood:
+
+1. `specflow:linear` exported issues to projects that had to be manually pre-created. Per-feature project setup belongs in the skill that knows the feature.
+2. Sprint definitions lived only in the per-task `sprint-bucket: N` field — derived on-the-fly by `specflow:sprint` at develop-time. No persisted "what's in Sprint 1" surface, no way for the agent to target a sprint as a coherent batch.
+3. `specflow:task` Phase E.7 told users that `specflow:test` was a peer next-step option, contradicting the pipeline order encoded in feature.md's status field (`development` precedes `test-pending`).
+
+v2.13.0 makes Linear projects + sprint milestones the canonical surface for sprint definitions, and fixes the pipeline order in the user-facing handoff message.
+
+### Compatibility
+
+- Existing projects without `linear_project_id` in feature.md frontmatter — `specflow:linear` searches by name on first run, finds the existing Linear project, persists the ID. No manual migration required.
+- Existing Linear projects without `Sprint N` milestones — `specflow:linear` creates them additively on next run. Issues are NOT re-assigned; only newly-created issues get attached to their bucket's milestone.
+- Tasks files with `sprint-bucket: N` already present (every post-v2.5.0 feature) — work unchanged. `specflow:develop` reads buckets locally when MCP is absent, milestones via Linear when available.
 
 ## [2.12.0] — 2026-05-12
 

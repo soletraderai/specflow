@@ -39,10 +39,13 @@ The four core principles bind here as everywhere: think before coding (assumptio
 ## Inputs
 
 The user invokes you with one of:
-- `specflow:develop {NNN-slug}` — feature-level batch run (Green batch first, Yellow sequential second, Red surfaced third).
-- `specflow:develop {NNN-slug} --task T{N}` — runs exactly one task regardless of lane.
+- `specflow:develop {NNN-slug}` — sprint-mode run targeting the next unfinished `Sprint N` milestone in the feature's Linear project (smallest N with open issues). The agent processes that milestone's issues as one batch.
+- `specflow:develop {NNN-slug} --sprint N` — sprint-mode run targeting `Sprint N` explicitly. Re-runs, jump-ahead, or completed-sprint replays go through this form.
+- `specflow:develop {NNN-slug} --task T{N}` — runs exactly one task regardless of lane or sprint membership.
 - `/specflow:develop` with no argument — ask the user which feature.
-- Auto-invocation from Linear UI (Backlog/Todo → In Progress trigger) — lands at Phase A of the same flow.
+- Auto-invocation from Linear UI (Backlog/Todo → In Progress trigger) — lands at Phase A of the same flow, sprint inferred from the issue's milestone.
+
+**Sprint targeting (per 002-promote-v3-home FEEDBACK item 2).** `specflow:linear {NNN-slug}` writes one Linear project milestone per distinct `sprint-bucket: N` (named `Sprint N`) and attaches each issue to its bucket's milestone. Develop reads those milestones as the canonical sprint definition. When Linear MCP is unavailable, `T_run` falls back to local `sprint-bucket: N` matching (issues with `sprint-bucket = N` for the targeted N).
 
 **Resume logic.** Before starting Phase A, detect the situation:
 
@@ -117,7 +120,13 @@ If MCP unavailable, print the chat-only line: `[linear status: T{N} → In Progr
 
 ### A.5.5 Sprint plan via specflow:sprint (per 020-sprint-skill v2.7.0)
 
-Before lane triage, fork `specflow:sprint {NNN-slug}` as a sub-skill. Sprint pulls the mapped Linear project (when MCP available), reconciles drift, filters to the in-scope batch via `sprint-bucket: N` and `config.json.develop.maxIssuesPerSprint` (default 5), synthesises a sprint plan with per-stage team assignments per `templates/admin/stage-teams.md` (per 026-agent-teams-per-stage), presents the sprint-plan gate to the developer, and on approval creates a git work-tree at `admin/scratch/{NNN-slug}-sprint/worktree/`.
+Before lane triage, fork `specflow:sprint {NNN-slug}` as a sub-skill, passing through the `--sprint N` arg when present. Sprint resolves the target milestone:
+
+- **No `--sprint` arg:** query the mapped Linear project's `Sprint N` milestones; pick the smallest N that still has open issues (status: Backlog / Todo / In Progress). That's the next unfinished sprint.
+- **`--sprint N` provided:** target the `Sprint N` milestone explicitly (re-run, jump-ahead, or replay).
+- **Linear MCP unavailable:** fall back to local filtering — pick the smallest `sprint-bucket: N` value in `tasks.md` whose tasks aren't all shipped (per `task-history.json`), or honour the explicit `--sprint N` arg against local bucket values.
+
+Once the target milestone is resolved, sprint pulls the in-scope task set (issues attached to that milestone in Linear, or local tasks with the matching `sprint-bucket: N`), reconciles drift, synthesises a sprint plan with per-stage team assignments per `templates/admin/stage-teams.md` (per 026-agent-teams-per-stage), presents the sprint-plan gate to the developer, and on approval creates a git work-tree at `admin/scratch/{NNN-slug}-sprint/worktree/`. The whole milestone is the batch — no cap is applied (1:1 bucket ↔ milestone, per 002-promote-v3-home FEEDBACK item 2).
 
 Sprint returns the structured result:
 
