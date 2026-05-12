@@ -4,7 +4,59 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.11.0 adds light-mode coverage — `specflow:feature` auto-detects complexity at kickoff, writes `mode: light | full` to feature.md frontmatter, and downstream `specflow:prd` / `specflow:task` / `grill` skip the heavy review chain when `light`. Proportional ceremony: full pipeline for big features, lightweight pass for trivial changes. Closes the dogfood-time friction where a "remove an image" change ran through six reviewers + multi-agent debates._
+_v2.12.0 reshapes the task block from an 8-field bullet list to a Linear/Jira-ticket-style narrative — Parent PRD, Dependencies, conversational Current State + Expected State, plain-language Technical Implementation, an auditable Technical References list, structured Acceptance Criteria + QA Verification (Given/When/Then) + Definition of Done + User Stories Addressed. AI metadata (context-budget-estimate, sprint-bucket, prior-lessons) moves to an HTML-comment footer — load-bearing for downstream skills, invisible to humans. `specflow:task` Phase E now prompts for Linear export after Gate 3 closes. Backward-compatible — `specflow:develop`, `specflow:sprint`, and `specflow:linear` read both formats per block._
+
+## [2.12.0] — 2026-05-12
+
+### Changed
+
+**Task block format** (`specflow:task` Phase B.3) — replaced the 8-field bullet template with a 13-section structured-narrative shape. Sections in order:
+
+1. `**Parent PRD:**` — link + R-anchor (e.g. `[./002-prd.md](./002-prd.md) — R1`)
+2. `**Dependencies**` — bullet list of blocking tasks with one-line reason per dep, or `None.`
+3. `**Current State**` — conversational paragraph (no file paths, no line numbers, no inline code)
+4. `**Expected State**` — conversational paragraph (same register as Current State)
+5. `**Technical Implementation**` — plain-language description of the change (precise but readable)
+6. `**Technical References**` — one-line entries for every read-only codebase touch point (the auditable list `specflow:develop` validates at task pickup)
+7. `**Files to Modify**` — write targets only
+8. `**Files to Create**` — files the task creates, or `None.`
+9. `**Layers Touched**` — categorical (Database/Schema, Backend, API, Frontend/UI, etc.)
+10. `**Acceptance Criteria**` — one bullet per AC-N, full probe spec lives in `{NNN-slug}-test.md`
+11. `**QA Verification**` — Given/When/Then scenarios, one per AC typically
+12. `**Definition of Done**` — checklist with standard four items (code, QA, regression, demo-ready)
+13. `**User Stories Addressed**` — trace back to PRD user stories
+14. `Stats:` footer — `Lane {Green | Yellow | Red} · Estimate {N} min · Anchors {R-IDs}`
+15. `<!-- ai-metadata: context-budget-estimate=N sprint-bucket=N prior-lessons=[...] -->` HTML comment
+
+**`specflow:task` Phase B.4 self-checks** — added step 5 (Conversational State check: rejects file paths / line numbers / inline code in `Current State` / `Expected State`) and step 6 (Technical References completeness: every task must have at least one Technical Reference; every path named in Technical Implementation must appear in Technical References, Files to Modify, or Files to Create).
+
+**`specflow:task` Phase E.9 — Linear export prompt** — after Gate 3 closes, surfaces:
+```
+Gate 3 closed. {N} tasks ready for Linear.
+Export to Linear now?  yes / no / later
+```
+On `yes`, invokes `specflow:linear {NNN-slug}` as a sub-skill. When Linear MCP is absent, skipped with a one-line note.
+
+**`specflow:task` Phase E.10** — bumps `{NNN-slug}-feature.md` frontmatter `status: development` after Gate 3 close (was previously left at `tasks-pending`).
+
+### Compatibility
+
+**Dual-format readers** in `specflow:develop`, `specflow:sprint`, `specflow:linear`. Each detects format per-block via the `**Parent PRD:**` line:
+
+- New format → parse new field set; read `context-budget-estimate` / `sprint-bucket` / `prior-lessons` from the HTML-comment footer.
+- Pre-2.12.0 format → parse legacy field set unchanged.
+
+Mixed-format files (some tasks new, some old) are tolerated. No migration script required — existing task files keep working; only newly-synthesised tasks land in the new format.
+
+### Why
+
+`specflow:task` output had accreted technical detail (20-line Scope sub-steps, multi-line Acceptance probe specs, three AI-metadata fields) that drowned the human-readable content. A "remove an image" 6-task feature produced a 150-line tasks.md that read more like an AI-to-AI handoff than a developer-friendly task list. The v2.4.0-era format (Anchors / Acceptance / Lane / Files / Estimate) had been the more readable shape — v2.12.0 restores that shape and extends it with Linear-ticket scaffolding (Current State / Expected State / Technical References / QA Verification / Definition of Done / User Stories) so the same artefact works for AI execution AND for handing tasks to a human developer.
+
+### Out of scope (defer to v2.13.0)
+
+- **Freshness check** — `specflow:develop` Phase A.5 per-task drift detection against `Technical References`. v2.12.0's format makes drift detection mechanically possible; v2.13.0 wires the check.
+- **Focused per-task pull-in for develop** — load only Technical Implementation + Technical References + ACs at execution time, skip the human-reading sections. v2.13.0.
+- **`specflow:scope-change`** dual-format support — defers until friction surfaces; scope-change today operates on the whole tasks file, not on per-task block field reads.
 
 ## [2.11.0] — 2026-05-12
 

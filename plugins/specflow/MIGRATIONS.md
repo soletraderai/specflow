@@ -15,6 +15,43 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.11.0 → v2.12.0
+
+Reshapes the task block from an 8-field bullet list to a 13-section structured-narrative format. Adds a Linear export prompt at the end of `specflow:task` Phase E. Dual-format readers in `develop` / `sprint` / `linear` keep existing task files working — no force-migration of in-flight features.
+
+### Scope
+
+- `specflow:task` Phase B.3 — new task block template (Parent PRD, Dependencies, Current State, Expected State, Technical Implementation, Technical References, Files to Modify, Files to Create, Layers Touched, Acceptance Criteria, QA Verification, Definition of Done, User Stories Addressed, Stats line, ai-metadata HTML comment).
+- `specflow:task` Phase B.4 — new self-checks (step 5: Conversational State check; step 6: Technical References completeness).
+- `specflow:task` Phase E.9 — Linear export prompt after Gate 3 close.
+- `specflow:task` Phase E.10 — feature.md status bump to `development`.
+- `specflow:develop` Phase A.6 — format detection per task block; reads `context-budget-estimate` from HTML comment in new format, from visible field in legacy.
+- `specflow:sprint` Phase B — format detection per task block; reads `sprint-bucket` from HTML comment in new format, from visible field in legacy. Dependencies parsing handles both `**Dependencies**` section (new) and `**Depends on:**` field (legacy).
+- `specflow:linear` — format detection per task block; Linear issue body composed from new section set or legacy field set as appropriate.
+
+### Steps
+
+1. Pull v2.12.0.
+2. No `admin/config.json` updates required.
+3. Existing task files (v2.11.x and earlier) continue to work — dual-format readers detect via `**Parent PRD:**` presence.
+4. Newly-synthesised tasks land in the new format. To migrate an existing task file to the new format manually, re-invoke `specflow:task --regenerate {NNN-slug}` (note: `--regenerate` flag is NOT a v2.12.0 feature; manual migration requires hand-editing or a future migration tool).
+
+### Backups
+
+None required — no user data is moved or rewritten by the upgrade itself.
+
+### Verify
+
+- `grep -n 'Parent PRD' plugins/specflow/skills/task/SKILL.md` returns a match in the Phase B.3 template.
+- `grep -n 'Technical References' plugins/specflow/skills/task/SKILL.md` returns a match.
+- `grep -n 'Linear export prompt' plugins/specflow/skills/task/SKILL.md` returns a match for Phase E.9.
+- `grep -n 'Task block format detection' plugins/specflow/skills/develop/SKILL.md` returns a match.
+- `grep -n 'Sprint-bucket parsing' plugins/specflow/skills/sprint/SKILL.md` returns a match.
+- `grep -n 'Task block format' plugins/specflow/skills/linear/SKILL.md` returns a match.
+- `plugin.json` and `marketplace.json` both report `2.12.0`.
+
+---
+
 ## v2.10.1 → v2.11.0
 
 Adds light-mode coverage across `feature` / `prd` / `task` / `grill`. Additive; backward-compatible with pre-2.11.0 features (mode defaults to `full` when absent).

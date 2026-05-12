@@ -76,10 +76,17 @@ Linear is the issue source of truth; local `tasks.md` carries the synthesis cont
 
 ### B.3 In-scope batch
 
-Filter to the in-scope batch:
+Filter to the in-scope batch.
 
-1. Take all `tasks.md` entries with `sprint-bucket: 1` (no predecessors).
-2. If batch size < `develop.maxIssuesPerSprint`, add `sprint-bucket: 2` tasks whose dependencies are all in bucket 1 (i.e. all in this sprint's batch).
+**Sprint-bucket parsing (per 033-human-readable-tasks v2.12.0).** Two task block formats may exist:
+
+- **v2.12.0+ format** — `sprint-bucket` lives in the HTML-comment footer `<!-- ai-metadata: ... sprint-bucket=N ... -->`. Parse via regex `sprint-bucket=(\d+)`. Dependencies live in the visible `**Dependencies**` section (bullet list `- T{N} — reason`).
+- **Pre-2.12.0 format** — `sprint-bucket: N` is a visible field on each task. Dependencies are in the `**Depends on:**` field.
+
+Detection: presence of `**Parent PRD:**` in the task block → new format; absence → legacy format. Mixed-format files are tolerated.
+
+1. Take all `tasks.md` entries with `sprint-bucket = 1` (no predecessors).
+2. If batch size < `develop.maxIssuesPerSprint`, add `sprint-bucket = 2` tasks whose dependencies are all in bucket 1 (i.e. all in this sprint's batch).
 3. Continue adding lower-priority buckets until cap reached or no more eligible tasks.
 4. Tasks with `Budget overrun` notes (per 029 R4) are excluded — they need re-synthesis first; surface to developer.
 

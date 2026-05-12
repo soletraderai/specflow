@@ -193,20 +193,76 @@ gate3: ./debate-log/tasks-gate3/manifest.md
 ## Tasks
 
 ### T1 — {short title, ≤8 words}
-- **Anchor:** PRD R1 — *{paraphrase the requirement in one line}*
-- **Scope:** {file paths, components, modules touched. Be specific.}
-- **Acceptance:** {binary pass/fail check. Cite AC-N from the PRD if applicable.}
-- **Depends on:** {T-id of any task that must complete first, or "none"}
-- **context-budget-estimate:** {int_tokens — sum of PRD slice + task spec + matched lessons + manifest scaffold + codebase-context payload + test plan, per `templates/admin/single-context-task.md`}
-- **sprint-bucket:** {positive integer ≥ 1 — derived deterministically from the dependency graph + scope-overlap per `templates/task/sprint-bucket-heuristic.md` (per 025-sprint-task-flagging v2.5.0)}
-- **prior-lessons:** {array of L-NNN ids that shaped this task, per the lessons registry query at A.4 (per 018-lessons-registry v2.6.0); empty array `[]` when no lessons apply}
-- **Notes:** {gotchas, rule-registry entries that apply, decision-log references; or "none"}
+
+**Parent PRD:** [./{NNN-slug}-prd.md](./{NNN-slug}-prd.md) — R1
+
+**Dependencies**
+
+{One bullet per blocking task, format `- {T-ID} — {one-line reason}`. Cross-feature deps cited as `{NNN-slug}-T{N}`. When nothing blocks: `None.`}
+
+**Current State**
+
+{Conversational paragraph — what's true in the codebase today, in plain language a non-technical reader could follow. No file paths, no line numbers, no API names. Read it like you're describing the situation to a colleague.}
+
+**Expected State**
+
+{Conversational paragraph — what's true once this task ships. Same plain-language register as Current State. The reader should be able to read both paragraphs back-to-back and understand "what we have" and "what we need".}
+
+**Technical Implementation**
+
+{Plain-language description of the change. Precise enough that a developer (or AI) knows what to do, but written as prose, not a numbered sub-step list with line numbers. Cite file paths inline only when load-bearing.}
+
+**Technical References**
+
+{One-line entries — every read-only codebase touch point that justifies the implementation. The auditable list `specflow:develop` validates at task pickup time. Format: `- {path or table or other reference} — {one-line purpose}`. Examples:
+- `src/app/page.tsx` — home page route, current section order
+- `src/app/v3/page.tsx:50` — precedent for the mount position
+- `forms` table — Postgres source of truth for form definitions
+Always at least one entry. If nothing is referenced, the implementation is probably wrong.}
+
+**Files to Modify**
+
+{One bullet per file the task writes to. Files that are read-only but referenced live in Technical References, not here.}
+
+**Files to Create**
+
+{One bullet per file the task creates. `None.` if none.}
+
+**Layers Touched**
+
+{One or more of: Database/Schema, Backend, API, Frontend/UI, Infra, Docs, Tests. Categorical, single line.}
+
+**Acceptance Criteria**
+
+{One bullet per AC-N. One line each. Cite the AC-ID from the PRD. Full probe spec lives in `{NNN-slug}-test.md`, not here.}
+
+**QA Verification**
+
+{Given / When / Then scenarios. One scenario per AC typically. Human-readable AND mechanically actionable.
+- Given {precondition}, When {action}, Then {observable outcome}.}
+
+**Definition of Done**
+
+{Checklist with `- [ ]` items. Standard four:
+- [ ] Code implements acceptance criteria
+- [ ] Manual QA verification scenarios passed
+- [ ] No regressions on adjacent surfaces
+- [ ] Demo-ready
+Add task-specific items only when they capture a non-obvious gate.}
+
+**User Stories Addressed**
+
+{One line per user story the task helps deliver. Trace back to the PRD's user-stories section. `Foundation for every story` when the task is plumbing that no single story owns.}
+
+---
+
+**Stats:** Lane {Green | Yellow | Red} · Estimate {N} min · Anchors {R-IDs, comma-separated}
+
+<!-- ai-metadata: context-budget-estimate={int_tokens} sprint-bucket={int≥1} prior-lessons=[{L-NNN,...}] -->
 
 ### T2 — {short title}
-- **Anchor:** PRD R2 — *{paraphrase}*
-- ...
 
-(continue for every task — typical: 5-15 tasks per PRD)
+(same shape as T1; continue for every task — typical: 5-15 tasks per PRD)
 
 ## Open questions inherited from PRD
 
@@ -224,16 +280,18 @@ gate3: ./debate-log/tasks-gate3/manifest.md
 
 Before surfacing intent summaries, verify:
 1. **Forward coverage** — re-walk the matrix; every PRD requirement appears in the *Tasks satisfying it* column.
-2. **Reverse traceability** — every task's *Anchor* line cites at least one valid requirement ID.
-3. **Binary acceptance** — every task's *Acceptance* line passes the binary test (could a fresh agent run the check and report pass/fail unambiguously). If not, sharpen the acceptance line.
+2. **Reverse traceability** — every task's `Anchors:` line in the Stats footer cites at least one valid requirement ID; every Parent PRD link resolves.
+3. **Binary acceptance** — every AC bullet under `Acceptance Criteria` passes the binary test (could a fresh agent run the check and report pass/fail unambiguously). If not, sharpen the AC line.
 4. **No requirement contradicts the goal's Out-of-scope-at-goal-level** — re-read the interview's Goal section and cross-check.
-5. **Budget self-check (per 029-single-context-task).** For each task, verify `context-budget-estimate` ≤ `config.json.task.contextBudget` (default 80,000 tokens). Tasks over budget are auto-flagged: append an inline note `> Budget overrun: estimate {N}K vs budget {M}K — split required before develop.` under the task block AND surface a chat-line prompt directing the user to `specflow:scope-change` for the recut. The over-budget task remains in the file with the warning so the recut is auditable. Citation: `templates/admin/single-context-task.md` for the estimation algorithm and the no-mid-task-compaction rationale.
+5. **Conversational State check (per 033-human-readable-tasks v2.12.0).** For each task, verify the `Current State` and `Expected State` paragraphs read as plain-language prose — no file paths, no line numbers, no API/function names, no inline code spans. A non-technical reader should be able to read both paragraphs and understand what's happening. File-path-level detail belongs in `Technical Implementation` and `Technical References`. If a State paragraph contains backticks, file paths, or `:line` suffixes, rewrite in prose before continuing.
+6. **Technical References completeness check (per 033-human-readable-tasks v2.12.0).** Every task MUST have at least one entry under `Technical References`. Every file path / table / system named inside `Technical Implementation` MUST appear in `Technical References` OR `Files to Modify` OR `Files to Create`. A task with no Technical References and non-trivial Implementation is a synthesis failure — re-draft.
+7. **Budget self-check (per 029-single-context-task).** For each task, verify `context-budget-estimate` (read from the HTML-comment `<!-- ai-metadata: -->` footer) ≤ `config.json.task.contextBudget` (default 80,000 tokens). Tasks over budget are auto-flagged: append an inline note `> Budget overrun: estimate {N}K vs budget {M}K — split required before develop.` under the task block AND surface a chat-line prompt directing the user to `specflow:scope-change` for the recut. The over-budget task remains in the file with the warning so the recut is auditable. Citation: `templates/admin/single-context-task.md` for the estimation algorithm and the no-mid-task-compaction rationale.
 
-6. **Graph-validity check (per 025-sprint-task-flagging).** Before bucket assignment, walk the per-task `Depends on:` lists and reject malformed graphs with deterministic `GRAPH-INVALID:` diagnostics — cycle, self-loop, duplicate task IDs, duplicate dependency edge, dangling reference. On any failure, abort synthesis before any `sprint-bucket: N` is written; point the user to `specflow:scope-change` for legitimate dependency-graph edits. Diagnostic format documented in `templates/task/sprint-bucket-heuristic.md`.
+8. **Graph-validity check (per 025-sprint-task-flagging).** Before bucket assignment, walk the per-task `Dependencies` sections and reject malformed graphs with deterministic `GRAPH-INVALID:` diagnostics — cycle, self-loop, duplicate task IDs, duplicate dependency edge, dangling reference. Dep parsing: each bullet starts with `- {T-ID} —`; everything before the em-dash is the dep T-ID. Cross-feature deps (`{NNN-slug}-T{N}`) are tracked but not validated against current-feature graph cycles. On any failure, abort synthesis before any `sprint-bucket: N` is written; point the user to `specflow:scope-change` for legitimate dependency-graph edits. Diagnostic format documented in `templates/task/sprint-bucket-heuristic.md`.
 
-7. **Sprint-bucket assignment (per 025-sprint-task-flagging).** Apply the single-rule heuristic from `templates/task/sprint-bucket-heuristic.md`: `bucket(T) = 1` for tasks with no predecessors and no same-bucket scope conflict; otherwise `1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T))`. Apply bump iteration to fixed point. Bucket assignment runs AFTER step 5 (budget self-check) — oversize tasks never reach bucketing.
+9. **Sprint-bucket assignment (per 025-sprint-task-flagging).** Apply the single-rule heuristic from `templates/task/sprint-bucket-heuristic.md`: `bucket(T) = 1` for tasks with no predecessors and no same-bucket scope conflict; otherwise `1 + max(bucket(P) for P in Depends-on(T) ∪ EarlierIDSameBucketScopeConflicts(T))`. Apply bump iteration to fixed point. Bucket assignment runs AFTER step 7 (budget self-check) — oversize tasks never reach bucketing. The computed bucket is written to the HTML-comment `<!-- ai-metadata: -->` footer, not the visible task body.
 
-Tasks are also sized at synthesis to fit within `config.task.maxDurationHours` (default `1`); when the value is `"auto"`, sizing is enforced by `contextBudget` alone.
+Tasks are also sized at synthesis to fit within `config.task.maxDurationHours` (default `1`); when the value is `"auto"`, sizing is enforced by `contextBudget` alone. The `Estimate` field in the Stats footer is the human-readable form.
 
 If any check fails, fix the tasks file before proceeding.
 
@@ -519,6 +577,29 @@ rm -rf admin/scratch/{NNN-slug}-tasks
 ```
 
 (Retain on failure for debugging.)
+
+### E.9 Linear export prompt (per 033-human-readable-tasks v2.12.0)
+
+After Gate 3 closes (status `passed`, `passed-with-revisions`, or `passed-with-escalations`), surface the Linear export prompt:
+
+```
+Gate 3 closed. {N} tasks ready for Linear.
+
+Export to Linear now?
+  yes    → invoke /specflow:linear {NNN-slug}
+  no     → skip; you can run /specflow:linear {NNN-slug} later
+  later  → same as no
+```
+
+On `yes`: invoke `specflow:linear {NNN-slug}` as a sub-skill via the Skill tool. The sub-skill reads the just-written tasks file, creates Linear issues, and updates the file's Export Map with Linear IDs and URLs.
+
+On `no` / `later`: emit a one-line reminder to chat: *"Tasks not exported. Run `/specflow:linear {NNN-slug}` when ready."* Proceed to E.10.
+
+When `admin/environment.json` shows `mcp.linear.available: false`, skip the prompt entirely with the chat line: *"Linear MCP not detected — Linear export skipped. Install MCP and run `/specflow:linear {NNN-slug}` later."*
+
+### E.10 Bump feature.md status (per 030-feature-skill v2.10.0)
+
+If `features/{NNN-slug}/{NNN-slug}-feature.md` exists, edit its frontmatter: `status: development`. The `tasks-pending` interim status was set by `specflow:task`'s own Phase A entry; this final bump signals the feature is ready for `specflow:sprint` / `specflow:develop`. This is the only mutation `specflow:task` makes to feature.md after its initial A-entry write.
 
 ---
 

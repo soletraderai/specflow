@@ -139,7 +139,16 @@ Skill body for sprint: `skills/sprint/SKILL.md`.
 
 ### A.6 Context-budget pre-flight (per 029-single-context-task)
 
-For each in-scope task, read `context-budget-estimate` from the tasks file and measure the actually-loaded context size for the task's payload (PRD slice + task spec + matched lessons + per-task manifest scaffold + codebase-context files + test plan). Compare:
+For each in-scope task, read `context-budget-estimate` from the tasks file and measure the actually-loaded context size for the task's payload (PRD slice + task spec + matched lessons + per-task manifest scaffold + codebase-context files + test plan).
+
+**Task block format detection (per 033-human-readable-tasks v2.12.0).** Two formats may exist:
+
+- **v2.12.0+ format** — task blocks have a `**Parent PRD:**` line and an HTML-comment footer `<!-- ai-metadata: context-budget-estimate=N sprint-bucket=N prior-lessons=[...] -->`. Read `context-budget-estimate` from the HTML comment. The per-task slice loaded for execution is the `Technical Implementation` paragraph + `Technical References` list + `Files to Modify` / `Files to Create` lists + `Acceptance Criteria` bullets. `Current State` / `Expected State` / `QA Verification` / `Definition of Done` / `User Stories Addressed` are NOT loaded at execution time — they are human-reading sections.
+- **Pre-2.12.0 format** — task blocks have a `**Anchor:**` line and visible `**context-budget-estimate:**` / `**sprint-bucket:**` / `**prior-lessons:**` fields. Read `context-budget-estimate` from the visible field. Per-task slice is the `Scope:` + `Acceptance:` + `Notes:` fields. Backward-compatible.
+
+Detection: presence of `**Parent PRD:**` in the task block → new format; absence → legacy format. Mixed-format files (some tasks new, some old) are tolerated — detect per-task block.
+
+Compare:
 
 - **Within ±20%** → proceed silently to Phase B.
 - **Actual exceeds estimate by ≥20% but stays within `config.json.task.contextBudget`** → pause and surface the three-option developer prompt: *"T{N} actual context {A}K vs estimate {E}K (≥20% divergence). Choose: (1) approve the over-run (logged to `decision-log.md`), (2) drop optional context (name the payload component to drop, typically lessons or codebase-context files), (3) route to `specflow:scope-change` to split."* No auto-default; empty input re-prompts.
