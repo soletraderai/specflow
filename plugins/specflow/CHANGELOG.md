@@ -4,7 +4,21 @@ All notable changes to specflow v2 are documented here. Format: [Keep a Changelo
 
 ## [Unreleased]
 
-_v2.10.0 adds `specflow:feature` — the kickoff step that runs first in the pipeline. Allocates the NNN-slug, scaffolds the feature folder + five subfolders, runs a four-question goal interview, and writes a slim per-feature meta file that downstream skills read. Goal is locked at kickoff; subsequent skills inherit it without re-asking._
+_v2.10.1 wires `assets/` folder readback into `specflow:prd` Phase A.3 — closes the loop where users drop YAML / HTML / JSON reference files in `assets/` and expect the PRD generator to actually read them. Mirrors the existing design-folder readback pattern._
+
+## [2.10.1] — 2026-05-12
+
+### Added
+
+**`specflow:prd` Phase A.3 — assets folder readback:**
+
+- When `features/{NNN-slug}/assets/` contains files (other than `.gitkeep`), the PRD interview now ingests them. Globs for `*.yaml | *.yml | *.json | *.html | *.md | *.txt | *.csv`; reads up to 200 lines per file (truncation noted); distills 1-3 codebase-context bullets prefixed `Reference assets (from assets/):`.
+- Binary files (images, PDFs, fonts) are noted by filename only — no content ingestion.
+- Absent or `.gitkeep`-only `assets/` is skipped silently. Backward-compatible — features without reference assets are unaffected.
+
+### Why
+
+The v2.10.0 release scaffolded `assets/` at feature-kickoff time but `specflow:prd` only read from `design/`. Users dropping a YAML form spec or HTML reference into `assets/` expected the PRD generator to see it; today it doesn't. v2.10.1 wires it in so the AI flow benefits from reference materials, not just human readers.
 
 ## [2.10.0] — 2026-05-12
 

@@ -108,7 +108,18 @@ Then inspect the codebase based on the user's overview:
 
 Distill the design folder into 1-3 codebase-context bullets prefixed `Design intent (from design/):`. If `design/` is absent, skip this step silently — design is optional.
 
-Distill what you saw (codebase + design when present) into bullet points for the *Codebase context* section. Be concrete: cite file paths, line counts, conventions detected, prior PRD references, design-folder references.
+**Assets folder readback (when present, per 031-assets-readback v2.10.1).** If `docs/specflow/features/NNN-{slug}/assets/` contains any files (other than `.gitkeep`), ingest them as PRD input. Glob the folder for `*.yaml`, `*.yml`, `*.json`, `*.html`, `*.md`, `*.txt`, `*.csv`. For each matched file:
+
+- Read up to the first 200 lines. If the file is longer, append a `(truncated — full file at assets/{filename})` note when citing it.
+- Capture filename + a one-line synthesis of what the file specifies (a YAML form schema, an HTML reference layout, a JSON sample payload, a domain-glossary markdown, etc.).
+
+Distill the assets folder into 1-3 codebase-context bullets prefixed `Reference assets (from assets/):`. Each bullet cites the source filename and the constraint or data shape it implies for the requirements (e.g. *"`form-fields.yaml` defines 14 required fields including a nested address block — requirements must reflect this field set"*).
+
+Binary files in `assets/` (images, PDFs, fonts) are noted by filename only with no content ingestion — the AI cannot read binary content. The user may reference them in their overview; the PRD captures the reference without trying to interpret the file.
+
+If `assets/` is absent or only contains `.gitkeep`, skip this step silently — assets are optional.
+
+Distill what you saw (codebase + design + assets when present) into bullet points for the *Codebase context* section. Be concrete: cite file paths, line counts, conventions detected, prior PRD references, design-folder references, asset-file references.
 
 ### A.3.5 Query the lessons registry (per 018-lessons-registry v2.6.0)
 

@@ -2,7 +2,7 @@
 
 > Production-grade, self-adaptive product workflow: install once globally, every project accumulates its own constitution, profiles, agents, decisions, and task history — and uses that memory to make every subsequent piece of work smarter than the last.
 
-**Current version:** `2.10.0` ([CHANGELOG](plugins/specflow/CHANGELOG.md))
+**Current version:** `2.10.1` ([CHANGELOG](plugins/specflow/CHANGELOG.md))
 
 ---
 

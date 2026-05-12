@@ -15,6 +15,31 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.10.0 → v2.10.1
+
+Wires `assets/` folder readback into `specflow:prd` Phase A.3. Additive; no schema changes; no migration script required.
+
+### Scope
+
+- `specflow:prd` Phase A.3 gains a parallel readback block for `features/{NNN-slug}/assets/` mirroring the existing design-folder readback. Globs `*.yaml | *.yml | *.json | *.html | *.md | *.txt | *.csv`; caps per-file at 200 lines; distills into `Reference assets (from assets/):` bullets.
+
+### Steps
+
+1. Pull v2.10.1.
+2. No `admin/config.json` updates required.
+3. Existing features without `assets/` content continue to work — the new readback skips silently when `assets/` is absent or only contains `.gitkeep`.
+
+### Backups
+
+None required — no user data is moved or rewritten.
+
+### Verify
+
+- `grep -n 'Assets folder readback' plugins/specflow/skills/prd/SKILL.md` returns a match.
+- `plugin.json` and `marketplace.json` both report `2.10.1`.
+
+---
+
 ## v2.9.1 → v2.10.0
 
 Adds `specflow:feature` as a new pipeline step (kickoff, before PRD). Additive; existing features unaffected; new features get the meta file scaffold.
