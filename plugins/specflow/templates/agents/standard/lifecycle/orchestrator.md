@@ -98,7 +98,7 @@ After Round 3 completes, the Orchestrator reads (via `Glob` + `Read`, not via th
 - {finding-id}: {reviewer} — {one-line summary of the divergence and the orchestrator's call}.
 
 **Sign-off**
-- Status: **PASS** | **FAIL** | **HUMAN-DECISION-NEEDED**
+- Status: **passed** | **passed-with-revisions** | **passed-with-escalations** | **failed** | **HUMAN-DECISION-NEEDED**
 - Reasoning: {2-4 sentences explaining the call. Cite the finding ids that drove it.}
 - Closed by: orchestrator (auto)
 ```
