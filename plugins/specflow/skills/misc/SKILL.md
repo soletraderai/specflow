@@ -1,6 +1,6 @@
 ---
 name: specflow:misc
-description: Single-task workflow for bugs and small fixes that don't warrant a PRD. Two invocation modes — interactive (user-driven) and auto (structured payload from another skill that spotted an out-of-scope rule violation). Initialises the rolling misc-task file if missing, allocates the next MISC-NNN id, appends the entry, optionally saves assets.
+description: Internal handler — for user-facing invocation, use `specflow:log` (the agent routes to this handler when your intent is misc-task-shaped). Single-task workflow for bugs and small fixes that don't warrant a PRD. Two invocation modes — interactive (used by `:log` dispatch with the user's prose pre-filled) and auto (structured payload from another skill that spotted an out-of-scope rule violation — this contract is unchanged and routes here directly). Initialises the rolling misc-task file if missing, allocates the next MISC-NNN id, appends the entry, optionally saves assets.
 status: v2-new
 phase: 1
 requires:

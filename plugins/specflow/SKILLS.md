@@ -34,16 +34,16 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 - **Eval:** Goal section is confirmed before any rounds fire; every round has Q + AI's recommended answer (with reasoning citing the goal field where applicable) + user's answer + non-empty Resolved line; sign-off line dated.
 - **Blocks:** refuses to start if Goal section is unconfirmed; blocks `specflow:prd` Phase C (synthesis) until interview is signed off.
 
-### `specflow:prd` 🔧
-- **Purpose:** user-facing entry point for PRD creation. Multi-phase orchestrator: writes interview preamble, **articulates and confirms the goal with the user** (the precedent everything else anchors to), invokes `/grill` for the grilling phase, synthesises the PRD body from the goal + resolved assumptions, fires Gate 2 multi-agent debate manifest, then composes the feature brief via `specflow:brief`.
+### `specflow:prd` 🔧 (2.14.1: brief auto-invocation removed)
+- **Purpose:** user-facing entry point for PRD creation. Four-phase orchestrator: writes interview preamble, **articulates and confirms the goal with the user** (the precedent everything else anchors to), invokes `/grill` for the grilling phase, synthesises the PRD body from the goal + resolved assumptions, fires Gate 2 multi-agent debate manifest. The browser-readable brief is no longer auto-generated — the closing chat-line points the user at `specflow:brief {NNN-slug}` as an explicit next step.
 - **Triggers:** "create a PRD for X", "/specflow:prd", overview of what you want to achieve.
-- **Produces:** `features/NNN-{slug}/NNN-{slug}-interview.md` (with confirmed Goal section) + `NNN-{slug}-prd.md` + `debate-log/prd-gate2/manifest.md` + `NNN-{slug}-brief.html`.
+- **Produces:** `features/NNN-{slug}/NNN-{slug}-interview.md` (with confirmed Goal section) + `NNN-{slug}-prd.md` + `debate-log/prd-gate2/manifest.md`. No brief — that's manual.
 - **Requires:** `admin/profiles.json`, `admin/CONTEXT.md`, `admin/decision-log.md`, `admin/rules/`; optional research files in `features/NNN-{slug}/docs/` and `docs/specflow/docs/`.
-- **Eval:** Goal confirmed before grilling; interview signed off; PRD body has no orphan requirements and every requirement serves the goal; Gate 2 manifest closes with Orchestrator sign-off; brief composes from PRD + interview + Gate 2 manifest with a working sidebar TOC.
+- **Eval:** Goal confirmed before grilling; interview signed off; PRD body has no orphan requirements and every requirement serves the goal; Gate 2 manifest closes with Orchestrator sign-off; closing chat-line recommends `specflow:brief` as an opt-in next step.
 
-### `specflow:brief` 🆕
+### `specflow:brief` 🔧 (2.14.1: manual invocation only — no auto-fire upstream)
 - **Purpose:** compose a self-contained, browser-readable feature brief by combining the PRD body, the interview transcript, and (when present) the Gate 2 / Gate 3 manifests into one HTML file. Includes a Visual abstract section at the top compiled from `:::flow|comparison|scope|tree` blocks in the PRD markdown.
-- **Triggers:** auto-fires after `specflow:prd` Phase E (Gate 2 closes); "/specflow:brief {feature-id}" manually; "/specflow:brief --all" for bulk re-compose (used by upgrade migration).
+- **Triggers:** `specflow:brief {feature-id}` — manual user invocation only. As of v2.14.1 no upstream skill auto-fires this one (`specflow:prd` no longer invokes at Phase E; `specflow:scope-change` no longer refreshes at D.3). Bulk re-compose via `specflow:brief --all` still supported (used by upgrade migration).
 - **Produces:** `features/NNN-{slug}/NNN-{slug}-brief.html` — inline CSS, no JS, deterministic output. PRD prose, interview Q&A, and manifest content appear verbatim; only the structured visual blocks are interpreted.
 - **Requires:** `NNN-{slug}-prd.md` and `NNN-{slug}-interview.md` both exist. Gate 2 / Gate 3 manifests are optional inputs.
 - **Eval:** `NNN-{slug}-brief.html` opens cleanly in a browser; deterministic re-compose produces byte-identical output for unchanged inputs; sidebar TOC links resolve.
@@ -70,15 +70,22 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 - **Eval:** every task has a Linear ID in the Export Map; round-trip status updates work.
 
 ### `specflow:test` 🔧
-- **Purpose:** verification cadence skill AND project self-learning entry point. Four-mode orchestrator: full / targeted / plan-only run a 3-phase flow (read PRD/tasks/pages → query `admin/lessons.json` for matched prior gaps → synthesise test plan with one binary case per AC + a covering case per matched lesson → execute capturing artefacts); `--feedback` runs a 4-step lesson-capture flow (Phase D) for gaps that escaped the gates, writing them to `lessons.json` and back-filling the test plan with a covering case so the same gap can't pass next time. Designed to be invoked many times over a feature's life, not once. Owns the lessons-registry schema (defined in this skill's body).
-- **Triggers:** `specflow:test {NNN-slug}` (full), `specflow:test {NNN-slug} --targeted T1,AC-2`, `specflow:test {NNN-slug} --plan-only`, `specflow:test {NNN-slug} --feedback`.
-- **Produces:** `features/NNN-{slug}/{NNN-slug}-test.md` (frontmatter + coverage matrix + test cases tagged with `Source: AC-N` or `Source: lesson L-NNN` + append-only execution log); artefacts in `features/NNN-{slug}/assets/`; on `--feedback` also: appended/superseded entry in `admin/lessons.json` (with `.bak`), appended `escaped-issue` row in `admin/task-history.json`; pass/fail summary in chat.
+- **Purpose:** verification cadence skill AND project self-learning entry point. Three documented modes: default / `--task` (filter) / `--plan-only` (forced or auto-inferred when no shipped code exists). The 3-phase flow reads PRD/tasks/pages → queries `admin/lessons.json` for matched prior gaps → synthesises a test plan with one binary case per AC + a covering case per matched lesson → executes capturing artefacts. Feedback capture (Phase D) is no longer flag-gated — the skill auto-prompts after a green run, and Phase A.0 detects conversational gap signals to route there directly. Phase D writes a `Retroactive: true` test case + a lesson + an attribution row. Designed to be invoked many times over a feature's life. Owns the lessons-registry schema (defined in this skill's body).
+- **Triggers:** `specflow:test {NNN-slug}` (default), `specflow:test {NNN-slug} --task T1,AC-2`, `specflow:test {NNN-slug} --plan-only`. The legacy `--targeted` alias normalises to `--task`; the legacy `--feedback` alias routes to Phase D directly (both retained for one release).
+- **Produces:** `features/NNN-{slug}/test/{NNN-slug}-test.md` (frontmatter + coverage matrix + test cases with explicit `Retroactive:` field + append-only execution log); artefacts in `features/NNN-{slug}/test/screenshots/` (Playwright captures) and `features/NNN-{slug}/assets/` (runner output, manual smoke evidence); on Phase D entry also: appended/superseded entry in `admin/lessons.json` (with `.bak`), appended `escaped-issue` row in `admin/task-history.json`; pass/fail summary in chat.
 - **Requires:** PRD + tasks closed Gate 3; `admin/pages.json` (UI scenarios); `admin/environment.json` (Playwright + detected runners); `admin/lessons.json` (self-learning corpus). Refuses if Gate 3 not closed.
-- **Eval:** every PRD acceptance criterion has a test case; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact referenced from the test plan; lesson-query in B.0 surfaces matched active lessons; `--feedback` produces a schema-valid lessons.json entry plus a covering test case tagged with the lesson id.
+- **Eval:** every PRD acceptance criterion has a test case; coverage matrix shows 100% AC-to-test traceability; on execution, every non-retroactive test produces a pass/fail signal with a concrete artefact referenced from the test plan; retroactive cases (`Retroactive: true`) are recorded with `⏭ retroactive` status and skipped; lesson-query in B.0 surfaces matched active lessons; Phase D entry produces a schema-valid lessons.json entry plus a covering test case (marked `Retroactive: true`) tagged with the lesson id.
 
-### `specflow:misc` 🆕
-- **Purpose:** single-task workflow for bugs, small fixes, and out-of-scope-but-shouldn't-be-lost observations. Two invocation modes — interactive (user-driven) and auto (structured payload from another skill, typically the Surgical Reviewer flagging a rule violation that should not be fixed inline). Initialises the rolling file if missing, allocates the next MISC-NNN id, appends the entry, optionally saves assets, updates the Quick reference + Export map tables.
-- **Triggers:** `specflow:misc`, "log a quick bug", "add a misc task"; auto-invoked by other skills via `specflow:misc --auto {payload-path}`.
+### `specflow:log` 🆕 (2.14)
+- **Purpose:** unified entry point for "log something out of band" — the agent classifies the user's free-form intent and routes to one of three internal handlers (`decision` / `misc` / `scope-change`). Replaces the three direct user-facing entry points; auto-invocation contracts from other skills (e.g. `specflow:develop` E.6 → misc) continue to call the handlers directly.
+- **Triggers:** `specflow:log {free-form intent}`, `/specflow:log`.
+- **Produces:** `admin/scratch/log-{timestamp}/intent.txt` (user prose), `admin/scratch/log-{timestamp}/routing.json` (the classification trace); the dispatched handler produces its own artefacts (`decision-log.md`, `misc-task/`, or PRD/tasks regeneration via scope-change).
+- **Requires:** the three internal handlers (`specflow:decision`, `specflow:misc`, `specflow:scope-change`) — installed by default.
+- **Eval:** every invocation lands in exactly one handler or returns cleanly after a user abort; routing.json records the chosen handler + confidence + prompt outcome; the handler's own eval block governs the resulting artefacts.
+
+### `specflow:misc` 🔧 (2.14: internal handler — invoke via `specflow:log`)
+- **Purpose:** single-task workflow for bugs, small fixes, and out-of-scope-but-shouldn't-be-lost observations. Two invocation modes — interactive (driven by `:log` dispatch with prose pre-filled) and auto (structured payload from another skill, typically the Surgical Reviewer flagging a rule violation that should not be fixed inline). Initialises the rolling file if missing, allocates the next MISC-NNN id, appends the entry, optionally saves assets, updates the Quick reference + Export map tables.
+- **Triggers:** `specflow:log "{description}"` (preferred user surface); `specflow:misc --auto {payload-path}` (internal auto-invocation from other skills); direct `specflow:misc` invocation supported for the deprecation runway.
 - **Produces:** new entry in `docs/specflow/misc-task/000-tasks-misc-tasks.md` (Pending tasks + Quick reference + Export map); optional asset under `misc-task/assets/`; for auto mode, a result file at `admin/scratch/misc-result-{timestamp}.json` for the calling skill to consume.
 - **Requires:** `admin/config.json`, `admin/rules/`. Linear export (separate skill) targets `000-misc-tasks` project.
 - **Eval:** new entry has unique MISC-NNN id; required fields populated; for auto-created entries the rule reference + why are present; any referenced assets exist on disk; rolling file passes structural lint.
@@ -155,29 +162,29 @@ Status legend: ✅ shipped (v1) · 🔧 v2 enhancement · 🆕 v2 addition (oper
 ## Phase 3 — Memory
 
 ### `specflow:complete` 🆕
-- **Purpose:** retro skill — captures task outcome at completion; feeds the self-learning loop. Final chat-line includes a soft prompt to run `specflow:test {slug} --feedback` for any gap discovered on review.
+- **Purpose:** retro skill — captures task outcome at completion; feeds the self-learning loop. Final chat-line includes a soft prompt to run `specflow:test {slug}` and mention any gap discovered on review (Phase A.0 intent detection routes the gap to Phase D).
 - **Triggers:** "/specflow:complete {task-id}", invoked manually or via Linear webhook.
-- **Produces:** entry in `task-history.json`; significant patterns appended to `decision-log.md`; soft chat-line reminder about `--feedback` after every successful retro.
+- **Produces:** entry in `task-history.json`; significant patterns appended to `decision-log.md`; soft chat-line reminder about the test-skill feedback flow after every successful retro.
 - **Requires:** completed task with PRD anchor.
 - **Eval:** entry has all required fields (id, scope, AI assistance level, what worked, what didn't, blast-radius outcome); feedback-prompt chat-line emitted on every successful retro write.
 
-### `specflow:decision` 🆕
-- **Purpose:** lightweight skill for users to manually log a decision out-of-band.
-- **Triggers:** "/specflow:decision".
+### `specflow:decision` 🔧 (2.14: internal handler — invoke via `specflow:log`)
+- **Purpose:** lightweight skill for recording an out-of-band decision (library pin, architectural reversal, convention ratified). Six interactive prompts, single append-only write to `decision-log.md`.
+- **Triggers:** `specflow:log "{description}"` (preferred user surface); `specflow:decision "{title}"` for direct invocation during the deprecation runway and from `specflow:scope-change` G7.
 - **Produces:** entry in `decision-log.md`.
 - **Requires:** none.
 - **Eval:** entry has title, context, decision, rationale, date, related files/tasks.
 
-### `specflow:scope-change` 🆕
+### `specflow:scope-change` 🔧 (2.14: internal handler — invoke via `specflow:log`)
 - **Purpose:** capture mid-development scope changes — *why* the intent changed, what the PRD now needs to say, which tasks regenerate, what in-flight work is impacted.
-- **Triggers:** "/specflow:scope-change", auto-suggested by `specflow:develop` on detected drift.
+- **Triggers:** `specflow:log "{description}"` (preferred user surface; the agent routes here when intent is scope-change-shaped); auto-suggested by `specflow:develop` on detected drift (auto-invocation contract unchanged — routes here directly).
 - **Produces:** updated PRD; regenerated affected tasks; impact list for in-flight work; `decision-log.md` entry.
 - **Requires:** active feature with existing PRD/tasks.
 - **Eval:** PRD diff is reviewable; affected tasks have updated coverage; impact list cites every in-flight artefact.
 
-### `/insights` 🆕
+### `/insights` 🔧 (2.14: background loop — scheduled cadence, not part of feature workflow)
 - **Purpose:** surface recurring patterns from `task-history.json` (monthly cadence).
-- **Triggers:** "/insights", scheduled cron.
+- **Triggers:** scheduled cron (primary); manual `/insights` invocation for ad-hoc runs.
 - **Produces:** report; suggested rule registry promotions (observation → guideline → non-negotiable).
 - **Requires:** populated `task-history.json`.
 - **Eval:** suggestions cite at least three observations per promotion.

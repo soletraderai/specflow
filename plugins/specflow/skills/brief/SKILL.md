@@ -1,6 +1,6 @@
 ---
 name: specflow:brief
-description: Compose a self-contained, browser-readable feature brief from features/NNN-{slug}/{NNN-slug}-prd.md, {NNN-slug}-interview.md, and (when present) the Gate 2 manifest. Produces a single NNN-{slug}-brief.html with a visual abstract, the PRD body, the interview transcript, and agent-review summary. Auto-fires after specflow:prd Phase E (Gate 2 closes); manual via /specflow:brief; bulk via --all.
+description: Compose a self-contained, browser-readable feature brief from features/NNN-{slug}/{NNN-slug}-prd.md, {NNN-slug}-interview.md, and (when present) the Gate 2 manifest. Produces a single NNN-{slug}-brief.html with a visual abstract, the PRD body, the interview transcript, and agent-review summary. **Manual invocation only as of v2.14.1** — no upstream skill auto-fires this one (specflow:prd no longer invokes at Phase E; specflow:scope-change no longer refreshes at D.3). Triggers: `specflow:brief {NNN-slug}` for a single feature; `specflow:brief --all` for bulk re-compose (used by upgrade migration).
 status: v2-new
 phase: 1
 requires:
@@ -112,7 +112,7 @@ The output must be byte-identical for unchanged inputs.
     - On Linux, run `xdg-open` if available; otherwise print the file path and skip silently.
     - On Windows or unknown platforms, print the file path and skip silently.
     - Browser-open is best-effort and never blocks success. Failures are logged but the skill still returns success.
-    - Skip browser-open in `--all` mode and when invoked as a sub-skill from `specflow:prd` (the parent skill decides whether to open).
+    - Skip browser-open in `--all` mode (bulk runs). Single-feature manual invocations open by default unless the user passes `--no-open`.
 
 11. Verify idempotence.
     - Compose the same input to a temporary file using the same algorithm.
@@ -623,7 +623,7 @@ find features -path 'features/[0-9][0-9][0-9]-*/[0-9][0-9][0-9]-*-brief.html' -p
 
 ## Reference
 
-- `skills/prd/SKILL.md` Phase E — invokes this skill after Gate 2 closes.
+- `skills/prd/SKILL.md` — used to invoke this skill at a former Phase E; as of v2.14.1 the PRD skill closes after Gate 2 and points the user at this skill via a closing chat-line. The user runs `specflow:brief` manually when they want the HTML.
 - `skills/doctor/SKILL.md` `features.{NNN-slug}.brief_drift` — checks freshness of the brief file.
 - `skills/upgrade/SKILL.md` step 10 — bulk regenerates briefs after PRD relocation.
 - `MIGRATIONS.md` v2.1 → v2.2 — replaces the per-feature `-prd.html` with `-brief.html`.

@@ -1,6 +1,6 @@
 ---
 name: specflow:learn
-description: Repo-local self-learning loop. Reads structured findings emitted by specflow:test runs, clusters them deterministically by signal_pattern, and auto-applies Tier-A additive rules to admin/rules/guidelines.md, admin/CONTEXT.md weak-spots, and admin/config.json new keys. Tier-B candidates (plugin-level changes) and Tier-C conflicts log to scratch for manual review. Append-only on the corpus; additive-only on the registries; per-run cap of 3 auto-applies; min cluster size 3. Five-phase orchestrator — A pre-flight + lock, B clustering, C tier routing, D Tier-A auto-apply, E report + lock release.
+description: Background loop — auto-fired by specflow:test after each Phase D feedback capture (not a user-facing command). Repo-local self-learning loop. Reads structured findings emitted by specflow:test runs, clusters them deterministically by signal_pattern, and auto-applies Tier-A additive rules to admin/rules/guidelines.md, admin/CONTEXT.md weak-spots, and admin/config.json new keys. Tier-B candidates (plugin-level changes) and Tier-C conflicts log to scratch for manual review. Append-only on the corpus; additive-only on the registries; per-run cap of 3 auto-applies; min cluster size 3. Five-phase orchestrator — A pre-flight + lock, B clustering, C tier routing, D Tier-A auto-apply, E report + lock release. Direct invocation is supported for debugging / re-runs but no user workflow requires it.
 status: v2-new
 phase: 3
 requires:

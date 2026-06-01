@@ -402,9 +402,9 @@ For successful writes that elevated: append on a second line: *"Decision-log ent
 
 After the chat-line summary (and the optional decision-log line), emit one additional non-blocking line on every successful retro:
 
-*"Anything that was marked done that turned out wrong on review? Run `specflow:test {NNN-slug} --feedback` to capture it. Adds the gap to `admin/lessons.json` so future features inherit the lesson."*
+*"Anything that was marked done that turned out wrong on review? Run `specflow:test {NNN-slug}` and mention the gap when prompted — Phase D captures it to `admin/lessons.json` so future features inherit the lesson."*
 
-Soft prompt only — no answer is captured here, no blocking question. The user either invokes `--feedback` next or doesn't. The reminder exists to raise the floor on remembering the loop is available, since the value of the lessons registry compounds with use over a project's lifetime. See `skills/test/SKILL.md` Phase D for the feedback flow itself.
+Soft prompt only — no answer is captured here, no blocking question. The user either runs the test skill next or doesn't. The reminder exists to raise the floor on remembering the loop is available, since the value of the lessons registry compounds with use over a project's lifetime. See `skills/test/SKILL.md` Phase D for the feedback flow itself (auto-prompted on green runs; routable via Phase A.0 intent detection).
 
 ### H.3 Structured failure on every refused exit (per AC-15 / Goal Outcome surface (d))
 

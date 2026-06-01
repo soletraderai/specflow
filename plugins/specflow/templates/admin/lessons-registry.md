@@ -1,6 +1,6 @@
 # Lessons registry — schema + read-write loop
 
-`admin/lessons.json` is the project's self-learning corpus. A single mutable JSON array of lesson entries, written by `specflow:test --feedback` (Phase D) and `specflow:complete` (retro), read by `specflow:prd` (Phase A.4) and `specflow:task` (Phase A.4) at the start of every new feature, and clustered by `specflow:insights` for promotion to `admin/rules/guidelines.md`.
+`admin/lessons.json` is the project's self-learning corpus. A single mutable JSON array of lesson entries, written by `specflow:test` Phase D (entered via the post-green prompt at Phase C.4 or Phase A.0 intent detection — `--feedback` flag deprecated in v2.14.0) and `specflow:complete` (retro), read by `specflow:prd` (Phase A.4) and `specflow:task` (Phase A.4) at the start of every new feature, and clustered by `specflow:insights` for promotion to `admin/rules/guidelines.md`.
 
 Introduced in v2.6.0 (`018-lessons-registry`). Formalises the in-flight write log as a closed read-write loop.
 
@@ -44,9 +44,9 @@ Each lesson entry is one JSON object in the top-level array:
 
 ## Write path
 
-### Path 1 — `specflow:test --feedback` (Phase D)
+### Path 1 — `specflow:test` Phase D (feedback capture; flag-less since v2.14.0)
 
-When a Verifier-passed task turns out wrong on human review, `specflow:test --feedback` captures the gap as a lesson with `outcome: "failed"` (or `"mixed"` if the gap is judgement-dependent) and `confidence: "single-occurrence"`. The captured `what_was_missed` becomes `context`; the user-stated remediation becomes `lesson`; the misattribution map becomes `source`. Operational details: `skills/test/SKILL.md` § Phase D — Feedback mode.
+When a Verifier-passed task turns out wrong on human review, `specflow:test` Phase D captures the gap as a lesson with `outcome: "failed"` (or `"mixed"` if the gap is judgement-dependent) and `confidence: "single-occurrence"`. Phase D is entered via the post-green prompt at Phase C.4, via Phase A.0 intent-detection routing, or via the deprecated `--feedback` flag (retained for one release). The captured `what_was_missed` becomes `context`; the user-stated remediation becomes `lesson`; the misattribution map becomes `source`. Operational details: `skills/test/SKILL.md` § Phase D — Feedback capture.
 
 ### Path 2 — `specflow:complete` (retro)
 

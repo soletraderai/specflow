@@ -234,7 +234,7 @@ Always at least one entry. If nothing is referenced, the implementation is proba
 
 **Acceptance Criteria**
 
-{One bullet per AC-N. One line each. Cite the AC-ID from the PRD. Full probe spec lives in `{NNN-slug}-test.md`, not here.}
+{One bullet per AC-N. One line each. Cite the AC-ID from the PRD. Full probe spec lives in `test/{NNN-slug}-test.md`, not here.}
 
 **QA Verification**
 
@@ -310,7 +310,7 @@ Otherwise:
 
 On `continue`: append `— User reviewed; no revisions, {YYYY-MM-DD}.` to the file. Proceed to C.1.
 On `revise: <description>`: edit the tasks file inline to address the gap, re-run B.2 (rebuild coverage matrix) and B.4 (self-check), then re-prompt at B.5.
-On `recut: <description>`: archive the current tasks file as `{NNN-slug}-tasks.md.pre-recut.bak`, loop back to B.1 with the user's gap as additional context, run B.2/B.3/B.4 from scratch, then re-prompt at B.5.
+On `recut: <description>`: archive the current tasks file to `archive/{NNN-slug}-tasks-v{N}.md` (scan existing `archive/{NNN-slug}-tasks-v*.md` entries, increment N), loop back to B.1 with the user's gap as additional context, run B.2/B.3/B.4 from scratch, then re-prompt at B.5. Old `.pre-recut.bak` files from pre-2.14 runs stay in place — they don't need migration, but new recuts always write to `archive/`.
 On `skip`: append `— User skipped without revisions, {YYYY-MM-DD}.` to the file. Proceed to C.1.
 
 ---

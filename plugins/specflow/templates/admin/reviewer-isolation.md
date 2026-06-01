@@ -68,7 +68,7 @@ A `FreshContextViolation` aborts the gate close with status `failed` and surface
 
 | Gate | Where it fires | Reviewer slots that must differ |
 |---|---|---|
-| Gate 2 | `specflow:prd` Phase E | writer + 5 principle reviewers (+ codex when avail) |
+| Gate 2 | `specflow:prd` Phase D | writer + 5 principle reviewers (+ codex when avail) |
 | Gate 3 | `specflow:task` Phase E | writer + 5 principle reviewers + cross-task-reviewer + applier (when 3+ tasks) |
 | Gate 4 | `specflow:develop` Phase C | writer + 5 principle reviewers + edge-case-reviewer (per 028) |
 | Gate 5 | `specflow:develop` Phase E | writer + 5 principle reviewers + codex-reviewer (when avail) + edge-case-reviewer (per 028) |

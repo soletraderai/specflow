@@ -1,6 +1,6 @@
 ---
 name: specflow:decision
-description: Lightweight skill to log a decision out-of-band. Interactive prompt walking the user through title / context / decision / rationale / related; appends a structured entry to admin/decision-log.md. Complement to specflow:complete which captures task-completion retros — decision is for noteworthy moments not tied to a closing task.
+description: Internal handler — for user-facing invocation, use `specflow:log` (the agent routes to this handler when your intent is decision-shaped). Lightweight skill to log a decision out-of-band. Interactive prompt walking the user through title / context / decision / rationale / related; appends a structured entry to admin/decision-log.md. Direct invocation is retained for the auto-invocation path (other skills dispatching here with structured payloads) and for the deprecation runway — surface this skill via `specflow:log` first.
 status: v2-new
 phase: 3
 requires:

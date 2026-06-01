@@ -1,6 +1,6 @@
 ---
 name: specflow:develop
-description: User-facing entry point for lane-based implementation. Six-phase orchestrator — A pre-flight + read PRD/tasks/Gate 3, B lane triage with mechanical confidentiality classification, B.1 mechanical pre-Gate-4 lane recheck, C Gate 4 multi-agent debate manifest (plan vs tasks/PRD), D lane execution (green-batch / yellow-HITL / red-human-led), E Gate 5 multi-agent debate manifest (code vs plan, Codex when available), F Verifier confirmation + PR + Linear + task-history. Resumes intelligently if invoked on an in-flight feature.
+description: User-facing entry point for lane-based implementation. Six-phase orchestrator — A pre-flight (toggle check → A.0.5 auto-branch the feature to `{NNN-slug}` → read PRD/tasks/Gate 3), B lane triage with mechanical confidentiality classification, B.1 mechanical pre-Gate-4 lane recheck, C Gate 4 multi-agent debate manifest (plan vs tasks/PRD), D lane execution (green-batch / yellow-HITL / red-human-led), E Gate 5 multi-agent debate manifest (code vs plan, Codex when available), F Verifier confirmation + PR + Linear + task-history + stash restore. Resumes intelligently if invoked on an in-flight feature.
 status: v2-new
 phase: 2
 requires:
@@ -81,6 +81,27 @@ Read `admin/config.json`. If `config.skills.develop.enabled === false`, refuse w
 > *"`specflow:develop` is disabled in this project (`config.skills.develop.enabled = false`). Re-enable in `docs/specflow/admin/config.json` or invoke a different skill."*
 
 Treat a missing `config.skills.develop` field as `enabled: true` (backward-compat for v2.3 projects upgraded via `specflow:upgrade`). Resolver contract documented in `templates/admin/skill-toggles.md`. Citation: 012-config-skill-toggles v2.4.0.
+
+### A.0.5 Auto-branch the feature
+
+Before reading the artefact chain, ensure the user's primary checkout is on a dedicated feature branch named literally `{NNN-slug}` (e.g. `005-foo-bar`). This isolates development from `main` so the implementation can be reviewed and discarded cleanly. Sprint-mode worktrees (A.5.5) inherit this branch as their base — the worktree is created FROM the feature branch, so all sub-agent work lands on the feature branch through the worktree.
+
+1. **Resume guard.** If a feature.md frontmatter `branch:` already names a branch AND the current `HEAD` is that branch, skip to A.1 silently — this is a resume of an in-flight feature.
+2. **Dirty tree?** Run `git status --porcelain`. If non-empty:
+   - Run `git stash push -m "specflow-develop/{NNN-slug}/{ISO timestamp}"`.
+   - Surface the stash name conspicuously to the user: *"Stashed uncommitted work as `specflow-develop/{NNN-slug}/{timestamp}` — Phase F will pop it on success. Recover manually via `git stash list` if a run aborts."*
+   - Record the stash name in `admin/scratch/{NNN-slug}-develop/stash-name.txt` (single line) so Phase F can locate it deterministically.
+3. **Resolve branch name.** Target = literal `{NNN-slug}`. Check `git branch --list {NNN-slug}`:
+   - **Absent** → `git checkout -b {NNN-slug}` from current `HEAD`. Warn if the prior `HEAD` was not `main` or `master`: *"Branched `{NNN-slug}` from `{current-branch}` rather than `main` — confirm this was intentional or check out `main` and re-run."* Proceed.
+   - **Present** → prompt the user with three options:
+     > Branch `{NNN-slug}` already exists. (1) Reuse — checkout the existing branch and continue. (2) Variant — create `{NNN-slug}-v2` (or `-v3`, etc. — next available suffix) and check it out. (3) Abort — exit without touching git state. The skill does not default; an empty input or any input not matching `1|2|3` re-prompts.
+     - On `1`: `git checkout {NNN-slug}`. Log "Reusing existing branch `{NNN-slug}`."
+     - On `2`: scan existing `{NNN-slug}-v*` branches, pick the next free suffix N, run `git checkout -b {NNN-slug}-v{N}` from current `HEAD`. The variant name becomes the persisted `branch:` value for this run.
+     - On `3`: if a stash was created at step 2, restore it now (`git stash pop` by name) so the user is back to their starting state. Exit cleanly.
+4. **Persist branch name.** Edit `{NNN-slug}-feature.md` frontmatter: set `branch: {resolved-name}` (replaces the placeholder `null` written at feature kickoff). Re-runs read this field at step 1 to detect resume.
+5. Hand off to A.1.
+
+Phase F.6 restores the stash (if any) before cleanup. On any error path before Phase F that aborts the run, the stash is RETAINED — user can recover via `git stash list` and the name written to `stash-name.txt`.
 
 ### A.1 Verify the artefact chain
 
@@ -469,9 +490,9 @@ For each task in `T_run` whose Gate 4 closed with passed/passed-with-revisions/p
 
 > **Red → Green → Refactor cycle.** Inside the single context window, the agent's work follows Pocock's Red → Green → Refactor cycle (per 017-tdd-discipline). The cycle is *internal* to the task (not phase-numbered). Cycle markers (`red:` / `green:` / `refactor:`) write to `admin/scratch/{NNN-slug}-develop/manifest-stub-{task-id}.md` for retro audit; Phase E (Gate 5) reviewers do NOT see them. Full contract in `templates/admin/tdd-discipline.md`.
 
-**Red sub-step.** The agent invokes `specflow:test {NNN-slug} --plan-only --task T{N}` to write the per-task plan section into `{NNN-slug}-test.md` with the primary AC's case marked `Status: red (failing)`. The agent then runs the targeted test command (e.g. `vitest run path/to/test`) against the pre-implementation state and captures the failing exit + stderr to `admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log`. **A pre-implementation pass is an invalid Red artefact** and refuses to enter Green — the agent halts and surfaces to the developer. Manifest marker: `red: passed (...)` once the failing exit is captured.
+**Red sub-step.** The agent invokes `specflow:test {NNN-slug} --plan-only --task T{N}` to write the per-task plan section into `test/{NNN-slug}-test.md` with the primary AC's case marked `Status: red (failing)`. The agent then runs the targeted test command (e.g. `vitest run path/to/test`) against the pre-implementation state and captures the failing exit + stderr to `admin/scratch/{NNN-slug}-develop/red-test-trace-{task-id}.log`. **A pre-implementation pass is an invalid Red artefact** and refuses to enter Green — the agent halts and surfaces to the developer. Manifest marker: `red: passed (...)` once the failing exit is captured.
 
-**Green sub-step.** Yellow lane refuses to enter Green without the Red artefact (the per-task plan section in `{NNN-slug}-test.md` containing at least one case marked `Status: red (failing)` AND the captured pre-implementation failing exit). Green lane behaviour is gated on `config.develop.tddRequired` — when `tddRequired: true` (the default), Green refuses to enter without the failing test, identically to Yellow. When `tddRequired: false`, Green may skip the Red sub-step and the per-task manifest stub records `red: skipped (config) (...)` alongside the operator's strong-CI-signal attestation. The knob applies to Green only. The agent writes the simplest change that makes the failing test pass; re-runs the same targeted test command (exit 0); appends to the trace log. Manifest marker: `green: passed (...)`.
+**Green sub-step.** Yellow lane refuses to enter Green without the Red artefact (the per-task plan section in `test/{NNN-slug}-test.md` containing at least one case marked `Status: red (failing)` AND the captured pre-implementation failing exit). Green lane behaviour is gated on `config.develop.tddRequired` — when `tddRequired: true` (the default), Green refuses to enter without the failing test, identically to Yellow. When `tddRequired: false`, Green may skip the Red sub-step and the per-task manifest stub records `red: skipped (config) (...)` alongside the operator's strong-CI-signal attestation. The knob applies to Green only. The agent writes the simplest change that makes the failing test pass; re-runs the same targeted test command (exit 0); appends to the trace log. Manifest marker: `green: passed (...)`.
 
 **Refactor sub-step.** Bounded structural improvement under the green test as guard. Three explicit bounds (full contract in `templates/admin/tdd-discipline.md`): (a) no new behaviour, (b) no new files, (c) no scope creep / route to `specflow:scope-change`. Refactor is optional for trivial tasks. Manifest marker: `refactor: passed (...)` or `refactor: skipped (trivial) (...)` or `refactor: failed (new-file-attempted) (...)` per the outcome enum.
 
@@ -500,7 +521,7 @@ The skill does not auto-default; an empty input or any input not matching `resum
 
 Yellow-qualifying tasks run one at a time, with the agent and human paired in real time. The agent emits the plan (already done at B.1.1 / C), executes the change in a forked sub-agent context, and surfaces every machine-check result as it lands. The human reviews each step in real time; the agent waits for explicit go-ahead before opening a PR.
 
-Yellow lane is mandatory tests-first — Yellow refuses to enter the Green cycle step without the Red artefact (the per-task plan section in `{NNN-slug}-test.md` containing at least one case marked `Status: red (failing)` AND the captured pre-implementation failing exit). Cycle marker contract per `templates/admin/tdd-discipline.md`.
+Yellow lane is mandatory tests-first — Yellow refuses to enter the Green cycle step without the Red artefact (the per-task plan section in `test/{NNN-slug}-test.md` containing at least one case marked `Status: red (failing)` AND the captured pre-implementation failing exit). Cycle marker contract per `templates/admin/tdd-discipline.md`.
 
 Yellow batch size is 1 — never grouped. Yellow-lane sign-off is per-task, not batched.
 
@@ -702,15 +723,17 @@ For each completed task (Verifier pass OR option-4 accept-and-ship), read `admin
 
 Pre-existing entries (created at task creation by `specflow:task` Phase D for user overrides) are updated in place; pre-task-creation fields (e.g. `ai_proposal`, `user_override`) are preserved.
 
-### F.6 Cleanup scratch on success
+### F.6 Restore stash + cleanup scratch on success
 
 After all `T_run` tasks complete and the per-run closure fires (sprint-mode: end-of-sprint; feature-mode: end-of-feature):
 
-```bash
-rm -rf admin/scratch/{NNN-slug}-develop/
-```
+1. **Restore pre-run stash if any.** If `admin/scratch/{NNN-slug}-develop/stash-name.txt` exists, read the stash name and run `git stash pop "stash@{...}"` by matching the message. If `git stash pop` succeeds, log to chat: *"Restored pre-run stash `{name}`."* If it fails (typically merge conflict between the stashed work and the branched changes), leave the stash in place and surface: *"Could not auto-pop stash `{name}` — resolve manually via `git stash apply '{name}'` and reconcile conflicts. The stash remains on the stack."* Either way, proceed to step 2.
+2. **Scratch cleanup.**
+   ```bash
+   rm -rf admin/scratch/{NNN-slug}-develop/
+   ```
 
-Retain the scratch directory on failure for debugging.
+Retain the scratch directory on failure for debugging — the stash name in `stash-name.txt` is the user's recovery anchor for any aborted run.
 
 ---
 

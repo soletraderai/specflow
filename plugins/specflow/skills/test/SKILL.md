@@ -1,6 +1,6 @@
 ---
 name: specflow:test
-description: Verify work against PRD acceptance criteria. Testing-as-cadence — runs iteratively throughout development, not as a terminal phase. Four-mode orchestrator — full / targeted / plan-only run the standard 3-phase flow (A pre-flight, B test-plan synthesis with lesson-query, C execution); --feedback runs the lesson-capture flow (Phase D) to log gaps the plan missed and write them back into admin/lessons.json so the system gets smarter on the next feature.
+description: Verify work against PRD acceptance criteria. Testing-as-cadence — runs iteratively throughout development, not as a terminal phase. Default flow is A pre-flight → B test-plan synthesis with lesson-query → C execution; `--task T1,T3,AC-2` filters to a subset; `--plan-only` skips execution (auto-inferred when no shipped code exists yet). Feedback capture (Phase D) is no longer flag-gated — it auto-prompts after a green run and at Phase A.0 when the agent detects a shipped-behaviour gap in the conversation context. Phase D writes a Retroactive: true test case + a lesson + an attribution row so the system gets smarter on the next feature.
 status: v2-enhancement
 phase: 1
 requires:
@@ -11,12 +11,12 @@ requires:
   - docs/specflow/admin/environment.json
   - docs/specflow/admin/lessons.json
 produces:
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-test.md
+  - docs/specflow/features/{NNN-slug}/test/{NNN-slug}-test.md
   - docs/specflow/features/{NNN-slug}/assets/
   - docs/specflow/admin/lessons.json (mutated; .bak preserved on every write)
-  - docs/specflow/admin/task-history.json (appended on --feedback)
+  - docs/specflow/admin/task-history.json (appended on Phase D feedback capture)
   - docs/specflow/admin/pages.json (lazy-appended on first UI run per route; never duplicates)
-eval: every PRD acceptance criterion has a test case in {NNN-slug}-test.md; coverage matrix shows 100% AC-to-test traceability; on execution, every targeted test produces a pass/fail signal with a concrete artefact (screenshot, log line, runner output) referenced from the test plan; lesson-query in B.0 surfaces matched active lessons; --feedback writes one new lesson to lessons.json plus one new test case to {NNN-slug}-test.md tagged with the lesson id; UI scenarios append unseen routes to admin/pages.json idempotently (009-pages-policy v2.4.0); when invoked with `--plan-only --task T{N}`, the per-task plan section written into {NNN-slug}-test.md contains at least one test case marked `Status: red (failing)` (017-tdd-discipline v2.5.0).
+eval: every PRD acceptance criterion has a test case in test/{NNN-slug}-test.md; coverage matrix shows 100% AC-to-test traceability; on execution, every non-retroactive test produces a pass/fail signal with a concrete artefact (screenshot, log line, runner output) referenced from the test plan; retroactive test cases (Retroactive: true) are recorded with ⏭ retroactive status and skipped; lesson-query in B.0 surfaces matched active lessons; the post-green feedback prompt or invocation-time intent detection routes to Phase D to write one new lesson to lessons.json plus one new (Retroactive: true) test case to test/{NNN-slug}-test.md tagged with the lesson id; UI scenarios append unseen routes to admin/pages.json idempotently (009-pages-policy v2.4.0); when invoked with `--plan-only --task T{N}`, the per-task plan section written into test/{NNN-slug}-test.md contains at least one test case marked `Status: red (failing)` (017-tdd-discipline v2.5.0).
 
 ---
 
@@ -34,12 +34,13 @@ This is a **3-phase skill**. No multi-agent debate manifest in Phase 1 — Gate 
 
 The user invokes you with one of:
 
-- `specflow:test {NNN-slug}` — full mode. Re-derives the plan, executes everything in scope.
-- `specflow:test {NNN-slug} --targeted T1,T3,AC-2` — targeted mode. Re-derives the plan but executes only the specified task IDs and AC IDs.
-- `specflow:test {NNN-slug} --plan-only` — re-derives the plan and writes the test file; does NOT execute. Useful for early-cadence reviews when the implementation isn't ready yet.
-- `specflow:test {NNN-slug} --plan-only --task T{N}` — per-task variant of plan-only. Writes only the per-task plan section into `{NNN-slug}-test.md` (not the whole feature plan) and marks the primary AC's case as `Status: red (failing)` by default — the Red artefact for `specflow:develop`'s 017-tdd-discipline cycle. **Phase B.5 (Codex pass + user prompt) is skipped** in `--task` mode — the per-task slice inherits whatever B.5 outcome the feature-level test plan recorded; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time. Doctrine: `templates/admin/tdd-discipline.md`.
-- `specflow:test {NNN-slug} --feedback` — feedback mode. Runs Phase D (lesson capture) instead of A/B/C. Used when something marked done turned out to be wrong on human review; logs the gap to `admin/lessons.json`, adds a covering test case, and appends an attribution to `task-history.json`. See **Phase D** below.
+- `specflow:test {NNN-slug}` — default. Re-derives the plan, executes every in-scope, non-retroactive test case.
+- `specflow:test {NNN-slug} --task T1,T3,AC-2` — filter to the listed task IDs / AC IDs (single or comma-list; supersedes the old `--targeted` flag from 2.13 and earlier — the alias is deprecated but accepted for one release).
+- `specflow:test {NNN-slug} --plan-only` — explicit override that skips Phase C even when shippable code exists (TDD red-artefact use case). Plan-only is otherwise **auto-inferred** when no executable code exists for the targeted scope — the flag is only needed to force plan-only against shipped code.
+- `specflow:test {NNN-slug} --plan-only --task T{N}` — per-task variant of plan-only. Writes only the per-task plan section into `test/{NNN-slug}-test.md` (not the whole feature plan) and marks the primary AC's case as `Status: red (failing)` by default — the Red artefact for `specflow:develop`'s 017-tdd-discipline cycle. **Phase B.5 (Codex pass + user prompt) is skipped** in `--task` mode — the per-task slice inherits whatever B.5 outcome the feature-level test plan recorded; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time. Doctrine: `templates/admin/tdd-discipline.md`.
 - `/specflow:test` with no argument — ask the user which feature.
+
+**Feedback capture has no flag.** Phase D (lesson capture) fires through two implicit paths: (a) automatically prompted at the end of a green run via Phase C.4, (b) routed at Phase A.0 when the agent detects a shipped-behaviour gap in the immediately-prior conversation context. The old `--feedback` flag is removed; the alias is accepted for one release and routes to Phase D directly.
 
 **Resume logic.** Before starting Phase A:
 
@@ -49,10 +50,24 @@ The user invokes you with one of:
    - `{NNN-slug}-tasks.md` exists.
    - `debate-log/tasks-gate3/manifest.md` exists with a `**passed**` or `**passed-with-escalations**` closing decision.
    - If tasks haven't closed Gate 3, refuse: *"Tasks have not closed Gate 3 (status: `{status}`). Resolve Gate 3 before testing. Re-run `specflow:task {NNN-slug}` to resume."*
-3. Default mode is **full**. If `--targeted`, `--plan-only`, or `--feedback` is provided, set the mode accordingly.
-4. If mode is `--feedback`, skip Phases A/B/C and route directly to **Phase D — Feedback mode** below.
+3. Parse flags: `--task` and `--plan-only` are explicit; the deprecated `--targeted` alias is normalised to `--task` with a one-line deprecation notice in chat.
+4. Run **Phase A.0 — intent detection** below before continuing to A.1.
 
-Tell the user explicitly which mode you're running.
+### Phase A.0 — Intent detection
+
+Skim the immediately-prior conversation context (the user's last 2-3 turns) for signals that this invocation is really a feedback capture, not a verification run. Signals: phrases like *"X was wrong"*, *"all green but Y looked off in production"*, *"the splash screen had the wrong font"*, *"the lesson is…"* — any sentence pinning a *gap in shipped behaviour* the test plan missed.
+
+If signal present:
+
+> Sounds like you spotted a gap rather than wanting a re-run. Route to Phase D (capture a lesson) instead? [yes/no]
+
+On `yes` → skip Phases A.1-C and jump to Phase D. On `no` → continue normal A.1.
+
+If no signal present, continue silently to A.1.
+
+The deprecated `--feedback` flag, if passed, short-circuits this prompt and jumps straight to Phase D.
+
+Tell the user explicitly which mode you're running (default / filtered / plan-only / feedback-via-prompt).
 
 ---
 
@@ -74,7 +89,7 @@ Build three lists:
 - **Tasks** — every `T-N` from `tasks.md` with its acceptance line.
 - **Pages** — every page entry from `pages.json` that the feature touches (match by slug, by tag, or by path overlap with the tasks' Scope lines).
 
-If `--targeted` was provided, filter the lists to the specified IDs. Refuse if any specified ID doesn't exist.
+If `--task` was provided (or the deprecated `--targeted` alias), filter the lists to the specified IDs (single or comma-list). Refuse if any specified ID doesn't exist.
 
 ### A.3 Detect the test execution surface
 
@@ -85,7 +100,9 @@ From `admin/environment.json`:
 
 ### A.4 Surface the plan-mode decision
 
-Tell the user: *"Generating test plan for {feature}. Coverage target: {N} acceptance criteria across {M} tasks. Execution mode: {full | targeted | plan-only}. Test surfaces detected: {Playwright UI, vitest unit, …}."*
+Tell the user: *"Generating test plan for {feature}. Coverage target: {N} acceptance criteria across {M} tasks. Execution mode: {default | filtered by --task | plan-only (forced) | plan-only (auto-inferred — no shipped code yet)}. Test surfaces detected: {Playwright UI, vitest unit, …}."*
+
+**Auto plan-only inference.** Before announcing the mode, decide whether Phase C can execute against the targeted scope. Read the per-AC implementation evidence: for every AC in scope, is there code on disk under the task's `Scope` paths? If zero scoped ACs have shippable code (the TDD red case — `specflow:develop` hasn't run yet, or the targeted task is pre-implementation), force the mode to `plan-only (auto-inferred)` without requiring the `--plan-only` flag. The user can still pass `--plan-only` explicitly to force plan-only against shipped code.
 
 ---
 
@@ -130,17 +147,17 @@ Cross-tabulate AC IDs against test cases. Two checks:
 
 If forward coverage fails, you missed an AC; go back to B.1. If reverse traceability fails, you derived a test case from somewhere other than the PRD — drop it OR (if load-bearing) surface to the user as a proposed AC addition: *"Test case TC-{N} doesn't trace to any AC. Either drop it or run `specflow:scope-change` to add the AC it implies."*
 
-### B.3 Write `{NNN-slug}-test.md`
+### B.3 Write `test/{NNN-slug}-test.md`
 
-Use Write tool to create `features/NNN-{slug}/{NNN-slug}-test.md`:
+Use Write tool to create `features/NNN-{slug}/test/{NNN-slug}-test.md`. The test plan now lives alongside its screenshots inside the feature's `test/` subfolder (per the 2.14 folder reorg) — relative links from the test plan resolve as `./screenshots/...` and `../assets/...`.
 
 ```markdown
 ---
 feature: NNN-slug
 status: draft
 created: {YYYY-MM-DD}
-prd: ./{NNN-slug}-prd.md
-tasks: ./{NNN-slug}-tasks.md
+prd: ../{NNN-slug}-prd.md
+tasks: ../{NNN-slug}-tasks.md
 ---
 
 # Test plan — {Feature title}
@@ -158,6 +175,7 @@ tasks: ./{NNN-slug}-tasks.md
 ### TC-1 — {short title}
 - **Verifies:** AC-1 (PRD R1)
 - **Exercises tasks:** T1, T3
+- **Retroactive:** false
 - **Surface:** Playwright UI scenario
 - **Pages used:** `home`, `notifications-popover` (from `pages.json`)
 - **Steps:**
@@ -165,16 +183,19 @@ tasks: ./{NNN-slug}-tasks.md
   2. Trigger {action}.
   3. Assert {observable}.
 - **Pass criterion:** {binary check, e.g. "popover renders with badge count = 3"}.
-- **Artefact on run:** `assets/TC-1-popover-render.png` (screenshot at the assert step).
+- **Artefact on run:** `screenshots/TC-1-popover-render.png` (screenshot at the assert step).
 
 ### TC-2 — {short title}
 - **Verifies:** AC-2
+- **Retroactive:** false
 - **Surface:** vitest unit
 - **Test file:** `__tests__/notifications.spec.ts:42` (existing) OR `[to author]` (new)
 - **Pass criterion:** runner exits with `0` for the named test.
-- **Artefact on run:** `assets/TC-2-runner-output.txt`.
+- **Artefact on run:** `../assets/TC-2-runner-output.txt`.
 
 (continue for every test case)
+
+**Retroactive marker.** `Retroactive: true` flags a test case that documents shipped behaviour the original plan didn't cover — typically written by the post-green feedback prompt or Phase A.0 intent-detection routing into Phase D. Phase C **skips** retroactive cases (the feature has already shipped; there is no live implementation to verify in this run) and logs them with `⏭ retroactive` in the run table. Retroactive cases remain in the plan as the auditable lesson-to-AC mapping; future feature plans can reference them via the lessons registry. Defaulting `Retroactive: false` for every newly synthesised case keeps Phase C inclusive by default.
 
 ## Brand-consistency lens (per 023-test-brand-consistency v2.6.0)
 
@@ -226,10 +247,10 @@ Otherwise:
 3. Tell the user: *"Pre-execution Codex pass written to `{path}`. Reply `continue` to proceed, `revise: <description>` to address a specific gap inline, or `skip` to proceed without revisions."*
 
 On `continue`: append `— User reviewed; no revisions, {YYYY-MM-DD}.` to the file. Proceed to C.1 (or to the plan-only report).
-On `revise: <description>`: edit `{NNN-slug}-test.md` to address the gap, re-run B.2 (coverage matrix) and B.4 (self-check), then re-prompt at B.5.
+On `revise: <description>`: edit `test/{NNN-slug}-test.md` to address the gap, re-run B.2 (coverage matrix) and B.4 (self-check), then re-prompt at B.5.
 On `skip`: append `— User skipped without revisions, {YYYY-MM-DD}.` to the file. Proceed; if executing, record *"Pre-execution Codex pass skipped by user"* as a note in the next Run row of the Execution log.
 
-If mode is `--plan-only`, skip Phase C and report: *"Test plan synthesised. {N} test cases covering all {M} ACs. Execution skipped (plan-only mode). Run `specflow:test {NNN-slug}` to execute."*
+If mode is plan-only (forced via `--plan-only` or auto-inferred per A.4), skip Phase C and report: *"Test plan synthesised. {N} test cases covering all {M} ACs ({R} retroactive). Execution skipped ({plan-only forced | plan-only auto-inferred — no shipped code for the targeted scope}). Run `specflow:test {NNN-slug}` after the implementation lands to execute."*
 
 ---
 
@@ -243,7 +264,9 @@ mkdir -p docs/specflow/features/NNN-{slug}/assets
 
 ### C.2 Execute test cases
 
-For each test case in scope (full or targeted):
+**Filter retroactive cases first.** Every test case with `Retroactive: true` is excluded from execution — the feature has already shipped and there is no live implementation to verify in this run. Retroactive cases are recorded in the run table with `⏭ retroactive` status (see C.3). They remain in the plan as the auditable lesson-to-AC mapping; future feature plans cross-reference them via the lessons registry.
+
+For each non-retroactive test case in scope:
 
 **UI scenarios (Playwright):**
 1. Boot the dev server if needed (or use a recorded screenshot if the dev server isn't available).
@@ -283,42 +306,53 @@ If a captured path looks dynamic (contains a numeric or UUID segment), normalise
 
 ### C.3 Append the execution log
 
-After every test case, append (do not overwrite) to the *Execution log* section of `{NNN-slug}-test.md`:
+After every test case, append (do not overwrite) to the *Execution log* section of `test/{NNN-slug}-test.md`:
 
 ```markdown
 
-## Run — {YYYY-MM-DD HH:MM} — {full | targeted: T1,T3,AC-2 | plan-only}
+## Run — {YYYY-MM-DD HH:MM} — {default | filtered: T1,T3,AC-2 | plan-only (forced) | plan-only (auto-inferred)}
 
 | Test case | Status | Artefact | Notes |
 |---|---|---|---|
-| TC-1 | ✅ pass | [`assets/TC-1-popover-render.png`](./assets/TC-1-popover-render.png) | — |
-| TC-2 | ❌ fail | [`assets/TC-2-runner-output.txt`](./assets/TC-2-runner-output.txt) | Expected `200`, got `404`. |
-| TC-3 | ⏭ skipped | — | Out of targeted scope. |
+| TC-1 | ✅ pass | [`screenshots/TC-1-popover-render.png`](./screenshots/TC-1-popover-render.png) | — |
+| TC-2 | ❌ fail | [`../assets/TC-2-runner-output.txt`](../assets/TC-2-runner-output.txt) | Expected `200`, got `404`. |
+| TC-3 | ⏭ skipped | — | Out of filtered scope. |
+| TC-4 | ⏭ retroactive | — | Documents shipped behaviour (lesson L-007); not executed. |
 
-**Summary:** {N} pass · {M} fail · {K} skipped.
+**Summary:** {N} pass · {M} fail · {K} skipped · {R} retroactive.
 
 **Failures (need attention):**
 - TC-2: {one-line description of the failure mode}.
 ```
 
-### C.4 Report to the user
+### C.4 Report + post-green feedback prompt
 
 After execution finishes, surface in chat:
 
 ```
 Test run complete.
-- Mode: {full | targeted: ... | plan-only}
-- Pass: {N} / Fail: {M} / Skipped: {K}
-- Plan: features/NNN-{slug}/{NNN-slug}-test.md
-- Artefacts: features/NNN-{slug}/assets/
+- Mode: {default | filtered: ... | plan-only (forced|auto-inferred)}
+- Pass: {N} / Fail: {M} / Skipped: {K} / Retroactive: {R}
+- Plan: features/NNN-{slug}/test/{NNN-slug}-test.md
+- Artefacts: features/NNN-{slug}/test/screenshots/ + features/NNN-{slug}/assets/
 
 Failures:
 - TC-2 (AC-2 verifying R3) — {one-liner}. Artefact: assets/TC-2-runner-output.txt
 - ...
+```
 
-Next step: {if any failures} fix the failing tasks and re-run `specflow:test {NNN-slug} --targeted TC-2`.
+**Post-green prompt** (only when {M} == 0 AND mode was a real execution — skip on plan-only, skip when any failures landed). Before emitting the "Next step" line, ask:
+
+> All tests passed. Any gaps in shipped behaviour the plan missed?
+
+If the user answers `yes` or describes a gap, drop into **Phase D** inline using the user's answer as the seed for D.2's Q1. If the user answers `no` or a clear declination, emit the next-step line:
+
+```
+Next step: {if any failures} fix the failing tasks and re-run `specflow:test {NNN-slug} --task TC-2`.
 {else} Coverage holds; PRD acceptance verified for the targeted scope.
 ```
+
+The implicit prompt replaces the old `--feedback` flag. The flag still routes here for one release; new users go through the prompt.
 
 ---
 
@@ -327,7 +361,7 @@ Next step: {if any failures} fix the failing tasks and re-run `specflow:test {NN
 This skill is designed to be invoked **many times** over the life of a feature, not once. Typical cadence:
 
 - **First invocation** — `--plan-only` right after `specflow:task` closes Gate 3. Generates the plan; surfaces gaps before any code lands.
-- **During development** — `--targeted` per task as it lands. Each task's tests run before the next task starts.
+- **During development** — `--task T{N}` per task as it lands. Each task's tests run before the next task starts.
 - **Pre-merge** — `full` to confirm everything is green.
 - **Post-merge** — optional `full` re-run on the merged branch (useful for `specflow:complete` Phase 3 retros).
 
@@ -337,23 +371,28 @@ If a re-derivation drops a test case (because an AC was removed via `specflow:sc
 
 ---
 
-## Phase D — Feedback mode (`specflow:test {NNN-slug} --feedback`)
+## Phase D — Feedback capture (auto-routed from C.4 prompt or Phase A.0 intent detection)
 
-Feedback mode is the entry point for the project's self-learning loop. Use it when something that was marked "done" (passed Gate 3, code merged, Verifier signed off) turned out on human review to be wrong. Phase D captures the gap in plain language, attributes it to whichever skill / gate / agent should have caught it, writes the lesson to `admin/lessons.json`, and back-fills the test plan with a covering case so the same gap can't pass next time.
+Feedback capture is the entry point for the project's self-learning loop. Use it when something that was marked "done" (passed Gate 3, code merged, Verifier signed off) turned out on human review to be wrong. Phase D captures the gap in plain language, attributes it to whichever skill / gate / agent should have caught it, writes the lesson to `admin/lessons.json`, and back-fills the test plan with a covering case (marked `Retroactive: true`) so the same gap is documented and queryable by future feature plans.
 
-When `--feedback` is detected at mode-detection time, **skip Phases A/B/C entirely**. Phase D is its own four-step orchestration.
+**How Phase D is entered:**
+- **Post-green prompt (Phase C.4)** — after a real green run, the skill asks if the user spotted a gap. A `yes` lands here with the gap text seeding Q1.
+- **Phase A.0 intent detection** — when conversation context shows the user has spotted a shipped-behaviour gap, the agent prompts to route here directly without running A/B/C.
+- **Deprecated `--feedback` flag** — accepted for one release as a direct route into Phase D; new users go through the prompts.
+
+Whatever the entry path, **skip Phases A.1-C.4** when running Phase D. Phase D is its own four-step orchestration.
 
 ### D.1 Read context
 
 Use Read in parallel on:
 - `features/NNN-{slug}/{NNN-slug}-prd.md` — for tag derivation and AC mapping.
 - `features/NNN-{slug}/{NNN-slug}-tasks.md` — to map the miss to specific tasks and surface candidate attributions.
-- `features/NNN-{slug}/{NNN-slug}-test.md` — to surface the existing test cases (the user might say which one should have caught it).
+- `features/NNN-{slug}/test/{NNN-slug}-test.md` — to surface the existing test cases (the user might say which one should have caught it).
 - `admin/lessons.json` — for similarity check against existing entries.
 - `admin/environment.json` — for stack-tag derivation.
 - `admin/profiles.json` and `admin/rules/glossary.md` — for domain-tag derivation.
 
-If `--feedback` is invoked on a feature whose tasks file is missing or whose Gate 3 hasn't closed, refuse: *"Feedback mode runs against a feature that completed Gate 3. Tasks/Gate 3 status: `{status}`. Resolve before logging feedback."* Feedback only makes sense for features that were "done" — that's what the registry is learning from.
+If Phase D is entered against a feature whose tasks file is missing or whose Gate 3 hasn't closed, refuse: *"Feedback capture runs against a feature that completed Gate 3. Tasks/Gate 3 status: `{status}`. Resolve before logging feedback."* Feedback only makes sense for features that were "done" — that's what the registry is learning from.
 
 ### D.2 Capture the feedback
 
@@ -428,12 +467,13 @@ After D.3 is settled, perform the writes in this order. Make `lessons.json.bak` 
    - **Recurrence** → find the matched entry; append the new occurrence to its `occurrences` array. If the array now has ≥3 entries across distinct features, set a flag for the auto-promotion prompt at the end of D.4.
    - **Supersession** → set the matched entry's `status: "superseded"`, `superseded_by: L-{new-id}`. Append a new entry with `kind: "success"`, `status: "active"`, the user's three answers, the same tags, and `first_seen: today`.
 
-2. **`features/NNN-{slug}/{NNN-slug}-test.md`** — append a new test case under "## Test cases":
+2. **`features/NNN-{slug}/test/{NNN-slug}-test.md`** — append a new test case under "## Test cases":
    - Title: `TC-{N+1} — {short title derived verbatim from Q1 — no rephrasing}`.
    - `Verifies:` the AC the lesson maps to (ask the user if not obvious from the user's answers — e.g. "Which AC does this gap relate to?").
+   - `Retroactive: true` — feedback-captured test cases describe shipped behaviour, so Phase C will skip execution. The case lives in the plan as the lesson-to-AC audit anchor.
    - `Source: lesson L-{NNN}` (in addition to the AC).
    - Pass criterion: derived **directly from Q3** — make it binary; if the user's Q3 answer isn't binary on its face, prompt: *"Express Q3 as a binary pass criterion — what specific check decides pass/fail?"*
-   - Artefact path: `assets/TC-{N+1}-feedback-L-{NNN}.{png|txt}`.
+   - Artefact path: `../assets/TC-{N+1}-feedback-L-{NNN}.{png|txt}`.
    - Add the new TC row to the coverage matrix table.
 
 3. **`admin/task-history.json`** — append:
@@ -449,15 +489,21 @@ After D.3 is settled, perform the writes in this order. Make `lessons.json.bak` 
 
 If `lessons.json` writes had occurrences ≥ 3 from D.4 step 1, prompt at the end: *"L-{NNN} has now occurred 3 times across distinct features. Promote to admin/rules/guidelines.md? [yes/no]"*. On yes: draft a one-paragraph rule from the lesson's title + remediation, present for user edit, append to `guidelines.md` with `(promoted from L-{NNN})` back-reference, flip the lesson's `status` to `promoted-to-rule` with `promoted_to_rule` set to the rule anchor.
 
+### D.4.5 Auto-fire `specflow:learn`
+
+After D.4's three writes land cleanly (lessons.json + test plan + task-history.json), invoke `specflow:learn` as a forked sub-skill so the new lesson clusters into the corpus and any Tier-A rule promotions auto-apply within the same flow. Pass no arguments — `:learn` reads its corpus from `admin/plugin-findings.jsonl` and operates over the whole append-only history.
+
+The user never invokes `:learn` directly under normal workflow — it's a background loop wired here. The forked invocation is fire-and-forget for the parent skill: if `:learn` reports nothing actionable, no chat message lands; if it auto-applies a Tier-A rule, `:learn` surfaces its own one-line summary. On `:learn` invocation failure (lock contention, schema gap), log to chat `[test: :learn auto-fire failed — {reason}; corpus retains the lesson; re-fire later via /specflow:learn]` and continue D.5 — the lesson capture itself is not blocked.
+
 ### D.5 Surface to the user
 
 ```
 Feedback captured as L-{NNN}.
-- New test case TC-{N+1} added to features/NNN-{slug}/{NNN-slug}-test.md.
+- New test case TC-{N+1} added to features/NNN-{slug}/test/{NNN-slug}-test.md (marked Retroactive: true).
 - Attribution recorded in admin/task-history.json.
 - Tags: [...]
 
-Run `specflow:test {NNN-slug} --targeted TC-{N+1}` to verify the gap is now caught.
+The new TC is `Retroactive: true`, so Phase C won't execute it — it documents shipped behaviour. Future feature plans will reference this lesson via the lessons registry's query algorithm.
 {If promotion prompt fired and was accepted:}
 This lesson has been promoted to admin/rules/guidelines.md — future PRD/task generation will reference it as a non-negotiable on relevant features.
 ```
@@ -474,7 +520,7 @@ This lesson has been promoted to admin/rules/guidelines.md — future PRD/task g
 
 ## Lessons registry — schema, query, supersession
 
-Specflow's self-learning corpus lives at `docs/specflow/admin/lessons.json` — a single mutable JSON array of lesson entries. Lessons are written by `specflow:test --feedback` (Phase D) and read by every skill that synthesises tasks or test plans for a new feature (`specflow:task`, `specflow:test` Phase B.0, and Phase 2 `specflow:develop`). The corpus answers two questions on every relevant invocation: *"What have we tried that didn't work?"* and *"What have we figured out since?"*
+Specflow's self-learning corpus lives at `docs/specflow/admin/lessons.json` — a single mutable JSON array of lesson entries. Lessons are written by `specflow:test` Phase D (entered via the post-green prompt or Phase A.0 intent detection) and read by every skill that synthesises tasks or test plans for a new feature (`specflow:task`, `specflow:test` Phase B.0, and Phase 2 `specflow:develop`). The corpus answers two questions on every relevant invocation: *"What have we tried that didn't work?"* and *"What have we figured out since?"*
 
 ### Entry shape
 
@@ -526,7 +572,7 @@ Tags are NOT free-form. They derive from three project sources to keep the regis
 2. **Surface tags** — controlled set, defined here as the canonical Phase 1 vocabulary: `ui`, `data-model`, `api`, `auth`, `migration`, `infra`, `cli`, `docs`. Adding a new surface tag requires editing this section of the test SKILL.md (treated as a vocabulary change).
 3. **Domain tags** — from `admin/profiles.json` audiences and `admin/rules/glossary.md`. Examples (project-specific): `field-tech`, `inspector`, `splash-screen`, `chamber`. New domain tags must first be added to `glossary.md`; then they become available everywhere.
 
-When `--feedback` writes a new lesson, the skill auto-suggests tags from these sources based on PRD frontmatter, the feature's slug, and a keyword scan of the user's three answers. The user accepts or edits. Free-form tags are rejected at write time with a remediation prompt (which source to add them to).
+When Phase D writes a new lesson, the skill auto-suggests tags from these sources based on PRD frontmatter, the feature's slug, and a keyword scan of the user's three answers. The user accepts or edits. Free-form tags are rejected at write time with a remediation prompt (which source to add them to).
 
 ### Tag rot prevention
 
@@ -587,7 +633,7 @@ When an `active` lesson's `occurrences.length` reaches 3 across distinct feature
 
 Before returning to the user:
 
-1. `features/NNN-{slug}/{NNN-slug}-test.md` exists with frontmatter, coverage matrix, test cases, and (if execution ran) at least one Run entry in the execution log.
+1. `features/NNN-{slug}/test/{NNN-slug}-test.md` exists with frontmatter, coverage matrix, test cases (every TC has an explicit `Retroactive:` field, defaulting to `false`), and (if execution ran) at least one Run entry in the execution log.
 2. Forward coverage holds — every PRD AC appears in the matrix.
 3. Reverse traceability holds — every test case cites at least one AC.
 4. Every pass criterion is binary.
@@ -607,6 +653,6 @@ If any verify step fails, fix it before returning.
 - `docs/PRD.md` Appendix N1 (Gate 6) — Phase 3 multi-agent debate manifest for tests vs requirements; this skill pre-empts Gate 6 findings by enforcing binary pass criteria today.
 - `templates/agents/standard/principles/goal-driven-reviewer.md` — primary lens for the test plan today; full Gate 6 manifest review lands in Phase 3.
 - `skills/task/SKILL.md` — sister skill; same coverage-matrix discipline, different artefact (tasks vs tests). Reads `admin/lessons.json` on entry per the query algorithm above.
-- `skills/develop/SKILL.md` (Phase 2) — primary consumer of `--targeted` mode during the implementation loop.
-- `skills/complete/SKILL.md` — prompts the user at retro time about whether to log feedback via `specflow:test {slug} --feedback`.
+- `skills/develop/SKILL.md` (Phase 2) — primary consumer of `--task T{N}` filtering during the implementation loop.
+- `skills/complete/SKILL.md` — prompts the user at retro time; any captured gap routes through `specflow:test {slug}` and the Phase A.0 intent detection prompt.
 - `admin/lessons.json` — the project's self-learning corpus; schema and lifecycle defined in the **Lessons registry** section above.

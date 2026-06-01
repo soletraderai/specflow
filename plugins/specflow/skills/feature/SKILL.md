@@ -1,6 +1,6 @@
 ---
 name: specflow:feature
-description: Feature kickoff — runs FIRST in the specflow pipeline. Allocates the NNN-slug, scaffolds the feature folder + subfolders (design, docs, assets, test/screenshots, debate-log), runs a four-question goal interview, reflects what it heard, and writes a slim per-feature meta file ({NNN-slug}-feature.md) that downstream skills read. The goal is locked at kickoff; subsequent skills inherit it without re-asking.
+description: Feature kickoff — runs FIRST in the specflow pipeline. Allocates the NNN-slug, scaffolds the feature folder + subfolders (design, docs, assets, test/screenshots, debate-log, archive), runs a four-question goal interview, reflects what it heard, and writes a slim per-feature meta file ({NNN-slug}-feature.md) that downstream skills read. The goal is locked at kickoff; subsequent skills inherit it without re-asking.
 status: v2-new
 phase: 1
 requires:
@@ -10,8 +10,8 @@ requires:
 produces:
   - docs/specflow/features/{NNN-slug}/
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-feature.md
-  - docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log}/.gitkeep
-eval: feature folder exists with all five subfolders; .gitkeep present in each subfolder; {NNN-slug}-feature.md exists with valid frontmatter (slug, status=kickoff, created, goal_locked); Goal section present and ≤2 paragraphs; Folder index lists every standard artefact path; user confirmed the goal before write.
+  - docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log,archive}/.gitkeep
+eval: feature folder exists with all six subfolders; .gitkeep present in each subfolder; {NNN-slug}-feature.md exists with valid frontmatter (slug, status=kickoff, created, goal_locked); Goal section present and ≤2 paragraphs; Folder index lists every standard artefact path; user confirmed the goal before write.
 ---
 
 # specflow:feature
@@ -63,21 +63,22 @@ Exit cleanly on either refusal.
 ### A.3 Scaffold the folder + subfolders
 
 ```bash
-mkdir -p docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log}
+mkdir -p docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log,archive}
 ```
 
-The five subfolders:
+The six subfolders:
 
 - `design/` — static designs, versioned filenames (`v1-{description}.{ext}`, `v2-{description}.{ext}`).
 - `docs/` — feature-specific docs that aren't the PRD / tasks / test plan (e.g. domain reference, supporting notes).
 - `assets/` — reference materials (YAMLs, HTMLs, source data) the AI ingests during PRD / task synthesis.
-- `test/screenshots/` — Playwright CLI captures.
+- `test/` — test plan + screenshots. Holds `{NNN-slug}-test.md` (the canonical test plan) and `screenshots/` for Playwright CLI captures.
 - `debate-log/` — gate manifests (auto-populated by downstream skills).
+- `archive/` — superseded versions of regenerated artefacts (e.g. `{NNN-slug}-tasks-v1.md` when tasks are recut). Replaces the old `.pre-recut.bak` sibling pattern — old versions live in one predictable place instead of cluttering the feature root.
 
 ### A.4 Write `.gitkeep` in each subfolder
 
 ```bash
-touch docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log}/.gitkeep
+touch docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log,archive}/.gitkeep
 ```
 
 Empty folders aren't tracked by git; `.gitkeep` ensures the structure survives commits. The folder purposes live ONCE in the meta file's "Folder index" section — no duplicated READMEs.
@@ -85,8 +86,8 @@ Empty folders aren't tracked by git; `.gitkeep` ensures the structure survives c
 ### A.5 Verify before continuing
 
 - Folder `docs/specflow/features/{NNN-slug}/` exists.
-- All five subfolders exist.
-- All five `.gitkeep` files exist.
+- All six subfolders exist (`design`, `docs`, `assets`, `test/screenshots`, `debate-log`, `archive`).
+- All six `.gitkeep` files exist (one per top-level subfolder; the test/screenshots `.gitkeep` lives under `test/`).
 
 Hand off to Phase B.
 
@@ -197,6 +198,7 @@ status: kickoff
 mode: {light | full}
 created: {YYYY-MM-DD}
 goal_locked: {YYYY-MM-DD}
+branch: null
 ---
 
 # {Feature title — derived from the slug, title-case}
@@ -222,13 +224,14 @@ goal_locked: {YYYY-MM-DD}
 - `{NNN-slug}-feature.md` — this file (goal + folder index; locked at kickoff)
 - `{NNN-slug}-prd.md` — PRD (pending)
 - `{NNN-slug}-tasks.md` — tasks (pending)
-- `{NNN-slug}-test.md` — test plan (pending)
-- `{NNN-slug}-brief.html` — rendered brief (pending)
+- `{NNN-slug}-brief.html` — rendered brief (optional; not auto-generated — run `specflow:brief {NNN-slug}` when you want one)
 - `design/` — static designs, versioned (`v1-*`, `v2-*`)
 - `docs/` — feature-specific docs (domain reference, supporting notes)
 - `assets/` — reference materials (YAMLs, HTMLs, source data)
+- `test/{NNN-slug}-test.md` — test plan (pending; lives inside `test/` alongside screenshots)
 - `test/screenshots/` — Playwright CLI captures
 - `debate-log/` — gate manifests (auto-populated)
+- `archive/` — superseded versions of regenerated artefacts (e.g. `{NNN-slug}-tasks-v1.md`)
 
 ## Status
 
@@ -303,7 +306,7 @@ If any verify step fails, surface the failure and refuse to claim success.
 - **`specflow:prd`** — primary downstream consumer. Reads `{NNN-slug}-feature.md` at its Phase A entry; when present, skips slug allocation (A.1), folder creation (A.2 is idempotent), and the goal articulate/confirm/write cycle (A.5/A.6/A.7). Writes the goal verbatim from feature.md into the interview file's Goal section; bumps `status:` to `prd-pending`.
 - **`specflow:task`** — consumer of `status:`. Bumps to `tasks-pending` on Phase A entry; bumps to `development` when handing off to `specflow:develop`.
 - **`specflow:linear`** — adds `linear_project_id: {id}` to the frontmatter lazily on its first feature-mode run (Phase A). The mapping is sticky: subsequent `specflow:sprint` / `specflow:develop` runs read this field to resolve the Linear project for milestone lookups.
-- **`specflow:develop`** — bumps `status:` to `test-pending` on feature-mode completion (every task shipped).
+- **`specflow:develop`** — populates `branch:` on first invocation with the resolved feature branch name (literal `{NNN-slug}`, persisted so re-runs are idempotent). Bumps `status:` to `test-pending` on feature-mode completion (every task shipped).
 - **`specflow:test`** — bumps `status:` to `shipped` on full-mode pass.
 - **`specflow:setup`** — seeds `skills.feature.enabled: true` in `admin/config.json` at first-run.
 - **`specflow:scope-change`** — NOT involved in goal changes. Goal changes are direct user edits to the meta file; `scope-change` is reserved for PRD-shape changes.

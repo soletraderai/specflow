@@ -71,7 +71,7 @@ Outcome enum: `passed | failed | skipped (config) | skipped (trivial) | skipped 
 
 ## How `specflow:test --plan-only --task T{N}` slots in
 
-The Red artefact is the per-task plan section in `{NNN-slug}-test.md`. Develop invokes `specflow:test {NNN-slug} --plan-only --task T{N}` at task entry; the test skill writes the per-task plan section with the primary AC's case marked `Status: red (failing)` by default. The `--task T{N}` co-flag SKIPS Phase B.5 (Codex pass + user prompt) — the per-task slice inherits whatever B.5 outcome the feature-level test plan recorded; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time.
+The Red artefact is the per-task plan section in `test/{NNN-slug}-test.md`. Develop invokes `specflow:test {NNN-slug} --plan-only --task T{N}` at task entry; the test skill writes the per-task plan section with the primary AC's case marked `Status: red (failing)` by default. The `--task T{N}` co-flag SKIPS Phase B.5 (Codex pass + user prompt) — the per-task slice inherits whatever B.5 outcome the feature-level test plan recorded; Gate 5's Codex reviewer covers cross-provider concerns at code-vs-plan time.
 
 ## Pre-implementation test execution
 

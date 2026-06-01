@@ -72,13 +72,14 @@ The intended lifecycle of a feature, from blank slate to verified delivery:
 
 1. `specflow:setup` — once per project. Creates `docs/specflow/admin/`, runs profile interview, seeds rules, inventories environment.
 2. `specflow:prime` — primes the codebase context for a piece of work.
-3. `specflow:prd` — user-facing entry point. Multi-phase: writes interview preamble → invokes `/grill` (one question at a time, re-evaluating after each answer, appending to `NNN-{slug}-interview.md`) → synthesises `NNN-{slug}-prd.md` from resolved assumptions → fires Gate 2 multi-agent debate manifest into `features/NNN-{slug}/debate-log/prd-gate2/` → invokes `specflow:brief` to compose `NNN-{slug}-brief.html` (visual abstract + PRD body + interview + agent reviews) and offer to open it in the browser.
-4. `specflow:task` — generates `NNN-{slug}-tasks.md` with a coverage matrix and Gate 3 adversarial review.
-5. `specflow:design` (optional) — produces `current.html` + `proposed.html` mockups under the feature folder, grounded in the live codebase.
-6. `specflow:linear` — exports tasks to Linear with bidirectional sync.
-7. `specflow:develop` (Phase 2) — orchestrates implementation through green/yellow/red lanes.
-8. `specflow:test` — verifies the work against the PRD's acceptance criteria.
-9. `specflow:complete` (Phase 3) — captures the retro that feeds memory.
+3. `specflow:prd` — user-facing entry point. Four-phase: writes interview preamble → invokes `/grill` (one question at a time, re-evaluating after each answer, appending to `NNN-{slug}-interview.md`) → synthesises `NNN-{slug}-prd.md` from resolved assumptions → fires Gate 2 multi-agent debate manifest into `features/NNN-{slug}/debate-log/prd-gate2/`. Closes with a chat-line pointing the user at `specflow:brief {NNN-slug}` as an opt-in next step.
+4. `specflow:brief` (optional) — composes `NNN-{slug}-brief.html` (visual abstract + PRD body + interview + agent reviews) and opens it in the browser. Manual invocation; the PRD no longer auto-fires this.
+5. `specflow:task` — generates `NNN-{slug}-tasks.md` with a coverage matrix and Gate 3 adversarial review.
+6. `specflow:design` (optional) — produces `current.html` + `proposed.html` mockups under the feature folder, grounded in the live codebase.
+7. `specflow:linear` — exports tasks to Linear with bidirectional sync.
+8. `specflow:develop` (Phase 2) — orchestrates implementation through green/yellow/red lanes.
+9. `specflow:test` — verifies the work against the PRD's acceptance criteria.
+10. `specflow:complete` (Phase 3) — captures the retro that feeds memory.
 
 Cross-feature workflows: `specflow:misc` for one-off bugs/fixes, `specflow:upgrade` to refresh aged installations, `specflow:doctor` to validate the install.
 

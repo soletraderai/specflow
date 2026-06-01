@@ -428,7 +428,7 @@ Write `docs/specflow/admin/lessons.json`:
 []
 ```
 
-`lessons.json` is the project's self-learning corpus. It accumulates as `specflow:test --feedback` captures gaps that escaped the gates, supersessions when a previously-failed approach later works, and rule-promotion candidates when a lesson recurs 3+ times. `specflow:test` Phase B.0 and `specflow:task` A.4 query it on every relevant invocation. Schema and lifecycle defined in `skills/test/SKILL.md` § Lessons registry.
+`lessons.json` is the project's self-learning corpus. It accumulates as `specflow:test` Phase D (entered via the post-green prompt or Phase A.0 intent detection) captures gaps that escaped the gates, supersessions when a previously-failed approach later works, and rule-promotion candidates when a lesson recurs 3+ times. `specflow:test` Phase B.0 and `specflow:task` A.4 query it on every relevant invocation. Schema and lifecycle defined in `skills/test/SKILL.md` § Lessons registry.
 
 ### 8.5 Agent index
 

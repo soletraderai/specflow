@@ -15,6 +15,95 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.14.0 → v2.14.1
+
+Removes the brief auto-invocation from `specflow:prd` and `specflow:scope-change`. The `specflow:brief` skill is now manual-only — the user runs it explicitly when they want the browser-readable HTML. Reason: most PRD/scope-change runs don't need a brief, but every one was paying the brief-composition cost.
+
+### Scope
+
+- `specflow:prd` — five-phase orchestrator becomes four-phase. Old Phase E (Invoke `specflow:brief` → verify → offer to open → final disposition) deleted. New Phase D.7 closes with a chat-line pointing the user at `specflow:brief {NNN-slug}` as an opt-in next step.
+- `specflow:scope-change` — Phase D.3 no longer invokes `specflow:brief`. New D.3 prose explains the manual hand-off; Phase H.5 closing chat-line conditionally appends a brief-stale reminder when the brief exists on disk.
+- `specflow:brief` — frontmatter description updated to mark manual-only; cross-skill reference at the bottom of the skill body updated.
+- `feature/SKILL.md` folder index template clarifies the brief is optional / not auto-generated.
+- `SKILLS.md` catalogue entries for `specflow:prd` and `specflow:brief` updated.
+- `budget/SKILL.md` sample data no longer lists `specflow:brief` as a `specflow:prd` sub-skill.
+
+### Steps
+
+1. Pull v2.14.1.
+2. No config or filesystem changes required. Existing `{NNN-slug}-brief.html` files on disk are untouched.
+3. The `specflow:doctor` `brief_drift` check still works — if a brief exists and is older than its source files, doctor will WARN and recommend `specflow:brief {NNN-slug}`. If no brief exists, no check fires.
+
+### Backups
+
+None required — no user data is moved or rewritten.
+
+### Verify
+
+- `grep -n 'Four-phase orchestrator' plugins/specflow/skills/prd/SKILL.md` returns a match in the description.
+- `grep -n 'Phase E' plugins/specflow/skills/prd/SKILL.md` returns no matches (the section is fully removed).
+- `grep -n 'Brief refresh — manual hand-off' plugins/specflow/skills/scope-change/SKILL.md` returns a match in D.3.
+- `grep -n 'Manual invocation only' plugins/specflow/skills/brief/SKILL.md` returns a match in the description.
+- `plugin.json` and `marketplace.json` both report `2.14.1`.
+
+### Rollback
+
+- Revert the SKILL.md edits to v2.14.0 state. No data restoration needed — this is a behaviour-only change. `specflow:brief` continues to function via the same code path; only the auto-invocation entry points are gone.
+
+---
+
+## v2.13.0 → v2.14.0
+
+Cleanup sweep. Auto-branching in `specflow:develop`; per-feature folder reorg (test plan moves into `test/`, new `archive/` subfolder); `specflow:test` flag rework (`--feedback` removed in favour of implicit routing; `--targeted` folded into `--task`; `--plan-only` auto-inferred when no shipped code exists); retroactive test-case marker; new `specflow:log` skill collapsing `:misc` + `:decision` + `:scope-change` into one user-facing entry point; `:learn` auto-fired by `:test` Phase D and removed from the user-facing menu by description.
+
+### Scope
+
+- `specflow:develop` Phase A.0.5 — new auto-branching step. Creates / reuses / variants the `{NNN-slug}` branch, stashes dirty work with a recoverable named stash, persists branch name to feature.md frontmatter. Phase F.6 pops the stash on success.
+- `specflow:feature` Phase A.3 / A.4 — scaffolds six subfolders (was five): `design`, `docs`, `assets`, `test/screenshots`, `debate-log`, `archive`. D.1 meta-file template carries `branch: null` field and documents `test/{NNN-slug}-test.md` in the folder index.
+- `specflow:test` — `--feedback` removed from documented modes (deprecated alias retained for one release); `--targeted` folded into `--task`; new Phase A.0 intent detection routes shipped-behaviour-gap signals to Phase D; new Phase C.4 post-green prompt routes to Phase D inline; new Phase D.4.5 auto-fires `:learn`; TC schema gains `Retroactive: true` field (Phase C skips, Phase D auto-sets).
+- Test plan path migration: every reference updated from `features/{NNN-slug}/{NNN-slug}-test.md` to `features/{NNN-slug}/test/{NNN-slug}-test.md`. Updated skills: `test/SKILL.md`, `develop/SKILL.md`, `task/SKILL.md`, `scope-change/SKILL.md`. Updated templates: `templates/admin/tdd-discipline.md`. Updated index: `SKILLS.md`.
+- `specflow:task` recut convention — Phase B.5 archives the old tasks file to `archive/{NNN-slug}-tasks-v{N}.md` (was `.pre-recut.bak` sibling).
+- `specflow:scope-change` Phase H.4 — `.bak` siblings (`{NNN-slug}-prd.md.bak`, `{NNN-slug}-tasks.md.bak`) now auto-move into `archive/{NNN-slug}-prd-pre-{SC-NNN}.md` and `archive/{NNN-slug}-tasks-pre-{SC-NNN}.md` after Phase G7 succeeds. During an in-flight scope change the `.bak` files still live at feature root (diff convenience); after success they move to archive so the feature root stays clean. Multiple scope changes against the same feature each produce their own archive entry, sortable by SC-NNN.
+- `specflow:log` — new thin dispatcher (`skills/log/SKILL.md`) that classifies free-form intent and routes to `decision` / `misc` / `scope-change`. Phase B classification heuristics with high / medium / low confidence; Phase C confirms or prompts before dispatch.
+- `specflow:misc`, `specflow:decision`, `specflow:scope-change` — frontmatter `description` fields prefixed with *"Internal handler — for user-facing invocation, use `specflow:log`"*. Auto-invocation contracts from other skills unchanged.
+- `specflow:learn` — frontmatter `description` prefixed with *"Background loop — auto-fired by specflow:test after each Phase D feedback capture"*. Direct invocation retained for debugging.
+- `specflow:insights` — frontmatter `description` clarifies monthly-cadence / not-part-of-feature-workflow.
+
+### Steps
+
+1. Pull v2.14.0.
+2. No `admin/config.json` updates required.
+3. **For existing features** with `{NNN-slug}-test.md` at the feature root (pre-2.14 layout): the upgrade skill MUST `mv` the file into `test/{NNN-slug}-test.md` for each feature folder under `docs/specflow/features/`. The destination directory may not exist yet — `mkdir -p .../test` first. Old `.gitkeep` in `test/screenshots/` is preserved.
+4. **For existing features** without an `archive/` subfolder: create `archive/.gitkeep` (idempotent — skip if present).
+5. **For existing features** missing a `branch:` line in feature.md frontmatter: append `branch: null` (the next `specflow:develop` invocation populates it).
+6. Old `.pre-recut.bak` files (from `specflow:task` recut path pre-2.14) stay in place — no migration. New recuts always write to `archive/`.
+7. Users invoking `specflow:misc`, `specflow:decision`, `specflow:scope-change` directly continue to work; the deprecation surface lives in the SKILL.md description only.
+
+### Backups
+
+- For step 3 file move (test plan relocation): write `{NNN-slug}-test.md.bak` at the feature root pointing to the new location as a one-line breadcrumb (`Moved to test/{NNN-slug}-test.md by upgrade to v2.14.0`). Retained until the next `--clean-backups` cycle.
+- No backups required for steps 4 / 5 / 6 — additive only.
+
+### Verify
+
+- `grep -n 'A.0.5 Auto-branch' plugins/specflow/skills/develop/SKILL.md` returns a match.
+- `grep -n 'mkdir -p docs/specflow/features/{NNN-slug}/{design,docs,assets,test/screenshots,debate-log,archive}' plugins/specflow/skills/feature/SKILL.md` returns a match.
+- `grep -n 'Phase A.0 — Intent detection' plugins/specflow/skills/test/SKILL.md` returns a match.
+- `grep -n 'D.4.5 Auto-fire' plugins/specflow/skills/test/SKILL.md` returns a match.
+- `grep -n 'Retroactive: true' plugins/specflow/skills/test/SKILL.md` returns at least two matches (schema + Phase D writeback).
+- `test -f plugins/specflow/skills/log/SKILL.md` succeeds.
+- For each existing feature folder: `test -f docs/specflow/features/{NNN-slug}/test/{NNN-slug}-test.md && test -d docs/specflow/features/{NNN-slug}/archive` both succeed.
+- `plugin.json` and `marketplace.json` both report `2.14.0`.
+
+### Rollback
+
+- Restore each test plan from the breadcrumb path (move it back to feature root).
+- Remove the `archive/.gitkeep` from each feature folder (or leave — additive only).
+- Remove the `branch:` line from each feature.md frontmatter (or leave — `null` is the default).
+- Downgrade the plugin version. Note: features developed on auto-created branches stay on those branches — no rollback for git state.
+
+---
+
 ## v2.11.0 → v2.12.0
 
 Reshapes the task block from an 8-field bullet list to a 13-section structured-narrative format. Adds a Linear export prompt at the end of `specflow:task` Phase E. Dual-format readers in `develop` / `sprint` / `linear` keep existing task files working — no force-migration of in-flight features.

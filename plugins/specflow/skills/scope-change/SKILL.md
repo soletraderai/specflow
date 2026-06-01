@@ -1,6 +1,6 @@
 ---
 name: specflow:scope-change
-description: Capture mid-development scope changes with audit trail (why intent changed, what the PRD now needs to say, which tasks regenerate, what in-flight work is impacted). Auto-suggested by specflow:develop on detected drift; manually invoked via /specflow:scope-change. Updates the PRD, regenerates affected tasks, surfaces an impact list, appends a decision-log entry.
+description: Internal handler — for user-facing invocation, use `specflow:log` (the agent routes to this handler when your intent is scope-change-shaped). Capture mid-development scope changes with audit trail (why intent changed, what the PRD now needs to say, which tasks regenerate, what in-flight work is impacted). Auto-suggested by specflow:develop on detected drift (auto-invocation contract unchanged; routes here directly). Updates the PRD, regenerates affected tasks, surfaces an impact list, appends a decision-log entry.
 status: v2-new
 phase: 3
 requires:
@@ -10,20 +10,24 @@ requires:
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest.md
 produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-interview.md (extended; new "Scope change" section appended)
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md (surgically updated; sibling .bak preserved)
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html (re-composed)
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md (delta-regenerated; sibling .bak preserved)
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md (surgically updated; pre-change snapshot moved to archive/{NNN-slug}-prd-pre-{SC-NNN}.md at H.4)
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html (NOT re-composed as of v2.14.1 — the user must manually run specflow:brief if they want the brief refreshed after the scope change)
+  - docs/specflow/features/{NNN-slug}/{NNN-slug}-tasks.md (delta-regenerated; pre-change snapshot moved to archive/{NNN-slug}-tasks-pre-{SC-NNN}.md at H.4)
+  - docs/specflow/features/{NNN-slug}/archive/{NNN-slug}-prd-pre-{SC-NNN}.md
+  - docs/specflow/features/{NNN-slug}/archive/{NNN-slug}-tasks-pre-{SC-NNN}.md
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest-scope-change-{SC-NNN}.md
   - docs/specflow/features/{NNN-slug}/debate-log/tasks-gate3/manifest-scope-change-{SC-NNN}.md
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-scope-change-{date}-impact.md
   - docs/specflow/admin/decision-log.md (appended SC-{NNN} entry)
   - docs/specflow/admin/scratch/{NNN-slug}-scope-change/ (per-step status files; cleaned on success)
 eval: |
-  PRD .bak preserved; interview extended append-only with strikethrough-marked supersessions on prior Resolved lines;
+  PRD pre-change snapshot present (sibling .bak during the active run; moved to archive/{NNN-slug}-prd-pre-{SC-NNN}.md at H.4 on success);
+  interview extended append-only with strikethrough-marked supersessions on prior Resolved lines;
   manifest-scope-change-{SC-NNN}.md exists at debate-log/prd-gate2/ AND debate-log/tasks-gate3/ with closing decision
   passed/passed-with-revisions/passed-with-escalations; tasks.md diff scoped to changed-R-ID set with prior
-  task-history.json entries retained via superseded_by; impact list cites every artefact across four sources bounded
-  to changed-R-IDs; decision-log entry SC-{NNN} written via specflow:decision; references the impact list path.
+  task-history.json entries retained via superseded_by (tasks pre-change snapshot likewise archived at archive/{NNN-slug}-tasks-pre-{SC-NNN}.md);
+  impact list cites every artefact across four sources bounded to changed-R-IDs; decision-log entry SC-{NNN}
+  written via specflow:decision; references the impact list path.
 ---
 
 # specflow:scope-change
@@ -185,23 +189,27 @@ Synthesis constraint (load-bearing per Surgical Changes principle): only require
 
 After synthesis lands, append a `last_scope_change: SC-{NNN}` line to the PRD frontmatter (downstream skills detect the most recent revision via this field). The PRD's frontmatter `status` field stays `draft`.
 
-### D.3 Re-fire `specflow:brief` to refresh the brief (R5)
+### D.3 Brief refresh — manual hand-off (R5)
 
-Invoke `specflow:brief {NNN-slug}` as a forked sub-skill **after** D.4 completes (Gate 2 re-fire) so the new manifest is included in the brief composition. The sibling `{NNN-slug}-brief.html` regenerates; byte-stable except for regions corresponding to the changed R/ACs, the new frontmatter line, and the appended Gate 2 manifest entry.
+The brief skill is manual-only as of v2.14.1 — this skill no longer auto-invokes it. If `features/{NNN-slug}/{NNN-slug}-brief.html` exists (i.e. the user previously generated one), it will go stale relative to the new PRD content after D.4 completes; `specflow:doctor` will flag the drift on next run.
+
+Surface a chat-line in Phase H.5's closing summary: *"Brief was not regenerated. If you have a `{NNN-slug}-brief.html` you want refreshed against the scope change, run `specflow:brief {NNN-slug}` manually."*
+
+If the brief doesn't exist on disk, no action needed — drift can't apply to a file that isn't there.
 
 ### D.4 Re-fire `specflow:prd` Phase D Gate 2 manifest (R6, step iii)
 
-Fork a Gate 2 multi-agent debate sub-orchestration per `specflow:prd` Phase E. The standard five reviewers fire (Devil's Advocate, Simplicity, Surgical, Think-Before-Coding, Goal-Driven); Codex joins as a sixth when `cli.codex.available: true`.
+Fork a Gate 2 multi-agent debate sub-orchestration per `specflow:prd` Phase D. The standard five reviewers fire (Devil's Advocate, Simplicity, Surgical, Think-Before-Coding, Goal-Driven); Codex joins as a sixth when `cli.codex.available: true`.
 
 Write the new manifest to `features/{NNN-slug}/debate-log/prd-gate2/manifest-scope-change-{SC-NNN}.md`. The original `manifest.md` is NEVER modified — append-only across scope-change events.
 
-If the new manifest's closing decision is `failed`: halt the flow with the same surface `specflow:prd` Phase D.7 uses (surface blocking findings; refuse to proceed to Phase E). Mark `step-3-status.json` as `failed` with the manifest path; the user resolves the findings (manual edit or another scope-change cycle) and re-invokes — this skill resumes at step (iii) on re-invocation.
+If the new manifest's closing decision is `failed`: halt the flow with the same surface `specflow:prd` Phase D.7 uses (surface blocking findings; refuse to proceed to Phase E in this skill's sequence). Mark `step-3-status.json` as `failed` with the manifest path; the user resolves the findings (manual edit or another scope-change cycle) and re-invokes — this skill resumes at step (iii) on re-invocation.
 
 ### D.5 Verify before continuing (AC-5, AC-6)
 
 - `features/{NNN-slug}/{NNN-slug}-prd.md.bak` exists; PRD diff shows changes ONLY to (a) R/ACs whose Trace line references a scope-change round OR a strikethrough'd prior Resolved line, (b) the frontmatter `last_scope_change: SC-{NNN}` line.
 - R/ACs whose Trace line references unchanged original rounds are byte-identical to the `.bak`.
-- `{NNN-slug}-brief.html` byte-stable except for regions corresponding to the changed R/ACs and the appended Gate 2 manifest entry.
+- `{NNN-slug}-brief.html` is intentionally NOT regenerated by this skill (as of v2.14.1); the chat-line in Phase H.5 reminds the user to run `specflow:brief` if they want it refreshed. Stale brief is detectable via `specflow:doctor`'s `brief_drift` check.
 - `manifest-scope-change-{SC-NNN}.md` exists at `debate-log/prd-gate2/`; original `manifest.md` is byte-identical to its pre-scope-change content.
 - New manifest closing decision in {`passed`, `passed-with-revisions`, `passed-with-escalations`}.
 - `step-2-status.json` and `step-3-status.json` both set to `done`.
@@ -276,7 +284,7 @@ Compute the impact list across four sources. Each entry's R-ID anchor MUST be in
 - **(a) `task-history.json`** — every entry where `feature == {NNN-slug}` AND `status` ∈ {`planned`, `in_progress`, `review`} AND the entry's Anchor R-ID is in the changed-R-ID set. **Self-reference exclusion** (Gate 2 da-r1-f1): exclude entries whose `status == "aborted_for_scope_change"` AND whose abort was triggered by THIS scope-change invocation — that task surfaced this scope-change; surfacing it back would be circular.
 - **(b) Linear** (when `mcp.linear.available: true`) — every issue where `feature == {NNN-slug}` AND `status` ∈ {`In Progress`, `In Review`} AND the issue's Anchor R-ID is in the changed-R-ID set. Backlog tickets are excluded; v1 ships with this hard-coded (per Gate 2 simplicity-r1-f1 — `--include-backlog` flag dropped). Custom intermediate statuses (`Blocked`, `On Hold`, etc.) are EXCLUDED with a chat-line note surfacing the skipped count (per Gate 2 goal-r1-f1 boundary clause). When MCP unavailable, this source contributes `(source unavailable: linear-mcp-not-configured)` and the chat-line `[scope-change: Linear MCP not detected — impact list source (b) skipped]` surfaces.
 - **(c) Open PRs via `gh pr list --state open --label feature/{NNN-slug}`** — every PR labelled or branch-named to the feature whose touched files overlap with the changed R-IDs' scope-listed files. Draft PRs are INCLUDED with `(draft)` annotation (per Gate 2 goal-r1-f1 boundary clause). When `gh` CLI absent, falls back to `git branch --list 'feature/{NNN-slug}-*'` for branch presence with `(source unavailable: gh-cli-not-configured; branch-list fallback used)` annotation.
-- **(d) Draft test plans** — `features/{NNN-slug}/{NNN-slug}-test.md` with `status: draft` frontmatter — surfaced as a single line if present.
+- **(d) Draft test plans** — `features/{NNN-slug}/test/{NNN-slug}-test.md` with `status: draft` frontmatter — surfaced as a single line if present.
 
 ### F.2 Write the impact list file (AC-8)
 
@@ -351,21 +359,33 @@ If `mcp.linear.available: true` AND the impact list contains Linear issues: prom
 
 If MCP unavailable, skip with the chat-line `[scope-change: Linear MCP not detected — Phase H status updates skipped]`.
 
-### H.4 Cleanup scratch on success
+### H.4 Move `.bak` files to `archive/` and cleanup scratch on success
 
-After every prior phase reports `done` AND the user has acknowledged the impact list:
+After every prior phase reports `done` AND Phase G7 has written the `decision-log.md` `SC-{NNN}` entry AND the user has acknowledged the impact list:
 
-```bash
-rm -rf admin/scratch/{NNN-slug}-scope-change/
-```
+1. **Move both `.bak` siblings into `archive/`** so the feature root stays clean and the diff anchor is preserved in a predictable, sortable location (consistent with the v2.14 archive convention):
+   ```bash
+   mkdir -p features/{NNN-slug}/archive
+   mv features/{NNN-slug}/{NNN-slug}-prd.md.bak \
+      features/{NNN-slug}/archive/{NNN-slug}-prd-pre-{SC-NNN}.md
+   mv features/{NNN-slug}/{NNN-slug}-tasks.md.bak \
+      features/{NNN-slug}/archive/{NNN-slug}-tasks-pre-{SC-NNN}.md
+   ```
+   Idempotent: if the archive destinations already exist (re-run / resume after partial cleanup), skip the move. The `pre-{SC-NNN}` suffix encodes which scope change produced this snapshot — multiple scope changes against the same feature each get their own archive entry, sortable by `SC-NNN`.
+2. **Scratch cleanup.** Set `step-8-status.json` to `done` immediately before directory removal so a re-invocation post-cleanup detects no scratch and starts fresh:
+   ```bash
+   rm -rf admin/scratch/{NNN-slug}-scope-change/
+   ```
 
-The `.bak` files at `features/{NNN-slug}/{NNN-slug}-prd.md.bak` and `{NNN-slug}-tasks.md.bak` are RETAINED (the user's reviewable diff anchor; the user can clean them up after confirming the regeneration). Set `step-8-status.json` to `done` immediately before the directory removal so a re-invocation post-cleanup detects no scratch and starts fresh.
+The archive entries are the long-term diff anchor (auditable, sortable, out of the way). The user can still diff via `diff features/{NNN-slug}/{NNN-slug}-prd.md features/{NNN-slug}/archive/{NNN-slug}-prd-pre-{SC-NNN}.md` or via `git diff` if the feature is on a branch.
 
-Retain the scratch directory on failure for debugging.
+Retain the scratch directory on failure for debugging. If H.4 fails mid-move (one .bak moved, one not), leave the partial state and surface to the user; the move is idempotent on re-invocation.
 
 ### H.5 Emit the closing chat-line summary
 
 *"Scope change `SC-{NNN}` complete for `{NNN-slug}`. Affected R-IDs: {list}. Regenerated tasks: {count}. In-flight artefacts surfaced: {count}. Decision-log entry: `SC-{NNN}` — `{title}`. Impact list: `{impact-list-path}`."*
+
+If a `{NNN-slug}-brief.html` exists on disk (check before emitting), append: *"`{NNN-slug}-brief.html` is now stale relative to the scope-changed PRD — run `specflow:brief {NNN-slug}` to refresh it."* If no brief exists, omit this line.
 
 ---
 
@@ -403,9 +423,9 @@ Each maps to a documented user-elected response or a sentinel refusal exit; neve
 ## Cross-skill integration
 
 - **`specflow:develop`** Phase F.3 + Phase A + Phase B.5 emit the three drift-trigger chat lines; lifecycle handoff sets `task-history.json.status = aborted_for_scope_change` (Gate 2 da-r1-f1).
-- **`specflow:prd`** Phase C synthesis re-fired with surgical constraint (D.2); Phase E Gate 2 re-fired (D.4).
+- **`specflow:prd`** Phase C synthesis re-fired with surgical constraint (D.2); Phase D Gate 2 re-fired (D.4 in this skill's sequence).
 - **`/grill`** extend-mode invoked in C.2 (append-only `## Scope change — {date}` section).
-- **`specflow:brief`** invoked in D.3 to refresh the sibling `{NNN-slug}-brief.html`.
+- **`specflow:brief`** — NOT invoked by this skill as of v2.14.1. If the user wants the sibling `{NNN-slug}-brief.html` refreshed after the scope change, they run `specflow:brief {NNN-slug}` manually. The closing chat-line in Phase H.5 reminds them.
 - **`specflow:task`** Phase B synthesis re-fired in delta mode (E.5); Phase E Gate 3 re-fired against the delta (E.6).
 - **`specflow:decision`** invoked in G.3 with `id_prefix: "SC"` + arbitrary keyed-block within `references`. Cross-skill schema affordances are non-negotiable per R10.1.
 - **`specflow:complete`** reads `superseded_by` chain in `task-history.json` to surface supersession history in retros.
@@ -416,8 +436,8 @@ Each maps to a documented user-elected response or a sentinel refusal exit; neve
 
 ## Verify before declaring done
 
-1. PRD `.bak` exists; PRD diff scoped to changed R-IDs + `last_scope_change: SC-{NNN}` frontmatter line; rest byte-stable.
-2. Tasks `.bak` exists; tasks diff scoped to the changed-R-ID set; deferred in-flight tasks byte-stable.
+1. PRD pre-change snapshot exists at `archive/{NNN-slug}-prd-pre-{SC-NNN}.md` (on success-path runs that completed H.4) OR at `features/{NNN-slug}/{NNN-slug}-prd.md.bak` (on runs still in flight or failed before H.4); PRD diff scoped to changed R-IDs + `last_scope_change: SC-{NNN}` frontmatter line; rest byte-stable.
+2. Tasks pre-change snapshot exists at `archive/{NNN-slug}-tasks-pre-{SC-NNN}.md` (post-H.4) OR at `{NNN-slug}-tasks.md.bak` (in-flight); tasks diff scoped to the changed-R-ID set; deferred in-flight tasks byte-stable.
 3. Interview extended with `## Scope change — {YYYY-MM-DD}` section; pre-existing sections byte-identical except for strikethrough+supersession-note insertions; every strikethrough has a matching note.
 4. `manifest-scope-change-{SC-NNN}.md` exists at both `debate-log/prd-gate2/` and `debate-log/tasks-gate3/`; original `manifest.md` files byte-identical.
 5. Each regenerated task has `regenerated_at` + `superseded_by_scope_change` + `prior_task_id`; each prior `task-history.json` entry retained with `superseded_by`.

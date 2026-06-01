@@ -1,6 +1,6 @@
 ---
 name: specflow:prd
-description: User-facing entry point for PRD creation. Five-phase orchestrator — A preamble + goal confirmation, B grilling (invokes /grill), C PRD body synthesis, D Gate 2 multi-agent debate manifest, E Brief (invokes specflow:brief). Resumes intelligently if invoked on an in-flight feature.
+description: User-facing entry point for PRD creation. Four-phase orchestrator — A preamble + goal confirmation, B grilling (invokes /grill), C PRD body synthesis, D Gate 2 multi-agent debate manifest. Resumes intelligently if invoked on an in-flight feature. The browser-readable brief is no longer auto-generated — run `specflow:brief {NNN-slug}` manually when you want one.
 status: v2-enhancement
 phase: 1
 requires:
@@ -15,15 +15,16 @@ produces:
   - docs/specflow/features/{NNN-slug}/{NNN-slug}-prd.md
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/manifest.md
   - docs/specflow/features/{NNN-slug}/debate-log/prd-gate2/findings/
-  - docs/specflow/features/{NNN-slug}/{NNN-slug}-brief.html
-eval: Goal confirmed before grilling; interview signed off; PRD body has Vision (traces to Goal), every requirement traces to a Resolved line AND serves the goal, every AC is binary; Gate 2 manifest closes with Orchestrator sign-off entry; brief composes from PRD + interview + Gate 2 manifest with working sidebar TOC.
+eval: Goal confirmed before grilling; interview signed off; PRD body has Vision (traces to Goal), every requirement traces to a Resolved line AND serves the goal, every AC is binary; Gate 2 manifest closes with Orchestrator sign-off entry.
 ---
 
 # specflow:prd
 
 You are the user-facing entry point for PRD creation. You own the full flow from "I want to build X" to "PRD reviewed and signed off."
 
-This is a **5-phase orchestrator**. You delegate the grilling to `/grill` and the brief composition to `specflow:brief`; both run as forked sub-skills per the orchestrator pattern (see `templates/orchestrator-pattern.md`). Your parent context never accumulates the sub-skills' raw work.
+This is a **4-phase orchestrator**. You delegate the grilling to `/grill` as a forked sub-skill per the orchestrator pattern (see `templates/orchestrator-pattern.md`). Your parent context never accumulates the sub-skill's raw work.
+
+The browser-readable brief used to land at the end of this skill (old Phase E). It now lives behind a separate manual invocation — `specflow:brief {NNN-slug}` — so PRD runs don't pay the brief-composition cost when the user doesn't need it. The PRD's closing message points the user at the brief skill.
 
 ---
 
@@ -70,7 +71,7 @@ A.3 (codebase context) and A.3.5 (lessons query) still run regardless of mode.
 
 - **Phase B (grilling)** — caps at 0-2 rounds, only the most load-bearing questions. The `grill` sub-skill re-evaluates at its own pre-flight (per its 2.11.0 mode-read) and applies the cap.
 - **Phase B.5 (pre-Gate-2 Codex adversarial pass)** — skipped entirely. Write a one-line `pre-gate-codex.md` stating *"Skipped in light mode — no adversarial surface for trivial changes."* and proceed.
-- **Phase D (Gate 2 multi-agent debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/prd-gate2/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value. The PRD body still synthesises at Phase C; the brief still renders at Phase E.
+- **Phase D (Gate 2 multi-agent debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/prd-gate2/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value. The PRD body still synthesises at Phase C; the skill then closes with the Phase D.7 message pointing the user at `specflow:brief` as an opt-in manual next step.
 
 When `MODE == "full"`, the legacy flow runs unchanged.
 
@@ -532,50 +533,17 @@ If failed: list the blocking findings and what must change.}
 — Orchestrator, {YYYY-MM-DD}
 ```
 
-### D.7 Gate 2 disposition
+### D.7 Gate 2 disposition + final message
 
-If Gate 2 status is **failed**: tell the user *"PRD failed Gate 2 review. Blocking findings:\n{list}\n\nReview the manifest at `debate-log/prd-gate2/manifest.md` and either revise the PRD or adjust the interview's Resolved lines, then re-run `specflow:prd {NNN-slug}` to resume from Phase C."* Do NOT proceed to Phase E.
+If Gate 2 status is **failed**: tell the user *"PRD failed Gate 2 review. Blocking findings:\n{list}\n\nReview the manifest at `debate-log/prd-gate2/manifest.md` and either revise the PRD or adjust the interview's Resolved lines, then re-run `specflow:prd {NNN-slug}` to resume from Phase C."*
 
-If Gate 2 status is **passed**, **passed-with-revisions**, or **passed-with-escalations**: proceed to Phase E.
+If Gate 2 status is **passed**, **passed-with-revisions**, or **passed-with-escalations**: surface the closing message:
 
----
-
-## Phase E — Brief
-
-### E.1 Invoke specflow:brief
-
-Use the Skill tool:
-
-```
-Skill: specflow:brief {NNN-slug}
-```
-
-It produces `features/NNN-{slug}/NNN-{slug}-brief.html` by composing the PRD body, the interview transcript, and the Gate 2 manifest into one self-contained HTML file with a visual abstract section at the top (compiled from any `:::flow|comparison|scope|tree` blocks the PRD contains).
-
-`specflow:brief` does NOT auto-open the browser when invoked as a sub-skill — the parent decides.
-
-### E.2 Verify brief
-
-Read the brief HTML's first 50 lines. Verify:
-- File exists at `features/NNN-{slug}/NNN-{slug}-brief.html`.
-- Source strip includes the feature ID + slug.
-- Sidebar shows "Feature brief" subtitle.
-- No drift banner (if there is one, a source file is newer than the brief — re-invoke `specflow:brief`).
-
-### E.3 Offer to open in browser
-
-Ask the user: *"Brief generated at `{path}`. Would you like me to open it in your browser?"*
-
-- **Yes** → run `open "{path}"` (macOS), `xdg-open "{path}"` (Linux if available), or print the path on Windows / unknown platforms.
-- **No** → continue to E.4 without opening.
-
-### E.4 Final disposition
-
-Tell the user:
-
-*"PRD complete. Status: {gate2_status}. Brief at `features/NNN-{slug}/NNN-{slug}-brief.html`. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready."*
+*"PRD complete. Status: {gate2_status}. PRD at `features/NNN-{slug}/{NNN-slug}-prd.md`. Manifest at `debate-log/prd-gate2/manifest.md`. Next step: `specflow:task {NNN-slug}` when ready. Want a browser-readable brief? Run `specflow:brief {NNN-slug}` — it composes the PRD + interview + Gate 2 manifest into a single HTML file."*
 
 If Gate 2 produced escalations, list them in your response so the user sees them without opening the manifest.
+
+The brief is no longer part of this flow. Past versions of this skill auto-invoked `specflow:brief` at Phase E; that turned every PRD run into a brief-composition run even when the user didn't need one. The brief skill is still available — it just runs on demand now.
 
 ---
 
@@ -600,7 +568,7 @@ Before returning to the user with "PRD complete":
 3. Vision traces to Goal; every requirement traces to a Resolved line AND serves a goal field; every AC is binary and verifies a requirement; no requirements contradict Out-of-scope-at-goal-level.
 4. `features/NNN-{slug}/debate-log/prd-gate2/manifest.md` exists with closing decision entry signed by the Orchestrator.
 5. Gate 2 status is recorded (passed / passed-with-revisions / passed-with-escalations / failed) and surfaced to the user.
-6. `features/NNN-{slug}/NNN-{slug}-brief.html` exists; sidebar TOC links resolve; source strip references both the PRD and the interview.
+6. Closing chat message points the user at `specflow:brief {NNN-slug}` as an opt-in next step (not invoked automatically).
 
 If any verify step fails, fix it before returning.
 

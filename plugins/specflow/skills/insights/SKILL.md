@@ -1,6 +1,6 @@
 ---
 name: insights
-description: Surfaces recurring patterns from admin/task-history.json on a monthly cadence. Two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams). Proposes rule-registry promotions (observation → guideline → non-negotiable) with at-least-3-observation evidence per proposal. Read-only on the corpus; every promotion requires explicit user accept-edit-reject. Auto-fires never; manual /insights and user-wired cron only.
+description: Background loop — monthly cadence, scheduled via user-wired cron or manual one-off invocation; not part of any user feature workflow. Surfaces recurring patterns from admin/task-history.json. Two-pass deterministic clustering (field-shape exact-match + token-frequency n-grams). Proposes rule-registry promotions (observation → guideline → non-negotiable) with at-least-3-observation evidence per proposal. Read-only on the corpus; every promotion requires explicit user accept-edit-reject.
 status: v2-new
 phase: 3
 requires:
