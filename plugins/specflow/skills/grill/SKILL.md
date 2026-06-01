@@ -49,6 +49,8 @@ Before asking any question:
 
    When `MODE == "light"`, apply a **round cap of 0-2**: ask only the genuinely load-bearing questions (per step 1 criteria below). If no load-bearing question exists, skip grilling entirely and write a one-line round to the interview: *"Round 1 — Light mode: no load-bearing questions surfaced. Skipping to sign-off."* then proceed to sign-off. Surface a one-line chat note before the first question (or skip): *"Mode: `light` — capping grilling at 0-2 rounds."*
 
+   When `MODE == "standard"` (the new default per 034-conditional-rounds v2.15.0), apply a **round cap of 2-4**: ask the load-bearing questions but stop once they're resolved rather than continuing past sign-off triggers. Surface: *"Mode: `standard` — capping grilling at 2-4 rounds."*
+
    When `MODE == "full"`, the legacy uncapped flow runs.
 
    The user can override at any round by typing *"switch to full"* or *"switch to light"* — update `mode:` in feature.md, surface the change in the round's Resolved line, continue.

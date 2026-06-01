@@ -73,6 +73,12 @@ A.3 (codebase context) and A.3.5 (lessons query) still run regardless of mode.
 - **Phase B.5 (pre-Gate-2 Codex adversarial pass)** — skipped entirely. Write a one-line `pre-gate-codex.md` stating *"Skipped in light mode — no adversarial surface for trivial changes."* and proceed.
 - **Phase D (Gate 2 multi-agent debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/prd-gate2/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value. The PRD body still synthesises at Phase C; the skill then closes with the Phase D.7 message pointing the user at `specflow:brief` as an opt-in manual next step.
 
+When `MODE == "standard"` (the new default per 034-conditional-rounds v2.15.0), the chain is reduced — not skipped:
+
+- **Phase B (grilling)** — capped at 2-4 rounds via the `grill` sub-skill's own mode-read.
+- **Phase B.5 / C.4 (pre-Gate-2 Codex adversarial pass)** — folded into the in-gate Codex slot at D.2. Write a one-line stub at `pre-gate-codex.md` (*"Codex folded into in-gate reviewer slot (standard mode) — see D.2"*) and proceed to D.1.
+- **Phase D (Gate 2)** — runs at **1 round**. The Round-1 escalation check (D.3.5, per Change 1) re-fires Rounds 2-3 if any load-bearing finding lands. Reviewer set runs full at Gate 2 (no Layers-Touched cap — Gate 2 reviews the PRD, not a task).
+
 When `MODE == "full"`, the legacy flow runs unchanged.
 
 When the meta file is absent, A.1-A.7 run as documented below (the pre-030 flow) and `MODE` defaults to `full`. `specflow:feature` is the recommended entry point but `specflow:prd` remains valid as a direct entry for quick PRDs that don't need a kickoff step.
@@ -379,6 +385,10 @@ If any check fails, fix the PRD before proceeding.
 
 ### C.4 Pre-Gate-2 Codex adversarial pass
 
+**Mode gate (per 034-conditional-rounds v2.15.0).** When `MODE == "light"` or `MODE == "standard"`, skip this whole sub-phase. Write a one-line stub at `features/{NNN-slug}/debate-log/prd-gate2/pre-gate-codex.md` reading *"Codex folded into in-gate reviewer slot (standard mode) — see D.2"* (or, for light, the existing skip stub already documented at A.0). Proceed directly to D.1. The in-gate Codex reviewer at D.2 (already env-gated) carries the adversarial pass for standard mode. Only `MODE == "full"` runs the body below.
+
+When `MODE == "full"`:
+
 Before Gate 2 opens, run a programmatic Codex adversarial pass against the PRD body and capture verbatim output as a file artefact at `features/{NNN-slug}/debate-log/prd-gate2/pre-gate-codex.md`. The multi-agent panel (D.2) then reviews a sharpened artefact; the user can revise the PRD inline before the panel fires.
 
 If `admin/environment.json` has `cli.codex.available: false`, write the file with one line — *"Codex CLI not detected — pre-gate pass skipped. Install via `/codex:setup` for full coverage."* — and proceed to D.1. The in-gate Codex reviewer (D.2) follows the same env gating.
@@ -449,6 +459,16 @@ The Round-1 finding JSON shape:
 ```
 
 Wait for all reviewers to return their finding paths.
+
+### D.3.5 Round-1 escalation check
+
+Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
+
+If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (D.4) and Round 3 (D.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
+
+If **any** Round-1 finding is load-bearing: run Round 2 (D.4) and Round 3 (D.5) as documented below.
+
+A `block` ALWAYS forces full multi-round debate — safety net intact.
 
 ### D.4 Round 2 — AI responds
 

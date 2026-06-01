@@ -110,6 +110,7 @@ The Orchestrator applies these rules to compute the closing status:
 1. **FAIL** — any finding is `block` severity AND landed as `sharpen` in Round 3 (i.e. the AI did not successfully defend it). The artefact must be revised before the gate passes.
 2. **HUMAN-DECISION-NEEDED** — any finding remains `block` after Round 3 with the AI maintaining push-back AND the reviewer maintaining `sharpen`. Three rounds did not converge; the user calls it.
 3. **PASS** — all `block` findings were either accepted-and-revised by the AI or accepted-as-defended by the reviewer. `concern` and `note` findings do not block; they're recorded for the trail and for Phase 3 pattern mining.
+4. **PASS (Round-1 clean)** — when no Round-1 finding was load-bearing (per the gate's Round-1 escalation check), the gate closes at Round 1 with PASS; Rounds 2-3 are not run; recorded as `passed (Round 1 clean)`. A fast-path of rule 3, not a new disposition.
 
 ### Decision rationale must be on the page
 

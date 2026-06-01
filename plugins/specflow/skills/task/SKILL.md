@@ -70,6 +70,13 @@ When `MODE == "light"`, the following phases skip:
 - **Phase E.4.5 (cross-task review)** — skipped. Cross-task arrangement analysis on a 1-2 task set is pointless.
 - **Phase E (Gate 3 multi-agent debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/tasks-gate3/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value.
 
+When `MODE == "standard"` (the new default per 034-conditional-rounds v2.15.0), the chain is reduced — not skipped:
+
+- **Phase B.5 (pre-Gate-3 Codex adversarial pass)** — folded into the in-gate Codex slot at E.2. Write a one-line stub at `pre-gate-codex.md` (*"Codex folded into in-gate reviewer slot (standard mode) — see E.2"*) and proceed.
+- **Phase D (per-task reviewer rounds)** — runs at **1 round**. The Round-1 escalation check (gate's `.3.5` sub-phase) re-fires Rounds 2-3 if any load-bearing finding lands.
+- **Phase E.4.5 (cross-task review)** — only fires when the task set is **5+ tasks** (raised from 3+). Below the threshold, cross-task arrangement analysis adds no signal.
+- **Phase E (Gate 3)** — runs at 1 round. Reviewer lenses are capped by the task's Layers Touched (per Change 4, see E.2). Round-1 escalation check (E.3.5) re-fires Rounds 2-3 on a load-bearing finding.
+
 Phases B.1-B.4 (coverage matrix, self-checks for budget / duration / graph-validity), B.6 (sprint-bucket assignment), and Phase C (intent summaries to the user) still run regardless of mode — they're the actual decomposition work, not review.
 
 ### A.1 Verify the artefact chain
@@ -297,6 +304,10 @@ If any check fails, fix the tasks file before proceeding.
 
 ### B.5 Pre-Gate-3 Codex adversarial pass
 
+**Mode gate (per 034-conditional-rounds v2.15.0).** When `MODE == "light"` or `MODE == "standard"`, skip this whole sub-phase. Write a one-line stub at `features/{NNN-slug}/debate-log/tasks-gate3/pre-gate-codex.md` reading *"Codex folded into in-gate reviewer slot (standard mode) — see E.2"* (or, for light, the existing skip stub already documented at A.0). Proceed directly to Phase C. The in-gate Codex reviewer at E.2 (already env-gated) carries the adversarial pass for standard mode. Only `MODE == "full"` runs the body below.
+
+When `MODE == "full"`:
+
 Before Phase C surfaces intent highlights, run a programmatic Codex adversarial pass against the tasks file and capture verbatim output as a file artefact at `features/{NNN-slug}/debate-log/tasks-gate3/pre-gate-codex.md`. The user reviews highlights against an already-vetted list; the multi-agent Gate 3 panel (Phase E) reviews a sharpened artefact.
 
 If `admin/environment.json` has `cli.codex.available: false`, write the file with one line — *"Codex CLI not detected — pre-gate pass skipped. Install via `/codex:setup` for full coverage."* — and proceed to Phase C. The in-gate Codex reviewer at Phase E follows the same env gating.
@@ -426,6 +437,15 @@ From `docs/specflow/admin/agents/standard/`, the standing reviewer set:
 
 Plus, if `admin/environment.json` has `cli.codex.available: true`, include Codex as a sixth reviewer.
 
+**Reviewer cap by Layers Touched (per 034-conditional-rounds v2.15.0, standard mode).** When `MODE == "standard"`, drop reviewer lenses irrelevant to each task's Layers Touched. ALWAYS keep `devils-advocate` + `goal-driven-reviewer` (universal). Then conditionally include:
+
+- `surgical-reviewer` — when the task touches `>1 file`.
+- `simplicity-reviewer` — when the task introduces a new module / abstraction.
+- `think-before-coding-reviewer` — when Layers Touched includes Backend / API / Database / Schema.
+- Codex (if available) — same env gate as above, no layer cap.
+
+A pure Docs task or a pure Frontend/UI-copy task runs 2-3 relevant lenses instead of all 5-6. In `MODE == "full"`, the whole set always fires (no cap). **NEVER cap** when the task scope matches any path in `config.confidentialPaths` — those always run the full reviewer set regardless of mode.
+
 ### E.3 Round 1 — parallel finding fire
 
 For each reviewer, dispatch a forked sub-agent (Agent tool with the reviewer's role definition as the brief). Pass each reviewer:
@@ -445,6 +465,16 @@ The reviewers' specific Gate-3 lenses (each role file documents these in detail)
 - **Devil's Advocate:** flags cross-artefact drift between tasks and the Gate 2 manifest (escalations the tasks didn't address).
 
 Wait for all reviewers to return their finding paths.
+
+### E.3.5 Round-1 escalation check
+
+Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
+
+If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (E.4), cross-task E.4.5, and Round 3 (E.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
+
+If **any** Round-1 finding is load-bearing: run Round 2 (E.4), cross-task E.4.5, and Round 3 (E.5) as documented below.
+
+A `block` ALWAYS forces full multi-round debate — safety net intact.
 
 ### E.4 Round 2 — AI responds
 

@@ -133,13 +133,15 @@ Hand off to Phase C.
 
 ### C.1 Reflect what was heard
 
-Before composing the reflection, gauge complexity. Read the four answers and decide `mode: light | full`:
+Before composing the reflection, gauge complexity. Read the four answers and decide `mode: light | standard | full`. Classification is by **size + surface**, not verbs alone — verbs are a tiebreaker, not the primary signal.
 
-- **Light signals.** Verbs like *remove / rename / tweak / swap / hide / update copy*. Acceptance shape *"X is hidden" / "X reads Y" / "the image no longer appears"*. No content yet in `assets/` or `design/`. Goal fits in one paragraph. → `mode: light`.
-- **Full signals.** Verbs like *add / build / integrate / support / introduce*. Acceptance shape *"X works with Y under conditions Z"*. Reference content present in `assets/` or `design/`. Goal needs two paragraphs to express. → `mode: full`.
-- **Mixed.** When signals split, prefer `full` and flag the ambiguity in the reflection so the user can downgrade.
+- **light.** Single surface, ≤1 layer touched, no content in `assets/` or `design/`, goal fits in one paragraph, verbs from *remove / rename / tweak / hide / copy*. Caps as today: `grill` 0-2 rounds, Gates 2/3 skipped. → `mode: light`.
+- **standard (NEW DEFAULT).** 1-2 layers touched, a handful of requirements, goal ≤2 paragraphs, no cross-cutting architecture change. Gates 2+3 still run but at **1 round** (the Round-1 escalation check from Change 1 still escalates a load-bearing finding to full debate); cross-task review threshold raised to 5+ tasks; pre-gate Codex passes folded into the in-gate Codex slot (see Change 3); reviewer lenses capped by Layers Touched (see Change 4). → `mode: standard`.
+- **full.** 3+ layers touched OR new architecture / integration OR reference content present in `assets/` or `design/` OR the classifier itself is uncertain. Today's uncapped flow — full Gate 2/3 debate, both pre-gate Codex passes, full reviewer set. → `mode: full`.
 
-The mode determines whether downstream skills (`specflow:prd`, `specflow:task`, `grill`) run their full review chain (`full`) or skip the heavy passes (`light`). It is not a hard threshold — the user confirms at C.2 and can override at any phase.
+Default on ambiguity is `standard`. The user confirms at C.2 and can bump up to `full` (or down to `light` if size truly fits).
+
+The mode determines whether downstream skills (`specflow:prd`, `specflow:task`, `specflow:develop`, `grill`) run the full review chain (`full`), the reduced single-round chain (`standard`), or skip the heavy passes (`light`). It is not a hard threshold — the user can override at any phase.
 
 Compose a reflection block in chat:
 
@@ -152,7 +154,7 @@ Here's what I heard:
 
 **Audience:** {audience from question 3, cited against profiles.json when matched}
 
-**Mode:** {light | full} — {one-line rationale citing the signals above}
+**Mode:** {light | standard | full} — {one-line rationale citing the signals above}
 
 **Open questions I'd raise before PRD:**
 - {1-3 questions the AI surfaces from gaps in the answers, not yet load-bearing — to be resolved during PRD interview}
@@ -195,7 +197,7 @@ Write to `docs/specflow/features/{NNN-slug}/{NNN-slug}-feature.md`:
 ---
 slug: {NNN-slug}
 status: kickoff
-mode: {light | full}
+mode: {light | standard | full}
 created: {YYYY-MM-DD}
 goal_locked: {YYYY-MM-DD}
 branch: null

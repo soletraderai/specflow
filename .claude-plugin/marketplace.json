@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "Production-grade, self-adaptive product workflow: install once globally, every project accumulates its own constitution, profiles, agents, decisions, and task history — and uses that memory to make every subsequent piece of work smarter than the last.",
-    "version": "2.14.1"
+    "version": "2.15.0"
   },
   "plugins": [
     {
       "name": "specflow",
       "source": "./plugins/specflow",
       "description": "Production-grade, self-adaptive product workflow: install once globally, every project accumulates its own constitution, profiles, agents, decisions, and task history — and uses that memory to make every subsequent piece of work smarter than the last.",
-      "version": "2.14.1",
+      "version": "2.15.0",
       "author": {
         "name": "Sole Trader AI Pty Ltd",
         "url": "https://github.com/soletraderai",

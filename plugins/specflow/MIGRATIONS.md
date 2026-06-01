@@ -15,6 +15,55 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.14.1 → v2.15.0
+
+Introduces conditional-debate rounds and a new `standard` complexity mode (per 034-conditional-rounds v2.15.0). Cuts PRD → tasks time from ~8h toward ~2-3h on typical features while keeping the full debate chain available for high-stakes work. **Quality safety net intact:** a `block` severity always triggers full multi-round debate; the cap only short-circuits when Round-1 finds nothing load-bearing.
+
+### Scope
+
+- **Gates 2, 3, 4, 5** each gain a `.3.5` Round-1 escalation check: after Round 1, scan for load-bearing severity; if nothing load-bearing, the AI applies trivial revisions and the closer records `passed (Round 1 clean)`; otherwise Rounds 2-3 run as documented.
+- **`specflow:feature`** Phase C.1 mode classifier grows a third bucket: `standard` (new default). Classification is now size/surface-based, not verb-based alone. Frontmatter `mode:` field accepts `light | standard | full`.
+- **`specflow:grill`** adds a `standard` branch (2-4 rounds, between light's 0-2 and full's uncapped).
+- **`specflow:prd`** mode-read at A.0 grows a `standard` branch: Phase B grilling 2-4 rounds, Phase C.4 pre-Gate-2 Codex folded into in-gate slot (D.2), Phase D Gate 2 runs at 1 round with escalation check.
+- **`specflow:task`** mode-read at A.0 grows a `standard` branch: Phase B.5 pre-Gate-3 Codex folded into in-gate slot (E.2), Phase D per-task reviewer rounds at 1 round, cross-task review (E.4.5) threshold raised from 3+ to 5+ tasks, Phase E Gate 3 runs at 1 round with escalation check and Layers-Touched reviewer cap.
+- **`specflow:develop`** gains a NEW A.0.6 mode-read step (mirror of task A.0) binding MODE from feature.md. In `standard`, Gates 4 + 5 run at 1 round with escalation check and Layers-Touched reviewer cap.
+- **Reviewer cap by Layers Touched** (standard mode, Gates 3/4/5): always-on `devils-advocate` + `goal-driven-reviewer`; conditional `surgical` (>1 file), `simplicity` (new module/abstraction), `think-before-coding` (Backend/API/Database), `edge-case` (API/Backend/Database/Frontend-with-state at Gates 4/5). Confidential-paths scope NEVER caps.
+- **`templates/agents/standard/lifecycle/orchestrator.md`** Pass/fail rules add rule 4: `PASS (Round-1 clean)` — fast-path of rule 3, not a new disposition.
+- **`specflow:setup`** Phase 8.2 seed defaults:
+  - `task.contextBudget` 80000 → 60000 (tightens split-prompt before the context cliff).
+  - `task.maxDurationHours` prompt reframed — `1 | 2 | 4` are casual options; `8`/`"auto"` are "only if you know you need it".
+  - New `task.maxReviewRounds` (default 3) — mode logic reads from config, not hard-coded.
+  - New `develop.crossTaskTaskThreshold` (default 5) — raised from 3.
+
+### Steps
+
+1. Pull v2.15.0.
+2. **Existing projects keep their seeded config** — `task.contextBudget: 80000`, no `task.maxReviewRounds` / `develop.crossTaskTaskThreshold` keys. Mode logic falls back to defaults (3 rounds, 5-task cross-task threshold) when keys are missing. Backward-compatible.
+3. **Existing `{NNN-slug}-feature.md` files** with `mode: light` or `mode: full` continue to work unchanged. New features default to `mode: standard` once they re-run `specflow:feature` (the C.1 classifier will assign).
+4. **In-flight features mid-Gate**: the Round-1 escalation check is purely additive — if a gate is already past Round 1, the new check does not retroactively re-classify the finished round. New gate runs (re-fires after revisions) pick up the check at Round-1 close.
+5. No config or filesystem mutations required; the upgrade skill applies no migrations.
+
+### Backups
+
+None required — purely additive; no user data is moved or rewritten.
+
+### Verify
+
+- `grep -n 'Round-1 escalation check' plugins/specflow/skills/prd/SKILL.md plugins/specflow/skills/task/SKILL.md plugins/specflow/skills/develop/SKILL.md` returns matches in all three.
+- `grep -n 'standard' plugins/specflow/skills/feature/SKILL.md` returns matches (third bucket present, classifier updated, frontmatter accepts it).
+- `grep -n 'A.0.6' plugins/specflow/skills/develop/SKILL.md` returns a match (mode-read wired into develop).
+- `grep -n 'Reviewer cap by Layers Touched' plugins/specflow/skills/task/SKILL.md plugins/specflow/skills/develop/SKILL.md` returns matches (3 total: task E.2, develop C.2, develop E.2).
+- `grep -n 'PASS (Round-1 clean)' plugins/specflow/templates/agents/standard/lifecycle/orchestrator.md` returns a match (rule 4 added).
+- `plugin.json` and `marketplace.json` both report `2.15.0`.
+- **Structural sanity:** trace `feature.md` (`mode:` field) → `prd` (reads `mode:` at A.0) → `task` (reads `mode:` at A.0) → `develop` (reads `mode:` at A.0.6) and confirm MODE binds at each stage.
+
+### Rollback
+
+- Downgrade the plugin version. Existing projects' `config.json` continues to work — the new keys (`task.maxReviewRounds`, `develop.crossTaskTaskThreshold`) are ignored by pre-2.15.0 logic; mode logic falls back to legacy behaviour.
+- Features with `mode: standard` will be treated as `mode: full` by pre-2.15.0 skills (defensive fallback).
+
+---
+
 ## v2.14.0 → v2.14.1
 
 Removes the brief auto-invocation from `specflow:prd` and `specflow:scope-change`. The `specflow:brief` skill is now manual-only — the user runs it explicitly when they want the browser-readable HTML. Reason: most PRD/scope-change runs don't need a brief, but every one was paying the brief-composition cost.

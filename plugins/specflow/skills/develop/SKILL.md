@@ -103,6 +103,25 @@ Before reading the artefact chain, ensure the user's primary checkout is on a de
 
 Phase F.6 restores the stash (if any) before cleanup. On any error path before Phase F that aborts the run, the stash is RETAINED — user can recover via `git stash list` and the name written to `stash-name.txt`.
 
+### A.0.6 Mode read (per 034-conditional-rounds v2.15.0)
+
+Read `features/{NNN-slug}/{NNN-slug}-feature.md` if present. Extract the `mode:` frontmatter field. Bind `MODE` for this run.
+
+- `mode: light` → skip the heavy review chain on Gates 4/5. See per-phase skips below.
+- `mode: standard` → the **new default**. Gates 4/5 run at **1 round**. The Round-1 escalation check (C.3.5 / E.3.5, per Change 1) re-fires Rounds 2-3 if any load-bearing finding lands. Reviewer lenses are capped by the task's Layers Touched (per Change 4, see C.2 + E.2).
+- `mode: full` or feature.md absent or `mode:` field missing → run the full review chain (legacy uncapped behaviour).
+
+Surface a one-line chat note: *"Mode: `{MODE}`."*
+
+When `MODE == "light"`, the following phases skip:
+
+- **Phase C (Gate 4 per-task plan debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/develop-gate4/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale citing the mode value.
+- **Phase E (Gate 5 implementation debate manifest)** — skipped entirely. Write a stub manifest at `debate-log/develop-gate5/manifest.md` with closing decision **passed (light mode — no multi-agent review)** and a one-line rationale.
+
+When `MODE == "standard"`, Gates 4 and 5 each run their Round-1 fire, then defer to the escalation check (C.3.5 / E.3.5) on whether to continue. Reviewer lens caps from C.2 / E.2 apply.
+
+When `MODE == "full"`, Gates 4 and 5 run uncapped (all reviewer lenses, all three rounds) as documented below.
+
 ### A.1 Verify the artefact chain
 
 Use Read tool in parallel on:
@@ -394,6 +413,15 @@ The Gate 4 reviewer set is exactly:
 
 Codex does NOT join Gate 4 in v1 — there is no `config.json.develop.codexAtGate4` knob. Setting the field has no observable effect.
 
+**Reviewer cap by Layers Touched (per 034-conditional-rounds v2.15.0, standard mode).** When `MODE == "standard"`, drop reviewer lenses irrelevant to the task's Layers Touched. ALWAYS keep `devils-advocate` + `goal-driven-reviewer` (universal). Then conditionally include:
+
+- `surgical-reviewer` — when the task touches `>1 file`.
+- `simplicity-reviewer` — when the task introduces a new module / abstraction.
+- `think-before-coding-reviewer` — when Layers Touched includes Backend / API / Database / Schema.
+- `edge-case-reviewer` — when Layers Touched includes API / Backend / Database / Frontend-with-state.
+
+A pure Docs task or a pure Frontend/UI-copy task runs 2-3 relevant lenses instead of all 5-6. In `MODE == "full"`, the whole set always fires (no cap). **NEVER cap** when the task scope matches any path in `config.confidentialPaths` — those always run the full reviewer set regardless of mode.
+
 ### C.3 Round 1 — parallel finding fire
 
 For each reviewer, dispatch a forked sub-agent. Pass each:
@@ -411,6 +439,16 @@ Lens emphasis at Gate 4 (each reviewer's role file documents these):
 - **Devil's Advocate:** flags cross-artefact ambiguity (plan references a config flag the PRD doesn't mention; plan's lane assignment looks too aggressive given the scope; cross-product branches the writer missed).
 
 Each reviewer writes a minimal finding JSON to `debate-log/develop-gate4/findings/round-1/{reviewer-name}.json` and returns only the path.
+
+### C.3.5 Round-1 escalation check
+
+Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
+
+If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (C.4) and Round 3 (C.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
+
+If **any** Round-1 finding is load-bearing: run Round 2 (C.4) and Round 3 (C.5) as documented below.
+
+A `block` ALWAYS forces full multi-round debate — safety net intact.
 
 ### C.4 Round 2 — AI responds
 
@@ -567,6 +605,16 @@ Standard set (always):
 Codex (when `cli.codex.available: true`):
 - Invoked via `codex review` per the orchestrator-pattern fork convention. Codex reads the diff + plan via command substitution and writes its findings to `debate-log/develop-gate5/findings/round-1/codex.json` in the same shape as the other reviewers. Codex is **load-bearing at Gate 5 when present** — it covers cross-provider concerns the same-provider DA cannot cover by definition.
 
+**Reviewer cap by Layers Touched (per 034-conditional-rounds v2.15.0, standard mode).** When `MODE == "standard"`, drop reviewer lenses irrelevant to the task's Layers Touched. ALWAYS keep `devils-advocate` + `goal-driven-reviewer` (universal). Then conditionally include:
+
+- `surgical-reviewer` — when the task touches `>1 file`.
+- `simplicity-reviewer` — when the task introduces a new module / abstraction.
+- `think-before-coding-reviewer` — when Layers Touched includes Backend / API / Database / Schema.
+- `edge-case-reviewer` — when Layers Touched includes API / Backend / Database / Frontend-with-state.
+- Codex — same env gate as above, no layer cap (cross-provider lens is always valuable when present).
+
+A pure Docs task or a pure Frontend/UI-copy task runs 2-3 relevant lenses instead of all 5-6. In `MODE == "full"`, the whole set always fires (no cap). **NEVER cap** when the task scope matches any path in `config.confidentialPaths` — those always run the full reviewer set regardless of mode.
+
 ### E.3 Round 1 — parallel finding fire
 
 Dispatch each reviewer (including Codex if present) as a forked sub-agent. Pass each:
@@ -576,6 +624,16 @@ Dispatch each reviewer (including Codex if present) as a forked sub-agent. Pass 
 - Their own role definition.
 
 Each writes to `debate-log/develop-gate5/findings/round-1/{reviewer-name}.json` and returns only the path.
+
+### E.3.5 Round-1 escalation check
+
+Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
+
+If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (E.4) and Round 3 (E.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
+
+If **any** Round-1 finding is load-bearing: run Round 2 (E.4) and Round 3 (E.5) as documented below.
+
+A `block` ALWAYS forces full multi-round debate — safety net intact.
 
 ### E.4 Round 2 — AI responds
 
