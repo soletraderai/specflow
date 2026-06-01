@@ -141,6 +141,14 @@ Task synthesis below biases toward incorporating these.
 
 Each matched lesson's `remediation` becomes a "must consider" line in B.1's task derivation. If an existing PRD requirement already covers a lesson, the task derived from that requirement gets a `lesson-anchor: L-NNN` field. If no existing requirement covers a lesson, surface to the user: *"L-{NNN}'s remediation isn't covered by any PRD requirement. Proceed with the lesson noted (no task), or run `specflow:scope-change` to add a requirement?"* Default if user accepts: proceed; the lesson is logged in `admin/scratch/{NNN-slug}-tasks/uncovered-lessons.json` and listed in the user-facing summary.
 
+**REQUIRED-lesson enforcement (per 035-self-learning-loop v2.16.0).** A matched lesson is **REQUIRED** when its `test_fragment.scope` glob overlaps the Scope path of any task being derived AND its tags overlap `>=1` surface tag with the feature. For every REQUIRED lesson:
+
+- The covering task MUST carry `lesson-anchor: L-NNN` in its frontmatter.
+- The task's acceptance criterion MUST reference the lesson's `test_fragment.expect` (binary pass phrase) — e.g. *"assertion `{assertion}` returns `{expect}` against scope `{scope}`"*.
+- If NO task covers a REQUIRED lesson, the `uncovered-lessons.json` prompt becomes **BLOCKING**: refuse the task synthesis with *"Task synthesis blocked: required lesson L-NNN ({title}) has no covering task. Add a task that covers `{test_fragment.scope}` or run `specflow:scope-change` to retire the lesson before this synthesis can close."* This mirrors `skills/test/SKILL.md` B.4 step 5 on the task side — the REQUIRED gate enforces on both task-synthesis and test-plan paths so a recurrence cannot slip through either.
+
+Advisory lessons (matched but `test_fragment` absent / `runnable: false` / scope non-overlapping) follow the existing soft "must consider" treatment.
+
 If no matches, note: *"No prior lessons match this feature's tags."* Continue.
 
 ### A.5 Tell the user what you're doing
