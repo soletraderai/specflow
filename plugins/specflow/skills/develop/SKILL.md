@@ -442,13 +442,7 @@ Each reviewer writes a minimal finding JSON to `debate-log/develop-gate4/finding
 
 ### C.3.5 Round-1 escalation check
 
-Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
-
-If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (C.4) and Round 3 (C.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
-
-If **any** Round-1 finding is load-bearing: run Round 2 (C.4) and Round 3 (C.5) as documented below.
-
-A `block` ALWAYS forces full multi-round debate — safety net intact.
+Apply the canonical Round-1 escalation check from `templates/agents/standard/lifecycle/orchestrator.md` (per 034-conditional-rounds v2.15.0). **Gate 4 load-bearing fields:** a plan PRD-anchor, lane, or scope entry. If no Round-1 finding touches these (or carries `severity == block`), skip C.4 and C.5; close as `passed (Round 1 clean)`.
 
 ### C.4 Round 2 — AI responds
 
@@ -627,13 +621,7 @@ Each writes to `debate-log/develop-gate5/findings/round-1/{reviewer-name}.json` 
 
 ### E.3.5 Round-1 escalation check
 
-Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
-
-If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (E.4) and Round 3 (E.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
-
-If **any** Round-1 finding is load-bearing: run Round 2 (E.4) and Round 3 (E.5) as documented below.
-
-A `block` ALWAYS forces full multi-round debate — safety net intact.
+Apply the canonical Round-1 escalation check from `templates/agents/standard/lifecycle/orchestrator.md` (per 034-conditional-rounds v2.15.0). **Gate 5 load-bearing fields:** an acceptance-clause, contract, or schema entry. If no Round-1 finding touches these (or carries `severity == block`), skip E.4 and E.5; close as `passed (Round 1 clean)`.
 
 ### E.4 Round 2 — AI responds
 

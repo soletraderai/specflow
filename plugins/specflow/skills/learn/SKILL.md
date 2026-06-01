@@ -1,6 +1,6 @@
 ---
 name: specflow:learn
-description: Background loop — auto-fired by specflow:test after each Phase D feedback capture (not a user-facing command). Repo-local self-learning loop. Reads admin/lessons.json (the single corpus), clusters deterministically by sorted tag-set, and auto-applies Tier-A additive rules to admin/rules/guidelines.md, admin/CONTEXT.md weak-spots, and admin/config.json new keys. Runnable lessons (test_fragment.runnable==true) route to CI-promotion via specflow:misc instead of guideline-only. Tier-B candidates (plugin-level changes) and Tier-C conflicts log to scratch for manual review. Append-only on the corpus; additive-only on the registries; per-run cap of 3 auto-applies; min cluster size 3. Five-phase orchestrator — A pre-flight + lock, B clustering, C tier routing, D Tier-A auto-apply, E report + lock release. Direct invocation is supported for debugging / re-runs but no user workflow requires it.
+description: Background loop — auto-fired by specflow:test after each Phase D feedback capture. Reads admin/lessons.json, clusters recurring lessons, and routes runnable ones to CI promotion (via specflow:misc) and non-runnable ones to additive guideline updates. Direct invocation supported for debugging.
 status: v2-new
 phase: 3
 requires:
@@ -30,7 +30,7 @@ eval: |
 
 Repo-local self-learning. Closes the loop between `specflow:test` (which emits findings) and the project's living rules + context registry (which every other skill already reads). The corpus accretes; deterministic clustering surfaces patterns at the 3-observation threshold; additive auto-application means the system gets smarter without manual triage and without ever editing prior decisions.
 
-This skill is the consumer half of the loop. The producer half — `specflow:test` emitting `lessons.json` entries — is intentionally decoupled. Anything that can append a valid JSONL entry to the corpus drives this skill: `specflow:test`, manual append during exploration, future producers under different names. Decoupling means this skill is fully testable on its own corpus.
+`specflow:test` writes lessons; this skill consumes them.
 
 This is a **5-phase orchestrator** (A → B → C → D → E). No sub-agent forking; no LLM-as-judge inside the loop (clustering is deterministic). Per-run cap of 3 Tier-A writes is the load-bearing safety valve for the 50-finding-burst case where a full-feature test run dumps a wave of new signal.
 

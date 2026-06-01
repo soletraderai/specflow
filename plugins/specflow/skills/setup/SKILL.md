@@ -350,16 +350,14 @@ Then write `docs/specflow/admin/config.json`:
   "task": {
     "contextBudget": 60000,
     "maxLessonsSurfaced": 5,
-    "maxDurationHours": 1,
-    "maxReviewRounds": 3
+    "maxDurationHours": 1
   },
   "prd": {
     "maxLessonsSurfaced": 5
   },
   "develop": {
     "maxIssuesPerSprint": 5,
-    "tddRequired": true,
-    "crossTaskTaskThreshold": 5
+    "tddRequired": true
   },
   "skills": {
     "feature":      { "enabled": true },
@@ -392,9 +390,7 @@ Then write `docs/specflow/admin/config.json`:
 
 `task.maxDurationHours` is the soft sizing target per task in hours — `1 | 2 | 4 | 8 | "auto"`; default `1`. Captured at setup-time via the 8.2 prompt. `specflow:task` aims for tasks within the cap during synthesis; when `"auto"`, sizing falls back to `contextBudget` alone. Defaults of `8` and `"auto"` are intentionally rough — pick them only when sizing discipline is already in hand.
 
-`task.maxReviewRounds` is the per-gate review-round ceiling (default `3` — matches the historic Round 1 / Round 2 / Round 3 chain). Mode logic reads this knob: in `MODE == "standard"`, Gates run at 1 round with the Round-1 escalation check (per 034-conditional-rounds v2.15.0) re-fitting up to `maxReviewRounds`. Lower the ceiling to cap escalation depth; raise it on high-stakes flows that need deeper convergence.
-
-`develop.crossTaskTaskThreshold` (default `5`) sets the minimum task-set size at which `specflow:task` Phase E.4.5 (cross-task review) fires. Below this threshold, cross-task arrangement analysis adds no signal. Raised from `3` in v2.15.0 per 034-conditional-rounds. The mode logic reads this knob — `MODE == "standard"` honours it; `MODE == "full"` runs cross-task review whenever the task set is `>1`.
+Per-gate review-round ceiling (fixed at 3) and cross-task-review threshold (fixed at 5 tasks) are constants in the skill logic; not configurable in `config.json` to keep the seed lean.
 
 `skills.{name}.enabled` toggles individual skills on/off at the project level. Default `true` for every shipped skill. Each skill checks its toggle in its Phase A pre-flight and refuses with a one-line message when disabled (e.g. *"`specflow:develop` is disabled in this project (config.skills.develop.enabled = false). Re-enable in admin/config.json or invoke a different skill."*). The resolver contract is documented in `templates/admin/skill-toggles.md`. Setup leaves all skills enabled by default; users disable selectively (for example, an org that uses GitHub Copilot for implementation might disable `specflow:develop` but keep `specflow:prd` + `specflow:task` + `specflow:test`). Resolution citation: `v2/docs/PRD.md` § Resolved decisions — 012-config-skill-toggles v2.4.0.
 

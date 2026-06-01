@@ -141,13 +141,7 @@ Task synthesis below biases toward incorporating these.
 
 Each matched lesson's `remediation` becomes a "must consider" line in B.1's task derivation. If an existing PRD requirement already covers a lesson, the task derived from that requirement gets a `lesson-anchor: L-NNN` field. If no existing requirement covers a lesson, surface to the user: *"L-{NNN}'s remediation isn't covered by any PRD requirement. Proceed with the lesson noted (no task), or run `specflow:scope-change` to add a requirement?"* Default if user accepts: proceed; the lesson is logged in `admin/scratch/{NNN-slug}-tasks/uncovered-lessons.json` and listed in the user-facing summary.
 
-**REQUIRED-lesson enforcement (per 035-self-learning-loop v2.16.0).** A matched lesson is **REQUIRED** when its `test_fragment.scope` glob overlaps the Scope path of any task being derived AND its tags overlap `>=1` surface tag with the feature. For every REQUIRED lesson:
-
-- The covering task MUST carry `lesson-anchor: L-NNN` in its frontmatter.
-- The task's acceptance criterion MUST reference the lesson's `test_fragment.expect` (binary pass phrase) — e.g. *"assertion `{assertion}` returns `{expect}` against scope `{scope}`"*.
-- If NO task covers a REQUIRED lesson, the `uncovered-lessons.json` prompt becomes **BLOCKING**: refuse the task synthesis with *"Task synthesis blocked: required lesson L-NNN ({title}) has no covering task. Add a task that covers `{test_fragment.scope}` or run `specflow:scope-change` to retire the lesson before this synthesis can close."* This mirrors `skills/test/SKILL.md` B.4 step 5 on the task side — the REQUIRED gate enforces on both task-synthesis and test-plan paths so a recurrence cannot slip through either.
-
-Advisory lessons (matched but `test_fragment` absent / `runnable: false` / scope non-overlapping) follow the existing soft "must consider" treatment.
+**REQUIRED-lesson enforcement (per 035-self-learning-loop v2.16.0).** A matched lesson is REQUIRED when `test_fragment.scope` overlaps a task Scope AND tags overlap ≥1 surface tag. The covering task MUST carry `lesson-anchor: L-NNN` and its acceptance MUST reference `test_fragment.expect`. If no task covers a REQUIRED lesson, refuse with *"Task synthesis blocked: required lesson L-NNN ({title}) has no covering task."* Mirrors `skills/test/SKILL.md` B.4 step 5.
 
 If no matches, note: *"No prior lessons match this feature's tags."* Continue.
 
@@ -476,13 +470,7 @@ Wait for all reviewers to return their finding paths.
 
 ### E.3.5 Round-1 escalation check
 
-Per 034-conditional-rounds v2.15.0. After all Round-1 findings land, scan for severity. A finding is **load-bearing** if `severity==block` OR (`severity==concern` AND it touches a load-bearing field — a requirement/AC/trace at Gate 2; a coverage-matrix/anchor/binary-acceptance entry at Gate 3; a plan PRD-anchor/lane/scope entry at Gate 4; an acceptance-clause/contract/schema entry at Gate 5).
-
-If **no** Round-1 finding is load-bearing (all `note` or non-load-bearing `concern`): the AI applies any trivially-accepted note/concern revisions in one pass, **SKIPS Round 2 (E.4), cross-task E.4.5, and Round 3 (E.5) entirely**, and the closer records `Closing decision: passed (Round 1 clean — no load-bearing findings; Rounds 2-3 skipped per 034)`.
-
-If **any** Round-1 finding is load-bearing: run Round 2 (E.4), cross-task E.4.5, and Round 3 (E.5) as documented below.
-
-A `block` ALWAYS forces full multi-round debate — safety net intact.
+Apply the canonical Round-1 escalation check from `templates/agents/standard/lifecycle/orchestrator.md` (per 034-conditional-rounds v2.15.0). **Gate 3 load-bearing fields:** a coverage-matrix, anchor, or binary-acceptance entry. If no Round-1 finding touches these (or carries `severity == block`), skip E.4, cross-task E.4.5, and E.5; close as `passed (Round 1 clean)`.
 
 ### E.4 Round 2 — AI responds
 

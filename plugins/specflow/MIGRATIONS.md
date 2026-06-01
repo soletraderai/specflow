@@ -17,96 +17,69 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ## v2.15.0 → v2.16.0
 
-Closes the self-learning loop (per 035-self-learning-loop v2.16.0). Capture worked in 2.15.0 but reuse did not — matched lessons surfaced as hints not gates, recurring lessons re-derived prose remediation each time, and `specflow:learn` read a `plugin-findings.jsonl` file that no project produced (auto-promotion never ran). 2.16.0 makes lessons single-corpus, runnable, and gating.
+Makes `lessons.json` the single learning corpus, adds optional runnable lesson fragments, and enforces matching runnable lessons as required checks.
 
 ### Scope
 
-- **C1 — one corpus.** `specflow:learn` now reads `admin/lessons.json` (the single source of truth) instead of `admin/plugin-findings.jsonl`. `skills/learn/SKILL.md` `requires`, Inputs, schema block, A.2 corpus check, B.3 clustering, C/D tier routing, and cross-skill references all repointed. Cluster key = sorted-lowercased tags joined by `+`; clusters at `>=2` tag overlap AND `>=1` surface-tag overlap; cluster count = distinct `occurrences[].feature` summed across members. `skills/test/SKILL.md` D.4.5 auto-fire now invokes `specflow:learn --feature {NNN-slug}`.
-- **C2 — `test_fragment` field.** New lesson sub-object: `{ kind: grep|testcase|ci-check, assertion, scope, expect, runnable }`. Required for every NEW escape lesson written from v2.16.0. D.2 grows a Q4 capturing the reusable check (with derivation fallback if user skips). D.4 step 1 appends the fragment to new entries; recurrence on a pre-2.16.0 lesson prompts Q4 to backfill (the one permitted post-write addition — forward-tooling, not audit). D.6 verify check 6 confirms shape.
-- **C3 — REQUIRED check (the enforcement that stops recurrence).** `skills/test/SKILL.md` B.0.5 partitions matched lessons into REQUIRED (fragment.scope overlaps a task Scope AND surface-tag overlap) vs advisory. REQUIRED lessons MUST become concrete test cases in B.1 with the assertion verbatim and the tag `Source: lesson L-NNN (REQUIRED)`. B.4 adds BLOCKING check 5: if any REQUIRED lesson is uncovered, refuse the plan with `Plan blocked: required lesson L-NNN`. Verify-before-done adds check 7. Query-Inject sentence updated. `skills/task/SKILL.md` A.4 mirrors — a REQUIRED matched lesson forces a `lesson-anchor: L-NNN` task field or an explicit uncovered-lesson decision.
-- **C4 — auto-promote runnable lessons to CI.** When `occurrences >= 3 distinct features` AND `test_fragment.runnable == true`, D.4 prompts CI promotion. On confirm: writes `admin/scratch/misc-payload-{ts}.json` per `skills/misc/SKILL.md` auto-invocation schema, invokes `specflow:misc --auto`, sets lesson `status: promoted-to-ci`. `skills/learn/SKILL.md` Phase D auto-apply routes Tier-A clusters with runnable fragments to the same CI path (cap 3/run).
-- **C5 — prune to resolved.** End-of-Phase-C prompt when a real test execution on a feature overlapping an active/promoted-to-ci lesson has a case sourced from it that PASSED with no new occurrence: *"L-NNN check passed with no recurrence. Mark resolved? [yes/no/skip]"*. `resolved` lessons filtered OUT of B.0 / task A.4 queries; preserved as audit; D.3 similarity re-opens on recurrence. Query-filter: `status in {active, promoted-to-ci}` (excluding `resolved` and `superseded`).
-- **C6** — version bump + this MIGRATIONS entry.
+- `specflow:learn` reads `admin/lessons.json` directly (no `plugin-findings.jsonl`).
+- Lesson schema gains optional `test_fragment` ({ kind, assertion, scope, expect, runnable }). Required for new escape lessons; pre-2.16.0 entries treated as `runnable: false` (backward-compatible).
+- Matched lessons whose `test_fragment.scope` overlaps a task Scope become **REQUIRED** — plan/task synthesis refuses to close without a covering case. Sentinel: `Plan blocked: required lesson L-NNN`.
+- Runnable lessons that recur ≥3× across features auto-promote to CI via `specflow:misc --auto` (a misc-task wires the assertion into a CI gate). Lesson gains `promoted_to_ci` reference.
+- Lessons whose remediation validates in a later test run with no recurrence can be marked `resolved` (filtered from future queries; preserved as audit).
 
 ### Steps
 
 1. Pull v2.16.0.
-2. Existing lessons keep working — no `test_fragment` reads as `runnable: false`, Phase B falls back to prose remediation. Pre-2.16.0 lessons are NOT REQUIRED until they're backfilled on next recurrence (forward-tooling: D.4 prompts Q4 on the recurrence and backfills the fragment then — the one permitted post-write addition).
-3. No `plugin-findings.jsonl` to migrate — no project produced it; `learn` now reads `lessons.json` directly.
-4. Config untouched. `resolved` lessons excluded from the cap-5 surfacing.
+2. Existing lessons keep working unchanged. No `test_fragment` reads as `runnable: false`; prose remediation falls through; pre-2.16.0 lessons are NOT REQUIRED until backfilled on next recurrence.
+3. No data migration required.
 
 ### Backups
 
-`lessons.json.bak` discipline unchanged (every mutation writes a `.bak` first).
+`lessons.json.bak` discipline unchanged.
 
-### Known stale references (flag, do not fix here)
+### Known stale references (flagged, not fixed)
 
-- `templates/admin/lessons-registry.md` schema diverges from the LIVE schema in `skills/test/SKILL.md`. The skills/test SKILL is the source of truth (it matches disk). The template gains a `test_fragment` row for parity but the divergent field names are NOT re-converged in this release.
-- `specflow:insights` is referenced in 2 docs but does NOT exist as a shipped skill. The real clusterer is `specflow:learn`. References left in place; flagged as stale.
+- `templates/admin/lessons-registry.md` schema diverges from `skills/test/SKILL.md` (the live source of truth).
+- `specflow:insights` referenced in 2 docs but does not ship; the real clusterer is `specflow:learn`.
 
 ### Verify
 
-- `grep -n 'test_fragment' plugins/specflow/skills/test/SKILL.md` returns matches.
-- `grep -n 'lessons.json' plugins/specflow/skills/learn/SKILL.md` returns matches; `! grep -q 'plugin-findings.jsonl' plugins/specflow/skills/learn/SKILL.md` passes (zero matches expected).
-- `grep -n 'REQUIRED' plugins/specflow/skills/test/SKILL.md` returns matches; `grep -n 'required-lessons.json' plugins/specflow/skills/test/SKILL.md` returns matches.
-- `grep -n 'Plan blocked: required lesson' plugins/specflow/skills/test/SKILL.md` returns a match (the B.4 BLOCKING refusal sentinel).
-- `grep -n 'promoted-to-ci\|misc --auto' plugins/specflow/skills/test/SKILL.md` returns matches.
-- `grep -n 'Mark resolved\|status: "resolved"' plugins/specflow/skills/test/SKILL.md` returns matches (C5 prune prompt).
-- `plugin.json` and `marketplace.json` both report `2.16.0`.
-- `grep -n 'specflow:learn --feature' plugins/specflow/skills/test/SKILL.md` returns a match (D.4.5 auto-fire).
+Grep `plugins/specflow/skills/` for `test_fragment`, `required-lessons.json`, `Plan blocked: required lesson`, `promoted_to_ci`, `lessons.json`, `2.16.0`. Confirm `learn/SKILL.md` contains zero `plugin-findings.jsonl` references.
 
 ### Rollback
 
-Code-only revert — no data migrated. Existing `lessons.json` entries written under 2.16.0 retain the `test_fragment` field; pre-2.16.0 skills ignore unknown sub-objects (forward-compatible).
+Code-only revert. Existing `lessons.json` entries with `test_fragment` are ignored by pre-2.16.0 skills (forward-compatible).
 
 ---
 
 ## v2.14.1 → v2.15.0
 
-Introduces conditional-debate rounds and a new `standard` complexity mode (per 034-conditional-rounds v2.15.0). Cuts PRD → tasks time from ~8h toward ~2-3h on typical features while keeping the full debate chain available for high-stakes work. **Quality safety net intact:** a `block` severity always triggers full multi-round debate; the cap only short-circuits when Round-1 finds nothing load-bearing.
+Adds conditional debate rounds and a `standard` complexity mode (new default). Cuts PRD → tasks time from ~8h toward ~2-3h on typical features. A `block` finding always triggers full multi-round debate; the cap short-circuits only when Round-1 finds nothing load-bearing.
 
 ### Scope
 
-- **Gates 2, 3, 4, 5** each gain a `.3.5` Round-1 escalation check: after Round 1, scan for load-bearing severity; if nothing load-bearing, the AI applies trivial revisions and the closer records `passed (Round 1 clean)`; otherwise Rounds 2-3 run as documented.
-- **`specflow:feature`** Phase C.1 mode classifier grows a third bucket: `standard` (new default). Classification is now size/surface-based, not verb-based alone. Frontmatter `mode:` field accepts `light | standard | full`.
-- **`specflow:grill`** adds a `standard` branch (2-4 rounds, between light's 0-2 and full's uncapped).
-- **`specflow:prd`** mode-read at A.0 grows a `standard` branch: Phase B grilling 2-4 rounds, Phase C.4 pre-Gate-2 Codex folded into in-gate slot (D.2), Phase D Gate 2 runs at 1 round with escalation check.
-- **`specflow:task`** mode-read at A.0 grows a `standard` branch: Phase B.5 pre-Gate-3 Codex folded into in-gate slot (E.2), Phase D per-task reviewer rounds at 1 round, cross-task review (E.4.5) threshold raised from 3+ to 5+ tasks, Phase E Gate 3 runs at 1 round with escalation check and Layers-Touched reviewer cap.
-- **`specflow:develop`** gains a NEW A.0.6 mode-read step (mirror of task A.0) binding MODE from feature.md. In `standard`, Gates 4 + 5 run at 1 round with escalation check and Layers-Touched reviewer cap.
-- **Reviewer cap by Layers Touched** (standard mode, Gates 3/4/5): always-on `devils-advocate` + `goal-driven-reviewer`; conditional `surgical` (>1 file), `simplicity` (new module/abstraction), `think-before-coding` (Backend/API/Database), `edge-case` (API/Backend/Database/Frontend-with-state at Gates 4/5). Confidential-paths scope NEVER caps.
-- **`templates/agents/standard/lifecycle/orchestrator.md`** Pass/fail rules add rule 4: `PASS (Round-1 clean)` — fast-path of rule 3, not a new disposition.
-- **`specflow:setup`** Phase 8.2 seed defaults:
-  - `task.contextBudget` 80000 → 60000 (tightens split-prompt before the context cliff).
-  - `task.maxDurationHours` prompt reframed — `1 | 2 | 4` are casual options; `8`/`"auto"` are "only if you know you need it".
-  - New `task.maxReviewRounds` (default 3) — mode logic reads from config, not hard-coded.
-  - New `develop.crossTaskTaskThreshold` (default 5) — raised from 3.
+- New `standard` mode joins `light` / `full` in feature/PRD/task/develop. Size/surface-based classifier; default on ambiguity.
+- All four gates (Gate 2, 3, 4, 5) add a Round-1 escalation check: if no Round-1 finding is load-bearing, skip Rounds 2-3 and close as `passed (Round 1 clean)`.
+- Reviewer lenses capped by Layers Touched in standard mode (always-on devils-advocate + goal-driven; conditional others). Confidential-paths scope never caps.
+- `specflow:setup` Phase 8.2: `task.contextBudget` 80000 → 60000; `task.maxDurationHours` prompt reframed to favour 1/2/4-hour caps over 8/auto.
 
 ### Steps
 
 1. Pull v2.15.0.
-2. **Existing projects keep their seeded config** — `task.contextBudget: 80000`, no `task.maxReviewRounds` / `develop.crossTaskTaskThreshold` keys. Mode logic falls back to defaults (3 rounds, 5-task cross-task threshold) when keys are missing. Backward-compatible.
-3. **Existing `{NNN-slug}-feature.md` files** with `mode: light` or `mode: full` continue to work unchanged. New features default to `mode: standard` once they re-run `specflow:feature` (the C.1 classifier will assign).
-4. **In-flight features mid-Gate**: the Round-1 escalation check is purely additive — if a gate is already past Round 1, the new check does not retroactively re-classify the finished round. New gate runs (re-fires after revisions) pick up the check at Round-1 close.
-5. No config or filesystem mutations required; the upgrade skill applies no migrations.
+2. Existing projects keep their config unchanged.
+3. Existing `feature.md` files with `mode: light` / `mode: full` continue to work; new features default to `mode: standard`.
 
 ### Backups
 
-None required — purely additive; no user data is moved or rewritten.
+None required — purely additive.
 
 ### Verify
 
-- `grep -n 'Round-1 escalation check' plugins/specflow/skills/prd/SKILL.md plugins/specflow/skills/task/SKILL.md plugins/specflow/skills/develop/SKILL.md` returns matches in all three.
-- `grep -n 'standard' plugins/specflow/skills/feature/SKILL.md` returns matches (third bucket present, classifier updated, frontmatter accepts it).
-- `grep -n 'A.0.6' plugins/specflow/skills/develop/SKILL.md` returns a match (mode-read wired into develop).
-- `grep -n 'Reviewer cap by Layers Touched' plugins/specflow/skills/task/SKILL.md plugins/specflow/skills/develop/SKILL.md` returns matches (3 total: task E.2, develop C.2, develop E.2).
-- `grep -n 'PASS (Round-1 clean)' plugins/specflow/templates/agents/standard/lifecycle/orchestrator.md` returns a match (rule 4 added).
-- `plugin.json` and `marketplace.json` both report `2.15.0`.
-- **Structural sanity:** trace `feature.md` (`mode:` field) → `prd` (reads `mode:` at A.0) → `task` (reads `mode:` at A.0) → `develop` (reads `mode:` at A.0.6) and confirm MODE binds at each stage.
+Grep `plugins/specflow/skills/` for `Round-1 escalation check`, `mode: light | standard | full`, `A.0.6` (develop mode-read), `Reviewer cap by Layers Touched`, `PASS (Round-1 clean)`, `2.15.0`.
 
 ### Rollback
 
-- Downgrade the plugin version. Existing projects' `config.json` continues to work — the new keys (`task.maxReviewRounds`, `develop.crossTaskTaskThreshold`) are ignored by pre-2.15.0 logic; mode logic falls back to legacy behaviour.
-- Features with `mode: standard` will be treated as `mode: full` by pre-2.15.0 skills (defensive fallback).
+Downgrade the plugin version. `mode: standard` features are treated as `mode: full` by pre-2.15.0 skills (defensive fallback).
 
 ---
 
