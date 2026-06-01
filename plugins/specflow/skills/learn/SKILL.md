@@ -1,10 +1,10 @@
 ---
 name: specflow:learn
-description: Background loop — auto-fired by specflow:test after each Phase D feedback capture (not a user-facing command). Repo-local self-learning loop. Reads structured findings emitted by specflow:test runs, clusters them deterministically by signal_pattern, and auto-applies Tier-A additive rules to admin/rules/guidelines.md, admin/CONTEXT.md weak-spots, and admin/config.json new keys. Tier-B candidates (plugin-level changes) and Tier-C conflicts log to scratch for manual review. Append-only on the corpus; additive-only on the registries; per-run cap of 3 auto-applies; min cluster size 3. Five-phase orchestrator — A pre-flight + lock, B clustering, C tier routing, D Tier-A auto-apply, E report + lock release. Direct invocation is supported for debugging / re-runs but no user workflow requires it.
+description: Background loop — auto-fired by specflow:test after each Phase D feedback capture (not a user-facing command). Repo-local self-learning loop. Reads admin/lessons.json (the single corpus), clusters deterministically by sorted tag-set, and auto-applies Tier-A additive rules to admin/rules/guidelines.md, admin/CONTEXT.md weak-spots, and admin/config.json new keys. Runnable lessons (test_fragment.runnable==true) route to CI-promotion via specflow:misc instead of guideline-only. Tier-B candidates (plugin-level changes) and Tier-C conflicts log to scratch for manual review. Append-only on the corpus; additive-only on the registries; per-run cap of 3 auto-applies; min cluster size 3. Five-phase orchestrator — A pre-flight + lock, B clustering, C tier routing, D Tier-A auto-apply, E report + lock release. Direct invocation is supported for debugging / re-runs but no user workflow requires it.
 status: v2-new
 phase: 3
 requires:
-  - docs/specflow/admin/plugin-findings.jsonl (the corpus; append-only)
+  - docs/specflow/admin/lessons.json (the corpus; mutable JSON array — schema owned by skills/test/SKILL.md)
   - docs/specflow/admin/rules/guidelines.md
   - docs/specflow/admin/rules/non-negotiable.md
   - docs/specflow/admin/CONTEXT.md
@@ -30,7 +30,7 @@ eval: |
 
 Repo-local self-learning. Closes the loop between `specflow:test` (which emits findings) and the project's living rules + context registry (which every other skill already reads). The corpus accretes; deterministic clustering surfaces patterns at the 3-observation threshold; additive auto-application means the system gets smarter without manual triage and without ever editing prior decisions.
 
-This skill is the consumer half of the loop. The producer half — `specflow:test` emitting `plugin-findings.jsonl` entries — is intentionally decoupled. Anything that can append a valid JSONL entry to the corpus drives this skill: `specflow:test`, manual append during exploration, future producers under different names. Decoupling means this skill is fully testable on its own corpus.
+This skill is the consumer half of the loop. The producer half — `specflow:test` emitting `lessons.json` entries — is intentionally decoupled. Anything that can append a valid JSONL entry to the corpus drives this skill: `specflow:test`, manual append during exploration, future producers under different names. Decoupling means this skill is fully testable on its own corpus.
 
 This is a **5-phase orchestrator** (A → B → C → D → E). No sub-agent forking; no LLM-as-judge inside the loop (clustering is deterministic). Per-run cap of 3 Tier-A writes is the load-bearing safety valve for the 50-finding-burst case where a full-feature test run dumps a wave of new signal.
 
@@ -42,41 +42,24 @@ The four core principles bind here as everywhere: *Think Before Coding* (every c
 
 The skill is invoked via one of:
 
-- **Manual:** `/specflow:learn [--feature {NNN-slug}]` — runs over the full corpus by default; `--feature` scopes the report to findings whose `feature == {NNN-slug}`. The corpus is still read whole (clustering thresholds need cross-feature signal); the scope only filters the report header + the contributing-finding excerpts.
-- **End-of-test auto-invocation:** `specflow:test` may invoke `specflow:learn` at the end of Phase C (full + targeted modes only; never `--plan-only`). The invocation is best-effort: if `plugin-findings.jsonl` doesn't exist yet, this skill no-ops cleanly with a single chat line (see A.3).
+- **Manual:** `/specflow:learn [--feature {NNN-slug}]` — runs over the full corpus by default; `--feature` scopes the report to lessons whose `occurrences[*].feature == {NNN-slug}`. The corpus is still read whole (clustering thresholds need cross-feature signal); the scope only filters the report header + the contributing-lesson excerpts.
+- **End-of-test auto-invocation:** `specflow:test` may invoke `specflow:learn --feature {NNN-slug}` after each Phase D feedback capture so the new lesson clusters into the corpus and any Tier-A promotions auto-apply. The invocation is best-effort: if `admin/lessons.json` is missing or `[]`, this skill no-ops cleanly with a single chat line (see A.3).
 
 Tell the user explicitly which trigger you detected: *"`/specflow:learn` — trigger: `{manual | end-of-test}`. Feature scope: `{NNN-slug | full-corpus}`. Reading corpus."*
 
 ---
 
-## Findings corpus schema
+## Findings corpus
 
-`docs/specflow/admin/plugin-findings.jsonl` is one JSON object per line, append-only. Required fields per entry:
+The corpus is `docs/specflow/admin/lessons.json` — a single mutable JSON array of lesson entries. **Schema is owned by `skills/test/SKILL.md`** (the producer); this skill consumes the same shape. See `skills/test/SKILL.md` § *Lessons registry — schema, query, supersession* for the authoritative entry shape (id, kind, title, tags, what_was_missed, what_should_have_caught_it, remediation, test_fragment, status, superseded_by, promoted_to_rule, first_seen, occurrences).
 
-```json
-{
-  "finding_id": "F-20260511-0001",
-  "captured_at": "2026-05-11T10:23:00Z",
-  "source_run": "019-test-2026-05-11",
-  "feature": "019-initial-assessment-per-structure-capture",
-  "category": "bug | architecture | template | config",
-  "severity": "high | medium | low",
-  "affected_component": "specflow:test | specflow:task | specflow:linear | PRD-template | task-template | admin/config.json | admin/rules | other:{short-name}",
-  "signal_pattern": "MIGRATION_FILE_COMPLETENESS",
-  "proposed_fix": "Short imperative — what should the rule say.",
-  "source_evidence": ["apps/backend/prisma/schema.prisma:863", "missing migrations/*_form_section_scope/"]
-}
-```
+**Cluster rule (deterministic, per 035-self-learning-loop v2.16.0):**
 
-Field rules:
+- `cluster_key` = sorted-lowercased tags joined by `+` (e.g. `expo+infra+ui`), scoped to `status == "active"` OR `status == "promoted-to-ci"` (treat the latter as still-active for query purposes).
+- Two lessons cluster iff their tag sets overlap by `>=2` tags AND share `>=1` surface tag (the controlled set: `ui | data-model | api | auth | migration | infra | cli | docs`).
+- Cluster **count** = the distinct `occurrences[].feature` values summed across all members (NOT the lesson count). This lets a single recurring lesson with 4 occurrences (e.g. L-001) qualify on its own at the `>=3` threshold.
 
-- `finding_id` — `F-{YYYYMMDD}-{NNNN}`. Stable across runs; deduplication uses this id.
-- `signal_pattern` — SCREAMING_SNAKE_CASE token used for clustering. Same logical issue across runs MUST share this token; that is the deterministic clustering anchor.
-- `category` — exactly one of the four documented values. `bug` and `architecture` route to Tier B (plugin-level, never auto-applied). `template` and `config` route to Tier A (repo-local, auto-applied).
-- `affected_component` — names a single component. For Tier A, the component decides the destination file (`PRD-template` / `task-template` → `admin/rules/guidelines.md`; `admin/config.json` → `admin/config.json`; everything else → `admin/CONTEXT.md` weak-spots).
-- `source_evidence` — array of strings, each a `file:line` citation or a short factual phrase. Surfaces in the report verbatim; truncation is forbidden.
-
-A producer that emits a JSONL line missing any required field MUST be rejected at B.1 schema-drift refusal.
+This is the deterministic anchor — no embeddings, no judge. Same corpus → same clusters across runs.
 
 ---
 
@@ -101,17 +84,17 @@ The lock is released atomically at the END of Phase E on every exit path (succes
 
 ### A.2 Read the corpus
 
-Read `docs/specflow/admin/plugin-findings.jsonl`. Parse line-by-line; ignore blank lines.
+Read `docs/specflow/admin/lessons.json`. Parse line-by-line; ignore blank lines.
 
 - **File missing** → no-op exit with the chat line:
 
-  *"`plugin-findings.jsonl` not found. Self-learning loop has no corpus yet — no action taken. The corpus appears when `specflow:test` (or any producer) emits its first finding."*
+  *"`lessons.json` not found. Self-learning loop has no corpus yet — no action taken. The corpus appears when `specflow:test` (or any producer) emits its first finding."*
 
   Release the lock; exit cleanly. This is the expected first-run state, NOT a failure.
 
 - **File present, zero parseable entries** → no-op exit with the chat line:
 
-  *"`plugin-findings.jsonl` exists but contains 0 valid entries. No clustering this run."*
+  *"`lessons.json` exists but contains 0 valid entries. No clustering this run."*
 
   Release the lock; exit cleanly.
 
@@ -147,7 +130,7 @@ Hand off to Phase B.
 
 For each entry, verify the nine required fields from the **Findings corpus schema** section are present and well-typed. On the first invalid entry, refuse with the literal sentinel chat line:
 
-*"Schema drift detected: `plugin-findings.jsonl` entry `{finding_id | line-number}` missing required field `{field}` (or invalid `category` / `severity` value). The producer emitted a malformed entry. Fix the producer and remove the malformed line before re-invoking."*
+*"Schema drift detected: `lessons.json` entry `{finding_id | line-number}` missing required field `{field}` (or invalid `category` / `severity` value). The producer emitted a malformed entry. Fix the producer and remove the malformed line before re-invoking."*
 
 Release the lock; exit without writing the report. The refusal is hard because every cluster downstream depends on the schema holding; one malformed entry corrupts the clustering pass.
 
@@ -504,7 +487,7 @@ A refused exit without a documented sentinel line is a failed run.
 - **Use embeddings or LLM-as-judge for clustering.** Deterministic field-shape (`signal_pattern`) match only. Same corpus → byte-identical clusters.
 - **Auto-promote a guideline to non-negotiable.** Tier-strengthening lives in `insights` (sister Phase 3 skill). This skill only ever creates new `tier: guideline` entries.
 - **Skip the `.bak` step.** Every mutating write makes a `.bak` first. A write without a backup is a failed run.
-- **Parse the markdown report from `specflow:test`.** This skill reads `plugin-findings.jsonl` only. If a producer wants its findings consumed, it appends to the JSONL.
+- **Parse the markdown report from `specflow:test`.** This skill reads `lessons.json` only. If a producer wants its findings consumed, it appends to the JSONL.
 - **Create registry scaffolding.** If `admin/rules/guidelines.md` doesn't exist, surface a warning and skip — never auto-create. `specflow:setup` owns initial scaffolding.
 - **Aggregate across repos.** v1 reads only the local repo's corpus. Cross-repo plugin improvements are a separate, slower, human-driven loop.
 - **Name any AI vendor or tooling in user-facing output.** Per the project's CLAUDE.md attribution rule.
@@ -513,11 +496,11 @@ A refused exit without a documented sentinel line is a failed run.
 
 ## Cross-skill integration
 
-- **`specflow:test`** — primary producer. Emits findings to `plugin-findings.jsonl` (when it grows that capability). For now, the corpus can be populated by any producer or manually during exploration.
+- **`specflow:test`** — primary producer. Emits findings to `lessons.json` (when it grows that capability). For now, the corpus can be populated by any producer or manually during exploration.
 - **`specflow:setup`** — owns initial creation of `admin/rules/*` and `admin/CONTEXT.md`. This skill assumes those files exist; it warns and skips if they don't.
-- **`/insights`** — sister Phase 3 skill. `insights` mines `task-history.json` for project-domain lessons; `specflow:learn` mines `plugin-findings.jsonl` for process-meta findings. Both write to `admin/rules/guidelines.md`, but never to the same `id` (Tier-A's C.3 conflict check filters that case). Cadences are independent: `insights` runs monthly across the full task corpus; `specflow:learn` runs at the end of every `specflow:test` invocation.
+- **`/insights`** — sister Phase 3 skill. `insights` mines `task-history.json` for project-domain lessons; `specflow:learn` mines `lessons.json` for process-meta findings. Both write to `admin/rules/guidelines.md`, but never to the same `id` (Tier-A's C.3 conflict check filters that case). Cadences are independent: `insights` runs monthly across the full task corpus; `specflow:learn` runs at the end of every `specflow:test` invocation.
 - **`/prune`** — quarterly counterpart. This skill never demotes or removes rules; `/prune` owns that contract. The `source_finding_ids` frontmatter field on auto-applied rules is the audit trail `/prune` reads when deciding whether a rule has aged out.
-- **`specflow:complete`** — unrelated to this skill's corpus. Project-task retros land in `task-history.json`; plugin-process findings land in `plugin-findings.jsonl`. They share the rules-registry destination only.
+- **`specflow:complete`** — unrelated to this skill's corpus. Project-task retros land in `task-history.json`; plugin-process findings land in `lessons.json`. They share the rules-registry destination only.
 
 ---
 

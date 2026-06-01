@@ -128,6 +128,29 @@ For each matched `escape` or `success` lesson, derive at least one test case in 
 
 If no lessons match, surface: *"No prior lessons match this feature's tags."* Continue.
 
+### B.0.5 Partition matched lessons — REQUIRED vs advisory (per 035-self-learning-loop v2.16.0)
+
+For each matched active (or `promoted-to-ci`) lesson, partition:
+
+- **REQUIRED** — when the lesson's `test_fragment.scope` glob overlaps an in-scope task's `Scope` path AND tags overlap `>=1` surface tag with the feature. A REQUIRED lesson's `test_fragment` MUST become a concrete test case in B.1:
+  - `ci-check` / `grep` → a runner/grep case with the `assertion` verbatim as the command + `expect` as the pass criterion.
+  - `testcase` → the skeleton imported as a `Status: red` case.
+  - Tag the case `Source: lesson L-NNN (REQUIRED)` (in addition to its AC reference).
+- **advisory** — matched but `test_fragment.scope` does NOT overlap any task's `Scope`, OR no surface-tag overlap, OR `test_fragment` absent / `runnable: false`. Surface the lesson; derive a case if it cleanly maps to an AC; otherwise mention and continue.
+
+Surface the partition in chat:
+
+```
+REQUIRED lessons (must cover):
+- L-001 (Splash screen wrong font) — apps/expo/** scope overlaps T-3
+- L-004 (Dark-mode regression) — apps/expo/** scope overlaps T-5
+
+Advisory lessons (consider):
+- L-007 (Token refresh silent failure) — scope api/** does not overlap this feature
+```
+
+Write the REQUIRED set to `admin/scratch/test-{slug}-{ts}/required-lessons.json` — an array of `{id, test_fragment, derived_tc_id}` objects. B.4 reads this file and refuses if any REQUIRED lesson lacks a covering case.
+
 ### B.1 Derive test cases
 
 For each acceptance criterion, derive one or more test cases. A test case:
@@ -231,6 +254,9 @@ Before running tests (or, in `--plan-only` mode, before reporting):
 2. **Reverse traceability holds** — every test case cites at least one AC.
 3. **Pass criteria are binary** — re-walk; if any read "looks correct" / "appears to work" / "should be fine", sharpen.
 4. **Artefact paths are concrete** — no `assets/TBD.png` placeholders.
+5. **REQUIRED lessons covered (per 035-self-learning-loop v2.16.0, BLOCKING).** Read `admin/scratch/test-{slug}-{ts}/required-lessons.json`. For every entry, confirm a plan test case carries `Source: lesson L-NNN (REQUIRED)` AND its pass criterion contains the assertion verbatim (for `grep` / `ci-check` kinds) or the named skeleton (for `testcase`). If ANY required lesson is uncovered, the plan does NOT pass B.4 — refuse to proceed to Phase C (or in `--plan-only` refuse `complete`) with:
+
+   *"Plan blocked: required lesson L-NNN ({title}) has no covering test case. Add the case (assertion: `{assertion}`, scope `{scope}`) or run `specflow:scope-change` to retire the lesson before this plan can close."*
 
 If any check fails, fix the test plan before proceeding.
 
@@ -487,13 +513,30 @@ After D.3 is settled, perform the writes in this order. Make `lessons.json.bak` 
    }
    ```
 
-If `lessons.json` writes had occurrences ≥ 3 from D.4 step 1, prompt at the end: *"L-{NNN} has now occurred 3 times across distinct features. Promote to admin/rules/guidelines.md? [yes/no]"*. On yes: draft a one-paragraph rule from the lesson's title + remediation, present for user edit, append to `guidelines.md` with `(promoted from L-{NNN})` back-reference, flip the lesson's `status` to `promoted-to-rule` with `promoted_to_rule` set to the rule anchor.
+If `lessons.json` writes had occurrences ≥ 3 from D.4 step 1, prompt at the end:
 
-### D.4.5 Auto-fire `specflow:learn`
+- **Runnable promotion (per 035-self-learning-loop v2.16.0):** if `test_fragment.runnable == true`, prompt *"L-{NNN} occurred {n} times AND has a runnable check (`{assertion}`). Promote to CI gate and/or guideline? [ci/rule/both/no]"*. On `ci` or `both`: write `admin/scratch/misc-payload-{ts}.json` per `skills/misc/SKILL.md` auto-invocation schema:
+  ```json
+  {
+    "trigger": "rule-violation",
+    "calling_skill": "specflow:test",
+    "title": "Wire L-NNN check into CI: {assertion}",
+    "scope": "{WEB | MOBILE | BACKEND | SHARED — inferred from fragment.scope: apps/web->WEB, apps/expo->MOBILE, apps/backend->BACKEND, else SHARED}",
+    "priority": "P1",
+    "description": "Lesson L-NNN recurred {n}× across {features}. Test fragment: assertion=`{assertion}`, scope=`{scope}`, expect=`{expect}`. Wire as required PR status check.",
+    "verification": "command runs in CI as required PR status check on {scope}, blocks merge on non-zero"
+  }
+  ```
+  Then invoke `specflow:misc --auto admin/scratch/misc-payload-{ts}.json`. Set lesson `status: "promoted-to-ci"` + `promoted_to_ci: "misc-task MISC-NNN"`. On `rule` or `both` also draft the guideline (existing path).
+- **Non-runnable promotion:** if `test_fragment.runnable == false` (or absent on pre-2.16.0 lessons), prompt the legacy *"L-{NNN} has now occurred 3 times across distinct features. Promote to admin/rules/guidelines.md? [yes/no]"*. On yes: draft a one-paragraph rule from the lesson's title + remediation, present for user edit, append to `guidelines.md` with `(promoted from L-{NNN})` back-reference, flip the lesson's `status` to `promoted-to-rule` with `promoted_to_rule` set to the rule anchor.
 
-After D.4's three writes land cleanly (lessons.json + test plan + task-history.json), invoke `specflow:learn` as a forked sub-skill so the new lesson clusters into the corpus and any Tier-A rule promotions auto-apply within the same flow. Pass no arguments — `:learn` reads its corpus from `admin/plugin-findings.jsonl` and operates over the whole append-only history.
+The runnable path is the L-001 / L-004 fix: prose guidelines are read-not-enforced; a CI gate is enforced.
 
-The user never invokes `:learn` directly under normal workflow — it's a background loop wired here. The forked invocation is fire-and-forget for the parent skill: if `:learn` reports nothing actionable, no chat message lands; if it auto-applies a Tier-A rule, `:learn` surfaces its own one-line summary. On `:learn` invocation failure (lock contention, schema gap), log to chat `[test: :learn auto-fire failed — {reason}; corpus retains the lesson; re-fire later via /specflow:learn]` and continue D.5 — the lesson capture itself is not blocked.
+### D.4.5 Auto-fire `specflow:learn --feature {NNN-slug}`
+
+After D.4's three writes land cleanly (lessons.json + test plan + task-history.json), invoke `specflow:learn --feature {NNN-slug}` as a forked sub-skill so the new lesson clusters into the corpus and any Tier-A rule promotions / CI promotions auto-apply within the same flow. The sub-skill reads `admin/lessons.json` (the single corpus — per 035-self-learning-loop v2.16.0 the `plugin-findings.jsonl` reference is gone) and operates over the whole append-only history.
+
+The user never invokes `:learn` directly under normal workflow — it's a background loop wired here. The forked invocation is fire-and-forget for the parent skill: if `:learn` reports nothing actionable, no chat message lands; if it auto-applies a Tier-A rule or promotes to CI via `specflow:misc --auto`, `:learn` surfaces its own one-line summary. On `:learn` invocation failure (lock contention, schema gap), log to chat `[test: :learn auto-fire failed — {reason}; corpus retains the lesson]` and continue D.5 — the lesson capture itself is not blocked.
 
 ### D.5 Surface to the user
 
@@ -533,6 +576,13 @@ Specflow's self-learning corpus lives at `docs/specflow/admin/lessons.json` — 
   "what_was_missed": "Splash screen used the wrong font and showed the logo image as the initial loading state instead of a blank background.",
   "what_should_have_caught_it": "specflow:test plan should have included a visual-diff test case against the design mockup.",
   "remediation": "UI tasks must include a Playwright screenshot diff against the proposed.html mockup before Verifier passes.",
+  "test_fragment": {
+    "kind": "ci-check",
+    "assertion": "rg -n --pcre2 '#[0-9a-fA-F]{6}' apps/expo -g '*.tsx'",
+    "scope": "apps/expo/**",
+    "expect": "zero matches",
+    "runnable": true
+  },
   "status": "active",
   "superseded_by": null,
   "promoted_to_rule": null,
@@ -554,11 +604,20 @@ Specflow's self-learning corpus lives at `docs/specflow/admin/lessons.json` — 
 - `what_was_missed` — required when `kind: "escape"`. Plain language, captured verbatim from the user. The skill never paraphrases.
 - `what_should_have_caught_it` — required when `kind: "escape"`. Names the gate / skill / agent that should have caught it, ideally with file:line if known. This field is the lever for targeted system improvement.
 - `remediation` — required for all kinds. Concrete change description. Used as the seed for the test case the skill writes back into the test plan.
+- `test_fragment` — required for every NEW escape lesson written from v2.16.0 onward. Sub-fields:
+  - `kind` — one of `grep | testcase | ci-check`. Determines how the assertion is materialised in a future plan.
+  - `assertion` — verbatim copy-pasteable line. For `grep`: the `grep` / `rg` command. For `ci-check`: the full CI command (shell-runnable). For `testcase`: the test-case skeleton (a function name + body the runner can execute).
+  - `scope` — glob (e.g. `apps/expo/**`) the assertion applies to. Used by the REQUIRED-check to decide whether a future plan's task Scope overlaps.
+  - `expect` — binary pass phrase (e.g. `zero matches`, `exit 0`, `assertion passes`).
+  - `runnable` — `true` if the assertion can be executed verbatim by CI / a runner; `false` if it's a manual gate or human-judged check.
+  Pre-2.16.0 lessons with no `test_fragment` read as `runnable: false` and Phase B falls back to prose remediation (backward-compatible).
 - `status`:
   - `active` — the lesson is live and queried on matching features.
   - `superseded` — a later lesson replaces this one. `superseded_by: L-NNN` points to the replacement.
   - `resolved` — the remediation was validated by a later feature without recurrence (set by the resolution prompt at the end of a successful `full`-mode run on a tag-overlapping feature).
+  - `promoted-to-ci` — the lesson has a runnable `test_fragment` that was promoted to a CI gate via `specflow:misc --auto`. `promoted_to_ci` carries the misc-task id. Stays active-equivalent for querying (still REQUIRED at B.0) until prune confirms CI live + no recurrence, then flips to `resolved`.
   - `promoted-to-rule` — the lesson has been promoted to `admin/rules/guidelines.md`. `promoted_to_rule: "{anchor-or-path}"`.
+  - `resolved` — the lesson's remediation was validated by a later feature without recurrence (set by the resolution prompt at end of a `full`-mode run on a tag-overlapping feature). Filtered OUT of B.0 / task A.4 queries; preserved as audit. If a gap recurs, D.3 similarity re-opens (back to `active`).
 - `superseded_by` — populated when D.3's similarity check identified a working approach for a prior failure. The user confirms supersession (audit-integrity preserved — system suggests, human signs off).
 - `promoted_to_rule` — populated when the lesson is promoted to a rule. Format: `"admin/rules/guidelines.md#{anchor}"`.
 - `first_seen` — `YYYY-MM-DD` of the first capture.
@@ -589,7 +648,7 @@ Drift warnings don't block reads — just flag for cleanup at the user's conveni
 When `specflow:test` Phase B.0, `specflow:task` (entry phase), or any future skill needs to surface relevant lessons:
 
 1. **Build the query tag set.** Read the feature's PRD frontmatter for stack/domain tags; read the parent folder name for the slug; detect the surface(s) the feature touches by scanning the PRD's Requirements for the canonical surface keywords (`UI`, `endpoint`, `migration`, `auth`, etc.).
-2. **Filter.** Select entries where `status: "active"` AND the entry's `tags` overlap the query tag set by ≥1 tag.
+2. **Filter.** Select entries where `status` is `active` OR `promoted-to-ci` (excluding `resolved` and `superseded`) AND the entry's `tags` overlap the query tag set by ≥1 tag.
 3. **Rank.** By `occurrences.length` desc (recurrence is a strong signal of relevance), then by `first_seen` desc (recency tiebreaker).
 4. **Cap.** Surface up to 5 lessons in chat. If more match, summarise the count and write the full matched list to `admin/scratch/{slug}-{ts}/matched-lessons.json` for audit.
 5. **Inject.** For `specflow:test` Phase B, each matched lesson becomes a constraint on the derived plan (B.1 must include a test case verifying the lesson's remediation). For `specflow:task`, the matched remediation is included in the task-generation prompt as a "must consider" line.
@@ -639,7 +698,7 @@ Before returning to the user:
 4. Every pass criterion is binary.
 5. (If execution ran) every pass row in the latest Run cites a concrete artefact path that exists on disk.
 6. (If execution ran) the failure list in the chat report matches the failures in the execution log.
-7. (If Phase B.0 ran) every matched active lesson surfaced in chat has at least one test case in the plan tagged `Source: lesson L-NNN`.
+7. (If Phase B.0 ran) every REQUIRED matched lesson has a covering case in the plan that embeds its `test_fragment.assertion` verbatim (and is tagged `Source: lesson L-NNN (REQUIRED)`); advisory ones are surfaced in chat or explicitly declined. A `done` with an uncovered REQUIRED lesson is a FAILED run.
 8. (If Phase D ran) `lessons.json` validates against the schema; the new test case tagged with the lesson id is in the plan; `task-history.json` references the lesson id; `lessons.json.bak` exists.
 
 If any verify step fails, fix it before returning.

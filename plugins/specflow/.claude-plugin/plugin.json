@@ -1,6 +1,6 @@
 {
   "name": "specflow",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "description": "Production-grade, self-adaptive product workflow: install once globally, every project accumulates its own constitution, profiles, agents, decisions, and task history — and uses that memory to make every subsequent piece of work smarter than the last.",
   "author": {
     "name": "Sole Trader AI Pty Ltd",

@@ -15,6 +15,52 @@ The upgrade skill is **purely additive** — never deletes user data without exp
 
 ---
 
+## v2.15.0 → v2.16.0
+
+Closes the self-learning loop (per 035-self-learning-loop v2.16.0). Capture worked in 2.15.0 but reuse did not — matched lessons surfaced as hints not gates, recurring lessons re-derived prose remediation each time, and `specflow:learn` read a `plugin-findings.jsonl` file that no project produced (auto-promotion never ran). 2.16.0 makes lessons single-corpus, runnable, and gating.
+
+### Scope
+
+- **C1 — one corpus.** `specflow:learn` now reads `admin/lessons.json` (the single source of truth) instead of `admin/plugin-findings.jsonl`. `skills/learn/SKILL.md` `requires`, Inputs, schema block, A.2 corpus check, B.3 clustering, C/D tier routing, and cross-skill references all repointed. Cluster key = sorted-lowercased tags joined by `+`; clusters at `>=2` tag overlap AND `>=1` surface-tag overlap; cluster count = distinct `occurrences[].feature` summed across members. `skills/test/SKILL.md` D.4.5 auto-fire now invokes `specflow:learn --feature {NNN-slug}`.
+- **C2 — `test_fragment` field.** New lesson sub-object: `{ kind: grep|testcase|ci-check, assertion, scope, expect, runnable }`. Required for every NEW escape lesson written from v2.16.0. D.2 grows a Q4 capturing the reusable check (with derivation fallback if user skips). D.4 step 1 appends the fragment to new entries; recurrence on a pre-2.16.0 lesson prompts Q4 to backfill (the one permitted post-write addition — forward-tooling, not audit). D.6 verify check 6 confirms shape.
+- **C3 — REQUIRED check (the enforcement that stops recurrence).** `skills/test/SKILL.md` B.0.5 partitions matched lessons into REQUIRED (fragment.scope overlaps a task Scope AND surface-tag overlap) vs advisory. REQUIRED lessons MUST become concrete test cases in B.1 with the assertion verbatim and the tag `Source: lesson L-NNN (REQUIRED)`. B.4 adds BLOCKING check 5: if any REQUIRED lesson is uncovered, refuse the plan with `Plan blocked: required lesson L-NNN`. Verify-before-done adds check 7. Query-Inject sentence updated. `skills/task/SKILL.md` A.4 mirrors — a REQUIRED matched lesson forces a `lesson-anchor: L-NNN` task field or an explicit uncovered-lesson decision.
+- **C4 — auto-promote runnable lessons to CI.** When `occurrences >= 3 distinct features` AND `test_fragment.runnable == true`, D.4 prompts CI promotion. On confirm: writes `admin/scratch/misc-payload-{ts}.json` per `skills/misc/SKILL.md` auto-invocation schema, invokes `specflow:misc --auto`, sets lesson `status: promoted-to-ci`. `skills/learn/SKILL.md` Phase D auto-apply routes Tier-A clusters with runnable fragments to the same CI path (cap 3/run).
+- **C5 — prune to resolved.** End-of-Phase-C prompt when a real test execution on a feature overlapping an active/promoted-to-ci lesson has a case sourced from it that PASSED with no new occurrence: *"L-NNN check passed with no recurrence. Mark resolved? [yes/no/skip]"*. `resolved` lessons filtered OUT of B.0 / task A.4 queries; preserved as audit; D.3 similarity re-opens on recurrence. Query-filter: `status in {active, promoted-to-ci}` (excluding `resolved` and `superseded`).
+- **C6** — version bump + this MIGRATIONS entry.
+
+### Steps
+
+1. Pull v2.16.0.
+2. Existing lessons keep working — no `test_fragment` reads as `runnable: false`, Phase B falls back to prose remediation. Pre-2.16.0 lessons are NOT REQUIRED until they're backfilled on next recurrence (forward-tooling: D.4 prompts Q4 on the recurrence and backfills the fragment then — the one permitted post-write addition).
+3. No `plugin-findings.jsonl` to migrate — no project produced it; `learn` now reads `lessons.json` directly.
+4. Config untouched. `resolved` lessons excluded from the cap-5 surfacing.
+
+### Backups
+
+`lessons.json.bak` discipline unchanged (every mutation writes a `.bak` first).
+
+### Known stale references (flag, do not fix here)
+
+- `templates/admin/lessons-registry.md` schema diverges from the LIVE schema in `skills/test/SKILL.md`. The skills/test SKILL is the source of truth (it matches disk). The template gains a `test_fragment` row for parity but the divergent field names are NOT re-converged in this release.
+- `specflow:insights` is referenced in 2 docs but does NOT exist as a shipped skill. The real clusterer is `specflow:learn`. References left in place; flagged as stale.
+
+### Verify
+
+- `grep -n 'test_fragment' plugins/specflow/skills/test/SKILL.md` returns matches.
+- `grep -n 'lessons.json' plugins/specflow/skills/learn/SKILL.md` returns matches; `! grep -q 'plugin-findings.jsonl' plugins/specflow/skills/learn/SKILL.md` passes (zero matches expected).
+- `grep -n 'REQUIRED' plugins/specflow/skills/test/SKILL.md` returns matches; `grep -n 'required-lessons.json' plugins/specflow/skills/test/SKILL.md` returns matches.
+- `grep -n 'Plan blocked: required lesson' plugins/specflow/skills/test/SKILL.md` returns a match (the B.4 BLOCKING refusal sentinel).
+- `grep -n 'promoted-to-ci\|misc --auto' plugins/specflow/skills/test/SKILL.md` returns matches.
+- `grep -n 'Mark resolved\|status: "resolved"' plugins/specflow/skills/test/SKILL.md` returns matches (C5 prune prompt).
+- `plugin.json` and `marketplace.json` both report `2.16.0`.
+- `grep -n 'specflow:learn --feature' plugins/specflow/skills/test/SKILL.md` returns a match (D.4.5 auto-fire).
+
+### Rollback
+
+Code-only revert — no data migrated. Existing `lessons.json` entries written under 2.16.0 retain the `test_fragment` field; pre-2.16.0 skills ignore unknown sub-objects (forward-compatible).
+
+---
+
 ## v2.14.1 → v2.15.0
 
 Introduces conditional-debate rounds and a new `standard` complexity mode (per 034-conditional-rounds v2.15.0). Cuts PRD → tasks time from ~8h toward ~2-3h on typical features while keeping the full debate chain available for high-stakes work. **Quality safety net intact:** a `block` severity always triggers full multi-round debate; the cap only short-circuits when Round-1 finds nothing load-bearing.
