@@ -1,6 +1,6 @@
 ---
 name: specflow:test
-description: Verify work against PRD acceptance criteria. Testing-as-cadence — runs iteratively throughout development, not as a terminal phase. Default flow is A pre-flight → B test-plan synthesis with lesson-query → C execution; `--task T1,T3,AC-2` filters to a subset; `--plan-only` skips execution (auto-inferred when no shipped code exists yet). Feedback capture (Phase D) is no longer flag-gated — it auto-prompts after a green run and at Phase A.0 when the agent detects a shipped-behaviour gap in the conversation context. Phase D writes a Retroactive: true test case + a lesson + an attribution row so the system gets smarter on the next feature.
+description: Verify work against PRD acceptance criteria. Testing-as-cadence — runs iteratively throughout development, not as a terminal phase. Default flow is A pre-flight → B test-plan synthesis with lesson-query → C execution; `--task T1,T3,AC-2` filters to a subset; `--plan-only` skips execution (auto-inferred when no shipped code exists yet). Feedback capture (Phase D) is no longer flag-gated — it auto-prompts after a green run and at Phase A.0 when the agent detects a shipped-behaviour gap in the conversation context. Phase D writes a Retroactive: true test case + a lesson + an attribution row so the system gets smarter on the next feature. Phase C is interactive and tiered: each case is checked in sequence — a pass passes silently, a hard-tier contract failure stops the run for the user, and a soft-tier divergence is surfaced in plain English (spec said X, build does Y) for a keep/reject call that is remembered in a reconcile manifest so later runs test against the confirmed truth, not the stale spec.
 status: v2-enhancement
 phase: 1
 requires:
@@ -12,6 +12,7 @@ requires:
   - docs/specflow/admin/lessons.json
 produces:
   - docs/specflow/features/{NNN-slug}/test/{NNN-slug}-test.md
+  - docs/specflow/features/{NNN-slug}/test/{NNN-slug}-reconcile.json (interactive reconcile manifest — living record of confirmed deviations + confirmed fails)
   - docs/specflow/features/{NNN-slug}/assets/
   - docs/specflow/admin/lessons.json (mutated; .bak preserved on every write)
   - docs/specflow/admin/task-history.json (appended on Phase D feedback capture)
@@ -81,6 +82,7 @@ Use Read in parallel on:
 - `features/NNN-{slug}/debate-log/tasks-gate3/manifest.md`
 - `admin/pages.json` (UI navigation map; if missing, surface a one-line warning and continue with non-UI tests only)
 - `admin/environment.json` (Playwright availability, test-runner detection)
+- `features/NNN-{slug}/test/{NNN-slug}-reconcile.json` (the reconcile manifest — confirmed deviations + confirmed fails from prior runs; if missing, this is the feature's first reconcile and the manifest is created lazily in Phase C)
 
 ### A.2 Extract the testable surface
 
@@ -151,6 +153,17 @@ For each acceptance criterion, derive one or more test cases. A test case:
 
 Sizing heuristic: one AC → one test case is the default. An AC like *"login flow handles six edge cases"* can become six test cases — that's correct decomposition, not over-decomposition.
 
+### B.1.6 Tier each test case — hard vs soft (reconcile tiering)
+
+Every test case carries a `Tier: hard | soft`. The tier decides what happens when the case FAILS in Phase C (see C.2.5): a hard failure stops the run for the user; a soft failure is offered for reconcile.
+
+Assign the tier by ruleset, defaulting to **hard** — an untiered check is treated as a contract until a human says otherwise:
+
+- **hard** — the AC verifies a contract that must not silently drift: data integrity, schema/migrations, auth or tenant isolation, money/payments/billing, idempotency, deletion or retirement of endpoints/data, public API response shape, security. Match on the AC's requirement keywords and the task Scope paths (e.g. Scope touches `**/prisma/**`, `**/migrations/**`, `**/auth/**`, a payments module, or the AC text names a status code / uniqueness / NOT NULL / 410 / 422 contract).
+- **soft** — the AC verifies experience or product detail that legitimately moves with the brief during develop: copy, labels, which fields show, layout, ordering, optional-vs-required, product-judgement thresholds (e.g. "exactly 2 vs at least 1"), which media is mandatory, visual styling.
+
+Record the chosen tier and a one-line reason on each test case. A `Source: lesson L-NNN (REQUIRED)` case is always **hard** — a lesson-enforced check is a contract. If the ruleset is ambiguous for a case, default hard and note `Tier: hard (default — unclassified)` so the misclassification is visible and a human can correct it to soft.
+
 ### B.2 Build the coverage matrix
 
 Cross-tabulate AC IDs against test cases. Two checks:
@@ -188,6 +201,7 @@ tasks: ../{NNN-slug}-tasks.md
 - **Verifies:** AC-1 (PRD R1)
 - **Exercises tasks:** T1, T3
 - **Retroactive:** false
+- **Tier:** hard | soft (one-line reason — see B.1.6)
 - **Surface:** Playwright UI scenario
 - **Pages used:** `home`, `notifications-popover` (from `pages.json`)
 - **Steps:**
@@ -281,6 +295,8 @@ mkdir -p docs/specflow/features/NNN-{slug}/assets
 
 **Filter retroactive cases first.** Every test case with `Retroactive: true` is excluded from execution — the feature has already shipped and there is no live implementation to verify in this run. Retroactive cases are recorded in the run table with `⏭ retroactive` status (see C.3). They remain in the plan as the auditable lesson-to-AC mapping; future feature plans cross-reference them via the lessons registry.
 
+**Consult the reconcile manifest first.** Before judging any case, read `{NNN-slug}-reconcile.json`. For each test case with a `confirmed-deviation` entry, evaluate against the manifest's recorded `confirmed_expectation`, NOT the stale AC text — the user already confirmed "look for orange, not green," and that confirmation is the truth now; a match records a silent ✅ pass. For each case with a `confirmed-fail` entry, it stays a fail but is auto-flagged from the manifest without re-asking permission (the user already said "yes, flag it") — record it `❌ fail (known — reconcile {date})`. Only cases with NO manifest entry run the interactive flow in C.2.5 when they diverge.
+
 For each non-retroactive test case in scope:
 
 **UI scenarios (Playwright):**
@@ -299,6 +315,34 @@ For each non-retroactive test case in scope:
 1. Print the steps to the user.
 2. Ask: *"Did this pass? (yes / no / N/A)"*
 3. Record the user's answer + capture any user-supplied artefact path.
+
+### C.2.5 Interactive reconcile on divergence (sequential, one case at a time)
+
+Phase C is interactive. Walk the in-scope cases in order. A pass passes silently — no user input. When a case **fails** and has no prior manifest entry (C.2's manifest consult already handled the ones that do), branch on its `Tier`:
+
+**Hard-tier failure → stop and ask, before running the next case.** The run pauses here. Surface, in plain English, what broke and why it is a hard contract:
+
+> Hard check failed — {AC-N}: {plain-English what the spec requires vs what the build does}. This is a {data integrity | auth | payments | migration | API-contract} contract, so it cannot be waved through. {file:line evidence}.
+> How do you want to handle it? [flag as a real fail / this is an intended change]
+
+- `flag as a real fail` (default) → record `❌ fail (hard)` in the run table, write a `confirmed-fail` entry to the reconcile manifest, append an `escaped-issue` row to `task-history.json`, and route it as a bug. Then continue to the next case.
+- `this is an intended change` → a hard contract is changing; this is heavier than a soft reconcile and must go through the proper path. Do NOT silently rewrite the AC. Tell the user: *"That changes a hard contract — run `specflow:scope-change {NNN-slug}` to amend AC-N deliberately, then re-test."* Leave the case as `❌ fail (hard — pending scope-change)` and continue.
+
+If `--task` mode or a non-interactive context means no user is present to answer, do not guess: record the hard failure as `❌ fail (hard — unreviewed)` and list it at the top of the report for the user to handle. Never auto-pass a hard failure.
+
+**Soft-tier failure → classify cosmetic vs judgement, then act.** Not every soft divergence needs the user. First sub-classify, defaulting to *judgement* whenever unsure — ambiguity always escalates:
+
+- **cosmetic** — pure presentation with no behavioural, validation, or data consequence: copy/label wording, spacing/layout, colour or design-token swaps, icon choice, presentational ordering, animation. Auto-reconcile: write a `confirmed-deviation` entry with `approved_by: "auto (cosmetic)"`, flip the case to `✅ pass (reconciled — auto)`, and add it to the run's auto-reconciled digest (surfaced in the C.4 report so the user can audit and override later). No interrupt.
+- **judgement** — the divergence changes behaviour, completeness, validation, a threshold, a count, which fields are required or shown, gating, or anything data-affecting (e.g. "exactly 2" vs "at least 1", photo-required vs notes-only). These STOP for the user. Surface the keep/reject question:
+
+  > Looks different here — {AC-N}: spec said "{X}", the build does "{Y}". {file:line}. Is the build correct? [yes, keep it / no, that's wrong]
+
+- `yes, keep it` → the brief moved and the build is the truth. Write a `confirmed-deviation` entry to the reconcile manifest capturing the new expected behaviour in the user's own words (e.g. "Section 9 completeness = at least 1 material, not exactly 2"), the approver, and the date; flip the case to `✅ pass (reconciled {date})`; append a `scope-change` row to `task-history.json`; and surface a one-liner that the underlying PRD AC text is now stale and can be synced via `specflow:scope-change` at the user's convenience (do NOT auto-edit the PRD here — see MUST NOT). From the next run on, C.2's manifest consult tests against this confirmed behaviour, silently.
+- `no, that's wrong` → it is a real fail. Confirm before logging, per the user's "happy for me to flag this?" model:
+  > Then this is a fail — happy for me to flag it? [yes / not sure]
+  On `yes` → record `❌ fail (soft — confirmed)`, write a `confirmed-fail` manifest entry, append an `escaped-issue` row, route as a bug. On `not sure` → record `⏳ fail (soft — unresolved)` and leave it open in the report; it is NOT written to the manifest, so it re-surfaces next run.
+
+Process cases one at a time so the user can steer the run as it goes. Each answer is remembered in the manifest so settled questions are never re-asked — that is what makes later runs converge instead of re-litigating every divergence.
 
 ### C.2.1 Lazy-populate `pages.json`
 
@@ -336,6 +380,8 @@ After every test case, append (do not overwrite) to the *Execution log* section 
 
 **Summary:** {N} pass · {M} fail · {K} skipped · {R} retroactive.
 
+**Reconcile:** {D} reconciled-pass · {H} hard-fail · {C} confirmed-fail · {U} unresolved. (Reconciled and confirmed-fail outcomes are recorded in `{NNN-slug}-reconcile.json`.)
+
 **Failures (need attention):**
 - TC-2: {one-line description of the failure mode}.
 ```
@@ -350,6 +396,7 @@ Test run complete.
 - Pass: {N} / Fail: {M} / Skipped: {K} / Retroactive: {R}
 - Plan: features/NNN-{slug}/test/{NNN-slug}-test.md
 - Artefacts: features/NNN-{slug}/test/screenshots/ + features/NNN-{slug}/assets/
+- Auto-reconciled (cosmetic — no input needed): {A}. Listed below for audit; reply to override any.
 
 Failures:
 - TC-2 (AC-2 verifying R3) — {one-liner}. Artefact: assets/TC-2-runner-output.txt
@@ -653,6 +700,60 @@ When an `active` lesson's `occurrences.length` reaches 3 across distinct feature
 
 ---
 
+## Reconcile manifest — schema, lifecycle
+
+The reconcile manifest is the **living memory** of the interactive Phase C. It lives at `features/NNN-{slug}/test/{NNN-slug}-reconcile.json` and records every keep/reject decision the user has made, so the system tests against the confirmed truth and never re-asks a settled question. It is the difference between a suite that re-litigates every divergence on every run and one the user can steer once and trust thereafter.
+
+### Entry shape
+
+```json
+{
+  "feature": "021-initial-assessment-v3-...",
+  "decisions": [
+    {
+      "id": "RC-001",
+      "ac": "AC-12",
+      "test_case": "TC-10",
+      "kind": "confirmed-deviation",
+      "spec_said": "Section 9 completeness requires exactly 2 materials",
+      "build_does": "accepts 1 or more materials",
+      "confirmed_expectation": "at least 1 material is correct — exactly-2 was dropped during develop",
+      "tier": "soft",
+      "approved_by": "{user}",
+      "approved_at": "2026-06-04"
+    },
+    {
+      "id": "RC-002",
+      "ac": "AC-8",
+      "test_case": "TC-14",
+      "kind": "confirmed-fail",
+      "spec_said": "all 12 legacy submit endpoints return 410",
+      "build_does": "endpoints still return 2xx",
+      "tier": "hard",
+      "approved_to_flag_by": "{user}",
+      "approved_at": "2026-06-04"
+    }
+  ]
+}
+```
+
+### Field semantics
+
+- `kind`:
+  - `confirmed-deviation` — the user confirmed the build is correct and the spec was stale. `confirmed_expectation` (verbatim user words) becomes the behaviour future runs test against. Always soft tier — a hard contract change never lands here; it routes through `specflow:scope-change`.
+  - `confirmed-fail` — the user confirmed the case is a genuine failure and approved flagging it. Future runs auto-flag it (status `❌ fail (known)`) without re-asking permission, until the bug is fixed and the case passes (the entry is then pruned on the next green run — see lifecycle).
+- `confirmed_expectation` — required for `confirmed-deviation`; the user's own words for the new truth. This is what C.2's manifest consult evaluates against.
+- `approved_by` / `approved_to_flag_by` — who signed off. The manifest is an audit trail; decisions are never anonymous. A value of `approved_by: "auto (cosmetic)"` marks a divergence the system auto-reconciled as purely cosmetic (no user prompt); these are collected in the run's auto-reconciled digest (C.4 report) so the user can audit and override any of them.
+- `tier` — carried from the test case for traceability.
+
+### Lifecycle + discipline
+
+- The manifest is created lazily on the first reconcile decision for a feature; absent file = no decisions yet.
+- A `.bak` is written before each modification (mirrors the lessons.json discipline).
+- **Consulted at the top of Phase C (C.2)** before any case is judged: a `confirmed-deviation` re-points the pass criterion to `confirmed_expectation`; a `confirmed-fail` auto-flags without re-asking.
+- **Self-healing:** when a case that has a `confirmed-fail` entry PASSES on a later run (the bug was fixed), prune that entry on the green run and note `reconcile: RC-NNN resolved (now passing)` in the run log. `confirmed-deviation` entries persist — they are the new spec truth, not a temporary state.
+- A `confirmed-deviation` is the lightweight in-band record; the authoritative PRD AC is only updated when the user runs `specflow:scope-change`. The manifest keeps tests honest in the meantime so the user is never forced into doc admin mid-develop to get a clean run. Surface the stale-AC reminder once per reconciled AC per run (not nagging) so the eventual scope-change stays visible without blocking.
+
 ## What you MUST NOT do
 
 - **Do not skip the chain check.** Tasks that haven't closed Gate 3 are not finished; testing them is premature.
@@ -661,6 +762,9 @@ When an `active` lesson's `occurrences.length` reaches 3 across distinct feature
 - **Do not overwrite the execution log.** Append-only — past runs are the audit trail.
 - **Do not invent ACs.** If a test case doesn't trace to a PRD AC, surface it as a `specflow:scope-change` candidate; do not invent an AC inline.
 - **Do not invoke `specflow:scope-change` automatically.** PRD changes are user-driven decisions.
+- **Do not auto-pass or reconcile a hard-tier failure.** Hard contracts (data, auth, payments, migrations, idempotency, API shape, endpoint retirement) stop the run for the user and can only be flagged as a fail or routed to `specflow:scope-change`. A happy-with-the-screen approval never clears a data-integrity failure.
+- **Do not auto-edit the PRD when a soft deviation is reconciled.** Record it in the reconcile manifest (in-band, no admin) and surface the optional `specflow:scope-change` to sync the PRD AC. The PRD is user-owned; the manifest keeps the run honest without forcing a mid-develop doc edit.
+- **Do not auto-reconcile a soft divergence that changes behaviour, validation, a threshold, a count, required/shown fields, gating, or data.** Only purely-cosmetic divergences (copy, spacing, colour tokens, icons, presentational ordering) auto-reconcile; anything that could change what the product *does* escalates to the user. When unsure which side a divergence falls on, escalate — ambiguity is never cosmetic.
 - **Do not mention the underlying AI tooling or vendor** in any user-facing output, the test plan, the execution log, or the runner output cited in artefacts. Per the project's CLAUDE.md, this is non-negotiable.
 
 ---
@@ -677,6 +781,7 @@ Before returning to the user:
 6. (If execution ran) the failure list in the chat report matches the failures in the execution log.
 7. (If Phase B.0 ran) every REQUIRED matched lesson has a covering case in the plan that embeds its `test_fragment.assertion` verbatim (and is tagged `Source: lesson L-NNN (REQUIRED)`); advisory ones are surfaced in chat or explicitly declined. A `done` with an uncovered REQUIRED lesson is a FAILED run.
 8. (If Phase D ran) `lessons.json` validates against the schema; the new test case tagged with the lesson id is in the plan; `task-history.json` references the lesson id; `lessons.json.bak` exists.
+9. (If Phase C ran interactively) every hard-tier failure was either flagged as a fail (with a `confirmed-fail` manifest entry + `escaped-issue` row) or routed to `specflow:scope-change` — none were silently passed; every soft reconcile decision is written to `{NNN-slug}-reconcile.json` with an approver and date; `{NNN-slug}-reconcile.json.bak` exists if the manifest was modified.
 
 If any verify step fails, fix it before returning.
 
